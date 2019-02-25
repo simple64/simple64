@@ -1,9 +1,6 @@
 [submodule "mupen64plus-core"]
 	path = mupen64plus-core
 	url = https://github.com/mupen64plus/mupen64plus-core.git
-[submodule "mupen64plus-rsp-cxd4"]
-	path = mupen64plus-rsp-cxd4
-	url = https://github.com/mupen64plus/mupen64plus-rsp-cxd4.git
 [submodule "mupen64plus-input-sdl"]
 	path = mupen64plus-input-sdl
 	url = https://github.com/mupen64plus/mupen64plus-input-sdl.git
@@ -13,9 +10,6 @@
 [submodule "mupen64plus-gui"]
 	path = mupen64plus-gui
 	url = https://github.com/m64p/mupen64plus-gui.git
-[submodule "angrylion-rdp-plus"]
-	path = angrylion-rdp-plus
-	url = https://github.com/ata4/angrylion-rdp-plus.git
 [submodule "mupen64plus-audio-sdl2"]
 	path = mupen64plus-audio-sdl2
 	url = https://github.com/m64p/mupen64plus-audio-sdl2.git
