@@ -19,7 +19,7 @@ fi
 #fi
 
 install_dir=$PWD/mupen64plus
-mkdir $install_dir
+mkdir -p $install_dir
 base_dir=$PWD
 
 cd $base_dir/mupen64plus-core/projects/unix
@@ -43,7 +43,7 @@ cp $base_dir/mupen64plus-audio-sdl2/projects/unix/*$suffix $install_dir
 mkdir -p $base_dir/mupen64plus-gui/build
 cd $base_dir/mupen64plus-gui/build
 if [[ $UNAME == *"MINGW"* ]]; then
-  /$mingw_prefix/qt5-static/bin/qmake ../mupen64plus-gui.pro
+  qmake ../mupen64plus-gui.pro
   make -j4 release
   cp $base_dir/mupen64plus-gui/build/release/mupen64plus-gui.exe $install_dir
 elif [[ $UNAME == "Darwin" ]]; then
@@ -61,15 +61,23 @@ cd $base_dir/GLideN64/src
 
 mkdir -p $base_dir/GLideN64/src/GLideNUI/build
 cd $base_dir/GLideN64/src/GLideNUI/build
-qmake ../GLideNUI.pro
-make -j4
+if [[ $UNAME == *"MINGW"* ]]; then
+  qmake ../GLideNUI.pro
+  make -j4 release
+elif [[ $UNAME == "Darwin" ]]; then
+  /usr/local/Cellar/qt5/*/bin/qmake ../GLideNUI.pro
+  make -j4
+else
+  qmake ../GLideNUI.pro
+  make -j4
+fi
 
 cd $base_dir/GLideN64/projects/cmake
+sed -i 's/GLideNUI\/build\/debug\/libGLideNUI.a/GLideNUI\/build\/release\/libGLideNUI.a/g' ../../src/CMakeLists.txt
 if [[ $UNAME == *"MINGW"* ]]; then
   sed -i 's/check_ipo_supported(RESULT result)//g' ../../src/CMakeLists.txt
-  cmake -G "MSYS Makefiles" -DVEC4_OPT=On -DCRC_OPT=On -DMUPENPLUSAPI=On ../../src/
+  cmake -G "MSYS Makefiles" -DUSE_SYSTEM_LIBS=On -DVEC4_OPT=On -DCRC_OPT=On -DMUPENPLUSAPI=On ../../src/
 else
-  rm -rf ../../src/GLideNHQ/inc
   cmake -DUSE_SYSTEM_LIBS=On -DVEC4_OPT=On -DCRC_OPT=On -DMUPENPLUSAPI=On ../../src/
 fi
 make -j4
@@ -111,6 +119,10 @@ if [[ $UNAME == *"MINGW"* ]]; then
   cp /$mingw_prefix/bin/libicudt62.dll $install_dir
   cp /$mingw_prefix/bin/libicuin62.dll $install_dir
   cp /$mingw_prefix/bin/libicuuc62.dll $install_dir
+  cp /$mingw_prefix/bin/libpcre2-16-0.dll $install_dir
+  cp /$mingw_prefix/bin/Qt5Core.dll $install_dir
+  cp /$mingw_prefix/bin/Qt5Gui.dll $install_dir
+  cp /$mingw_prefix/bin/Qt5Widgets.dll $install_dir
   cp $base_dir/7za.exe $install_dir
 elif [[ $UNAME == "Darwin" ]]; then
   my_os=macos

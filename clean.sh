@@ -2,23 +2,19 @@
 
 base_dir=$PWD
 
-cd $base_dir/mupen64plus-core/projects/unix
-make clean
+make clean -C $base_dir/mupen64plus-core/projects/unix
 
-cd $base_dir/mupen64plus-rsp-hle/projects/unix
-make clean
+make clean -C $base_dir/mupen64plus-rsp-hle/projects/unix
 
-cd $base_dir/mupen64plus-input-sdl/projects/unix
-make clean
+make clean -C $base_dir/mupen64plus-input-sdl/projects/unix
 
-cd $base_dir/mupen64plus-audio-sdl2/projects/unix
-make clean
+make clean -C $base_dir/mupen64plus-audio-sdl2/projects/unix
 
 rm -rf $base_dir/mupen64plus-gui/build
 
-cd $base_dir/GLideN64/projects/cmake
-make clean
+rm -rf $base_dir/GLideN64/src/GLideNUI/build
+make clean -C $base_dir/GLideN64/projects/cmake/GLideNHQ
+make clean -C $base_dir/GLideN64/projects/cmake
 
-cd $base_dir
 rm -rf $base_dir/mupen64plus
 rm $base_dir/*.zip
