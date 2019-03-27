@@ -58,6 +58,12 @@ fi
 
 cd $base_dir/GLideN64/src
 ./getRevision.sh
+
+mkdir -p $base_dir/GLideN64/src/GLideNUI/build
+cd $base_dir/GLideN64/src/GLideNUI/build
+qmake ../GLideNUI.pro
+make -j4
+
 cd $base_dir/GLideN64/projects/cmake
 if [[ $UNAME == *"MINGW"* ]]; then
   sed -i 's/check_ipo_supported(RESULT result)//g' ../../src/CMakeLists.txt
