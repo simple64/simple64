@@ -76,8 +76,9 @@ cd $base_dir/GLideN64/projects/cmake
 sed -i 's/GLideNUI\/build\/debug\/libGLideNUI.a/GLideNUI\/build\/release\/libGLideNUI.a/g' ../../src/CMakeLists.txt
 if [[ $UNAME == *"MINGW"* ]]; then
   sed -i 's/check_ipo_supported(RESULT result)//g' ../../src/CMakeLists.txt
-  cmake -G "MSYS Makefiles" -DUSE_SYSTEM_LIBS=On -DVEC4_OPT=On -DCRC_OPT=On -DMUPENPLUSAPI=On ../../src/
+  cmake -G "MSYS Makefiles" -DVEC4_OPT=On -DCRC_OPT=On -DMUPENPLUSAPI=On ../../src/
 else
+  rm -rf ../../src/GLideNHQ/inc
   cmake -DUSE_SYSTEM_LIBS=On -DVEC4_OPT=On -DCRC_OPT=On -DMUPENPLUSAPI=On ../../src/
 fi
 make -j4
@@ -90,6 +91,8 @@ fi
 cp $base_dir/GLideN64/ini/GLideN64.custom.ini $install_dir
 
 cd $base_dir
+
+strip $install_dir/*$suffix
 
 if [[ $UNAME == *"MINGW"* ]]; then
   if [[ $UNAME == *"MINGW64"* ]]; then
