@@ -6,7 +6,7 @@
 	url = https://github.com/mupen64plus/mupen64plus-input-sdl.git
 [submodule "GLideN64"]
 	path = GLideN64
-	url = https://github.com/loganmc10/GLideN64.git
+	url = https://github.com/Clownacy/GLideN64.git
 	branch = NUI
 [submodule "mupen64plus-gui"]
 	path = mupen64plus-gui
