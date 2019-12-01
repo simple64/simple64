@@ -119,10 +119,12 @@ if [[ $UNAME == *"MINGW"* ]]; then
   cp /$mingw_prefix/bin/libsamplerate-0.dll $install_dir
   cp /$mingw_prefix/bin/libjasper-4.dll $install_dir
   cp /$mingw_prefix/bin/libjpeg-8.dll $install_dir
-  cp /$mingw_prefix/bin/libicudt62.dll $install_dir
-  cp /$mingw_prefix/bin/libicuin62.dll $install_dir
-  cp /$mingw_prefix/bin/libicuuc62.dll $install_dir
+  cp /$mingw_prefix/bin/libicudt65.dll $install_dir
+  cp /$mingw_prefix/bin/libicuin65.dll $install_dir
+  cp /$mingw_prefix/bin/libicuuc65.dll $install_dir
   cp /$mingw_prefix/bin/libpcre2-16-0.dll $install_dir
+  cp /$mingw_prefix/bin/libdouble-conversion.dll $install_dir
+  cp /$mingw_prefix/bin/libzstd.dll $install_dir
   cp /$mingw_prefix/bin/Qt5Core.dll $install_dir
   cp /$mingw_prefix/bin/Qt5Gui.dll $install_dir
   cp /$mingw_prefix/bin/Qt5Widgets.dll $install_dir
