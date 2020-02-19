@@ -7,6 +7,7 @@
 [submodule "GLideN64"]
 	path = GLideN64
 	url = https://github.com/loganmc10/GLideN64.git
+	branch = NUI
 [submodule "mupen64plus-gui"]
 	path = mupen64plus-gui
 	url = https://github.com/m64p/mupen64plus-gui.git
