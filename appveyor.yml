@@ -34,8 +34,4 @@ build_script:
 
     bash -c "python3 -m pip install awscli"
 
-    bash -c "wget --quiet $BUILD_SCRIPT"
-    
-    bash -c "chmod +x ./build.sh"
-
     bash -c "export HOST_CPU=$myarch; export AWS_ACCESS_KEY_ID=$ACCESS_KEY; export AWS_SECRET_ACCESS_KEY=$SECRET_KEY; if [ -z "$APPVEYOR_PULL_REQUEST_NUMBER" ]; then ./build.sh aws; fi"
