@@ -27,10 +27,15 @@ cd $base_dir/mupen64plus-rsp-hle/projects/unix
 make -j4 all
 cp $base_dir/mupen64plus-rsp-hle/projects/unix/*$suffix $install_dir
 
-cd $base_dir/mupen64plus-input-sdl/projects/unix
-make -j4 all
-cp $base_dir/mupen64plus-input-sdl/projects/unix/*$suffix $install_dir
-cp $base_dir/mupen64plus-input-sdl/data/* $install_dir
+mkdir -p $base_dir/mupen64plus-input-qt/build
+cd $base_dir/mupen64plus-input-qt/build
+qmake ../mupen64plus-input-qt.pro
+make -j4
+if [[ $UNAME == *"MINGW"* ]]; then
+  cp $base_dir/mupen64plus-input-qt/build/mupen64plus-input-qt.dll $install_dir
+else
+  cp $base_dir/mupen64plus-input-qt/build/mupen64plus-input-qt.so $install_dir
+fi
 
 cd $base_dir/mupen64plus-audio-sdl2/projects/unix
 make -j4 all
@@ -38,13 +43,11 @@ cp $base_dir/mupen64plus-audio-sdl2/projects/unix/*$suffix $install_dir
 
 mkdir -p $base_dir/mupen64plus-gui/build
 cd $base_dir/mupen64plus-gui/build
+qmake ../mupen64plus-gui.pro
+make -j4
 if [[ $UNAME == *"MINGW"* ]]; then
-  qmake ../mupen64plus-gui.pro
-  make -j4
   cp $base_dir/mupen64plus-gui/build/mupen64plus-gui.exe $install_dir
 else
-  qmake ../mupen64plus-gui.pro
-  make -j4
   cp $base_dir/mupen64plus-gui/build/mupen64plus-gui $install_dir
 fi
 
