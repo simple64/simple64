@@ -34,7 +34,7 @@ make -j4
 if [[ $UNAME == *"MINGW"* ]]; then
   cp $base_dir/mupen64plus-input-qt/build/mupen64plus-input-qt.dll $install_dir
 else
-  cp $base_dir/mupen64plus-input-qt/build/mupen64plus-input-qt.so $install_dir
+  cp $base_dir/mupen64plus-input-qt/build/libmupen64plus-input-qt.so $install_dir/mupen64plus-input-qt.so
 fi
 
 cd $base_dir/mupen64plus-audio-sdl2/projects/unix
