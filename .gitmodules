@@ -1,7 +1,7 @@
 [submodule "mupen64plus-core"]
 	path = mupen64plus-core
 	url = https://github.com/loganmc10/mupen64plus-core.git
-        branch = m64p
+	branch = m64p
 [submodule "GLideN64"]
 	path = GLideN64
 	url = https://github.com/loganmc10/GLideN64.git
