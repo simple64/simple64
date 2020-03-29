@@ -18,3 +18,7 @@
 [submodule "mupen64plus-input-qt"]
 	path = mupen64plus-input-qt
 	url = https://github.com/m64p/mupen64plus-input-qt.git
+[submodule "mupen64plus-input-raphnetraw"]
+	path = mupen64plus-input-raphnetraw
+	url = https://github.com/loganmc10/mupen64plus-input-raphnetraw.git
+	branch = sdl2

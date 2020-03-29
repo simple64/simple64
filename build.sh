@@ -27,6 +27,10 @@ cd $base_dir/mupen64plus-rsp-hle/projects/unix
 make -j4 all
 cp $base_dir/mupen64plus-rsp-hle/projects/unix/*$suffix $install_dir
 
+cd $base_dir/mupen64plus-input-raphnetraw/projects/unix
+make -j4 all
+cp $base_dir/mupen64plus-input-raphnetraw/projects/unix/*$suffix $install_dir
+
 mkdir -p $base_dir/mupen64plus-input-qt/build
 cd $base_dir/mupen64plus-input-qt/build
 qmake ../mupen64plus-input-qt.pro
@@ -110,6 +114,7 @@ if [[ $UNAME == *"MINGW"* ]]; then
   cp /$mingw_prefix/bin/libicuuc65.dll $install_dir
   cp /$mingw_prefix/bin/libicudt65.dll $install_dir
   cp /$mingw_prefix/bin/libzstd.dll $install_dir
+  cp /$mingw_prefix/bin/libhidapi-0.dll $install_dir
   cp $base_dir/7za.exe $install_dir
 else
   if [[ $HOST_CPU == "i686" ]]; then
