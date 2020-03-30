@@ -5,11 +5,11 @@ ___
 
 Linux Dependencies (Ubuntu 18.04)
 ```
-sudo apt install qt5-default libsdl2-2.0-0 libhidapi-hidraw0 libminizip1
+sudo apt install qt5-default libsdl2-2.0-0 libhidapi-hidraw0 libminizip1 p7zip-full
 ```
 Linux Dependencies (Manjaro/Arch)
 ```
-sudo pacman -S --needed qt5-base sdl2 hidapi minizip
+sudo pacman -S --needed qt5-base sdl2 hidapi minizip p7zip
 ```
 ___
 Building:
