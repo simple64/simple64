@@ -36,7 +36,7 @@ cd $base_dir/mupen64plus-input-qt/build
 qmake ../mupen64plus-input-qt.pro
 make -j4
 if [[ $UNAME == *"MINGW"* ]]; then
-  cp $base_dir/mupen64plus-input-qt/build/mupen64plus-input-qt.dll $install_dir
+  cp $base_dir/mupen64plus-input-qt/build/release/mupen64plus-input-qt.dll $install_dir
 else
   cp $base_dir/mupen64plus-input-qt/build/libmupen64plus-input-qt.so $install_dir/mupen64plus-input-qt.so
 fi
@@ -50,7 +50,7 @@ cd $base_dir/mupen64plus-gui/build
 qmake ../mupen64plus-gui.pro
 make -j4
 if [[ $UNAME == *"MINGW"* ]]; then
-  cp $base_dir/mupen64plus-gui/build/mupen64plus-gui.exe $install_dir
+  cp $base_dir/mupen64plus-gui/build/release/mupen64plus-gui.exe $install_dir
 else
   cp $base_dir/mupen64plus-gui/build/mupen64plus-gui $install_dir
 fi
