@@ -11,6 +11,10 @@ Linux Dependencies (Manjaro/Arch)
 ```
 sudo pacman -S --needed qt5-base sdl2 hidapi minizip p7zip
 ```
+Linux Dependencies (Fedora)
+```
+sudo dnf install minizip-compat mesa-libGLU hidapi p7zip
+```
 ___
 Building:
 ```
