@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 UNAME=$(uname -s)
 if [[ $UNAME == *"MINGW"* ]]; then
   suffix=".dll"
