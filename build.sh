@@ -12,7 +12,10 @@ else
   suffix=".so"
 fi
 
-export NO_ASM=1
+[[ -z $NO_ASM ]] && export NO_ASM=1
+[[ -z $GLIDE_NOHQ ]] && export GLIDE_NOHQ=On
+[[ -z $GLIDE_VEC4 ]] && export GLIDE_VEC4=On
+[[ -z $GLIDE_CRC ]] && export GLIDE_CRC=On
 
 install_dir=$PWD/mupen64plus
 mkdir $install_dir
@@ -66,9 +69,9 @@ make -j4
 
 cd $base_dir/GLideN64/projects/cmake
 if [[ $UNAME == *"MINGW"* ]]; then
-  cmake -G "MSYS Makefiles" -DNOHQ=On -DVEC4_OPT=On -DCRC_OPT=On -DMUPENPLUSAPI=On ../../src/
+  cmake -G "MSYS Makefiles" -DNOHQ=$GLIDE_NOHQ -DVEC4_OPT=$GLIDE_VEC4 -DCRC_OPT=$GLIDE_CRC -DMUPENPLUSAPI=On ../../src/
 else
-  cmake -DNOHQ=On -DVEC4_OPT=On -DCRC_OPT=On -DMUPENPLUSAPI=On ../../src/
+  cmake -DNOHQ=$GLIDE_NOHQ -DVEC4_OPT=$GLIDE_VEC4 -DCRC_OPT=$GLIDE_CRC -DMUPENPLUSAPI=On ../../src/
 fi
 make -j4
 

@@ -22,3 +22,8 @@ git clone --recursive https://github.com/loganmc10/m64p.git
 cd m64p
 ./build.sh
 ```
+Build options (environment variables):
+  - `NO_ASM`: set to `0` to enable assembly optimizations in mupen64plus components (default: `1`)
+  - `GLIDE_NOHQ`: set to `On` or `1` to build GLideN64 without realtime texture enhancer library (default: `On`)
+  - `GLIDE_VEC4`: set to `On` or `1` to build GLideN64 with additional VEC4 optimization (default: `On`)
+  - `GLIDE_CRC`: set to `On` or `1` to build GLideN64 using xxHash to calculate texture CRC (default: `On`)
