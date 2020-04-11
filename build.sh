@@ -17,7 +17,7 @@ fi
 export NO_ASM=1
 
 install_dir=$PWD/mupen64plus
-mkdir $install_dir
+mkdir -p $install_dir
 base_dir=$PWD
 
 cd $base_dir/mupen64plus-core/projects/unix
@@ -61,7 +61,7 @@ cd $base_dir/GLideN64/src
 ./getRevision.sh
 
 cd $base_dir/GLideN64/src/GLideNUI
-mkdir build
+mkdir -p build
 cd build
 qmake ../GLideNUI.pro
 make -j4
@@ -127,8 +127,7 @@ fi
 
 cd $base_dir
 if [[ $1 == "aws" ]]; then
-  rm $base_dir/*.zip
-  DISTRO=$(lsb_release -i | cut -d: -f2 | sed s/'^\t'//)
+  rm -f $base_dir/*.zip
   HASH=$(git rev-parse --short HEAD)
   zip -r m64p-$my_os-$HASH.zip mupen64plus
   aws s3 cp m64p-*.zip s3://m64p/m64p/ --quiet
