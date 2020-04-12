@@ -14,14 +14,12 @@ else
   suffix=".so"
 fi
 
-export NO_ASM=1
-
 install_dir=$PWD/mupen64plus
 mkdir -p $install_dir
 base_dir=$PWD
 
 cd $base_dir/mupen64plus-core/projects/unix
-make -j4 all
+make OSD=0 NO_ASM=1 -j4 all
 cp -P $base_dir/mupen64plus-core/projects/unix/*$suffix* $install_dir
 cp $base_dir/mupen64plus-core/data/* $install_dir
 
