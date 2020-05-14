@@ -28,7 +28,7 @@ build_script:
     
     bash -c "pacman -Syu --noconfirm"
 
-    bash -c "pacman -S --needed --noconfirm mingw-w64-$myarch-nasm mingw-w64-$myarch-hidapi mingw-w64-$myarch-freetype mingw-w64-$myarch-libpng mingw-w64-$myarch-libsamplerate mingw-w64-$myarch-SDL2 mingw-w64-$myarch-jasper mingw-w64-$myarch-qt5 mingw-w64-$myarch-python3-pip mingw-w64-$myarch-python3-pyopenssl zip"
+    bash -c "pacman -S --needed --noconfirm mingw-w64-$myarch-nasm mingw-w64-$myarch-hidapi mingw-w64-$myarch-freetype mingw-w64-$myarch-libpng mingw-w64-$myarch-libsamplerate mingw-w64-$myarch-SDL2 mingw-w64-$myarch-SDL2_net mingw-w64-$myarch-jasper mingw-w64-$myarch-qt5 mingw-w64-$myarch-python3-pip mingw-w64-$myarch-python3-pyopenssl zip"
 
     cd %APPVEYOR_BUILD_FOLDER%
 

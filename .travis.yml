@@ -10,6 +10,6 @@ before_install:
 script:
   - docker exec ubuntu apt-get -qq update
   - docker exec ubuntu apt-get -y dist-upgrade
-  - docker exec ubuntu /bin/bash -c "export DEBIAN_FRONTEND=noninteractive; apt-get -y install cmake libhidapi-dev lsb-release wget libminizip-dev libsdl2-dev libfreetype6-dev libgl1-mesa-dev libglu1-mesa-dev pkg-config zlib1g-dev binutils-dev libspeexdsp-dev libsamplerate0-dev awscli qt5-default build-essential nasm git zip"
+  - docker exec ubuntu /bin/bash -c "export DEBIAN_FRONTEND=noninteractive; apt-get -y install cmake libhidapi-dev lsb-release wget libminizip-dev libsdl2-dev libfreetype6-dev libgl1-mesa-dev libglu1-mesa-dev pkg-config zlib1g-dev binutils-dev libspeexdsp-dev libsamplerate0-dev awscli qt5-default build-essential nasm git zip libsdl2-net-dev libqt5websockets5-dev"
   - docker exec ubuntu git clone --recursive https://github.com/loganmc10/m64p.git
   - docker exec ubuntu /bin/bash -c "export AWS_ACCESS_KEY_ID=$ACCESS_KEY; export AWS_SECRET_ACCESS_KEY=$SECRET_KEY; cd m64p; if [[ $TRAVIS_PULL_REQUEST == "false" ]]; then ./build.sh aws; fi"

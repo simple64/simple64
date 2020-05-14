@@ -92,6 +92,7 @@ if [[ $UNAME == *"MINGW"* ]]; then
   fi
   cp /$mingw_prefix/bin/libwinpthread-1.dll $install_dir
   cp /$mingw_prefix/bin/SDL2.dll $install_dir
+  cp /$mingw_prefix/bin/SDL2_net.dll $install_dir
   cp /$mingw_prefix/bin/libpng16-16.dll $install_dir
   cp /$mingw_prefix/bin/libglib-2.0-0.dll $install_dir
   cp /$mingw_prefix/bin/libstdc++-6.dll $install_dir
