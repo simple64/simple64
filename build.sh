@@ -117,6 +117,8 @@ if [[ $UNAME == *"MINGW"* ]]; then
   cp /$mingw_prefix/bin/libhidapi-0.dll $install_dir
   cp /$mingw_prefix/bin/libbrotlidec.dll $install_dir
   cp /$mingw_prefix/bin/libbrotlicommon.dll $install_dir
+  cp /$mingw_prefix/bin/libssl-1_1-x64.dll $install_dir
+  cp /$mingw_prefix/bin/libcrypto-1_1-x64.dll $install_dir
   cp $base_dir/7za.exe $install_dir
 else
   if [[ $HOST_CPU == "i686" ]]; then
