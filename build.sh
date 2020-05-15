@@ -45,6 +45,18 @@ cd $base_dir/mupen64plus-audio-sdl2/projects/unix
 make -j4 all
 cp $base_dir/mupen64plus-audio-sdl2/projects/unix/*$suffix $install_dir
 
+GUI_DIRECTORY=$base_dir/mupen64plus-gui
+rev=\"`git rev-parse HEAD`\"
+lastrev=$(head -n 1 $GUI_DIRECTORY/version.h | awk -F'GUI_VERSION ' {'print $2'})
+
+echo current revision $rev
+echo last build revision $lastrev
+
+if [ "$lastrev" != "$rev" ]
+then
+   echo "#define GUI_VERSION $rev" > $GUI_DIRECTORY/version.h
+fi
+
 mkdir -p $base_dir/mupen64plus-gui/build
 cd $base_dir/mupen64plus-gui/build
 qmake ../mupen64plus-gui.pro
