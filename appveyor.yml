@@ -16,6 +16,11 @@ build_script:
 - del C:\Windows\System32\libssl-*.dll C:\Windows\system32\libcrypto-*.dll
 - del C:\Windows\SysWOW64\libssl-*.dll C:\Windows\SysWOW64\libcrypto-*.dll
 - cmd: >-
+    move C:\msys64 C:\msys64_old &&
+    curl -kLo msys2.tar.xz https://github.com/msys2/msys2-installer/releases/download/nightly-x86_64/msys2-base-x86_64-latest.tar.xz &&
+    7z x -so msys2.tar.xz | 7z x -si -ttar &&
+    move msys64 C:\ && del msys2.tar.xz
+    
     cd %APPVEYOR_BUILD_FOLDER%
 
     git submodule update --init
@@ -23,16 +28,20 @@ build_script:
     @echo on
 
     SET "PATH=C:\%MSYS2_DIR%\%MSYSTEM%\bin;C:\%MSYS2_DIR%\usr\bin;%PATH%"
+    
+    bash -c "pacman-key --init"
+    
+    bash -c "pacman-key --populate msys2"
+    
+    bash -c "pacman-key --refresh-keys"
 
-    bash -c "pacman -Sy --noconfirm pacman"
-    
-    bash -c "pacman -Syu --noconfirm"
+    bash -c "pacman -Sy --needed --noconfirm pacman"
     
     bash -c "pacman -Syu --noconfirm"
     
     bash -c "pacman -Syu --noconfirm"
 
-    bash -c "pacman -S --needed --noconfirm mingw-w64-$myarch-nasm mingw-w64-$myarch-hidapi mingw-w64-$myarch-freetype mingw-w64-$myarch-libpng mingw-w64-$myarch-libsamplerate mingw-w64-$myarch-SDL2 mingw-w64-$myarch-SDL2_net mingw-w64-$myarch-jasper mingw-w64-$myarch-qt5 mingw-w64-$myarch-python3-pip mingw-w64-$myarch-python3-pyopenssl zip"
+    bash -c "pacman -S --needed --noconfirm make mingw-w64-$myarch-cmake mingw-w64-$myarch-gcc mingw-w64-$myarch-hidapi mingw-w64-$myarch-freetype mingw-w64-$myarch-libpng mingw-w64-$myarch-libsamplerate mingw-w64-$myarch-SDL2 mingw-w64-$myarch-SDL2_net mingw-w64-$myarch-jasper mingw-w64-$myarch-qt5 mingw-w64-$myarch-python3-pip mingw-w64-$myarch-python3-pyopenssl zip"
 
     cd %APPVEYOR_BUILD_FOLDER%
 
