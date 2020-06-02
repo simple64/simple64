@@ -1,0 +1,160 @@
+﻿/*********************************************************************************
+* Meta Information                                                               *
+*********************************************************************************/
+#0001# "Français"
+
+/*********************************************************************************
+* Config Dialog                                                                  *
+*********************************************************************************/
+#1000# "Vidéo"
+#1001# "Émulation"
+#1002# "Tampon image"
+#1003# "Améliorations des Textures"
+#1004# "OSD"
+
+/*********************************************************************************
+* Video Tab                                                                      *
+*********************************************************************************/
+#2000# "Vidéo"
+#2001# "Résolution Plein Ecran :"
+#2002# "Toutes les résolutions supportées par votre carte graphique / moniteur devraient être affichées.\n[Recommandé : Résolution native (maximum) de votre moniteur - sauf si les performances sont dégradées]"
+#2003# "Taux de rafraîchissement :"
+#2005# "Résolution en Mode Fenêtré :"
+#2007# "Format d'écran :"
+#2008# "Cette option ajuste le format d'écran de la sortie vidéo. Tous les jeux N64 supportent 4:3. Quelques jeux supportent 16:9 dans leurs paramétrages. Utilisez Étiré pour remplir l'écran sans bords noirs.\nAjusté à l'écran sans étirer tente d'ajuster l'espace de vue afin de remplir sans étirer. De nombreux jeux fonctionnent correctement en mode ajusté, mais d'autres non."
+#2009# "4:3 (recommandé)"
+#2010# "16:9"
+#2011# "Étiré"
+#2012# "Ajusté à l'écran sans étirer"
+#2013# "Activer la synchro verticale"
+#2014# "La synchronisation verticale, ou VSync, peut améliorer l'image en synchronisant le taux d'échantillonage du jeu à celui du taux de rafraîchissement de votre écran. Cela évite la déchirure de l'image, mais peut engendrer des problèmes de performance.\n[Recommandé : Généralement désactivé, sauf si vous avez des problèmes de déchirure d'image]"
+#2025# "Off"
+#2026# "Max"
+#2030# "Filtrage Anisotropique :"
+#2031# "Off"
+#2032# "Max"
+#2033# "Filtrage bilinéaire :"
+#2034# "Standard"
+#2035# "Style N64 3 points"
+#2036# "Filtrage bilinéaire: les textures vont utiliser le filtrage bilinéaire standard d'un PC.\nStyle N64 3 points: Les textures seront filtrés comme sur la N64. Le résultat est moins lisse mais plus authentique."
+#2046# "Désactivé"
+#2050# "Langue :"
+
+/*********************************************************************************
+* Emulation Tab                                                                  *
+*********************************************************************************/
+#3002# "Activer le mip-mapping N64"
+#3003# "La N64 utilise une méthode unique de mip-mapping qu'il est difficile de reproduire correctement sur les PCs. Quand elle est cochée, cette option émule un mip-mapping N64 précis. Quand elle est décochée, certains jeux ont des textures distantes plus nettes.\n[Recommandé : Activé]"
+#3004# "Activer l'éclairage matériel (meilleure qualité, HLE seulement)"
+#3005# "Dans les jeux N64, l'éclairage est calculé par vertex. Cette option active un Shader Phong, qui apporte un éclairage plus doux et plus réaliste.\n\n[Recommandé : Selon votre préférence]"
+#3006# "Stocker les Shaders compilés pour plus de performance (recommandé)"
+#3007# "Utiliser un stockage persistent pour compiler les Shaders.\nChaque jeu utilise un ensemble de combinateurs. Un combinateur est une équation qui définie couleur depuis des entrées de couleurs diverses. GLideN64 traduit les Shaders, et les compile à la volée. Les Shaders sont larges et complexes. Si le jeu utilise de nombreux mélangeurs, la compilation des Shaders prendra du temps et engendrera des saccades. Quand cette option est cochée, ces Shaders sont sauvegardés et ne seront donc pas recompilés la prochaine fois que vous lancerez le jeu.\n[Recommandé : Activé]"
+#3008# "Résolution interne :"
+#3009# "Cette option définie la taille de rendu du tampon de sortie. Par défaut, le rendu est défini sur Identique à la résolution de sortie, mais vous pouvez la définir comme identique à la Résolution N64 d'origine ou à un Multiple de la résolution N64."
+#3010# "Identique à la résolution de sortie"
+#3011# "Résolution N64 d'origine (le plus précis)"
+#3012# "Multiple de la résolution N64 :"
+#3014# "Correction gamma.\nCertains jeux N64 utilise la correction gamma. La correction gamma rend l'image plus lumineuse. La N64 applique la correction gamma dans son Interface Vidéo. \nGLideN64 émule la correction gamma tel un effet de post-traitement. C'est pourquoi cela fonctionne uniquement si l'émulation du Tampon Image est activée. La correction gamma est automatiquement activée pour les jeux qui l'utilise nativement sur la N64. Vous pouvez forcer la correction gamma pour tous les jeux. La niveau de correction gamma par défaut est 2, comme sur la N64.\n[Recommandé : valeur par défaut]"
+#3016# "Sélectionner cette option outrepasse les corrections gamma définies par le jeu."
+#3019# "Quand cette option est activée, les éléments 2D sont restitués à la même résolution que la N64 avant de les copier vers la sortie. Généralement, cela elimine les erreurs d'affichage avec les éléments 2D, mais cela peut être lent. Cette option utilise des heuristiques pour détecter les éléments 2D adjacents, cela ne fonctionne pas pour tous les jeux.\n[Recommandé : Coché, sauf si vous avez des problèmes de performance]"
+#3020# "Désactivé"
+#3024# "Fixer les lignes noires entre les éléments 2D :"
+#3025# "Dans certains jeux les coordonées des sections d'éléments 2D ne sont pas alignés : il y a un demi-pixel d'écart entre les éléments adjacents. Quand le rendu est défini à la résolution N64 d'origine cela n'est pas visible, mais quand l'image est mise à l'échelle supérieure cela résulte en l'affichage de lignes noires. Cette option tente de connecter les éléments 2D.\nPour les éléments 2D adjacents : Applique la correction seulement pour les polygones qui la nécessite. Sélectionnez cette option pour les jeux qui affiche des lignes noires.\nToujours : Applique la correction pour tous les éléments 2D. Sélectionnez cette option quand Pour les éléments 2D adjacents ne fonctionne pas.\nJamais : N'essaye pas de corriger les lignes noires entre les éléments 2D.\n[Recommandé : En fonction du jeu, généralement Jamais]"
+#3026# "Pour les éléments 2D adjacents"
+#3027# "Toujours"
+#3028# "Jamais"
+
+/*********************************************************************************
+* Frame Buffer Tab                                                               *
+*********************************************************************************/
+#4000# "Émuler le Tampon Image"
+#4001# "Décocher cette option désactive de nombreux effets tels que le recadrage, le format d'écran, le facteur de résolution N64, la comparaison de profondeur de la N64 et autres. Veuillez ne pas décocher cette option sauf si vous avez des problèmes de performance."
+#4002# "Copier les tampons couleur auxiliaires vers la mémoire de la N64 (parfois lent, moins de problèmes en jeu)"
+#4003# "Quand l'option est cochée, le tampon couleur auxiliaire est copié vers la mémoire de la N64 juste après la restitution. Cette option aide à corriger des effets du tampon image dans quelques jeux. Cela peut réduire significativement les performances.\n[Recommandé : Généralement désactivé]"
+#4004# "Changer le tampon image :"
+#4005# "Cette option contrôle la fréquence de mise à jour du tampon image principal.\nÀ l'interruption verticale : Met à jour le tampon aussi rapidement que possible : à chaque interruption verticale par seconde (50 pour les jeux PAL et 60 pour les jeux NTSC). C'est l'option qui offre la meilleure compatibilité. Utilisez ce mode sauf si vous avez des problèmes de performance.\nAu changement d'origine VI : Le changement d'origine VI correspond au FPS actuel du jeu. Les jeux N64 tournent généralement entre 20 et 30 FPS donc le tampon change moins souvent que le premier mode. Il ne fonctionne pas pour les jeux qui utilisent une mise en tampon unique, ce qui est rare.\nAu changement du Tampon Couleur : Cette option vérifie si le tampon image a changé. Il y a quelques jeux où cela ne fonctionne pas."
+#4006# "À l'interruption verticale (recommandé, le moins de problèmes en jeu)"
+#4007# "Au changement d'origine VI (plus rapide, peu de problèmes en jeu)"
+#4008# "Au changement du Tampon Couleur (le plus rapide, quelques problèmes en jeu)"
+#4009# "Utiliser l'aide de l'émulateur pour lire/écrire dans le tampon image"
+#4010# "Certains émulateurs ne détectent pas ou mal quand lire/écrire dans le tampon image. Vous pouvez désactiver l'aide de l'émulateur pour laisser GLideN64 lire/écrire dans le tampon image.\n[Recommandé : Généralement désactivé, mais avec certains jeux/émulateurs les performances sont meilleures quand l'option est activée]"
+#4011# "Lire les tampons couleur par blocs de 4 Ko"
+#4012# "Quand l'option est activée, le tampon couleur sera lu par blocs. Sinon il sera lu dans son intégralité. Si un jeu a besoin de lire entièrement le tampon, sélectionner cette option peut réduire les performances.\n[Recommandé : Généralement désactivé, car le tampon de couleur est souvent lu dans son intégralité]"
+#4013# "Lire les tampons de profondeur par blocs de 4 Ko"
+#4014# "Quand l'option est activée, le tampon de profondeur sera lu par blocs. Sinon il sera lu dans son intégralité. Si un jeu a besoin de lire entièrement le tampon, sélectionner cette option peut réduire les performances.\n[Recommandé : Activé, car le tampon de profondeur n'est pas souvent lu dans son intégralité]"
+#4015# "Copier le tampon image de votre carte graphique vers la mémoire N64 :"
+#4016# "Dans certains jeux GLideN64 ne peut pas détecter l'utilisation du tampon image. Avec ces options, GLideN64 copie chaque image du tamon image de votre carte graphique vers la mémoire N64.\nJamais : Désactive la copie du tampon de votre carte graphique.\nSynchrone : Les effets sont détectés pour tous les jeux, mais cela peut être lent. Utilisez cette option pour les jeux où Asynchrone ne fonctionne pas.\nAsynchrone : Les effets sont détectés pour de nombreux jeux.\n[Recommandé : Généralement Asynchrone]"
+#4017# "Jamais (le plus rapide, nombreux problèmes en jeu)"
+#4018# "Synchrone (le plus lent, le moins de problèmes en jeu)"
+#4019# "Asynchrone (rapide, peu de problèmes en jeu)"
+#4020# "Copier le tampon de profondeur de votre carte graphique vers la mémoire N64 :"
+#4022# "Jamais (le plus rapide, le plus de problèmes en jeu)"
+#4023# "Depuis la VRAM (lent, quelques problèmes en jeu)"
+#4024# "Dans le logiciel (rapide, le moins de problèmes en jeu)"
+#4027# "Désactivé"
+#4032# "Restituer le tampon image N64 vers la sortie"
+#4033# "Quand cette option est activée, le tampon image est restitué directement vers l'écran. Cela permet de corriger certains problèmes graphiques mais peut causer des ralentissements et réduire la qualité visuelle.\n[Recommandé : Généralement désactivé]"
+
+/*********************************************************************************
+* Texture enhancement                                                            *
+*********************************************************************************/
+#5000# "Textures N64"
+#5001# "Filtre :"
+#5002# "Ce filtre lisse ou affine les textures. Il y a 4 filtres de lissage et 2 filtres d'affinement. Plus le nombre est élevé, plus l'effet est important. Veuillez noter que les performances peuvent être impactées suivant le jeu et/ou le PC.\n[Recommandé : selon votre préférence]"
+#5003# "Aucun"
+#5004# "Filtrage lisse 1"
+#5005# "Filtrage lisse 2"
+#5006# "Filtrage lisse 3"
+#5007# "Filtrage lisse 4"
+#5008# "Filtrage affiné 1"
+#5009# "Filtrage affiné 2"
+#5010# "Améliorations :"
+#5011# "12 filtres différents sont sélectionnables. Selon le filtre, il peut y avoir un impact sur les performances.\nQuand le mode Stocker est sélectionné, les textures sont sauvegardées dans le cache 'tel quel'. Cela augmente les performances dans les jeux chargeant de nombreuses textures. Décoché Désactiver pour les arrière-plans pour un meilleur résultat.\n[Recommandé : selon votre préférence]"
+#5012# "Aucun"
+#5013# "Stocker"
+#5014# "Réduire les bandes de couleur (recommandé pour l'amélioration xBRZ)"
+#5015# "Cette option active une étape de pré-processing qui réduit les problèmes de postérisation sur les textures améliorées.\n[Recommandé : Activé pour le filtre xBRZ]"
+#5016# "Désactiver pour les arrière-plans"
+#5017# "Cette option ignore l'amélioration pour les textures lointaines et étroites généralement utilisées pour les arrière-plans. Cela peut réduire la mémoire utilisée pour la sauvegarde des textures et augmenter les performances.\n[Recommandé : Activé, sauf si l'option Améliorations est définie sur 'Store']"
+#5019# "Utiliser un Pack de Textures"
+#5020# "Chemin des Packs de Textures :"
+#5021# "Sélectionne le répertoire contenant les packs de textures.\nPar défaut : Plugin/hires_texture"
+#5024# "Utiliser les transparences complètes (recommandé pour les packs de textures récents)"
+#5025# "Quand cette option est désactivée, les textures seront chargées tel qu'elles le seraient avec Rice Video : la transparence est soit active, soit inactive. Quand cette option est sélectionnée, GlideN64 vérifie comment le canal alpha de la texture a été conçu et utilise le format le plus approprié. Cela donne aux développeurs de pack de textures la liberté d'utiliser des textures semi-transparentes.\nDésactivez cette option pour les vieux pack de textures ou ceux mal conçus.\n[Recommandé : en fonction du pack de textures]"
+#5026# "Calcul alternatif du CRC (pour les vieux packs Rice Video)"
+#5027# "Cette option émule un bug dans le plugin RiceVideo sur le calcul CRC de la palette. Si certaines textures ne sont pas chargées, positionnez cette option à 'activé' ou 'désactivé'.\n[Recommandé : principalement désactivé, activé pour les vieux packs de textures]"
+#5029# "Dumper/éditer les textures"
+#5030# "Cette option permet de dumper les textures affichées à l'écran vers le répertoire des packs de textures. Vous pouvez également recharger les textures quand le jeu est démarré pour voir le résultat instantanément - quel gain de temps !\nTouches de raccourcis : \nUtilisez R pour recharger les textures du pack de textures.\nUtilisez D pour le basculer le mode de dumpimg sur activé/désactivé."
+#5032# "Les textures améliorées et filtrées peuvent être mises en cache. Ce paramètre ajustera la quantité de mémoire allouée pour le cache des textures. Cela améliore les performances si un nombre conséquent de requêtes appelle les mêmes textures, ce qui est généralement le cas. Par défaut, 128 Mo devraient être suffisant mais cela peut varier selon les jeux. Super Mario 64 peut nécessiter moins de 32 Mo, mais Conker's Bad Fur Day peut nécessiter plus de 256 Mo. Ajustez la valeur si vous rencontrez des problèmes de performances. La valeur '0' désactive le cache.\n[Recommandé : en fonction du jeu et du PC]"
+#5033# "Sauvegarder le cache d'amélioration des textures sur le disque"
+#5034# "Cette option sauvegardera toutes les textures précédemment chargées et celles améliorées sur le disque. Au prochain démarrage du jeu, les textures n'auront pas à être recréées, ce qui améliore les performances.\nQuand vous utilisez des packs de textures, leur chargement ne prendra que quelques secondes au lancement du jeu, au lieu de 5 à 60 secondes habituellement. Par contre, si le pack de texture est modifié vous devrez supprimer manuellement le cache. Les fichiers de cache sont sauvegardés dans le sous-dossier 'Cache' du dossier contenant le plugin.\n[Recommandé : Activé]"
+#5035# "Compresser le Cache de Texture"
+#5036# "Les textures seront compressées, ainsi plus de textures pourront être mises en cache. Le ratio de compression varie suivant les textures, mais il est en moyenne de 1/5 par rapport à la taille originale.\n[Recommandé : Activé]"
+#5037# "Convertir les textures en 16 bits"
+#5038# "Cette option réduit de moitié l'espace occupé par les textures dans le cache ainsi que celui de la mémoire de votre carte graphique, cela afin d'améliorer les performances. Quand la taille du codage de la couleur est réduite, GLideN64 essaye de préserver la qualité originale autant que possible. Sur certaines textures c'est difficilement visible, mais sur d'autres, tel le ciel, le rendu peut être mauvais.\n[Recommandé : Désactivé]"
+
+/*********************************************************************************
+* On-screen display                                                              *
+*********************************************************************************/
+#6000# "Position"
+#6003# "Afficher le pourcentage"
+#6009# "Couleur :"
+#6010# "Prévisualisation"
+
+/*********************************************************************************
+* About                                                                          *
+*********************************************************************************/
+#9000# "A Propos De GLideN64"
+#9001# "A Propos De"
+#9002# "Contributeurs"
+#9003# "Donateurs"
+#9004# "Crédits"
+#9005# "La nouvelle génération de plugin graphique open source pour les émulateurs N64."
+#9006# "Auteurs"
+#9007# "Développeur"
+#9008# "Bêta testeur"
+#9009# "Concepteur de l'interface graphique"
+#9011# "Auteur du plugin graphique original glN64"
+#9012# "Auteur de gles2n64, un portage de glN64 vers GL ES 2.0"
+#9013# "Auteur de la librairie de texture GlideHQ"
+#9014# "Auteur de z64, un plugin OpenGL LLE"
