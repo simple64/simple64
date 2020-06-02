@@ -1,0 +1,15 @@
+<RCC>
+    <qresource prefix="/">
+        <file alias="BottomLeft.ico">Resources/BottomLeft.ico</file>
+        <file alias="BottomRight.ico">Resources/BottomRight.ico</file>
+        <file alias="Down.ico">Resources/Down.ico</file>
+        <file alias="Icon.ico">Resources/Icon.ico</file>
+        <file alias="Info.ico">Resources/Info.ico</file>
+        <file alias="Left.ico">Resources/Left.ico</file>
+        <file alias="Right.ico">Resources/Right.ico</file>
+        <file alias="TopLeft.ico">Resources/TopLeft.ico</file>
+        <file alias="TopRight.ico">Resources/TopRight.ico</file>
+        <file alias="Up.ico">Resources/Up.ico</file>
+        <file alias="Warning.ico">Resources/Warning.ico</file>
+    </qresource>
+</RCC>
