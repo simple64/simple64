@@ -30,6 +30,8 @@ ptr_ConfigGetParamString   ConfigGetParamString = nullptr;
 ptr_ConfigExternalGetParameter ConfigExternalGetParameter = nullptr;
 ptr_ConfigExternalOpen ConfigExternalOpen = nullptr;
 ptr_ConfigExternalClose ConfigExternalClose = nullptr;
+ptr_ConfigSendNetplayConfig ConfigSendNetplayConfig = nullptr;
+ptr_ConfigReceiveNetplayConfig ConfigReceiveNetplayConfig = nullptr;
 
 /* definitions of pointers to Core video extension functions */
 ptr_VidExt_Init                  CoreVideo_Init = nullptr;
@@ -73,6 +75,8 @@ m64p_error PluginAPI::PluginStartup(m64p_dynlib_handle _CoreLibHandle)
 	ConfigExternalGetParameter = (ptr_ConfigExternalGetParameter)DLSYM(_CoreLibHandle, "ConfigExternalGetParameter");
 	ConfigExternalOpen = (ptr_ConfigExternalOpen)DLSYM(_CoreLibHandle, "ConfigExternalOpen");
 	ConfigExternalClose = (ptr_ConfigExternalClose)DLSYM(_CoreLibHandle, "ConfigExternalClose");
+	ConfigSendNetplayConfig = (ptr_ConfigSendNetplayConfig)DLSYM(_CoreLibHandle, "ConfigSendNetplayConfig");
+	ConfigReceiveNetplayConfig = (ptr_ConfigReceiveNetplayConfig)DLSYM(_CoreLibHandle, "ConfigReceiveNetplayConfig");
 
 	/* Get the core Video Extension function pointers from the library handle */
 	CoreVideo_Init = (ptr_VidExt_Init) DLSYM(_CoreLibHandle, "VidExt_Init");
