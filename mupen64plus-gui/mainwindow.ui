@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>640</width>
+    <height>480</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>mupen64plus</string>
+  </property>
+  <widget class="QWidget" name="centralWidget"/>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>640</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="nativeMenuBar">
+    <bool>true</bool>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionOpen_ROM"/>
+    <addaction name="actionSave_State"/>
+    <addaction name="actionLoad_State"/>
+    <addaction name="actionSave_State_To"/>
+    <addaction name="actionLoad_State_From"/>
+    <addaction name="separator"/>
+    <addaction name="actionTake_Screenshot"/>
+    <addaction name="separator"/>
+    <addaction name="actionExit"/>
+   </widget>
+   <widget class="QMenu" name="menuSettings">
+    <property name="title">
+     <string>Settings</string>
+    </property>
+    <addaction name="actionPlugin_Paths"/>
+    <addaction name="actionPlugin_Settings"/>
+    <addaction name="actionController_Configuration"/>
+    <addaction name="actionVideo_Settings"/>
+   </widget>
+   <widget class="QMenu" name="menuEmulation">
+    <property name="title">
+     <string>Emulation</string>
+    </property>
+    <addaction name="actionToggle_Fullscreen"/>
+    <addaction name="separator"/>
+    <addaction name="actionPause_Game"/>
+    <addaction name="actionMute"/>
+    <addaction name="separator"/>
+    <addaction name="actionStop_Game"/>
+    <addaction name="actionHard_Reset"/>
+    <addaction name="actionSoft_Reset"/>
+    <addaction name="actionToggle_Speed_Limiter"/>
+    <addaction name="separator"/>
+    <addaction name="actionCheats"/>
+    <addaction name="separator"/>
+    <addaction name="actionView_Log"/>
+   </widget>
+   <widget class="QMenu" name="menuNetplay">
+    <property name="title">
+     <string>Netplay</string>
+    </property>
+    <addaction name="actionCreate_Room"/>
+    <addaction name="actionJoin_Room"/>
+    <addaction name="actionOpen_Discord_Channel"/>
+    <addaction name="actionSupport_on_Patreon"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuEmulation"/>
+   <addaction name="menuSettings"/>
+   <addaction name="menuNetplay"/>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <action name="actionOpen_ROM">
+   <property name="text">
+    <string>Open ROM</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="text">
+    <string>Exit</string>
+   </property>
+  </action>
+  <action name="actionPlugin_Paths">
+   <property name="text">
+    <string>Plugin and Path Selection</string>
+   </property>
+  </action>
+  <action name="actionStop_Game">
+   <property name="text">
+    <string>Stop Game (Escape)</string>
+   </property>
+  </action>
+  <action name="actionPlugin_Settings">
+   <property name="text">
+    <string>Advanced Settings</string>
+   </property>
+  </action>
+  <action name="actionOpen_Recent">
+   <property name="text">
+    <string>Open Recent</string>
+   </property>
+  </action>
+  <action name="actionSave_State">
+   <property name="text">
+    <string>Save State (F5)</string>
+   </property>
+  </action>
+  <action name="actionLoad_State">
+   <property name="text">
+    <string>Load State (F7)</string>
+   </property>
+  </action>
+  <action name="actionChange_State_Slot">
+   <property name="text">
+    <string>Change State Slot</string>
+   </property>
+  </action>
+  <action name="actionSave_State_To">
+   <property name="text">
+    <string>Save State To...</string>
+   </property>
+  </action>
+  <action name="actionLoad_State_From">
+   <property name="text">
+    <string>Load State From...</string>
+   </property>
+  </action>
+  <action name="actionTake_Screenshot">
+   <property name="text">
+    <string>Take Screenshot (F12)</string>
+   </property>
+  </action>
+  <action name="actionPause_Game">
+   <property name="text">
+    <string>Pause/Resume Game (p)</string>
+   </property>
+  </action>
+  <action name="actionMute">
+   <property name="text">
+    <string>Mute/Unmute (m)</string>
+   </property>
+  </action>
+  <action name="actionHard_Reset">
+   <property name="text">
+    <string>Hard Reset</string>
+   </property>
+  </action>
+  <action name="actionSoft_Reset">
+   <property name="text">
+    <string>Soft Reset (F9)</string>
+   </property>
+  </action>
+  <action name="actionToggle_Fullscreen">
+   <property name="text">
+    <string>Toggle Fullscreen (Alt + Return)</string>
+   </property>
+  </action>
+  <action name="actionCheats">
+   <property name="text">
+    <string>Cheats</string>
+   </property>
+  </action>
+  <action name="actionController_Configuration">
+   <property name="text">
+    <string>Controller Configuration</string>
+   </property>
+  </action>
+  <action name="actionToggle_Speed_Limiter">
+   <property name="text">
+    <string>Toggle Speed Limiter</string>
+   </property>
+  </action>
+  <action name="actionView_Log">
+   <property name="text">
+    <string>View Log</string>
+   </property>
+  </action>
+  <action name="actionVideo_Settings">
+   <property name="text">
+    <string>Video Settings</string>
+   </property>
+  </action>
+  <action name="actionCreate_Room">
+   <property name="text">
+    <string>Create Room</string>
+   </property>
+  </action>
+  <action name="actionJoin_Room">
+   <property name="text">
+    <string>Join Room</string>
+   </property>
+  </action>
+  <action name="actionSupport_on_Patreon">
+   <property name="text">
+    <string>Support on Patreon</string>
+   </property>
+  </action>
+  <action name="actionOpen_Discord_Channel">
+   <property name="text">
+    <string>Join Discord Channel</string>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources/>
+ <connections/>
+</ui>
