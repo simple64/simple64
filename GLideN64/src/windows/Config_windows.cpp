@@ -5,7 +5,7 @@
 #include "../GLideNUI/GLideNUI.h"
 #include "../mupenplus/GLideN64_mupenplus.h"
 #include <DisplayWindow.h>
-
+#include <cstring>
 
 Config config;
 
