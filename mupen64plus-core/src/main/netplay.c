@@ -626,11 +626,15 @@ m64p_error netplay_send_config(char* data, int size)
     if (!netplay_is_init())
         return M64ERR_NOT_INIT;
 
-    int result = SDLNet_TCP_Send(l_tcpSocket, data, size);
-    if (result < size)
+    if (l_netplay_control[0] != -1 || size == 1) //Only P1 sends settings, we allow all players to send if the size is 1, this may be a request packet
+    {
+        int result = SDLNet_TCP_Send(l_tcpSocket, data, size);
+        if (result < size)
+            return M64ERR_SYSTEM_FAIL;
+        return M64ERR_SUCCESS;
+    }
+    else
         return M64ERR_INVALID_STATE;
-
-    return M64ERR_SUCCESS;
 }
 
 m64p_error netplay_receive_config(char* data, int size)
@@ -638,13 +642,17 @@ m64p_error netplay_receive_config(char* data, int size)
     if (!netplay_is_init())
         return M64ERR_NOT_INIT;
 
-    int recv = 0;
-    while (recv < size)
+    if (l_netplay_control[0] == -1) //Only P2-4 receive settings
     {
-        recv += SDLNet_TCP_Recv(l_tcpSocket, &data[recv], size - recv);
-        if (recv < 1)
-            return M64ERR_INVALID_STATE;
+        int recv = 0;
+        while (recv < size)
+        {
+            recv += SDLNet_TCP_Recv(l_tcpSocket, &data[recv], size - recv);
+            if (recv < 1)
+                return M64ERR_SYSTEM_FAIL;
+        }
+        return M64ERR_SUCCESS;
     }
-
-    return M64ERR_SUCCESS;
+    else
+        return M64ERR_INVALID_STATE;
 }
