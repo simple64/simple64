@@ -54,6 +54,8 @@ void netplay_read_registration(struct controller_input_compat* cin_compats);
 void netplay_send_raw_input(struct pif* pif);
 void netplay_get_raw_input(struct pif* pif);
 void netplay_set_plugin(uint8_t control_id, uint8_t plugin);
+m64p_error netplay_send_config(char* data, int size);
+m64p_error netplay_receive_config(char* data, int size);
 
 #else
 
@@ -123,6 +125,16 @@ static osal_inline void netplay_get_raw_input(struct pif* pif)
 
 static osal_inline void netplay_set_plugin(uint8_t control_id, uint8_t plugin)
 {
+}
+
+static osal_inline m64p_error netplay_send_config(char* data, int size)
+{
+    return M64ERR_INCOMPATIBLE;
+}
+
+static osal_inline m64p_error netplay_receive_config(char* data, int size)
+{
+    return M64ERR_INCOMPATIBLE;
 }
 
 #endif
