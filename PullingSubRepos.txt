@@ -1,14 +1,27 @@
 git remote add mupen64plus-core https://github.com/loganmc10/mupen64plus-core.git
-git subtree add --prefix=mupen64plus-core mupen64plus-core m64p --squash
+git fetch mupen64plus-core
+git merge -s subtree mupen64plus-core/m64p --allow-unrelated-histories --squash
+
 git remote add GLideN64 https://github.com/loganmc10/GLideN64.git
-git subtree add --prefix=GLideN64 GLideN64 NUI --squash
+git fetch GLideN64
+git merge -s subtree GLideN64/NUI --allow-unrelated-histories --squash
+
 git remote add mupen64plus-gui https://github.com/m64p/mupen64plus-gui.git
-git subtree add --prefix=mupen64plus-gui mupen64plus-gui master --squash
+git fetch mupen64plus-gui
+git merge -s subtree mupen64plus-gui/master --allow-unrelated-histories --squash
+
 git remote add mupen64plus-audio-sdl2 https://github.com/m64p/mupen64plus-audio-sdl2.git
-git subtree add --prefix=mupen64plus-audio-sdl2 mupen64plus-audio-sdl2 master --squash
+git fetch mupen64plus-audio-sdl2
+git merge -s subtree mupen64plus-audio-sdl2/master --allow-unrelated-histories --squash
+
 git remote add mupen64plus-rsp-hle https://github.com/mupen64plus/mupen64plus-rsp-hle.git
-git subtree add --prefix=mupen64plus-rsp-hle mupen64plus-rsp-hle master --squash
+git fetch mupen64plus-rsp-hle
+git merge -s subtree mupen64plus-rsp-hle/master --allow-unrelated-histories --squash
+
 git remote add mupen64plus-input-qt https://github.com/m64p/mupen64plus-input-qt.git
-git subtree add --prefix=mupen64plus-input-qt mupen64plus-input-qt master --squash
+git fetch mupen64plus-input-qt
+git merge -s subtree mupen64plus-input-qt/master --allow-unrelated-histories --squash
+
 git remote add mupen64plus-input-raphnetraw https://github.com/loganmc10/mupen64plus-input-raphnetraw.git
-git subtree add --prefix=mupen64plus-input-raphnetraw mupen64plus-input-raphnetraw sdl2 --squash
+git fetch mupen64plus-input-raphnetraw
+git merge -s subtree mupen64plus-input-raphnetraw/sdl2 --allow-unrelated-histories --squash
