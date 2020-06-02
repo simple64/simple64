@@ -620,3 +620,31 @@ void netplay_set_plugin(uint8_t control_id, uint8_t plugin)
     if (!(control_id > 0 && plugin == 2)) //Only P1 can use mempak
         l_plugin[control_id] = plugin;
 }
+
+m64p_error netplay_send_config(char* data, int size)
+{
+    if (!netplay_is_init())
+        return M64ERR_NOT_INIT;
+
+    int result = SDLNet_TCP_Send(l_tcpSocket, data, size);
+    if (result < size)
+        return M64ERR_INVALID_STATE;
+
+    return M64ERR_SUCCESS;
+}
+
+m64p_error netplay_receive_config(char* data, int size)
+{
+    if (!netplay_is_init())
+        return M64ERR_NOT_INIT;
+
+    int recv = 0;
+    while (recv < size)
+    {
+        recv += SDLNet_TCP_Recv(l_tcpSocket, &data[recv], size - recv);
+        if (recv < 1)
+            return M64ERR_INVALID_STATE;
+    }
+
+    return M64ERR_SUCCESS;
+}
