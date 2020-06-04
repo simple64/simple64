@@ -11,6 +11,9 @@ Config config;
 
 EXPORT void CALL Config_DoConfig(/*HWND hParent*/)
 {
+	if (config.netplay)
+		return;
+
 	wchar_t strIniFolderPath[PLUGIN_PATH_SIZE];
 	mbstowcs(&strIniFolderPath[0], ConfigGetUserConfigPath(), PLUGIN_PATH_SIZE);
 	wchar_t strCustomFolderPath[PLUGIN_PATH_SIZE];
@@ -28,6 +31,8 @@ EXPORT void CALL Config_DoConfig(/*HWND hParent*/)
 
 void Config_LoadConfig()
 {
+	config.netplay = 0;
+
 	wchar_t strIniFolderPath[PLUGIN_PATH_SIZE];
 	mbstowcs(&strIniFolderPath[0], ConfigGetUserConfigPath(), PLUGIN_PATH_SIZE);
 	wchar_t strCustomFolderPath[PLUGIN_PATH_SIZE];
@@ -94,7 +99,12 @@ void Config_LoadConfig()
 	}
 
 	if (netplay_init != M64ERR_NOT_INIT && netplay_init != M64ERR_INCOMPATIBLE)
+	{
+		config.netplay = 1;
 		config.video.verticalSync = 0;
+		if (strstr(RSP.romname, (const char *)"GOLDENEYE") != nullptr)
+			config.frameBufferEmulation.copyToRDRAM = 0;
+	}
 
 	config.validate();
 }

@@ -16,6 +16,8 @@ const u32 gc_uMegabyte = 1024U * 1024U;
 
 struct Config
 {
+	u32 netplay;
+
 	u32 version;
 
 	std::string translationFile;
