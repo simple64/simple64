@@ -9,6 +9,9 @@
 #include <QMainWindow>
 #include <QSettings>
 #include <QSurfaceFormat>
+#include <QWidgetAction>
+#include <QSlider>
+#include <QLabel>
 
 namespace Ui {
 class MainWindow;
@@ -49,6 +52,8 @@ public slots:
     void showMessage(QString message);
 
 private slots:
+    void volumeValueChanged(int value);
+
     void on_actionOpen_ROM_triggered();
 
     void on_actionPlugin_Paths_triggered();
@@ -119,5 +124,30 @@ private:
 };
 
 extern MainWindow *w;
+
+class VolumeAction : public QWidgetAction {
+public:
+    VolumeAction (const QString& title) :
+      QWidgetAction (NULL) {
+        QWidget* pWidget = new QWidget (NULL);
+        QHBoxLayout* pLayout = new QHBoxLayout();
+        QLabel* pLabel = new QLabel (title);
+        pLayout->addWidget (pLabel);
+        pSlider = new QSlider(Qt::Horizontal);
+        pSlider->setMinimum(0);
+        pSlider->setMaximum(100);
+        pLayout->addWidget (pSlider);
+        pWidget->setLayout (pLayout);
+
+        setDefaultWidget(pWidget);
+    }
+
+    QSlider * slider () {
+        return pSlider;
+    }
+
+private:
+    QSlider * pSlider;
+};
 
 #endif // MAINWINDOW_H

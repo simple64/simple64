@@ -34,6 +34,8 @@ CreateRoom::CreateRoom(QWidget *parent)
     QLabel *playerNameLabel = new QLabel("Player Name", this);
     layout->addWidget(playerNameLabel, 3, 0);
     playerNameEdit = new QLineEdit(this);
+    if (w->getSettings()->contains("netplay_name"))
+        playerNameEdit->setText(w->getSettings()->value("netplay_name").toString());
     layout->addWidget(playerNameEdit, 3, 1);
 
     QLabel *serverLabel = new QLabel("Server", this);
