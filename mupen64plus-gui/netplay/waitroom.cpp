@@ -13,6 +13,8 @@ WaitRoom::WaitRoom(QString filename, QJsonObject room, QWebSocket *socket, QWidg
     room_name = room.value("room_name").toString();
     file_name = filename;
 
+    w->getSettings()->setValue("netplay_name", player_name);
+
     webSocket = socket;
     connect(webSocket, &QWebSocket::binaryMessageReceived,
             this, &WaitRoom::processBinaryMessage);

@@ -19,6 +19,8 @@ JoinRoom::JoinRoom(QWidget *parent)
     layout->setColumnMinimumWidth(1, 500);
 
     playerName = new QLineEdit(this);
+    if (w->getSettings()->contains("netplay_name"))
+        playerName->setText(w->getSettings()->value("netplay_name").toString());
     playerName->setPlaceholderText("Player Name");
     layout->addWidget(playerName, 0, 0);
 

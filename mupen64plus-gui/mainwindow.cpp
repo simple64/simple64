@@ -35,6 +35,7 @@ void MainWindow::updatePlugins()
     Filter.append("");
     QStringList current;
     QString default_value;
+
     if (!settings->contains("videoPlugin")) {
         Filter.replace(0,"mupen64plus-video*");
         current = PluginDir.entryList(Filter);
@@ -402,12 +403,30 @@ MainWindow::MainWindow(QWidget *parent) :
         qtConfigDir = settings->value("configDirPath").toString();
 
     updatePlugins();
+
+    if (!settings->contains("volume"))
+        settings->setValue("volume", 100);
+    VolumeAction * volumeAction = new VolumeAction(tr("Volume"));
+    connect(volumeAction->slider(), SIGNAL(valueChanged(int)), this, SLOT(volumeValueChanged(int)));
+    volumeAction->slider()->setValue(settings->value("volume").toInt());
+    ui->menuFile->insertAction(ui->actionTake_Screenshot, volumeAction);
+    ui->menuFile->insertSeparator(volumeAction);
 }
 
 MainWindow::~MainWindow()
 {
     DetachCoreLib();
     delete ui;
+}
+
+void MainWindow::volumeValueChanged(int value)
+{
+    if (value != settings->value("volume").toInt())
+    {
+        settings->setValue("volume", value);
+        if (coreStarted)
+            (*CoreDoCommand)(M64CMD_CORE_STATE_SET, M64CORE_AUDIO_VOLUME, &value);
+    }
 }
 
 void MainWindow::setVerbose()
@@ -597,6 +616,16 @@ void MainWindow::openROM(QString filename, QString netplay_ip, int netplay_port,
     workerThread->setFileName(filename);
     connect(workerThread, SIGNAL(finished()), workerThread, SLOT(deleteLater()));
     workerThread->start();
+
+    while (!coreStarted) QCoreApplication::processEvents();
+    int response = 0;
+    while (response != M64EMU_RUNNING)
+    {
+        (*CoreDoCommand)(M64CMD_CORE_STATE_QUERY, M64CORE_EMU_STATE, &response);
+        QCoreApplication::processEvents();
+    }
+    int volume = w->getSettings()->value("volume").toInt();
+    (*CoreDoCommand)(M64CMD_CORE_STATE_SET, M64CORE_AUDIO_VOLUME, &volume);
 
     QStringList list;
     if (settings->contains("RecentROMs"))
