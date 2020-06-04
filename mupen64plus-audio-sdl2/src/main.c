@@ -17,11 +17,13 @@ static int GameFreq = 0;
 static AUDIO_INFO AudioInfo;
 static unsigned char primaryBuffer[0x40000];
 static float output_buffer[0x20000];
+static float mix_buffer[0x20000];
 static float convert_buffer[0x20000];
 static int VolIsMuted = 0;
 static unsigned int paused = 0;
 static int ff = 0;
 static SRC_STATE *src_state;
+static int VolSDL = SDL_MIX_MAXVOLUME;
 
 EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle CoreLibHandle, void *Context, void (*DebugCallback)(void *, int, const char *))
 {
@@ -191,7 +193,12 @@ EXPORT void CALL AiLenChanged( void )
 
         unsigned int output_length = data.output_frames_gen * 8;
         if (output_length > diff)
-            SDL_QueueAudio(dev, output_buffer, output_length - diff);
+        {
+            int len = output_length - diff;
+            SDL_memset(mix_buffer, 0, len);
+            SDL_MixAudioFormat((Uint8*)mix_buffer, (Uint8*)output_buffer, AUDIO_F32, len, VolSDL);
+            SDL_QueueAudio(dev, mix_buffer, len);
+        }
     }
 }
 
@@ -259,6 +266,12 @@ EXPORT int CALL VolumeGetLevel(void)
 
 EXPORT void CALL VolumeSetLevel(int level)
 {
+    if (level < 0)
+        level = 0;
+    else if (level > 100)
+        level = 100;
+
+    VolSDL = SDL_MIX_MAXVOLUME * level / 100;
 }
 
 EXPORT const char * CALL VolumeGetString(void)
