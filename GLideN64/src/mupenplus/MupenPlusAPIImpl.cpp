@@ -94,6 +94,8 @@ m64p_error PluginAPI::PluginStartup(m64p_dynlib_handle _CoreLibHandle)
 
 	CoreGetVersion = (ptr_PluginGetVersion) DLSYM(_CoreLibHandle, "PluginGetVersion");
 
+	config.netplay = 0;
+
 	return M64ERR_SUCCESS;
 }
 
