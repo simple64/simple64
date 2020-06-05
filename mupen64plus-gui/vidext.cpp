@@ -8,12 +8,14 @@
 
 static int init;
 static int needs_toggle;
+static int set_volume;
 static QSurfaceFormat format;
 QThread* rendering_thread;
 
 m64p_error qtVidExtFuncInit(void)
 {
     init = 0;
+    set_volume = 1;
     format = QSurfaceFormat::defaultFormat();
     format.setOption(QSurfaceFormat::DeprecatedFunctions, 1);
     format.setDepthBufferSize(24);
@@ -189,6 +191,16 @@ m64p_error qtVidExtFuncGLGetAttr(m64p_GLattr Attr, int *pValue)
 
 m64p_error qtVidExtFuncGLSwapBuf(void)
 {
+    if (set_volume) {
+        int value;
+        (*CoreDoCommand)(M64CMD_CORE_STATE_QUERY, M64CORE_EMU_STATE, &value);
+        if (value == M64EMU_RUNNING) {
+            int volume = w->getSettings()->value("volume").toInt();
+            (*CoreDoCommand)(M64CMD_CORE_STATE_SET, M64CORE_AUDIO_VOLUME, &volume);
+            set_volume = 0;
+        }
+    }
+
     if (needs_toggle) {
         int value;
         (*CoreDoCommand)(M64CMD_CORE_STATE_QUERY, M64CORE_EMU_STATE, &value);
