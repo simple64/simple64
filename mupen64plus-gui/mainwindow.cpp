@@ -617,16 +617,6 @@ void MainWindow::openROM(QString filename, QString netplay_ip, int netplay_port,
     connect(workerThread, SIGNAL(finished()), workerThread, SLOT(deleteLater()));
     workerThread->start();
 
-    while (!coreStarted) QCoreApplication::processEvents();
-    int response = 0;
-    while (response != M64EMU_RUNNING)
-    {
-        (*CoreDoCommand)(M64CMD_CORE_STATE_QUERY, M64CORE_EMU_STATE, &response);
-        QCoreApplication::processEvents();
-    }
-    int volume = w->getSettings()->value("volume").toInt();
-    (*CoreDoCommand)(M64CMD_CORE_STATE_SET, M64CORE_AUDIO_VOLUME, &volume);
-
     QStringList list;
     if (settings->contains("RecentROMs"))
         list = settings->value("RecentROMs").toString().split(";");
