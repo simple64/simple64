@@ -85,7 +85,7 @@ WaitRoom::WaitRoom(QString filename, QJsonObject room, QWebSocket *socket, QWidg
     json.insert("type", "request_players");
     json.insert("port", room_port);
     QJsonDocument json_doc = QJsonDocument(json);
-    webSocket->sendBinaryMessage(json_doc.toBinaryData());
+    webSocket->sendBinaryMessage(json_doc.toJson());
 
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &WaitRoom::sendPing);
@@ -100,7 +100,7 @@ void WaitRoom::sendPing()
         json.insert("type", "get_discord");
         json.insert("room_name", room_name);
         QJsonDocument json_doc = QJsonDocument(json);
-        webSocket->sendBinaryMessage(json_doc.toBinaryData());
+        webSocket->sendBinaryMessage(json_doc.toJson());
     }
 
     webSocket->ping();
@@ -119,7 +119,7 @@ void WaitRoom::startGame()
         json.insert("type", "start_game");
         json.insert("port", room_port);
         QJsonDocument json_doc = QJsonDocument(json);
-        webSocket->sendBinaryMessage(json_doc.toBinaryData());
+        webSocket->sendBinaryMessage(json_doc.toJson());
     }
     else
     {
@@ -139,7 +139,7 @@ void WaitRoom::sendChat()
         json.insert("player_name", player_name);
         json.insert("message", chatEdit->text());
         QJsonDocument json_doc = QJsonDocument(json);
-        webSocket->sendBinaryMessage(json_doc.toBinaryData());
+        webSocket->sendBinaryMessage(json_doc.toJson());
         chatEdit->clear();
     }
 }
@@ -153,7 +153,7 @@ void WaitRoom::onFinished(int)
 
 void WaitRoom::processBinaryMessage(QByteArray message)
 {
-    QJsonDocument json_doc = QJsonDocument::fromBinaryData(message);
+    QJsonDocument json_doc = QJsonDocument::fromJson(message);
     QJsonObject json = json_doc.object();
     if (json.value("type").toString() == "room_players")
     {
