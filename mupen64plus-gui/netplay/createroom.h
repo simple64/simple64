@@ -20,6 +20,7 @@ private slots:
     void downloadFinished(QNetworkReply *reply);
     void processBinaryMessage(QByteArray message);
     void onFinished(int result);
+    void processMulticast();
 private:
     QPushButton *romButton;
     QPushButton *createButton;
@@ -32,6 +33,7 @@ private:
     QLineEdit *playerNameEdit;
     int launched;
     QString filename;
+    QUdpSocket multicastSocket;
 };
 
 #endif // CREATEROOM_H
