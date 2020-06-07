@@ -379,11 +379,7 @@ void update_pif_ram(struct pif* pif)
         input.readController(-1, NULL);
     }
 
-    if (netplay_is_init())
-    {
-        netplay_send_raw_input(pif);
-        netplay_get_raw_input(pif);
-    }
+    netplay_update_input(pif);
 
 #ifdef DEBUG_PIF
     DebugMessage(M64MSG_INFO, "PIF post read");

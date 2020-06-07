@@ -568,7 +568,7 @@ void netplay_read_registration(struct controller_input_compat* cin_compats)
     }
 }
 
-void netplay_send_raw_input(struct pif* pif)
+static void netplay_send_raw_input(struct pif* pif)
 {
     for (int i = 0; i < 4; ++i)
     {
@@ -580,7 +580,7 @@ void netplay_send_raw_input(struct pif* pif)
     }
 }
 
-void netplay_get_raw_input(struct pif* pif)
+static void netplay_get_raw_input(struct pif* pif)
 {
     for (int i = 0; i < 4; ++i)
     {
@@ -588,6 +588,8 @@ void netplay_get_raw_input(struct pif* pif)
         {
             if (pif->channels[i].tx)
             {
+                *pif->channels[i].rx &= ~0xC0; //Always show the controller as connected
+
                 if(pif->channels[i].tx_buf[0] == JCMD_CONTROLLER_READ)
                 {
                     *(uint32_t*)pif->channels[i].rx_buf = netplay_get_input(i);
@@ -612,6 +614,15 @@ void netplay_get_raw_input(struct pif* pif)
                 }
             }
         }
+    }
+}
+
+void netplay_update_input(struct pif* pif)
+{
+    if (netplay_is_init())
+    {
+        netplay_send_raw_input(pif);
+        netplay_get_raw_input(pif);
     }
 }
 
