@@ -32,3 +32,5 @@ git remote add mupen64plus-input-raphnetraw https://github.com/loganmc10/mupen64
 git fetch mupen64plus-input-raphnetraw
 git merge -s subtree mupen64plus-input-raphnetraw/sdl2 --allow-unrelated-histories --squash
 git commit -m "update raphnet"
+
+git push origin master
