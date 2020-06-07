@@ -933,6 +933,8 @@ void new_vi(void)
     main_check_inputs();
 
     pause_loop();
+
+    netplay_check_sync(&g_dev.r4300.cp0);
 }
 
 static void main_switch_pak(int control_id)

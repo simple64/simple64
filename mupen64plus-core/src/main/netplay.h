@@ -51,8 +51,7 @@ void netplay_sync_settings(uint32_t *count_per_op, uint32_t *disable_extra_mem, 
 void netplay_check_sync(struct cp0* cp0);
 int netplay_next_controller();
 void netplay_read_registration(struct controller_input_compat* cin_compats);
-void netplay_send_raw_input(struct pif* pif);
-void netplay_get_raw_input(struct pif* pif);
+void netplay_update_input(struct pif* pif);
 void netplay_set_plugin(uint8_t control_id, uint8_t plugin);
 m64p_error netplay_send_config(char* data, int size);
 m64p_error netplay_receive_config(char* data, int size);
@@ -115,11 +114,7 @@ static osal_inline void netplay_read_registration(struct controller_input_compat
 {
 }
 
-static osal_inline void netplay_send_raw_input(struct pif* pif)
-{
-}
-
-static osal_inline void netplay_get_raw_input(struct pif* pif)
+static osal_inline void netplay_update_input(struct pif* pif)
 {
 }
 

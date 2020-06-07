@@ -28,7 +28,6 @@
 #include "device/r4300/r4300_core.h"
 #include "device/rcp/mi/mi_controller.h"
 #include "main/main.h"
-#include "main/netplay.h"
 #include "plugin/plugin.h"
 
 unsigned int vi_clock_from_tv_standard(m64p_system_type tv_standard)
@@ -158,9 +157,6 @@ void write_vi_regs(void* opaque, uint32_t address, uint32_t value, uint32_t mask
 void vi_vertical_interrupt_event(void* opaque)
 {
     struct vi_controller* vi = (struct vi_controller*)opaque;
-
-    netplay_check_sync(&vi->mi->r4300->cp0);
-
     if (vi->dp->do_on_unfreeze & DELAY_DP_INT)
         vi->dp->do_on_unfreeze |= DELAY_UPDATESCREEN;
     else
