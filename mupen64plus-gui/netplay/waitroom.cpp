@@ -115,6 +115,7 @@ void WaitRoom::startGame()
 {
     if (player_name == pName[0]->text())
     {
+        startGameButton->setEnabled(false);
         QJsonObject json;
         json.insert("type", "start_game");
         json.insert("port", room_port);
