@@ -71,7 +71,7 @@ void Config::resetToDefaults()
 	frameBufferEmulation.forceDepthBufferClear = 0;
 	frameBufferEmulation.aspect = a43;
 	frameBufferEmulation.bufferSwapMode = bsOnVerticalInterrupt;
-	frameBufferEmulation.nativeResFactor = 0;
+	frameBufferEmulation.nativeResFactor = 2;
 	frameBufferEmulation.fbInfoReadColorChunk = 0;
 	frameBufferEmulation.fbInfoReadDepthChunk = 1;
 	frameBufferEmulation.copyDepthToMainDepthBuffer = 0;
