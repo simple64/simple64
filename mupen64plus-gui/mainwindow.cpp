@@ -95,6 +95,7 @@ void MainWindow::updatePIF(Ui::MainWindow *ui)
     QMenu *PIF = new QMenu(this);
     PIF->setTitle("PIF ROM");
     ui->menuFile->insertMenu(ui->actionTake_Screenshot, PIF);
+    ui->menuFile->insertSeparator(ui->actionTake_Screenshot);
 
     QAction *fileSelect = new QAction(this);
     QString current = settings->value("PIF_ROM").toString();
@@ -409,8 +410,7 @@ MainWindow::MainWindow(QWidget *parent) :
     VolumeAction * volumeAction = new VolumeAction(tr("Volume"));
     connect(volumeAction->slider(), SIGNAL(valueChanged(int)), this, SLOT(volumeValueChanged(int)));
     volumeAction->slider()->setValue(settings->value("volume").toInt());
-    ui->menuFile->insertAction(ui->actionTake_Screenshot, volumeAction);
-    ui->menuFile->insertSeparator(volumeAction);
+    ui->menuEmulation->insertAction(ui->actionMute, volumeAction);
 }
 
 MainWindow::~MainWindow()
