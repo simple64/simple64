@@ -314,8 +314,7 @@ void GraphicsDrawer::_updateScreenCoordsViewport(const FrameBuffer * _pBuffer) c
 	gSP.changed |= CHANGED_VIEWPORT;
 }
 
-static
-void _legacySetBlendMode()
+void GraphicsDrawer::_legacyBlending() const
 {
 	const u32 blendmode = gDP.otherMode.l >> 16;
 	// 0x7000 = CVG_X_ALPHA|ALPHA_CVG_SEL|FORCE_BL
@@ -478,48 +477,36 @@ void _legacySetBlendMode()
 	}
 }
 
-bool GraphicsDrawer::_setUnsupportedBlendMode() const
+void GraphicsDrawer::_ordinaryBlending() const
 {
-	if (gDP.otherMode.cycleType != G_CYC_2CYCLE)
-		return false;
 
-	// Modes, which shader blender can't emulate
-	const u32 mode = _SHIFTR(gDP.otherMode.l, 16, 16);
-	switch (mode) {
-	case 0x0040:
-		// Mia Hamm Soccer
-		// clr_in * a_in + clr_mem * (1-a)
-		// clr_in * a_in + clr_in * (1-a)
-	case 0x0050:
-		// A Bug's Life
-		// clr_in * a_in + clr_mem * (1-a)
-		// clr_in * a_in + clr_mem * (1-a)
-		gfxContext.enable(enable::BLEND, true);
-		gfxContext.setBlending(blend::SRC_ALPHA, blend::ONE_MINUS_SRC_ALPHA);
-		return true;
-	case 0x0150:
-		// Tony Hawk
-		// clr_in * a_in + clr_mem * (1-a)
-		// clr_in * a_fog + clr_mem * (1-a_fog)
-		if ((config.generalEmulation.hacks & hack_TonyHawk) != 0) {
+	// Set unsupported blend modes
+	if (gDP.otherMode.cycleType == G_CYC_2CYCLE) {
+		const u32 mode = _SHIFTR(gDP.otherMode.l, 16, 16);
+		switch (mode) {
+		case 0x0040:
+			// Mia Hamm Soccer
+			// clr_in * a_in + clr_mem * (1-a)
+			// clr_in * a_in + clr_in * (1-a)
+		case 0x0050:
+			// A Bug's Life
+			// clr_in * a_in + clr_mem * (1-a)
+			// clr_in * a_in + clr_mem * (1-a)
 			gfxContext.enable(enable::BLEND, true);
 			gfxContext.setBlending(blend::SRC_ALPHA, blend::ONE_MINUS_SRC_ALPHA);
-			return true;
+			return;
+		case 0x0150:
+			// Tony Hawk
+			// clr_in * a_in + clr_mem * (1-a)
+			// clr_in * a_fog + clr_mem * (1-a_fog)
+			if ((config.generalEmulation.hacks & hack_TonyHawk) != 0) {
+				gfxContext.enable(enable::BLEND, true);
+				gfxContext.setBlending(blend::SRC_ALPHA, blend::ONE_MINUS_SRC_ALPHA);
+				return;
+			}
+			break;
 		}
-		break;
 	}
-	return false;
-}
-
-void GraphicsDrawer::_setBlendMode() const
-{
-	if (config.generalEmulation.enableLegacyBlending != 0) {
-		_legacySetBlendMode();
-		return;
-	}
-
-	if (_setUnsupportedBlendMode())
-		return;
 
 	if (gDP.otherMode.forceBlender != 0 && gDP.otherMode.cycleType < G_CYC_COPY) {
 		BlendParam srcFactor = blend::ONE;
@@ -535,7 +522,8 @@ void GraphicsDrawer::_setBlendMode() const
 					return;
 				}
 				memFactorSource = 0;
-			} else if (gDP.otherMode.c2_m2a == 1) {
+			}
+			else if (gDP.otherMode.c2_m2a == 1) {
 				memFactorSource = 1;
 			}
 			if (gDP.otherMode.c2_m2a == 0 && gDP.otherMode.c2_m2b == 1) {
@@ -552,8 +540,7 @@ void GraphicsDrawer::_setBlendMode() const
 					return;
 				}
 				memFactorSource = 0;
-			}
-			else if (gDP.otherMode.c1_m2a == 1) {
+			} else if (gDP.otherMode.c1_m2a == 1) {
 				memFactorSource = 1;
 			}
 			if (gDP.otherMode.c1_m2a == 0 && gDP.otherMode.c1_m2b == 1) {
@@ -641,6 +628,56 @@ void GraphicsDrawer::_setBlendMode() const
 	}
 }
 
+void GraphicsDrawer::_dualSourceBlending() const
+{
+	if (gDP.otherMode.cycleType < G_CYC_COPY) {
+		BlendParam srcFactor = blend::ONE;
+		BlendParam dstFactor = blend::SRC1_COLOR;
+		BlendParam srcFactorAlpha = blend::ONE;
+		BlendParam dstFactorAlpha = blend::SRC1_ALPHA;
+		if (gDP.otherMode.forceBlender != 0) {
+			if (gDP.otherMode.cycleType == G_CYC_2CYCLE) {
+				if (gDP.otherMode.c2_m2a != 1 && gDP.otherMode.c2_m2b == 1) {
+					srcFactor = blend::DST_ALPHA;
+				}
+				if (gDP.otherMode.c2_m2a == 1 && gDP.otherMode.c2_m2b == 1) {
+					dstFactor = blend::DST_ALPHA;
+				}
+			} else {
+				if (gDP.otherMode.c1_m2a != 1 && gDP.otherMode.c1_m2b == 1) {
+					srcFactor = blend::DST_ALPHA;
+				}
+				if (gDP.otherMode.c1_m2a == 1 && gDP.otherMode.c2_m2b == 1) {
+					dstFactor = blend::DST_ALPHA;
+				}
+			}
+		} else if ((config.generalEmulation.hacks & hack_blastCorps) != 0 &&
+			gSP.texture.on == 0 && currentCombiner()->usesTexture()) { // Blast Corps
+			srcFactor = blend::ZERO;
+			dstFactor = blend::ONE;
+		}
+		gfxContext.enable(enable::BLEND, true);
+		gfxContext.setBlendingSeparate(srcFactor, dstFactor, srcFactorAlpha, dstFactorAlpha);
+	} else {
+		gfxContext.enable(enable::BLEND, false);
+	}
+}
+
+void GraphicsDrawer::setBlendMode(bool _forceLegacyBlending) const
+{
+	if (_forceLegacyBlending || config.generalEmulation.enableLegacyBlending != 0) {
+		_legacyBlending();
+		return;
+	}
+
+	if (Context::DualSourceBlending && !isTexrectDrawerMode()) {
+		_dualSourceBlending();
+		return;
+	}
+
+	_ordinaryBlending();
+}
+
 void GraphicsDrawer::_updateTextures() const
 {
 	//For some reason updating the texture cache on the first frame of LOZ:OOT causes a nullptr Pointer exception...
@@ -685,7 +722,7 @@ void GraphicsDrawer::_updateStates(DrawingState _drawingState) const
 	}
 
 	if ((gDP.changed & (CHANGED_RENDERMODE | CHANGED_CYCLETYPE))) {
-		_setBlendMode();
+		setBlendMode();
 		gDP.changed &= ~(CHANGED_RENDERMODE | CHANGED_CYCLETYPE);
 	}
 
@@ -1053,7 +1090,7 @@ bool texturedRectShadowMap(const GraphicsDrawer::TexturedRectParams &)
 			pCurrentBuffer->m_pDepthBuffer->activateDepthBufferTexture(pCurrentBuffer);
 			CombinerInfo::get().setDepthFogCombiner();
 			// DepthFogCombiner does not support shader blending.
-			_legacySetBlendMode();
+			dwnd().getDrawer().setBlendMode(true);
 			return false;
 		}
 	}

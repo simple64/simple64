@@ -350,7 +350,7 @@ bool TexrectDrawer::draw()
 	ValueKeeper<gDPScissor> scissor(gDP.scissor, m_scissor);
 	DisplayWindow & wnd = dwnd();
 	GraphicsDrawer &  drawer = wnd.getDrawer();
-	drawer._setBlendMode();
+	drawer.setBlendMode();
 	gDP.changed |= CHANGED_RENDERMODE;  // Force update of depth compare parameters
 	drawer._updateDepthCompare();
 

@@ -58,6 +58,42 @@ private:
 	GLenum m_dfactor;
 };
 
+class GlBlendFuncSeparateCommand : public OpenGlCommand
+{
+public:
+	GlBlendFuncSeparateCommand() :
+		OpenGlCommand(false, false, "glBlendFuncSeparate")
+	{
+	}
+
+	static std::shared_ptr<OpenGlCommand> get(GLenum sfactorcolor, GLenum dfactorcolor, GLenum sfactoralpha, GLenum dfactoralpha)
+	{
+		static int poolId = OpenGlCommandPool::get().getNextAvailablePool();
+		auto ptr = getFromPool<GlBlendFuncSeparateCommand>(poolId);
+		ptr->set(sfactorcolor, dfactorcolor, sfactoralpha, dfactoralpha);
+		return ptr;
+	}
+
+	void commandToExecute() override
+	{
+		ptrBlendFuncSeparate(m_sfactorcolor, m_dfactorcolor, m_sfactoralpha, m_dfactoralpha);
+	}
+private:
+	void set(GLenum sfactorcolor, GLenum dfactorcolor, GLenum sfactoralpha, GLenum dfactoralpha)
+	{
+		m_sfactorcolor = sfactorcolor;
+		m_dfactorcolor = dfactorcolor;
+		m_sfactoralpha = sfactoralpha;
+		m_dfactoralpha = dfactoralpha;
+	}
+
+	GLenum m_sfactorcolor;
+	GLenum m_dfactorcolor;
+	GLenum m_sfactoralpha;
+	GLenum m_dfactoralpha;
+};
+
+
 class GlPixelStoreiCommand : public OpenGlCommand
 {
 public:
