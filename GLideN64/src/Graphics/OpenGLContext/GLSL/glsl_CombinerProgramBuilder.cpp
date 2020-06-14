@@ -514,6 +514,8 @@ public:
 			ss << "#version " << Utils::to_string(_glinfo.majorVersion) << Utils::to_string(_glinfo.minorVersion) << "0 es " << std::endl;
 			if (_glinfo.noPerspective)
 				ss << "#extension GL_NV_shader_noperspective_interpolation : enable" << std::endl;
+			if (_glinfo.dual_source_blending)
+				ss << "#extension GL_EXT_blend_func_extended : enable" << std::endl;
 			if (config.frameBufferEmulation.N64DepthCompare == Config::dcFast) {
 				if (_glinfo.imageTextures && _glinfo.fragment_interlockNV) {
 					ss << "#extension GL_NV_fragment_shader_interlock : enable" << std::endl
@@ -560,21 +562,40 @@ public:
 class ShaderBlender1 : public ShaderPart
 {
 public:
-	ShaderBlender1()
+	ShaderBlender1(const opengl::GLInfo & _glinfo)
 	{
 #if 1
-			m_part =
-				"  #define MUXA(pos) dot(muxA, STVEC(pos))				\n"
-				"  #define MUXB(pos) dot(muxB, STVEC(pos))				\n"
-				"  #define MUXPM(pos) muxPM*(STVEC(pos))				\n"
-				"  muxPM[0] = clampedColor;								\n"
-				"  if (uForceBlendCycle1 != 0) {						\n"
-				"    muxA[0] = clampedColor.a;							\n"
-				"    muxB[0] = 1.0 - MUXA(uBlendMux1[1]);				\n"
-				"    lowp vec4 blend1 = MUXPM(uBlendMux1[0]) * MUXA(uBlendMux1[1]) + MUXPM(uBlendMux1[2]) * MUXB(uBlendMux1[3]);	\n"
-				"    clampedColor.rgb = clamp(blend1.rgb, 0.0, 1.0);	\n"
-				"  } else clampedColor.rgb = (MUXPM(uBlendMux1[0])).rgb;	\n"
+		m_part =
+			"  srcColor1 = vec4(0.0);									\n"
+			"  dstFactor1 = 0.0;										\n"
+			"  muxPM[0] = clampedColor;									\n"
+			"  muxA[0] = clampedColor.a;								\n"
+			"  muxa = MUXA(uBlendMux1[1]);								\n"
+			"  muxB[0] = 1.0 - muxa;									\n"
+			"  muxb = MUXB(uBlendMux1[3]);								\n"
+			"  muxp = MUXPM(uBlendMux1[0]);								\n"
+			"  muxm = MUXPM(uBlendMux1[2]);								\n"
+			"  muxaf = MUXF(uBlendMux1[0]);								\n"
+			"  muxbf = MUXF(uBlendMux1[2]);								\n"
+			"  if (uForceBlendCycle1 != 0) {							\n"
+			"    srcColor1 = muxp * muxa + muxm * muxb;					\n"
+			"    dstFactor1 = muxaf * muxa + muxbf * muxb;				\n"
+			"    srcColor1 = clamp(srcColor1, 0.0, 1.0);				\n"
+			"  } else {													\n"
+			"    srcColor1 = muxp;										\n"
+			"    dstFactor1 = muxaf;									\n"
+			"  }														\n"
+			;
+		if (_glinfo.dual_source_blending) {
+			m_part +=
+				"  fragColor = srcColor1;								\n"
+				"  fragColor1 = vec4(dstFactor1);						\n"
 				;
+		} else {
+			m_part +=
+				"  fragColor = vec4(srcColor1.rgb, clampedColor.a);	\n"
+				;
+		}
 #else
 		// Keep old code for reference
 		m_part =
@@ -593,19 +614,41 @@ public:
 class ShaderBlender2 : public ShaderPart
 {
 public:
-	ShaderBlender2()
+	ShaderBlender2(const opengl::GLInfo & _glinfo)
 	{
 #if 1
 		m_part =
-			"  muxPM[0] = clampedColor;								\n"
-			"  muxPM[1] = vec4(0.0);								\n"
-			"  if (uForceBlendCycle2 != 0) {						\n"
-			"    muxA[0] = clampedColor.a;							\n"
-			"    muxB[0] = 1.0 - MUXA(uBlendMux2[1]);				\n"
-			"    lowp vec4 blend2 = MUXPM(uBlendMux2[0]) * MUXA(uBlendMux2[1]) + MUXPM(uBlendMux2[2]) * MUXB(uBlendMux2[3]);	\n"
-			"    clampedColor.rgb = clamp(blend2.rgb, 0.0, 1.0);	\n"
-			"  } else clampedColor.rgb = (MUXPM(uBlendMux2[0])).rgb;	\n"
+			"  srcColor2 = vec4(0.0);									\n"
+			"  dstFactor2 = 0.0;										\n"
+			"  muxPM[0] = srcColor1;									\n"
+			"  muxa = MUXA(uBlendMux2[1]);								\n"
+			"  muxB[0] = 1.0 - muxa;									\n"
+			"  muxb = MUXB(uBlendMux2[3]);								\n"
+			"  muxp = MUXPM(uBlendMux2[0]);								\n"
+			"  muxm = MUXPM(uBlendMux2[2]);								\n"
+			"  muxF[0] = dstFactor1;									\n"
+			"  muxaf = MUXF(uBlendMux2[0]);								\n"
+			"  muxbf = MUXF(uBlendMux2[2]);								\n"
+			"  if (uForceBlendCycle2 != 0) {							\n"
+			"    srcColor2 = muxp * muxa + muxm * muxb;					\n"
+			"    dstFactor2 = muxaf * muxa + muxbf * muxb;				\n"
+			"    srcColor2 = clamp(srcColor2, 0.0, 1.0);				\n"
+			"  } else {													\n"
+			"    srcColor2 = muxp;										\n"
+			"    dstFactor2 = muxaf;									\n"
+			"  }														\n"
 			;
+		if (_glinfo.dual_source_blending) {
+			m_part +=
+				"  fragColor = srcColor2;								\n"
+				"  fragColor1 = vec4(dstFactor2);						\n"
+				;
+		} else {
+			m_part +=
+				"  fragColor =  vec4(srcColor2.rgb, clampedColor.a);	\n"
+				;
+		}
+
 #else
 		// Keep old code for reference
 		m_part =
@@ -619,6 +662,26 @@ public:
 			"  } else clampedColor.rgb = muxPM[uBlendMux2[0]].rgb;	\n"
 			;
 #endif
+	}
+};
+
+class ShaderBlenderAlpha : public ShaderPart
+{
+public:
+	ShaderBlenderAlpha(const opengl::GLInfo & _glinfo)
+	{
+		if (_glinfo.dual_source_blending)
+		m_part +=
+			"if (uBlendAlphaMode != 2) {							\n"
+			"  lowp float cvg = clampedColor.a;						\n"
+			"  lowp vec4 srcAlpha = vec4(cvg, cvg, 1.0, 0.0);		\n"
+			"  lowp vec4 dstFactorAlpha = vec4(1.0, 1.0, 0.0, 1.0);	\n"
+			"  if (uBlendAlphaMode == 0)							\n"
+			"    dstFactorAlpha[0] = 0.0;							\n"
+			"  fragColor.a = srcAlpha[uCvgDest];					\n"
+			"  fragColor1.a = dstFactorAlpha[uCvgDest];				\n"
+			"} else fragColor.a = clampedColor.a;					\n"
+			;
 	}
 };
 
@@ -871,7 +934,9 @@ public:
 			"highp vec2 texCoord1;					\n"
 			"highp vec2 tcData0[5];					\n"
 			"highp vec2 tcData1[5];					\n"
-		;
+			"uniform lowp int uCvgDest;				\n"
+			"uniform lowp int uBlendAlphaMode;		\n"
+			;
 
 		if (config.generalEmulation.enableLegacyBlending != 0) {
 			m_part +=
@@ -924,15 +989,21 @@ public:
 			"IN lowp float vNumLights;		\n"
 		;
 
-		if (config.frameBufferEmulation.N64DepthCompare == Config::dcFast && _glinfo.ext_fetch) {
+		if (_glinfo.dual_source_blending) {
 			m_part +=
-				"layout(location = 0) OUT lowp vec4 fragColor;		\n"
-				"layout(location = 1) inout highp vec4 depthZ;		\n"
-				"layout(location = 2) inout highp vec4 depthDeltaZ;	\n"
+				"layout(location = 0, index = 0) OUT lowp vec4 fragColor; 	\n"
+				"layout(location = 0, index = 1) OUT lowp vec4 fragColor1;	\n"
 			;
 		} else {
 			m_part +=
 				"OUT lowp vec4 fragColor;	\n"
+			;
+		}
+
+		if (config.frameBufferEmulation.N64DepthCompare == Config::dcFast && _glinfo.ext_fetch) {
+			m_part +=
+				"layout(location = 1) inout highp vec4 depthZ;	\n"
+				"layout(location = 2) inout highp vec4 depthDeltaZ;	\n"
 				;
 		}
 	}
@@ -964,6 +1035,9 @@ public:
 			"uniform highp float uPrimDepth;		\n"
 			"uniform mediump vec2 uScreenScale;		\n"
 			"uniform lowp int uScreenSpaceTriangle;	\n"
+			"uniform lowp int uCvgDest; \n"
+			"uniform lowp int uBlendAlphaMode; \n"
+
 		;
 
 		if (config.generalEmulation.enableLegacyBlending != 0) {
@@ -1006,15 +1080,21 @@ public:
 			"IN lowp float vNumLights;	\n"
 		;
 
-		if (config.frameBufferEmulation.N64DepthCompare == Config::dcFast && _glinfo.ext_fetch) {
+		if (_glinfo.dual_source_blending) {
 			m_part +=
-				"layout(location = 0) OUT lowp vec4 fragColor;		\n"
-				"layout(location = 1) inout highp vec4 depthZ;		\n"
-				"layout(location = 2) inout highp vec4 depthDeltaZ;	\n"
+				"layout(location = 0, index = 0) OUT lowp vec4 fragColor; 	\n"
+				"layout(location = 0, index = 1) OUT lowp vec4 fragColor1;	\n"
 			;
 		} else {
 			m_part +=
 				"OUT lowp vec4 fragColor;	\n"
+			;
+		}
+
+		if (config.frameBufferEmulation.N64DepthCompare == Config::dcFast && _glinfo.ext_fetch) {
+			m_part +=
+				"layout(location = 1) inout highp vec4 depthZ;	\n"
+				"layout(location = 2) inout highp vec4 depthDeltaZ;	\n"
 				;
 		}
 	}
@@ -1242,7 +1322,7 @@ public:
 						"  lowp vec4 c0 = c00 + tcData[4].s * (c10-c00);														\\\n"
 						"  lowp vec4 c1 = c01 + tcData[4].s * (c11-c01);														\\\n"
 						"  name = c0 + tcData[4].t * (c1-c0);																	\\\n"
-						"  if(uEnableAlphaTest == 1)  name.rgb /= name.a;														\\\n" 
+						"  if(uEnableAlphaTest == 1)  name.rgb /= name.a;														\\\n"
 						"}																										\n"
 						;
 				break;
@@ -1418,9 +1498,16 @@ public:
 	{
 		if (config.generalEmulation.enableLegacyBlending == 0) {
 			m_part =
+				"  #define MUXA(pos) dot(muxA, STVEC(pos))									\n"
+				"  #define MUXB(pos) dot(muxB, STVEC(pos))									\n"
+				"  #define MUXPM(pos) muxPM*(STVEC(pos))									\n"
+				"  #define MUXF(pos) dot(muxF, STVEC(pos))									\n"
 				"  lowp mat4 muxPM = mat4(vec4(0.0), vec4(0.0), uBlendColor, uFogColor);	\n"
 				"  lowp vec4 muxA = vec4(0.0, uFogColor.a, shadeColor.a, 0.0);				\n"
 				"  lowp vec4 muxB = vec4(0.0, 1.0, 1.0, 0.0);								\n"
+				"  lowp vec4 muxF = vec4(0.0, 1.0, 0.0, 0.0);								\n"
+				"  lowp vec4 muxp, muxm, srcColor1, srcColor2;								\n"
+				"  lowp float muxa, muxb, dstFactor1, dstFactor2, muxaf, muxbf;				\n"
 			;
 		}
 	}
@@ -2572,12 +2659,14 @@ CombinerInputs CombinerProgramBuilder::compileCombiner(const CombinerKey & _key,
 		m_callDither->write(ssShader);
 
 	if (config.generalEmulation.enableLegacyBlending == 0) {
-		if (g_cycleType <= G_CYC_2CYCLE)
+		if (g_cycleType <= G_CYC_2CYCLE) {
 			m_blender1->write(ssShader);
-		if (g_cycleType == G_CYC_2CYCLE)
-			m_blender2->write(ssShader);
+			if (g_cycleType == G_CYC_2CYCLE)
+				m_blender2->write(ssShader);
+			m_blenderAlpha->write(ssShader);
+		} else
+			ssShader << "  fragColor = clampedColor;" << std::endl;
 
-		ssShader << "  fragColor = clampedColor;" << std::endl;
 	}
 	else {
 		ssShader << "  fragColor = clampedColor;" << std::endl;
@@ -2792,8 +2881,9 @@ GLuint _createVertexShader(ShaderPart * _header, ShaderPart * _body, ShaderPart 
 }
 
 CombinerProgramBuilder::CombinerProgramBuilder(const opengl::GLInfo & _glinfo, opengl::CachedUseProgram * _useProgram)
-: m_blender1(new ShaderBlender1)
-, m_blender2(new ShaderBlender2)
+: m_blender1(new ShaderBlender1(_glinfo))
+, m_blender2(new ShaderBlender2(_glinfo))
+, m_blenderAlpha (new ShaderBlenderAlpha(_glinfo))
 , m_legacyBlender(new ShaderLegacyBlender)
 , m_clamp(new ShaderClamp)
 , m_signExtendColorC(new ShaderSignExtendColorC)

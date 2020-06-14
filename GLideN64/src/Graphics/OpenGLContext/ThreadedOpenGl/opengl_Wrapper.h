@@ -59,6 +59,7 @@ namespace opengl {
 		static void setThreadedMode(u32 _threaded);
 
 		static void wrBlendFunc(GLenum sfactor, GLenum dfactor);
+		static void wrBlendFuncSeparate(GLenum sfactorcolor, GLenum dfactorcolor, GLenum sfactoralpha, GLenum dfactoralpha);
 		static void wrPixelStorei(GLenum pname, GLint param);
 		static void wrClearColor(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha);
 		static void wrCullFace(GLenum mode);

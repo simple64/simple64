@@ -39,6 +39,7 @@ namespace glsl {
 		typedef std::unique_ptr<ShaderPart> ShaderPartPtr;
 		ShaderPartPtr m_blender1;
 		ShaderPartPtr m_blender2;
+		ShaderPartPtr m_blenderAlpha;
 		ShaderPartPtr m_legacyBlender;
 		ShaderPartPtr m_clamp;
 		ShaderPartPtr m_signExtendColorC;

@@ -156,6 +156,13 @@ void ContextImpl::setScissor(s32 _x, s32 _y, s32 _width, s32 _height)
 void ContextImpl::setBlending(graphics::BlendParam _sfactor, graphics::BlendParam _dfactor)
 {
 	m_cachedFunctions->getCachedBlending()->setBlending(_sfactor, _dfactor);
+	m_cachedFunctions->getCachedBlendingSeparate()->reset();
+}
+
+void ContextImpl::setBlendingSeparate(graphics::BlendParam _sfactorcolor, graphics::BlendParam _dfactorcolor, graphics::BlendParam _sfactoralpha, graphics::BlendParam _dfactoralpha)
+{
+	m_cachedFunctions->getCachedBlendingSeparate()->setBlendingSeparate(_sfactorcolor, _dfactorcolor, _sfactoralpha, _dfactoralpha);
+	m_cachedFunctions->getCachedBlending()->reset();
 }
 
 void ContextImpl::setBlendColor(f32 _red, f32 _green, f32 _blue, f32 _alpha)
@@ -513,6 +520,8 @@ bool ContextImpl::isSupported(graphics::SpecialFeatures _feature) const
 		return m_glInfo.eglImage;
 	case graphics::SpecialFeatures::EglImageFramebuffer:
 		return m_glInfo.eglImageFramebuffer;
+	case graphics::SpecialFeatures::DualSourceBlending:
+		return m_glInfo.dual_source_blending;
 	}
 	return false;
 }

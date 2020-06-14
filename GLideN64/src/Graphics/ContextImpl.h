@@ -22,6 +22,7 @@ namespace graphics {
 		virtual void setViewport(s32 _x, s32 _y, s32 _width, s32 _height) = 0;
 		virtual void setScissor(s32 _x, s32 _y, s32 _width, s32 _height) = 0;
 		virtual void setBlending(BlendParam _sfactor, BlendParam _dfactor) = 0;
+		virtual void setBlendingSeparate(BlendParam _sfactorcolor, BlendParam _dfactorcolor, BlendParam _sfactoralpha, BlendParam _dfactoralpha) = 0;
 		virtual void setBlendColor(f32 _red, f32 _green, f32 _blue, f32 _alpha) = 0;
 		virtual void clearColorBuffer(f32 _red, f32 _green, f32 _blue, f32 _alpha) = 0;
 		virtual void clearDepthBuffer() = 0;

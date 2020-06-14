@@ -158,6 +158,8 @@ public:
 
 	void setBackgroundDrawingMode(bool _mode) { m_bBGMode = _mode; }
 
+	void setBlendMode(bool _forceLegacyBlending = false) const;
+
 private:
 	friend class DisplayWindow;
 	friend TexrectDrawer;
@@ -173,8 +175,9 @@ private:
 
 	void _setSpecialTexrect() const;
 
-	void _setBlendMode() const;
-	bool _setUnsupportedBlendMode() const;
+	void _legacyBlending() const;
+	void _ordinaryBlending() const;
+	void _dualSourceBlending() const;
 	void _updateCullFace() const;
 	void _updateViewport() const;
 	void _updateScreenCoordsViewport(const FrameBuffer * _pBuffer = nullptr) const;

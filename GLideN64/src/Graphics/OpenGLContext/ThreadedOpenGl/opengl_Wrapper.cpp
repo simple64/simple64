@@ -144,6 +144,15 @@ namespace opengl {
 			ptrBlendFunc(sfactor, dfactor);
 	}
 
+	void FunctionWrapper::wrBlendFuncSeparate(GLenum sfactorcolor, GLenum dfactorcolor, GLenum sfactoralpha, GLenum dfactoralpha)
+	{
+		if (m_threaded_wrapper)
+			executeCommand(GlBlendFuncSeparateCommand::get(sfactorcolor, dfactorcolor, sfactoralpha, dfactoralpha));
+		else
+			ptrBlendFuncSeparate(sfactorcolor, dfactorcolor, sfactoralpha, dfactoralpha);
+	}
+
+
 	void FunctionWrapper::wrPixelStorei(GLenum pname, GLint param)
 	{
 		if (m_threaded_wrapper)

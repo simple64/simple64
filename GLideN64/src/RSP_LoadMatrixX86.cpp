@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include "RSP.h"
 #include "GBI.h"
 
@@ -89,7 +90,7 @@ LoadLoop:
     "    loop    LoadLoop"                       "\n\t"
     ".att_syntax prefix"                         "\n\t"
     : /* no output */
-    : "f"(recip), "S"((int)RDRAM+address), "D"(mtx), "c"(4)
+    : "f"(recip), "S"((intptr_t)RDRAM+address), "D"(mtx), "c"(4)
     : "memory" );
 #endif // WIN32_ASM
 }
