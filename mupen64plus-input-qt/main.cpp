@@ -32,7 +32,8 @@
 #include <QDir>
 
 #define AXIS_PEAK 32768
-#define MAX_AXIS_VALUE 80
+#define MAX_AXIS_VALUE 85
+#define DEADZONE_DEFAULT 5.0
 
 #define QT_INPUT_PLUGIN_VERSION 0x020500
 #define INPUT_PLUGIN_API_VERSION 0x020100
@@ -110,7 +111,7 @@ EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle CoreHandle, void *, void
         values.replace(0, SDL_SCANCODE_DOWN);
         settings->setValue(section + "/AxisDown", QVariant::fromValue(values));
 
-        settings->setValue(section + "/Deadzone", 12.5);
+        settings->setValue(section + "/Deadzone", DEADZONE_DEFAULT);
         settings->setValue(section + "/Sensitivity", 100.0);
     }
 
@@ -167,7 +168,7 @@ EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle CoreHandle, void *, void
         values.replace(2, 1 /* positive axis value*/);
         settings->setValue(section + "/AxisDown", QVariant::fromValue(values));
 
-        settings->setValue(section + "/Deadzone", 12.5);
+        settings->setValue(section + "/Deadzone", DEADZONE_DEFAULT);
         settings->setValue(section + "/Sensitivity", 100.0);
     }
 
@@ -311,10 +312,10 @@ EXPORT void CALL ControllerCommand(int Control, unsigned char *Command)
 
 int modifyAxisValue(int axis_value, int Control, int direction)
 {
-    axis_value = ((abs(axis_value) - controller[Control].deadzone) * 80) / controller[Control].range;
+    axis_value = ((abs(axis_value) - controller[Control].deadzone) * MAX_AXIS_VALUE) / controller[Control].range;
     axis_value *= direction;
     axis_value = (float)axis_value * controller[Control].sensitivity;
-    axis_value = std::max(-80, std::min(axis_value, 80));
+    axis_value = std::max(-MAX_AXIS_VALUE, std::min(axis_value, MAX_AXIS_VALUE));
 
     return axis_value;
 }
@@ -551,7 +552,7 @@ EXPORT void CALL InitiateControllers(CONTROL_INFO ControlInfo)
         }
 
         if (!settings->contains(controller[i].profile + "/Deadzone"))
-            settings->setValue(controller[i].profile + "/Deadzone", 12.5);
+            settings->setValue(controller[i].profile + "/Deadzone", DEADZONE_DEFAULT);
         if (!settings->contains(controller[i].profile + "/Sensitivity"))
             settings->setValue(controller[i].profile + "/Sensitivity", 100.0);
 
