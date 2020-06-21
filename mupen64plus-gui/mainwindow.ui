@@ -20,7 +20,7 @@
      <x>0</x>
      <y>0</y>
      <width>640</width>
-     <height>25</height>
+     <height>32</height>
     </rect>
    </property>
    <property name="nativeMenuBar">
@@ -55,9 +55,9 @@
     </property>
     <addaction name="actionToggle_Fullscreen"/>
     <addaction name="separator"/>
-    <addaction name="actionPause_Game"/>
     <addaction name="actionMute"/>
     <addaction name="separator"/>
+    <addaction name="actionPause_Game"/>
     <addaction name="actionStop_Game"/>
     <addaction name="actionHard_Reset"/>
     <addaction name="actionSoft_Reset"/>
