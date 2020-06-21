@@ -408,6 +408,13 @@ void setKey(int Control, uint32_t key, BUTTONS *Keys, QString button)
             break;
         case 5 /*Joystick Axis*/:
             axis_value = SDL_JoystickGetAxis(controller[Control].joystick, value.at(0));
+            if (key == 0x0020/*Z*/)
+            {
+                if (axis_value > 0)
+                    Keys->Value |= key;
+                break;
+            }
+
             if (abs(axis_value) >= (AXIS_PEAK / 2) && axis_value * value.at(2) > 0)
                 Keys->Value |= key;
             break;
