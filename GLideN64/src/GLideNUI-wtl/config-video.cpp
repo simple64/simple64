@@ -426,15 +426,15 @@ void CVideoTab::LoadSettings(bool /*blockCustomSettings*/) {
 	if (config.frameBufferEmulation.N64DepthCompare == 0) {
 		if (!m_AAInfoWarning) {
 			HideMSAADepthWarning(true);
-			DisallowMSAA(false);
 			RedrawWindow();
 		}
+		DisallowMSAA(false);
 	} else {
 		if (m_AAInfoWarning) {
 			HideMSAADepthWarning(false);
-			DisallowMSAA(true);
 			RedrawWindow();
 		}
+		DisallowMSAA(true);
 	}
 
 	CButton(GetDlgItem(IDC_NOAA_RADIO)).SetCheck(config.video.multisampling == 0 && config.video.fxaa == 0 ? BST_CHECKED : BST_UNCHECKED);
@@ -525,12 +525,17 @@ void CVideoTab::SaveSettings()
 	);
 
 	config.video.fxaa = CButton(GetDlgItem(IDC_FXAA_RADIO)).GetCheck() == BST_CHECKED ? 1 : 0;
-	config.video.multisampling =
-		(CButton(GetDlgItem(IDC_FXAA_RADIO)).GetCheck() == BST_CHECKED
-			|| CComboBox(m_FrameBufferTab.GetDlgItem(IDC_CMB_N64_DEPTH_COMPARE)).GetCurSel() != 0
-			|| CButton(GetDlgItem(IDC_NOAA_RADIO)).GetCheck() == BST_CHECKED
-			) ? 0
-		: pow2(m_AliasingSlider.GetPos());
+	if (CButton(GetDlgItem(IDC_FXAA_RADIO)).GetCheck() == BST_CHECKED
+		|| CButton(GetDlgItem(IDC_NOAA_RADIO)).GetCheck() == BST_CHECKED
+		|| CComboBox(m_FrameBufferTab.GetDlgItem(IDC_CMB_N64_DEPTH_COMPARE)).GetCurSel() != 0)	{
+		config.video.multisampling = 0;
+	} else {
+		config.video.multisampling = pow2(m_AliasingSlider.GetPos());
+	}
+	if (CButton(GetDlgItem(IDC_MSAA_RADIO)).GetCheck() == BST_CHECKED
+		&& CComboBox(m_FrameBufferTab.GetDlgItem(IDC_CMB_N64_DEPTH_COMPARE)).GetCurSel() != 0) {
+		config.video.fxaa = 1;
+	}
 	config.texture.maxAnisotropy = m_AnisotropicSlider.GetPos();
 
 	if (CButton(GetDlgItem(IDC_BILINEAR_3POINT)).GetCheck() == BST_CHECKED)

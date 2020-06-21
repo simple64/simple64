@@ -250,6 +250,33 @@ void ConfigDialog::_init(bool reInit, bool blockCustomSettings)
 	ui->readDepthChunkCheckBox->setChecked(config.frameBufferEmulation.fbInfoReadDepthChunk != 0);
 	ui->readDepthChunkCheckBox->setEnabled(fbEmulationEnabled && config.frameBufferEmulation.fbInfoDisabled == 0);
 
+#if 0
+	// Texture filter settings
+	ui->filterComboBox->setCurrentIndex(config.textureFilter.txFilterMode);
+	ui->enhancementComboBox->setCurrentIndex(config.textureFilter.txEnhancementMode);
+
+	ui->textureFilterCacheSpinBox->setValue(config.textureFilter.txCacheSize / gc_uMegabyte);
+	ui->deposterizeCheckBox->setChecked(config.textureFilter.txDeposterize != 0);
+	ui->ignoreBackgroundsCheckBox->setChecked(config.textureFilter.txFilterIgnoreBG != 0);
+
+	ui->texturePackGroupBox->setChecked(config.textureFilter.txHiresEnable != 0);
+	ui->alphaChannelCheckBox->setChecked(config.textureFilter.txHiresFullAlphaChannel != 0);
+	ui->alternativeCRCCheckBox->setChecked(config.textureFilter.txHresAltCRC != 0);
+	ui->textureDumpCheckBox->toggle();
+	ui->textureDumpCheckBox->setChecked(config.textureFilter.txDump != 0);
+	ui->textureReloadCheckBox->toggle();
+	ui->textureReloadCheckBox->setChecked(config.textureFilter.txReloadHiresTex != 0);
+	ui->force16bppCheckBox->setChecked(config.textureFilter.txForce16bpp != 0);
+	ui->compressCacheCheckBox->setChecked(config.textureFilter.txCacheCompression != 0);
+	ui->saveTextureCacheCheckBox->setChecked(config.textureFilter.txSaveCache != 0);
+	ui->enhancedTexFileStorageCheckBox->setChecked(config.textureFilter.txEnhancedTextureFileStorage != 0);
+	ui->hiresTexFileStorageCheckBox->setChecked(config.textureFilter.txHiresTextureFileStorage != 0);
+
+	ui->texPackPathLineEdit->setText(QString::fromWCharArray(config.textureFilter.txPath));
+	ui->texCachePathLineEdit->setText(QString::fromWCharArray(config.textureFilter.txCachePath));
+	ui->texDumpPathLineEdit->setText(QString::fromWCharArray(config.textureFilter.txDumpPath));
+
+#endif
 	// OSD settings
 	QString fontName(config.font.name.c_str());
 	ui->fontLineEdit->setText(fontName);
@@ -504,6 +531,73 @@ void ConfigDialog::accept(bool justSave) {
 	config.frameBufferEmulation.overscanPAL.top = ui->overscanPalTopSpinBox->value();
 	config.frameBufferEmulation.overscanPAL.bottom = ui->overscanPalBottomSpinBox->value();
 
+#if 0
+	// Texture filter settings
+	config.textureFilter.txFilterMode = ui->filterComboBox->currentIndex();
+	config.textureFilter.txEnhancementMode = ui->enhancementComboBox->currentIndex();
+
+	config.textureFilter.txCacheSize = ui->textureFilterCacheSpinBox->value() * gc_uMegabyte;
+	config.textureFilter.txDeposterize = ui->deposterizeCheckBox->isChecked() ? 1 : 0;
+	config.textureFilter.txFilterIgnoreBG = ui->ignoreBackgroundsCheckBox->isChecked() ? 1 : 0;
+
+	config.textureFilter.txHiresEnable = ui->texturePackGroupBox->isChecked() ? 1 : 0;
+	config.textureFilter.txHiresFullAlphaChannel = ui->alphaChannelCheckBox->isChecked() ? 1 : 0;
+	config.textureFilter.txHresAltCRC = ui->alternativeCRCCheckBox->isChecked() ? 1 : 0;
+	config.textureFilter.txDump = ui->textureDumpCheckBox->isChecked() ? 1 : 0;
+	config.textureFilter.txReloadHiresTex = ui->textureReloadCheckBox->isChecked() ? 1 : 0;
+
+	config.textureFilter.txCacheCompression = ui->compressCacheCheckBox->isChecked() ? 1 : 0;
+	config.textureFilter.txForce16bpp = ui->force16bppCheckBox->isChecked() ? 1 : 0;
+	config.textureFilter.txSaveCache = ui->saveTextureCacheCheckBox->isChecked() ? 1 : 0;
+	config.textureFilter.txEnhancedTextureFileStorage = ui->enhancedTexFileStorageCheckBox->isChecked() ? 1 : 0;
+	config.textureFilter.txHiresTextureFileStorage = ui->hiresTexFileStorageCheckBox->isChecked() ? 1 : 0;
+
+	QDir txPath(ui->texPackPathLineEdit->text());
+	if (txPath.exists()) {
+		config.textureFilter.txPath[txPath.absolutePath().toWCharArray(config.textureFilter.txPath)] = L'\0';
+	} else if (config.textureFilter.txHiresEnable != 0) {
+		QMessageBox msgBox;
+		msgBox.setStandardButtons(QMessageBox::Close);
+		msgBox.setWindowTitle("GLideN64");
+		msgBox.setText(tr("The texture pack folder is missing. Please change the folder or turn off texture packs."));
+		msgBox.exec();
+		ui->tabWidget->setCurrentIndex(3);
+		ui->texPackPathLineEdit->setFocus(Qt::PopupFocusReason);
+		ui->texPackPathLineEdit->selectAll();
+		return;
+	}
+
+	QDir txCachePath(ui->texCachePathLineEdit->text());
+	if (txCachePath.exists()) {
+		config.textureFilter.txCachePath[txCachePath.absolutePath().toWCharArray(config.textureFilter.txCachePath)] = L'\0';
+	} else if (config.textureFilter.txHiresEnable != 0) {
+		QMessageBox msgBox;
+		msgBox.setStandardButtons(QMessageBox::Close);
+		msgBox.setWindowTitle("GLideN64");
+		msgBox.setText(tr("The texture pack cache folder is missing. Please change the folder or turn off texture packs."));
+		msgBox.exec();
+		ui->tabWidget->setCurrentIndex(3);
+		ui->texCachePathLineEdit->setFocus(Qt::PopupFocusReason);
+		ui->texCachePathLineEdit->selectAll();
+		return;
+	}
+
+	QDir txDumpPath(ui->texDumpPathLineEdit->text());
+	if (txDumpPath.exists()) {
+		config.textureFilter.txDumpPath[txDumpPath.absolutePath().toWCharArray(config.textureFilter.txDumpPath)] = L'\0';
+	} else if (config.textureFilter.txHiresEnable != 0 && config.textureFilter.txDump != 0) {
+		QMessageBox msgBox;
+		msgBox.setStandardButtons(QMessageBox::Close);
+		msgBox.setWindowTitle("GLideN64");
+		msgBox.setText(tr("The texture dump folder is missing. Please change the folder or turn off dumping texture packs."));
+		msgBox.exec();
+		ui->tabWidget->setCurrentIndex(3);
+		ui->texDumpPathLineEdit->setFocus(Qt::PopupFocusReason);
+		ui->texDumpPathLineEdit->selectAll();
+		return;
+	}
+
+#endif
 	// OSD settings
 	config.font.size = ui->fontSizeSpinBox->value();
 #ifdef OS_WINDOWS

@@ -170,6 +170,7 @@ struct Config
 		u32 txHiresFullAlphaChannel;	// Use alpha channel fully
 		u32 txHresAltCRC;				// Use alternative method of paletted textures CRC calculation
 		u32 txDump;						// Dump textures
+		u32 txReloadHiresTex;			// Reload hires textures
 
 		u32 txForce16bpp;				// Force use 16bit color textures
 		u32 txCacheCompression;			// Zip textures cache

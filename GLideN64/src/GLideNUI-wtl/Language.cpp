@@ -183,9 +183,11 @@ void loadDefaultStrings(void)
 	g_defaultStrings.insert(LANG_STRINGS::value_type(TEXTURE_USE_FULL_TRANSPARENCIES_TOOLTIP, "When this option is cleared, textures will be loaded as they are when using Rice Video: transparencies either on or off. When this option is selected, GlideN64 will check how the texture's alpha channel was designed and will select the most appropriate format. This gives texture pack designers freedom to use semi-transparent textures.\nClear this option for older or poorly designed texture packs.\n[Recommended: Texture pack dependent]"));
 	g_defaultStrings.insert(LANG_STRINGS::value_type(TEXTURE_ALTERNATIVE_CRC, "Alternative CRC calculation (for old Rice Video packs)"));
 	g_defaultStrings.insert(LANG_STRINGS::value_type(TEXTURE_ALTERNATIVE_CRC_TOOLTIP, "This option emulates a palette CRC calculation bug in Rice Video. If you have problems loading textures, try checking or unchecking this option.\n[Recommended: Mostly unchecked, checked for old texture packs]"));
-	g_defaultStrings.insert(LANG_STRINGS::value_type(TEXTURE_FILE_STORAGE, "Use file storage instead of memory cache"));
-	g_defaultStrings.insert(LANG_STRINGS::value_type(TEXTURE_DUMP_EDIT, "Dump/edit textures"));
-	g_defaultStrings.insert(LANG_STRINGS::value_type(TEXTURE_DUMP_EDIT_TOOLTIP, "This option dumps textures on screen to a texture pack folder. You can also reload textures while the game is running to see how they look instantly—big time saver!\nHotkeys:\nUse R to reload textures from the texture pack\nUse D to toggle texture dumping on or off"));
+	g_defaultStrings.insert(LANG_STRINGS::value_type(TEXTURE_USE_FILE_STORAGE_TOOLTIP, "This option enables alternative storage for hi-res textures. Normally memory cache is used. It keeps all hi-res textures in RAM and thus limited by available RAM size. File storage keeps texture cache on HDD. It is slower than memory cache, but has virtually no limits on cache size. Disable \"Compress texture cache\" option for better performance."));
+	g_defaultStrings.insert(LANG_STRINGS::value_type(TEXTURE_DUMP, "Press 'd' to dump N64 textures (for texture artists)"));
+	g_defaultStrings.insert(LANG_STRINGS::value_type(TEXTURE_DUMP_TOOLTIP, "This option dumps textures on screen to a texture pack folder.\nHotkey:\nUse D to toggle texture dumping on or off"));
+	g_defaultStrings.insert(LANG_STRINGS::value_type(TEXTURE_RELOAD, "Press 'r' to reload hi-res textures (for texture artists)"));
+	g_defaultStrings.insert(LANG_STRINGS::value_type(TEXTURE_RELOAD_TOOLTIP, "This option allows texture artists to reload hi-res textures while the game is running to instantly see how they look —big time saver\nHotkey:\nUse R to reload textures from the texture pack"));
 	g_defaultStrings.insert(LANG_STRINGS::value_type(TEXTURE_SIZE_OF_MEMORY_CACHE, "Size of memory cache for enhanced textures:"));
 	g_defaultStrings.insert(LANG_STRINGS::value_type(TEXTURE_SIZE_OF_MEMORY_CACHE_TOOLTIP, "Enhanced and filtered textures can be cached to improve performance. This option adjusts how much memory is dedicated to the texture cache. This can improve performance if there are many requests for the same texture, which is usually the case. Normally 128 MB should be more than enough, but the best option is different for each game. Super Mario 64 may not need more than 32 MB, but Conker's Bad Fur Day can take advantage of 256 MB+. Adjust accordingly if you are having performance problems. Setting this option to 0 disables the cache.\n[Recommended: PC and game dependent]"));
 	g_defaultStrings.insert(LANG_STRINGS::value_type(TEXTURE_SAVE_ENHANCED, "Save enhanced texture cache to hard disk"));
@@ -237,6 +239,7 @@ LANG_STR GetNextLangString(FILE * file)
 		return LANG_STR(0, "");
 
 	char token = 0;
+	char prevtoken = 0;
 	while (token != '#' && !feof(file))
 		fread(&token, 1, 1, file);
 
@@ -261,16 +264,25 @@ LANG_STR GetNextLangString(FILE * file)
 
 	fread(&token, 1, 1, file);
 	std::string text;
-	while (token != '"' && !feof(file)) {
+	while (!feof(file)) {
+		if (token == '"' && prevtoken != '\\') break; //escape quote
+		prevtoken = token;
 		text += token;
 		fread(&token, 1, 1, file);
 	}
 
-	std::string::size_type pos = text.find("\\n");
+	std::string::size_type pos;
+	pos = text.find("\\n"); //unescape line breaks
 	while (pos != std::string::npos) {
 		text.replace(pos, 2, "\n");
 		pos = text.find("\\n", pos + 1);
 	}
+	pos = text.find("\\\""); //unescape quotes
+	while (pos != std::string::npos) {
+		text.replace(pos, 2, "\"");
+		pos = text.find("\\\"", pos + 1);
+	}
+
 	return LANG_STR(StringID, text);
 }
 

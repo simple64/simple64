@@ -182,9 +182,9 @@
 #5025# "When this option is cleared, textures will be loaded as they are when using Rice Video: transparencies either on or off. When this option is selected, GlideN64 will check how the texture's alpha channel was designed and will select the most appropriate format. This gives texture pack designers freedom to use semi-transparent textures.\nClear this option for older or poorly designed texture packs.\n[Recommended: Texture pack dependent]"
 #5026# "Alternative CRC calculation (for old Rice Video packs)"
 #5027# "This option emulates a palette CRC calculation bug in Rice Video. If you have problems loading textures, try checking or unchecking this option.\n[Recommended: Mostly unchecked, checked for old texture packs]"
-#5028# "Use file storage instead of memory cache"
-#5029# "Dump/edit textures"
-#5030# "This option dumps textures on screen to a texture pack folder. You can also reload textures while the game is running to see how they look instantly—big time saver!\nHotkeys:\nUse R to reload textures from the texture pack\nUse D to toggle texture dumping on or off"
+#5028# "This option enables alternative storage for hi-res textures. Normally memory cache is used. It keeps all hi-res textures in RAM and thus limited by available RAM size. File storage keeps texture cache on HDD. It is slower than memory cache, but has virtually no limits on cache size. Disable \"Compress texture cache\" option for better performance."
+#5029# "Press 'd' to dump N64 textures (for texture artists)"
+#5030# "This option dumps textures on screen to a texture pack folder.\nHotkey:\nUse D to toggle texture dumping on or off"
 #5031# "Size of memory cache for enhanced textures:"
 #5032# "Enhanced and filtered textures can be cached to improve performance. This option adjusts how much memory is dedicated to the texture cache. This can improve performance if there are many requests for the same texture, which is usually the case. Normally 128 MB should be more than enough, but the best option is different for each game. Super Mario 64 may not need more than 32 MB, but Conker's Bad Fur Day can take advantage of 256 MB+. Adjust accordingly if you are having performance problems. Setting this option to 0 disables the cache.\n[Recommended: PC and game dependent]"
 #5033# "Save enhanced texture cache to hard disk"
@@ -193,6 +193,8 @@
 #5036# "Textures will be compressed so more textures can be held in the cache. The compression ratio varies per texture, but the compression is typically 1/5 of the original size.\n[Recommended: Checked]"
 #5037# "Convert textures to 16 bpp"
 #5038# "This option halves the space used by textures in the texture cache and video card memory to improve performance. When reducing the color, GLideN64 tries to perserve the original quality as much as possible. On most textures it's hardly noticeable, but some textures, like skies, can look noticeably worse.\n[Recommended: Unchecked]"
+#5039# "Press 'r' to reload hi-res textures (for texture artists)"
+#5040# "This option allows texture artists to reload hi-res textures while the game is running to instantly see how they look —big time saver\nHotkey:\nUse R to reload textures from the texture pack"
 
 /*********************************************************************************
 * On-screen display                                                              *

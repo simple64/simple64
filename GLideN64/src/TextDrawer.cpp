@@ -346,6 +346,9 @@ void TextDrawer::drawText(const char *_pText, float _x, float _y) const
 	gfxContext.setBlending(blend::SRC_ALPHA, blend::ONE_MINUS_SRC_ALPHA);
 	m_program->activate();
 
+	gfxContext.setViewport(0, 0, wnd.getWidth(), wnd.getHeight());
+	gSP.changed |= CHANGED_VIEWPORT;
+
 	Context::TexParameters setParams;
 	setParams.handle = m_atlas->m_pTexture->name;
 	setParams.textureUnitIndex = textureIndices::Tex[0];

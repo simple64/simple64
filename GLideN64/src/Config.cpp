@@ -92,6 +92,7 @@ void Config::resetToDefaults()
 	textureFilter.txHiresFullAlphaChannel = 1;
 	textureFilter.txHresAltCRC = 0;
 	textureFilter.txDump = 0;
+	textureFilter.txReloadHiresTex = 0;
 
 	textureFilter.txForce16bpp = 0;
 	textureFilter.txCacheCompression = 1;
