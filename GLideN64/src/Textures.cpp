@@ -672,7 +672,7 @@ void _updateCachedTexture(const GHQTexInfo & _info, CachedTexture *_pTexture, u1
 
 	_pTexture->scaleS = 1.0f / (_pTexture->maskS ? f32(pow2(widthOrg)) : f32(widthOrg));
 	_pTexture->scaleT = 1.0f / (_pTexture->maskT ? f32(pow2(heightOrg)) : f32(heightOrg));
-	
+
 	_pTexture->hdRatioS = f32(_info.width / _pTexture->width);
 	_pTexture->hdRatioT = f32(_info.height / _pTexture->height);
 
@@ -1257,11 +1257,15 @@ u64 _calculateCRC(u32 _t, const TextureParams & _params, u32 _bytes)
 		_bytes >>= 1;
 	const u32 tMemMask = (gDP.otherMode.textureLUT == G_TT_NONE && !rgba32) ? 0x1FF : 0xFF;
 	const u64 *src = (u64*)&TMEM[gSP.textureTile[_t]->tmem & tMemMask];
+	const u32 maxBytes = (tMemMask + 1) << 3;
+	const u32 tileTmemInBytes = gSP.textureTile[_t]->tmem << 3;
+	if (!rgba32 && (tileTmemInBytes + _bytes > maxBytes))
+		_bytes = maxBytes - tileTmemInBytes;
 	u64 crc = UINT64_MAX;
 	crc = CRC_Calculate(crc, src, _bytes);
 
 	if (rgba32) {
-		src = (u64*)&TMEM[gSP.textureTile[_t]->tmem + 256];
+		src = (u64*)&TMEM[(gSP.textureTile[_t]->tmem + 256) & 0x1FF];
 		crc = CRC_Calculate(crc, src, _bytes);
 	}
 
@@ -1449,24 +1453,29 @@ void TextureCache::_clear()
 
 void TextureCache::update(u32 _t)
 {
-	if (config.textureFilter.txHiresEnable != 0 && config.textureFilter.txDump != 0) {
-		/* Force reload hi-res textures. Useful for texture artists */
-		if (isKeyPressed(G64_VK_R, 0x0001)) {
-			if (txfilter_reloadhirestex()) {
-				_clear();
+	if (config.textureFilter.txHiresEnable != 0) {
+		if (config.textureFilter.txReloadHiresTex != 0) {
+			/* Force reload hi-res textures. Useful for texture artists */
+			if (isKeyPressed(G64_VK_R, 0x0001)) {
+				if (txfilter_reloadhirestex()) {
+					_clear();
+				}
 			}
 		}
-		/* Turn on texture dump */
-		else if (isKeyPressed(G64_VK_D, 0x0001)) {
-			m_toggleDumpTex = !m_toggleDumpTex;
-			if (m_toggleDumpTex) {
-				displayLoadProgress(L"Texture dump - ON\n");
-				_clear();
-				std::this_thread::sleep_for(std::chrono::seconds(1));
-			}
-			else {
-				displayLoadProgress(L"Texture dump - OFF\n");
-				std::this_thread::sleep_for(std::chrono::seconds(1));
+
+		if (config.textureFilter.txDump != 0) {
+			/* Turn on texture dump */
+			if (isKeyPressed(G64_VK_D, 0x0001)) {
+				m_toggleDumpTex = !m_toggleDumpTex;
+				if (m_toggleDumpTex) {
+					displayLoadProgress(L"Texture dump - ON\n");
+					_clear();
+					std::this_thread::sleep_for(std::chrono::seconds(1));
+				}
+				else {
+					displayLoadProgress(L"Texture dump - OFF\n");
+					std::this_thread::sleep_for(std::chrono::seconds(1));
+				}
 			}
 		}
 	}

@@ -62,8 +62,9 @@ void CTextureEnhancementTab::ApplyLanguage(void)
 	SetDlgItemTextW(IDC_TEX_DUMP_PATH_STATIC, wGS(TEXTURE_DUMP_PATH).c_str());
 	SetDlgItemTextW(IDC_CHK_ALPHA_CHANNEL, wGS(TEXTURE_USE_FULL_TRANSPARENCIES).c_str());
 	SetDlgItemTextW(IDC_CHK_ALTERNATIVE_CRC, wGS(TEXTURE_ALTERNATIVE_CRC).c_str());
-	SetDlgItemTextW(IDC_CHK_HIRES_TEX_FILESTORAGE, wGS(TEXTURE_FILE_STORAGE).c_str());
-	SetDlgItemTextW(IDC_CHK_TEXTURE_DUMP, wGS(TEXTURE_DUMP_EDIT).c_str());
+	SetDlgItemTextW(IDC_CHK_HIRES_TEX_FILESTORAGE, wGS(TEXTURE_USE_FILE_STORAGE).c_str());
+	SetDlgItemTextW(IDC_CHK_TEXTURE_DUMP, wGS(TEXTURE_DUMP).c_str());
+	SetDlgItemTextW(IDC_CHK_TEXTURE_RELOAD, wGS(TEXTURE_RELOAD).c_str());
 	SetDlgItemTextW(IDC_TEXTURE_FILTER_CACHE_STATIC, wGS(TEXTURE_SIZE_OF_MEMORY_CACHE).c_str());
 	SetDlgItemTextW(IDC_CHK_SAVE_TEXTURE_CACHE, wGS(TEXTURE_SAVE_ENHANCED).c_str());
 	SetDlgItemTextW(IDC_CHK_COMPRESS_CACHE, wGS(TEXTURE_COMPRESS_CACHE).c_str());
@@ -86,8 +87,12 @@ void CTextureEnhancementTab::ApplyLanguage(void)
 	TTSetTxt(GetDlgItem(IDC_CHK_ALPHA_CHANNEL), tooltip.c_str());
 	tooltip = wGS(TEXTURE_ALTERNATIVE_CRC_TOOLTIP);
 	TTSetTxt(GetDlgItem(IDC_CHK_ALTERNATIVE_CRC), tooltip.c_str());
-	tooltip = wGS(TEXTURE_DUMP_EDIT_TOOLTIP);
+	tooltip = wGS(TEXTURE_USE_FILE_STORAGE_TOOLTIP);
+	TTSetTxt(GetDlgItem(IDC_CHK_HIRES_TEX_FILESTORAGE), tooltip.c_str());
+	tooltip = wGS(TEXTURE_DUMP_TOOLTIP);
 	TTSetTxt(GetDlgItem(IDC_CHK_TEXTURE_DUMP), tooltip.c_str());
+	tooltip = wGS(TEXTURE_RELOAD_TOOLTIP);
+	TTSetTxt(GetDlgItem(IDC_CHK_TEXTURE_RELOAD), tooltip.c_str());
 	tooltip = wGS(TEXTURE_SIZE_OF_MEMORY_CACHE_TOOLTIP);
 	TTSetTxt(GetDlgItem(IDC_TEXTURE_FILTER_CACHE_STATIC), tooltip.c_str());
 	TTSetTxt(GetDlgItem(IDC_TEXTURE_FILTER_CACHE_EDIT), tooltip.c_str());
@@ -161,6 +166,7 @@ void CTextureEnhancementTab::OnTexturePack(UINT /*Code*/, int /*id*/, HWND /*ctl
 	CButton(GetDlgItem(IDC_CHK_ALTERNATIVE_CRC)).EnableWindow(UseTextPack);
 	CButton(GetDlgItem(IDC_CHK_HIRES_TEX_FILESTORAGE)).EnableWindow(UseTextPack);
 	CButton(GetDlgItem(IDC_CHK_TEXTURE_DUMP)).EnableWindow(UseTextPack);
+	CButton(GetDlgItem(IDC_CHK_TEXTURE_RELOAD)).EnableWindow(UseTextPack);
 }
 
 LRESULT CTextureEnhancementTab::OnScroll(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/)
@@ -190,6 +196,7 @@ void CTextureEnhancementTab::LoadSettings(bool /*blockCustomSettings*/)
 	CButton(GetDlgItem(IDC_CHK_ALTERNATIVE_CRC)).SetCheck(config.textureFilter.txHresAltCRC != 0 ? BST_CHECKED : BST_UNCHECKED);
 	CButton(GetDlgItem(IDC_CHK_HIRES_TEX_FILESTORAGE)).SetCheck(config.textureFilter.txHiresTextureFileStorage != 0 ? BST_CHECKED : BST_UNCHECKED);
 	CButton(GetDlgItem(IDC_CHK_TEXTURE_DUMP)).SetCheck(config.textureFilter.txDump != 0 ? BST_CHECKED : BST_UNCHECKED);
+	CButton(GetDlgItem(IDC_CHK_TEXTURE_RELOAD)).SetCheck(config.textureFilter.txReloadHiresTex != 0 ? BST_CHECKED : BST_UNCHECKED);
 	CButton(GetDlgItem(IDC_CHK_SAVE_TEXTURE_CACHE)).SetCheck(config.textureFilter.txSaveCache != 0 ? BST_CHECKED : BST_UNCHECKED);
 	CButton(GetDlgItem(IDC_CHK_COMPRESS_CACHE)).SetCheck(config.textureFilter.txCacheCompression != 0 ? BST_CHECKED : BST_UNCHECKED);
 	CButton(GetDlgItem(IDC_CHK_FORCE_16BPP)).SetCheck(config.textureFilter.txForce16bpp != 0 ? BST_CHECKED : BST_UNCHECKED);
@@ -238,6 +245,7 @@ void CTextureEnhancementTab::SaveSettings()
 	config.textureFilter.txHresAltCRC = CButton(GetDlgItem(IDC_CHK_ALTERNATIVE_CRC)).GetCheck() == BST_CHECKED ? 1 : 0;
 	config.textureFilter.txHiresTextureFileStorage = CButton(GetDlgItem(IDC_CHK_HIRES_TEX_FILESTORAGE)).GetCheck() == BST_CHECKED ? 1 : 0;
 	config.textureFilter.txDump = CButton(GetDlgItem(IDC_CHK_TEXTURE_DUMP)).GetCheck() == BST_CHECKED ? 1 : 0;
+	config.textureFilter.txReloadHiresTex = CButton(GetDlgItem(IDC_CHK_TEXTURE_RELOAD)).GetCheck() == BST_CHECKED ? 1 : 0;
 	config.textureFilter.txCacheSize = m_TextureFilterCacheSpin.GetPos() * gc_uMegabyte * 50;
 	config.textureFilter.txSaveCache = CButton(GetDlgItem(IDC_CHK_SAVE_TEXTURE_CACHE)).GetCheck() == BST_CHECKED ? 1 : 0;
 	config.textureFilter.txCacheCompression = CButton(GetDlgItem(IDC_CHK_COMPRESS_CACHE)).GetCheck() == BST_CHECKED ? 1 : 0;
