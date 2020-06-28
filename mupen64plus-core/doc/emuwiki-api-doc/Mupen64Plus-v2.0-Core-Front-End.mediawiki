@@ -188,7 +188,7 @@ Most libmupen64plus functions return an <tt>m64p_error</tt> return code, which i
 |-
 |M64CMD_SET_MEDIA_LOADER
 |This command allow frontends to register their media (such as GameBoy cartridge or 64DD disk) loading functions. These functions will be called appropriately by the core at startup and when a new media is inserted.
-|'''<tt>ParamInt</tt>''' must be sizeof(m64p_media_loader).'''<br /><tt>ParamPtr</tt>'''A pointer to the m64p_media_loader to register, cannot be NULL.
+|'''<tt>ParamInt</tt>''' must be sizeof(m64p_media_loader).'''<br /><tt>ParamPtr</tt>''' A pointer to the m64p_media_loader to register, cannot be NULL.
 |None
 |-
 |M64CMD_NETPLAY_INIT
@@ -210,6 +210,11 @@ Most libmupen64plus functions return an <tt>m64p_error</tt> return code, which i
 |Closes the netplay subsystem, as well as any connections to the netplay server.
 |N/A
 |None
+|-
+|M64CMD_PIF_OPEN
+|This will cause the core to read in a binary PIF image provided by the front-end.
+|'''<tt>ParamInt</tt>''' must be 2048.'''<br /><tt>ParamPtr</tt>''' Pointer to the uncompressed PIF image in memory.
+|The emulator cannot be currently running.
 |}
 <br />
 
