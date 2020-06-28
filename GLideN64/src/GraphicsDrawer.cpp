@@ -302,7 +302,7 @@ void GraphicsDrawer::_updateScreenCoordsViewport(const FrameBuffer * _pBuffer) c
 		viewportScaleX = viewportScaleY = pCurrentBuffer->m_scale;
 		X = roundup(f32(pCurrentBuffer->m_originX), viewportScaleX);
 		Y = roundup(f32(pCurrentBuffer->m_originY), viewportScaleY);
-		if (RSP.LLE) {
+		if (RSP.LLE || gSP.viewport.width == 0) {
 			gSP.viewport.width = f32(bufferWidth);
 			gSP.viewport.height = f32(bufferHeight);
 		}
@@ -946,13 +946,13 @@ void GraphicsDrawer::_drawThickLine(int _v0, int _v1, float _width)
 	pVtx[0] = triangles.vertices[_v0];
 	pVtx[0].x = pVtx[0].x / pVtx[0].w * gSP.viewport.vscale[0] + gSP.viewport.vtrans[0];
 	pVtx[0].y = ySign * pVtx[0].y / pVtx[0].w * gSP.viewport.vscale[1] + gSP.viewport.vtrans[1];
-	pVtx[0].z = pVtx[0].z / pVtx[0].w * gSP.viewport.vscale[2] + gSP.viewport.vtrans[2];
+	pVtx[0].z = pVtx[0].z / pVtx[0].w;
 	pVtx[1] = pVtx[0];
 
 	pVtx[2] = triangles.vertices[_v1];
 	pVtx[2].x = pVtx[2].x / pVtx[2].w * gSP.viewport.vscale[0] + gSP.viewport.vtrans[0];
 	pVtx[2].y = ySign * pVtx[2].y / pVtx[2].w * gSP.viewport.vscale[1] + gSP.viewport.vtrans[1];
-	pVtx[2].z = pVtx[2].z / pVtx[2].w * gSP.viewport.vscale[2] + gSP.viewport.vtrans[2];
+	pVtx[2].z = pVtx[2].z / pVtx[2].w;
 	pVtx[3] = pVtx[2];
 
 	if (fabs(pVtx[0].y - pVtx[2].y) < 0.0001) {

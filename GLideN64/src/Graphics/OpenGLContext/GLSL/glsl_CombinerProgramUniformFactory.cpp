@@ -1012,10 +1012,10 @@ public:
 				pTile->textureMode != TEXTUREMODE_NORMAL ||
 				g_debugger.isDebugMode())
 			{
-				aTexWrap[t][0] = 1.0;
-				aTexWrap[t][1] = 1.0;
-				aTexClamp[t][0] = f32(pTexture->width) - 1.0f;
-				aTexClamp[t][1] = f32(pTexture->height) - 1.0f;
+				aTexWrap[t][0] = pTexture->hdRatioS;
+				aTexWrap[t][1] = pTexture->hdRatioT;
+				aTexClamp[t][0] = f32(pTexture->width) * pTexture->hdRatioS - 1.0f;
+				aTexClamp[t][1] = f32(pTexture->height) * pTexture->hdRatioT - 1.0f;
 				aTexWrapEn[t][0] = 0.0;
 				aTexWrapEn[t][1] = 0.0;
 				aTexClampEn[t][0] = 1.0;
