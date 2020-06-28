@@ -606,6 +606,9 @@ void RDP_ProcessRDPList()
 		RDP.w2 = RDP.cmd_data[RDP.cmd_cur + 2];
 		RDP.w3 = RDP.cmd_data[RDP.cmd_cur + 3];
 		RSP.cmd = cmd;
+#ifdef DEBUG_DUMP
+		DebugMsg(DEBUG_LOW, "CMD=0x%02lX W0=0x%08lX W1=0x%08lX\n", cmd, RDP.w0, RDP.w1);
+#endif
 		LLETriangle::get().flush(cmd);
 		LLEcmd[cmd](RDP.w0, RDP.w1);
 
