@@ -225,7 +225,6 @@ m64p_error loadROM(std::string filename)
 
 static void loadPif()
 {
-#if 0
     /* Try to load the PIF image into the core */
     if (!w->getSettings()->value("PIF_ROM").toString().isEmpty()) {
         QFile pifFile(w->getSettings()->value("PIF_ROM").toString());
@@ -246,13 +245,14 @@ static void loadPif()
             pifFile.close();
         }
     }
-#endif
 }
 
 m64p_error launchGame(QString netplay_ip, int netplay_port, int netplay_player)
 {
     uint32_t i;
-    loadPif();
+
+    if (!netplay_port)
+        loadPif();
 
     /* search for and load plugins */
     m64p_error rval = PluginSearchLoad();
