@@ -63,21 +63,20 @@ CreateRoom::CreateRoom(QWidget *parent)
     QNetworkRequest request(QUrl(QStringLiteral("https://m64p.s3.amazonaws.com/servers.json")));
     manager.get(request);
 
-    multicastSocket.bind(QHostAddress(QHostAddress::AnyIPv4), 0);
-    connect(&multicastSocket, &QUdpSocket::readyRead, this, &CreateRoom::processMulticast);
-    QHostAddress multicastAddr(QStringLiteral("239.64.64.64"));
+    broadcastSocket.bind(QHostAddress(QHostAddress::AnyIPv4), 0);
+    connect(&broadcastSocket, &QUdpSocket::readyRead, this, &CreateRoom::processBroadcast);
     QByteArray multirequest;
     multirequest.append(1);
-    multicastSocket.writeDatagram(multirequest, multicastAddr, 45000);
+    broadcastSocket.writeDatagram(multirequest, QHostAddress::Broadcast, 45000);
 
     launched = 0;
 }
 
-void CreateRoom::processMulticast()
+void CreateRoom::processBroadcast()
 {
-    while (multicastSocket.hasPendingDatagrams())
+    while (broadcastSocket.hasPendingDatagrams())
     {
-        QNetworkDatagram datagram = multicastSocket.receiveDatagram();
+        QNetworkDatagram datagram = broadcastSocket.receiveDatagram();
         QByteArray incomingData = datagram.data();
         QJsonDocument json_doc = QJsonDocument::fromJson(incomingData);
         QJsonObject json = json_doc.object();
@@ -89,7 +88,7 @@ void CreateRoom::processMulticast()
 
 void CreateRoom::onFinished(int)
 {
-    multicastSocket.close();
+    broadcastSocket.close();
     (*CoreDoCommand)(M64CMD_ROM_CLOSE, 0, NULL);
     if (!launched && webSocket)
     {

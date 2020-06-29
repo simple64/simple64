@@ -22,7 +22,7 @@ private slots:
     void refresh();
     void joinGame();
     void onFinished(int result);
-    void processMulticast();
+    void processBroadcast();
 private:
     void resetList();
     QComboBox *serverChooser;
@@ -37,7 +37,7 @@ private:
     int row = 0;
     int launched;
     QString filename;
-    QUdpSocket multicastSocket;
+    QUdpSocket broadcastSocket;
 };
 
 #endif // JOINROOM_H
