@@ -1,6 +1,6 @@
 #include "config-texture.h"
 #include "resource.h"
-#include "util.h"
+#include "util/util.h"
 #include "../Config.h"
 #include "Language.h"
 #include <Shlobj.h>

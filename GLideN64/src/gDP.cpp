@@ -851,7 +851,7 @@ void gDPTextureRectangle(f32 ulx, f32 uly, f32 lrx, f32 lry, s32 tile, s16 s, s1
 		lrx += 1.0f;
 		lry += 1.0f;
 	}
-	lry = max(lry, uly + 1.0f);
+	lry = ceil(lry);
 
 	gDPTile *textureTileOrg[2];
 	textureTileOrg[0] = gSP.textureTile[0];

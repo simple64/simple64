@@ -1,6 +1,6 @@
 #include "config-video.h"
 #include "FullscreenResolutions.h"
-#include "util.h"
+#include "util/util.h"
 #include "Language.h"
 #include "ConfigDlg.h"
 #include "../Config.h"
@@ -26,7 +26,6 @@ WindowedModes[] = {
 	{ 1600, 1200, _T("1600 x 1200") }
 };
 static const unsigned int numWindowedModes = sizeof(WindowedModes) / sizeof(WindowedModes[0]);
-static const LPCTSTR englishLang = _T("English");
 
 static u32 pow2(u32 dim)
 {
@@ -100,13 +99,10 @@ BOOL CVideoTab::OnInitDialog(CWindow /*wndFocus*/, LPARAM /*lInitParam*/) {
 	m_AAInfoIcon.SetBackroundBrush((HBRUSH)GetStockObject(WHITE_BRUSH));
 
 	CComboBox translationsComboBox(GetDlgItem(IDC_CMB_LANGUAGE));
+	translationsComboBox.SetItemData(translationsComboBox.AddString((LPCTSTR)_T("English")), (DWORD_PTR)"");
 	for (LanguageList::const_iterator itr = m_LangList.begin(); itr != m_LangList.end(); itr++) {
 		int indx = translationsComboBox.AddString(ToUTF16(itr->LanguageName.c_str()).c_str());
 		translationsComboBox.SetItemData(indx, (DWORD_PTR)itr->Filename.c_str());
-	}
-	if (translationsComboBox.FindString(-1, englishLang) == CB_ERR) {
-		int indx = translationsComboBox.AddString(englishLang);
-		translationsComboBox.SetItemData(indx, (DWORD_PTR)"");
 	}
 	return true;
 }
@@ -464,21 +460,16 @@ void CVideoTab::LoadSettings(bool /*blockCustomSettings*/) {
 
 	CComboBox translationsComboBox(GetDlgItem(IDC_CMB_LANGUAGE));
 	translationsComboBox.SetCurSel(-1);
-	int englishIndx = -1;
 	for (int i = 0, n = translationsComboBox.GetCount(); i < n; i++) {
 		const char * translations = (const char *)translationsComboBox.GetItemDataPtr(i);
-		if (_stricmp(translations, "gliden64_en.Lang") == 0)
-			englishIndx = i;
 
 		if (config.translationFile == translations) {
 			translationsComboBox.SetCurSel(i);
 			break;
 		}
-	} // default: attempt to use gliden64_en.Lang
-	if (englishIndx >= 0 && translationsComboBox.GetCurSel() < 0)
-		translationsComboBox.SetCurSel(englishIndx);
-	else if (translationsComboBox.GetCurSel() < 0) // gliden64_en.Lang not found; select hardcoded english
-		translationsComboBox.SetCurSel(translationsComboBox.FindString(-1, englishLang));
+	}
+	if (translationsComboBox.GetCurSel() < 0)
+		translationsComboBox.SetCurSel(translationsComboBox.FindString(-1, (LPCTSTR)_T("English")));
 }
 
 void CVideoTab::SaveSettings()

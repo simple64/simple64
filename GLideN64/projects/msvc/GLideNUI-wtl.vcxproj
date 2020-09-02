@@ -109,7 +109,8 @@
     <ClCompile Include="..\..\src\GLideNUI-wtl\Language.cpp" />
     <ClCompile Include="..\..\src\GLideNUI-wtl\ScreenShot.cpp" />
     <ClCompile Include="..\..\src\GLideNUI-wtl\Settings.cpp" />
-    <ClCompile Include="..\..\src\GLideNUI-wtl\util.cpp" />
+    <ClCompile Include="..\..\src\GLideNUI-wtl\util\StdString.cpp" />
+    <ClCompile Include="..\..\src\GLideNUI-wtl\util\util.cpp" />
     <ClCompile Include="..\..\src\GLideNUI-wtl\wtl-BitmapPicture.cpp" />
     <ClCompile Include="..\..\src\GLideNUI-wtl\wtl-ColorButton.cpp" />
     <ClCompile Include="..\..\src\GLideNUI-wtl\wtl-OsdButton.cpp" />
@@ -136,7 +137,8 @@
     <ClInclude Include="..\..\src\GLideNUI-wtl\Language.h" />
     <ClInclude Include="..\..\src\GLideNUI-wtl\resource.h" />
     <ClInclude Include="..\..\src\GLideNUI-wtl\Settings.h" />
-    <ClInclude Include="..\..\src\GLideNUI-wtl\util.h" />
+    <ClInclude Include="..\..\src\GLideNUI-wtl\util\StdString.h" />
+    <ClInclude Include="..\..\src\GLideNUI-wtl\util\util.h" />
     <ClInclude Include="..\..\src\GLideNUI-wtl\wtl-BitmapPicture.h" />
     <ClInclude Include="..\..\src\GLideNUI-wtl\wtl-ColorButton.h" />
     <ClInclude Include="..\..\src\GLideNUI-wtl\wtl-OsdButton.h" />

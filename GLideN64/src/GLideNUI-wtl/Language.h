@@ -1,6 +1,7 @@
 #pragma once
 #include <list>
-#include <string>
+#include <map>
+#include "util/StdString.h"
 
 enum languageStringID
 {
@@ -251,7 +252,10 @@ struct LanguageFile
 	std::string LanguageName;
 };
 typedef std::list<LanguageFile> LanguageList;
+typedef std::map<int32_t, stdstr> LANG_STRINGS;
+typedef LANG_STRINGS::value_type LANG_STR;
 
 void LoadCurrentStrings(const char * path, const std::string & lang);
 LanguageList GetLanguageList(const char * path);
+LANG_STRINGS GetDefaultStrings(void);
 std::wstring wGS(languageStringID StringID);

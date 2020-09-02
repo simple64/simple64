@@ -9,7 +9,7 @@
 #include "config-texture.h"
 #include "config-osd.h"
 #include "config-debug.h"
-#include "util.h"
+#include "util/util.h"
 #include "InputDialog.h"
 #include "Language.h"
 
