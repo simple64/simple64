@@ -314,11 +314,6 @@ public:
 
 	void update(bool _force) override
 	{
-		if (config.generalEmulation.enableLegacyBlending == 1) {
-			uForceBlendCycle1.set(0, _force);
-			return;
-		}
-
 		uBlendMux1.set(gDP.otherMode.c1_m1a,
 			gDP.otherMode.c1_m1b,
 			gDP.otherMode.c1_m2a,
@@ -346,12 +341,6 @@ public:
 
 	void update(bool _force) override
 	{
-		if (config.generalEmulation.enableLegacyBlending == 1) {
-			uForceBlendCycle1.set(0, _force);
-			uForceBlendCycle2.set(0, _force);
-			return;
-		}
-
 		uBlendMux1.set(gDP.otherMode.c1_m1a,
 			gDP.otherMode.c1_m1b,
 			gDP.otherMode.c1_m2a,

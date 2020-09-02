@@ -8,7 +8,7 @@
 
 #include "Settings.h"
 #include "GlSettings.h"
-#include "util.h"
+#include "util/util.h"
 #include <algorithm>
 #include <memory>
 
@@ -48,6 +48,9 @@ void _loadSettings(GlSettings & settings)
 	config.generalEmulation.enableLOD = settings.value("enableLOD", config.generalEmulation.enableLOD).toInt();
 	config.generalEmulation.enableHWLighting = settings.value("enableHWLighting", config.generalEmulation.enableHWLighting).toInt();
 	config.generalEmulation.enableShadersStorage = settings.value("enableShadersStorage", config.generalEmulation.enableShadersStorage).toInt();
+	config.generalEmulation.enableLegacyBlending = settings.value("enableLegacyBlending", config.generalEmulation.enableLegacyBlending).toInt();			 //ini only
+	config.generalEmulation.enableHybridFilter = settings.value("enableHybridFilter", config.generalEmulation.enableHybridFilter).toInt();					 //ini only
+	config.generalEmulation.enableFragmentDepthWrite = settings.value("enableFragmentDepthWrite", config.generalEmulation.enableFragmentDepthWrite).toInt(); //ini only
 	config.generalEmulation.enableCustomSettings = settings.value("enableCustomSettings", config.generalEmulation.enableCustomSettings).toInt();
 	settings.endGroup();
 
@@ -229,6 +232,9 @@ void writeSettings(const char * _strIniFolder)
 		settings.setValue("enableLOD", config.generalEmulation.enableLOD);
 		settings.setValue("enableHWLighting", config.generalEmulation.enableHWLighting);
 		settings.setValue("enableShadersStorage", config.generalEmulation.enableShadersStorage);
+		settings.setValue("enableLegacyBlending", config.generalEmulation.enableLegacyBlending);		 //ini only
+		settings.setValue("enableHybridFilter", config.generalEmulation.enableHybridFilter);			 //ini only
+		settings.setValue("enableFragmentDepthWrite", config.generalEmulation.enableFragmentDepthWrite); //ini only
 		settings.setValue("enableCustomSettings", config.generalEmulation.enableCustomSettings);
 		settings.endGroup();
 

@@ -1,6 +1,6 @@
 #include "wtl-OsdPreview.h"
 #include "FontInfo.h"
-#include "util.h"
+#include "util/util.h"
 #include "Language.h"
 #include <DWrite.h>
 

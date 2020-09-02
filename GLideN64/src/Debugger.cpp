@@ -650,12 +650,12 @@ void Debugger::_drawFrameBuffer(FrameBuffer * _pBuffer)
 	blitParams.dstY1 = dstCoord[3];
 	blitParams.dstWidth = wnd.getScreenWidth();
 	blitParams.dstHeight = wnd.getScreenHeight() + wnd.getHeightOffset();
-	blitParams.filter = config.generalEmulation.enableHybridFilter > 0 ?
+	const bool downscale = blitParams.srcWidth >= blitParams.dstWidth || blitParams.srcHeight >= blitParams.dstHeight;
+	blitParams.filter = downscale || config.generalEmulation.enableHybridFilter > 0 ?
 		textureParameters::FILTER_LINEAR :
-		textureParameters::FILTER_NEAREST;
+		textureParameters::FILTER_NEAREST; //upscale; hybridFilter disabled
 	blitParams.mask = blitMask::COLOR_BUFFER;
 	blitParams.tex[0] = pBufferTexture;
-	const bool downscale = blitParams.srcWidth >= blitParams.dstWidth && blitParams.srcHeight >= blitParams.dstHeight;
 	blitParams.combiner = downscale ? CombinerInfo::get().getTexrectDownscaleCopyProgram() :
 		CombinerInfo::get().getTexrectUpscaleCopyProgram();
 	blitParams.readBuffer = readBuffer;

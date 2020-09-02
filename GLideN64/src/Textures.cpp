@@ -673,8 +673,8 @@ void _updateCachedTexture(const GHQTexInfo & _info, CachedTexture *_pTexture, u1
 	_pTexture->scaleS = 1.0f / (_pTexture->maskS ? f32(pow2(widthOrg)) : f32(widthOrg));
 	_pTexture->scaleT = 1.0f / (_pTexture->maskT ? f32(pow2(heightOrg)) : f32(heightOrg));
 
-	_pTexture->hdRatioS = f32(_info.width / _pTexture->width);
-	_pTexture->hdRatioT = f32(_info.height / _pTexture->height);
+	_pTexture->hdRatioS = (f32)(_info.width) / (f32)(_pTexture->width);
+	_pTexture->hdRatioT = (f32)(_info.height) / (f32)(_pTexture->height);
 
 	_pTexture->bHDTexture = true;
 }
@@ -1077,40 +1077,35 @@ void TextureCache::_getTextureDestData(CachedTexture& tmptex,
 	}
 }
 
+template<typename T>
+void doubleTexture(T* pTex, u32 width, u32 height)
+{
+	std::vector<T> vData(width * height);
+	memcpy(vData.data(), pTex, width * height * sizeof(T));
+	u32 srcIdx = 0;
+	u32 dstIdx = 0;
+	for (u32 y = 0; y < height; ++y) {
+		const u32 srcIdxCur = srcIdx;
+		for (u32 x = 0; x < width; ++x) {
+			pTex[dstIdx++] = vData[srcIdx];
+			pTex[dstIdx++] = vData[srcIdx++];
+		}
+		srcIdx = srcIdxCur;
+		for (u32 x = 0; x < width; ++x) {
+			pTex[dstIdx++] = vData[srcIdx];
+			pTex[dstIdx++] = vData[srcIdx++];
+		}
+	}
+}
+
 void TextureCache::_load(u32 _tile, CachedTexture *_pTexture)
 {
 	u64 ricecrc = 0;
 	if (_loadHiresTexture(_tile, _pTexture, ricecrc))
 		return;
 
-	u32 *pDest;
-
-	u16 line;
-	GetTexelFunc GetTexel;
-	InternalColorFormatParam glInternalFormat;
-	DatatypeParam glType;
-	u32 sizeShift;
-
-	const TextureLoadParameters & loadParams =
-			ImageFormat::get().tlp[gDP.otherMode.textureLUT][_pTexture->size][_pTexture->format];
-	if (loadParams.autoFormat == internalcolorFormat::RGBA8) {
-		sizeShift = 2;
-		_pTexture->textureBytes = (_pTexture->width * _pTexture->height) << sizeShift;
-		GetTexel = loadParams.Get32;
-		glInternalFormat = loadParams.glInternalFormat32;
-		glType = loadParams.glType32;
-	} else {
-		sizeShift = 1;
-		_pTexture->textureBytes = (_pTexture->width * _pTexture->height) << sizeShift;
-		GetTexel = loadParams.Get16;
-		glInternalFormat = loadParams.glInternalFormat16;
-		glType = loadParams.glType16;
-	}
-
-	pDest = (u32*)malloc(_pTexture->textureBytes);
-	assert(pDest != nullptr);
-
 	s32 mipLevel = 0;
+	bool force32bitFormat = false;
 	_pTexture->max_level = 0;
 
 	if (config.generalEmulation.enableLOD != 0 && gSP.texture.level > 1) {
@@ -1121,28 +1116,106 @@ void TextureCache::_load(u32 _tile, CachedTexture *_pTexture)
 			const u16 dim = std::max(_pTexture->width, _pTexture->height);
 			while (dim <  static_cast<u16>(1 << _pTexture->max_level))
 				--_pTexture->max_level;
+
+			auto texFormat = gDP.tiles[gSP.texture.tile + 1].format;
+			auto texSize = gDP.tiles[gSP.texture.tile + 1].size;
+			u32 tileMipLevel = gSP.texture.tile + 2;
+			while (!force32bitFormat && (tileMipLevel < gSP.texture.tile + gSP.texture.level)) {
+				gDPTile const& mipTile = gDP.tiles[tileMipLevel++];
+				force32bitFormat = texFormat != mipTile.format || texSize != mipTile.size;
+			}
 		}
 	}
 
-	ObjectHandle name;
-	CachedTexture tmptex(name);
-	memcpy(&tmptex, _pTexture, sizeof(CachedTexture));
+	u32 sizeShift = 1;
+	{
+		const TextureLoadParameters & loadParams =
+			ImageFormat::get().tlp[gDP.otherMode.textureLUT][_pTexture->size][_pTexture->format];
+		if (force32bitFormat || loadParams.autoFormat == internalcolorFormat::RGBA8)
+			sizeShift = 2;
+	}
+	_pTexture->textureBytes = (_pTexture->width * _pTexture->height) << sizeShift;
 
-	line = tmptex.line;
+	// RAII holder for texture data
+	class TexData
+	{
+	public:
+		TexData(u32 bytes)
+		{
+			pData = (u32*)malloc(bytes);
+			assert(pData != NULL);
+		}
+		~TexData()
+		{
+			free(pData);
+			pData = NULL;
+		}
+		u32 * get() const
+		{
+			return pData;
+		}
+	private:
+		u32 *pData = NULL;
+	} texData(_pTexture->textureBytes);
+
+	GetTexelFunc GetTexel;
+	InternalColorFormatParam glInternalFormat;
+	DatatypeParam glType;
+
+	auto getLoadParams = [&](u16 _format, u16 _size)
+	{
+		const TextureLoadParameters & loadParams =
+			ImageFormat::get().tlp[gDP.otherMode.textureLUT][_size][_format];
+		if (force32bitFormat || loadParams.autoFormat == internalcolorFormat::RGBA8) {
+			GetTexel = loadParams.Get32;
+			glInternalFormat = loadParams.glInternalFormat32;
+			glType = loadParams.glType32;
+		}
+		else {
+			GetTexel = loadParams.Get16;
+			glInternalFormat = loadParams.glInternalFormat16;
+			glType = loadParams.glType16;
+		}
+	};
+
+	CachedTexture tmptex = *_pTexture;
+	u16 line = tmptex.line;
 
 	while (true) {
-		_getTextureDestData(tmptex, pDest, glInternalFormat, GetTexel, &line);
+		getLoadParams(tmptex.format, tmptex.size);
+		{
+			const u32 tileMipLevel = gSP.texture.tile + mipLevel + 1;
+			gDPTile & mipTile = gDP.tiles[tileMipLevel];
+			if (gSP.texture.level > 1 &&
+				tmptex.width == (mipTile.lrs - mipTile.uls + 1) * 2 &&
+				tmptex.height == (mipTile.lrt - mipTile.ult + 1) * 2)
+			{
+				// Special case for Southern Swamp grass texture, Zelda MM. See #2315
+				const u16 texWidth = tmptex.width;
+				const u16 texHeight = tmptex.height;
+				tmptex.width = mipTile.lrs - mipTile.uls + 1;
+				tmptex.height = mipTile.lrt - mipTile.ult + 1;
+				_getTextureDestData(tmptex, texData.get(), glInternalFormat, GetTexel, &line);
+				if (sizeShift == 2)
+					doubleTexture<u32>(texData.get(), tmptex.width, tmptex.height);
+				else
+					doubleTexture<u16>((u16*)texData.get(), tmptex.width, tmptex.height);
+				tmptex.width = texWidth;
+				tmptex.height = texHeight;
+			} else {
+				_getTextureDestData(tmptex, texData.get(), glInternalFormat, GetTexel, &line);
+			}
+		}
 
 		if ((config.generalEmulation.hacks&hack_LoadDepthTextures) != 0 && gDP.colorImage.address == gDP.depthImageAddress) {
-			_loadDepthTexture(_pTexture, (u16*)pDest);
-			free(pDest);
+			_loadDepthTexture(_pTexture, (u16*)texData.get());
 			return;
 		}
 
 		if (m_toggleDumpTex &&
 				config.textureFilter.txHiresEnable != 0 &&
 				config.textureFilter.txDump != 0) {
-			txfilter_dmptx((u8*)pDest, tmptex.width, tmptex.height,
+			txfilter_dmptx((u8*)texData.get(), tmptex.width, tmptex.height,
 					tmptex.width, (u16)u32(glInternalFormat),
 					(unsigned short)(_pTexture->format << 8 | _pTexture->size),
 					ricecrc);
@@ -1169,7 +1242,7 @@ void TextureCache::_load(u32 _tile, CachedTexture *_pTexture)
 
 		if (needEnhance) {
 			GHQTexInfo ghqTexInfo;
-			if (txfilter_filter((u8*)pDest, tmptex.width, tmptex.height,
+			if (txfilter_filter((u8*)texData.get(), tmptex.width, tmptex.height,
 							(u16)u32(glInternalFormat), (uint64)_pTexture->crc,
 							&ghqTexInfo) != 0 && ghqTexInfo.data != nullptr) {
 				if (ghqTexInfo.width % 2 != 0 &&
@@ -1209,7 +1282,7 @@ void TextureCache::_load(u32 _tile, CachedTexture *_pTexture)
 			params.internalFormat = gfxContext.convertInternalTextureFormat(u32(glInternalFormat));
 			params.format = colorFormat::RGBA;
 			params.dataType = glType;
-			params.data = pDest;
+			params.data = texData.get();
 			gfxContext.init2DTexture(params);
 		}
 		if (mipLevel == _pTexture->max_level)
@@ -1222,6 +1295,8 @@ void TextureCache::_load(u32 _tile, CachedTexture *_pTexture)
 		tmptex.palette = mipTile.palette;
 		tmptex.maskS = mipTile.masks;
 		tmptex.maskT = mipTile.maskt;
+		tmptex.format = mipTile.format;
+		tmptex.size = mipTile.size;
 		TileSizes sizes;
 		_calcTileSizes(tileMipLevel, sizes, nullptr);
 		tmptex.clampWidth = sizes.clampWidth;
@@ -1235,7 +1310,6 @@ void TextureCache::_load(u32 _tile, CachedTexture *_pTexture)
 	}
 	if (m_curUnpackAlignment > 1)
 		gfxContext.setTextureUnpackAlignment(m_curUnpackAlignment);
-	free(pDest);
 }
 
 struct TextureParams
@@ -1513,6 +1587,7 @@ void TextureCache::update(u32 _t)
 	TileSizes sizes;
 	_calcTileSizes(_t, sizes, gDP.loadTile);
 	TextureParams params;
+	const u32 texLevel = _t == 0 ? 0U : gSP.texture.level;
 	params.flags = pTile->masks	|
 		(pTile->maskt   << 4)	|
 		(pTile->mirrors << 8)	|
@@ -1521,7 +1596,8 @@ void TextureCache::update(u32 _t)
 		(pTile->clampt << 11)	|
 		(pTile->size   << 12)	|
 		(pTile->format << 14)	|
-		(gDP.otherMode.textureLUT << 17);
+		(gDP.otherMode.textureLUT << 17) |
+		(texLevel << 19);
 	params.width = sizes.width;
 	params.height = sizes.height;
 

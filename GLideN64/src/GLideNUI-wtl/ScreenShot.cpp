@@ -1,6 +1,6 @@
 #include "GLideNUI.h"
 #include "../Config.h"
-#include "util.h"
+#include "util/util.h"
 #include <Windows.h>
 #include "../GLideNHQ/inc/png.h"
 

@@ -34,8 +34,8 @@ public:
 private:
 	LRESULT OnScroll(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 
-	CEdit m_GamaTxt, m_N64ResMultiplerTxt;
-	CUpDownCtrl m_GamaSpin, m_N64ResMultiplerSpin;
+	CEdit m_GammaTxt, m_N64ResMultiplerTxt;
+	CUpDownCtrl m_GammaSpin, m_N64ResMultiplerSpin;
 	CBitmapPicture m_GammaIcon;
 	CConfigDlg & m_Dlg;
 };

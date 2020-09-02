@@ -20,3 +20,4 @@ src/Revision.h
 /projects/cmake/cmake_install.cmake
 /projects/cmake/osal/
 .vs
+/translations/wtl

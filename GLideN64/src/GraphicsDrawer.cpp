@@ -1379,18 +1379,17 @@ void GraphicsDrawer::drawTexturedRect(const TexturedRectParams & _params)
 				}
 			}
 
+			texST[t].s0 *= cache.current[t]->hdRatioS;
+			texST[t].t0 *= cache.current[t]->hdRatioT;
+			texST[t].s1 *= cache.current[t]->hdRatioS;
+			texST[t].t1 *= cache.current[t]->hdRatioT;
+
 			if (gDP.otherMode.textureFilter != G_TF_POINT && gDP.otherMode.cycleType != G_CYC_COPY) {
 				texST[t].s0 -= 0.5f;
 				texST[t].t0 -= 0.5f;
 				texST[t].s1 -= 0.5f;
 				texST[t].t1 -= 0.5f;
 			}
-
-			texST[t].s0 *= cache.current[t]->hdRatioS;
-			texST[t].t0 *= cache.current[t]->hdRatioT;
-			texST[t].s1 *= cache.current[t]->hdRatioS;
-			texST[t].t1 *= cache.current[t]->hdRatioT;
-
 
 		}
 	}
