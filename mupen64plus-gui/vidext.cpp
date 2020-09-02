@@ -53,7 +53,7 @@ m64p_error qtVidExtFuncListModes(m64p_2d_size *SizeArray, int *NumSizes)
 
 m64p_error qtVidExtFuncListRates(m64p_2d_size Size, int *NumRates, int *Rates)
 {
-    return M64ERR_SUCCESS;
+    return M64ERR_UNSUPPORTED;
 }
 
 m64p_error qtVidExtFuncSetMode(int Width, int Height, int, int ScreenMode, int)
@@ -71,7 +71,7 @@ m64p_error qtVidExtFuncSetMode(int Width, int Height, int, int ScreenMode, int)
 
 qtVidExtFuncSetModeWithRate(int Width, int Height, int RefreshRate, int BitsPerPixel, m64p_video_mode ScreenMode, m64p_video_flags Flags)
 {
-    return M64ERR_SUCCESS;
+    return M64ERR_UNSUPPORTED;
 }
 
 m64p_function qtVidExtFuncGLGetProc(const char* Proc)
