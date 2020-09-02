@@ -114,11 +114,13 @@ ptr_DebugBreakpointCommand DebugBreakpointCommand = NULL;
 
 /* global variables */
 m64p_dynlib_handle CoreHandle = NULL;
-m64p_video_extension_functions vidExtFunctions = {12,
+m64p_video_extension_functions vidExtFunctions = {14,
                                                  qtVidExtFuncInit,
                                                  qtVidExtFuncQuit,
                                                  qtVidExtFuncListModes,
+                                                 qtVidExtFuncListRates,
                                                  qtVidExtFuncSetMode,
+                                                 qtVidExtFuncSetModeWithRate,
                                                  qtVidExtFuncGLGetProc,
                                                  qtVidExtFuncGLSetAttr,
                                                  qtVidExtFuncGLGetAttr,
