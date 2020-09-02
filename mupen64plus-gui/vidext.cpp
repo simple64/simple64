@@ -69,7 +69,7 @@ m64p_error qtVidExtFuncSetMode(int Width, int Height, int, int ScreenMode, int)
     return M64ERR_SUCCESS;
 }
 
-qtVidExtFuncSetModeWithRate(int Width, int Height, int RefreshRate, int BitsPerPixel, int ScreenMode, int Flags)
+m64p_function qtVidExtFuncSetModeWithRate(int Width, int Height, int RefreshRate, int BitsPerPixel, int ScreenMode, int Flags)
 {
     return M64ERR_UNSUPPORTED;
 }
