@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *   Mupen64plus-core - api/debugger.h                                     *
- *   Mupen64Plus homepage: http://code.google.com/p/mupen64plus/           *
+ *   Mupen64Plus homepage: https://mupen64plus.org/                        *
  *   Copyright (C) 2009 Richard Goedeken                                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -38,6 +38,7 @@ typedef enum {
   } eDbgCallbackType;
 
 /* Functions for use by the Core, to send information back to the front-end app */
+extern int DebuggerCallbacksAreSet(void);
 extern void DebuggerCallback(eDbgCallbackType type, unsigned int param);
 extern void CoreCompareCallback(void);
 extern void CoreCompareDataSync(int length, void *ptr);

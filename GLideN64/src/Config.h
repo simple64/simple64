@@ -252,21 +252,8 @@ struct Config
 extern Config config;
 
 void Config_LoadConfig();
-
-#ifdef OS_WINDOWS
-#define EXPORT  __declspec(dllexport)
-#define CALL            __cdecl
-#else
-#define EXPORT  __attribute__((visibility("default")))
-#define CALL
-#endif
-
-#if defined(__cplusplus)
-extern "C" {
-#endif
-EXPORT void CALL Config_DoConfig(/*HWND hParent*/);
-#if defined(__cplusplus)
-}
+#if defined(M64P_GLIDENUI) || !defined(MUPENPLUSAPI)
+void Config_DoConfig(/*HWND hParent*/);
 #endif
 
 bool isHWLightingAllowed();

@@ -37,7 +37,7 @@ extern "C" {
  * This function should be called from within the InitiateGFX() video plugin
  * function call. The default SDL implementation of this function simply calls
  * SDL_InitSubSystem(SDL_INIT_VIDEO). It does not open a rendering window or
- * switch video modes. 
+ * switch video modes.
  */
 typedef m64p_error (*ptr_VidExt_Init)(void);
 #if defined(M64P_CORE_PROTOTYPES)
@@ -49,7 +49,7 @@ EXPORT m64p_error CALL VidExt_Init(void);
  * This function closes any open rendering window and shuts down the video
  * system. The default SDL implementation of this function calls
  * SDL_QuitSubSystem(SDL_INIT_VIDEO). This function should be called from
- * within the RomClose() video plugin function. 
+ * within the RomClose() video plugin function.
  */
 typedef m64p_error (*ptr_VidExt_Quit)(void);
 #if defined(M64P_CORE_PROTOTYPES)
@@ -67,6 +67,17 @@ typedef m64p_error (*ptr_VidExt_ListFullscreenModes)(m64p_2d_size *, int *);
 EXPORT m64p_error CALL VidExt_ListFullscreenModes(m64p_2d_size *, int *);
 #endif
 
+/* VidExt_ListFullscreenRates()
+ *
+ * This function is used to enumerate the available refresh rates for a fullscreen
+ * video mode.
+ * 
+ */
+typedef m64p_error (*ptr_VidExt_ListFullscreenRates)(m64p_2d_size, int *, int *);
+#if defined(M64P_CORE_PROTOTYPES)
+EXPORT m64p_error CALL VidExt_ListFullscreenRates(m64p_2d_size, int *, int *);
+#endif
+
 /* VidExt_SetVideoMode()
  *
  * This function creates a rendering window or switches into a fullscreen
@@ -76,6 +87,17 @@ EXPORT m64p_error CALL VidExt_ListFullscreenModes(m64p_2d_size *, int *);
 typedef m64p_error (*ptr_VidExt_SetVideoMode)(int, int, int, m64p_video_mode, m64p_video_flags);
 #if defined(M64P_CORE_PROTOTYPES)
 EXPORT m64p_error CALL VidExt_SetVideoMode(int, int, int, m64p_video_mode, m64p_video_flags);
+#endif
+
+/* VidExt_SetVideoModeWithRate()
+ *
+ * This function creates a rendering window or switches into a fullscreen
+ * video mode. Any desired OpenGL attributes should be set before calling
+ * this function.
+ */
+typedef m64p_error (*ptr_VidExt_SetVideoModeWithRate)(int, int, int, int, m64p_video_mode, m64p_video_flags);
+#if defined(M64P_CORE_PROTOTYPES)
+EXPORT m64p_error CALL VidExt_SetVideoModeWithRate(int, int, int, int, m64p_video_mode, m64p_video_flags);
 #endif
 
 /* VidExt_ResizeWindow()
@@ -109,11 +131,11 @@ EXPORT m64p_error CALL VidExt_ToggleFullScreen(void);
  *
  * This function is used to get a pointer to an OpenGL extension function. This
  * is only necessary on the Windows platform, because the OpenGL implementation
- * shipped with Windows only supports OpenGL version 1.1. 
+ * shipped with Windows only supports OpenGL version 1.1.
  */
-typedef void * (*ptr_VidExt_GL_GetProcAddress)(const char *);
+typedef m64p_function (*ptr_VidExt_GL_GetProcAddress)(const char *);
 #if defined(M64P_CORE_PROTOTYPES)
-EXPORT void * CALL VidExt_GL_GetProcAddress(const char *);
+EXPORT m64p_function CALL VidExt_GL_GetProcAddress(const char *);
 #endif
 
 /* VidExt_GL_SetAttribute()
@@ -128,7 +150,7 @@ EXPORT m64p_error CALL VidExt_GL_SetAttribute(m64p_GLattr, int);
 
 /* VidExt_GL_GetAttribute()
  *
- * This function is used to get the value of OpenGL attributes.  These values may 
+ * This function is used to get the value of OpenGL attributes.  These values may
  * be changed when calling VidExt_SetVideoMode.
  */
 typedef m64p_error (*ptr_VidExt_GL_GetAttribute)(m64p_GLattr, int *);

@@ -146,7 +146,7 @@
     <ClCompile Include="..\..\src\windows\ZilmarAPIImpl_windows.cpp">
       <Filter>Source Files\windows</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\windows\Config_windows.cpp">
+    <ClCompile Include="..\..\src\GLideNUI\Config_GLidenUI.cpp">
       <Filter>Source Files\windows</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\mupenplus\Config_mupenplus.cpp">

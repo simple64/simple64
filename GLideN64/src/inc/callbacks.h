@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *   Mupen64plus-core - api/callbacks.h                                    *
- *   Mupen64Plus homepage: http://code.google.com/p/mupen64plus/           *
+ *   Mupen64Plus homepage: https://mupen64plus.org/                        *
  *   Copyright (C) 2009 Richard Goedeken                                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -29,10 +29,16 @@
 #include "m64p_frontend.h"
 #include "m64p_types.h"
 
+#if defined(__GNUC__)
+#define ATTR_FMT(fmtpos, attrpos) __attribute__ ((format (printf, fmtpos, attrpos)))
+#else
+#define ATTR_FMT(fmtpos, attrpos)
+#endif
+
 /* Functions for use by the Core, to send information back to the front-end app */
 extern m64p_error SetDebugCallback(ptr_DebugCallback pFunc, void *Context);
 extern m64p_error SetStateCallback(ptr_StateCallback pFunc, void *Context);
-extern void       DebugMessage(int level, const char *message, ...);
+extern void       DebugMessage(int level, const char *message, ...) ATTR_FMT(2,3);
 extern void       StateChanged(m64p_core_param param_type, int new_value);
 
 #endif /* API_CALLBACKS_H */

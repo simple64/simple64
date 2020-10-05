@@ -4,6 +4,7 @@ option(EGL "Set to ON if targeting an EGL device" ${EGL})
 option(PANDORA "Set to ON if targeting an OpenPandora" ${PANDORA})
 option(ODROID "Set to ON if targeting an Odroid" ${ODROID})
 option(MUPENPLUSAPI "Set to ON for Mupen64Plus plugin" ${MUPENPLUSAPI})
+option(MUPENPLUSAPI_GLIDENUI "Set to ON for GLideNUI for Mupen64Plus" ${MUPENPLUSAPI_GLIDENUI})
 option(MESA "Set to ON to disable Raspberry Pi autodetection" ${MESA})
 option(VERO4K "Set to ON if targeting a Vero4k" ${VERO4K})
 option(ANDROID "Set to ON if targeting an Android device" ${ANDROID})
@@ -16,6 +17,7 @@ add_custom_command(
         COMMAND ${CMAKE_SOURCE_DIR}/getRevision.sh
         COMMENT "Generate Git version"
 )
+set_property(SOURCE ${PATH_REVISION} PROPERTY SKIP_AUTOGEN ON)
 
 project( GLideN64 )
 
@@ -121,6 +123,32 @@ set(GLideN64_SOURCES
   uCodes/ZSortBOSS.cpp
 )
 
+set(GLideNUI_SOURCES
+  GLideNUI/AboutDialog.cpp
+  GLideNUI/AboutDialog.ui
+  GLideNUI/ConfigDialog.cpp
+  GLideNUI/Config_GLideNUI.cpp
+  GLideNUI/GLideNUI.cpp
+  GLideNUI/ScreenShot.cpp
+  GLideNUI/Settings.cpp
+  GLideNUI/configDialog.ui
+  GLideNUI/icon.qrc
+)
+
+if(MUPENPLUSAPI_GLIDENUI)
+  set(CMAKE_AUTOMOC ON)
+  set(CMAKE_AUTORCC ON)
+  set(CMAKE_AUTOUIC ON)
+
+  find_package(Qt5 COMPONENTS Core Widgets Gui REQUIRED)
+  set(GLIDENUI_LIBRARIES
+      Qt5::Widgets Qt5::Core Qt5::Gui
+  )
+  list(APPEND GLideNUI_SOURCES
+    GLideNUI/fullscreenresolutions_mupen64plus.cpp
+  )
+endif(MUPENPLUSAPI_GLIDENUI)
+
 #check if we're running on Raspberry Pi
 if(EXISTS "${CMAKE_FIND_ROOT_PATH}/opt/vc/include/bcm_host.h" AND NOT MESA)
   message("bcm_host.h found")
@@ -152,12 +180,22 @@ if(MUPENPLUSAPI)
   include_directories( . inc )
   set(GLideN64_SOURCES_UNIX
 	MupenPlusPluginAPI.cpp
-	windows/Config_windows.cpp
 	mupenplus/CommonAPIImpl_mupenplus.cpp
 	mupenplus/MemoryStatus_mupenplus.cpp
 	mupenplus/MupenPlusAPIImpl.cpp
 	Graphics/OpenGLContext/mupen64plus/mupen64plus_DisplayWindow.cpp
   )
+
+  if(MUPENPLUSAPI_GLIDENUI)
+      add_definitions(-DM64P_GLIDENUI)
+      list(APPEND GLideN64_SOURCES_UNIX
+        ${GLideNUI_SOURCES}
+      )
+  else()
+      list(APPEND GLideN64_SOURCES_UNIX
+        mupenplus/Config_mupenplus.cpp
+      )
+  endif()
 
   set(GLideN64_SOURCES_WIN ${GLideN64_SOURCES_UNIX}
   )
@@ -172,7 +210,7 @@ else(MUPENPLUSAPI)
   endif(UNIX)
   set(GLideN64_SOURCES_WIN
 	ZilmarPluginAPI.cpp
-	windows/Config_windows.cpp
+	GLideNUI/Config_GLideNUI.cpp
 	windows/CommonAPIImpl_windows.cpp
 	windows/GLideN64_windows.cpp
 	windows/MemoryStatus_windows.cpp
@@ -436,14 +474,6 @@ endif()
 
 set(CMAKE_CXX_STANDARD 11)
 
-find_package(Qt5 COMPONENTS Core Widgets Gui REQUIRED)
-add_library(NUI STATIC IMPORTED)
-if(MINGW)
-  set_target_properties(NUI PROPERTIES IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/GLideNUI/build/release/libGLideNUI.a")
-else(MINGW)
-  set_target_properties(NUI PROPERTIES IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/GLideNUI/build/libGLideNUI.a")
-endif(MINGW)
-
 add_library( ${GLideN64_DLL_NAME} SHARED ${GLideN64_SOURCES} ${PATH_REVISION})
 
 if( CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -457,15 +487,15 @@ if( CMAKE_BUILD_TYPE STREQUAL "Debug")
 
   if(SDL)
         if (NOHQ)
-	  target_link_libraries(${GLideN64_DLL_NAME} PRIVATE ${OPENGL_LIBRARIES} ${SDL_LIBRARIES} ${FREETYPE_LIBRARIES} ${LOG_LIB} osald NUI Qt5::Widgets Qt5::Core Qt5::Gui )
+	  target_link_libraries(${GLideN64_DLL_NAME} PRIVATE ${OPENGL_LIBRARIES} ${SDL_LIBRARIES} ${FREETYPE_LIBRARIES} ${LOG_LIB} ${GLIDENUI_LIBRARIES} osald )
 	else (NOHQ)
-	  target_link_libraries(${GLideN64_DLL_NAME} PRIVATE ${OPENGL_LIBRARIES} ${SDL_LIBRARIES} ${FREETYPE_LIBRARIES} ${LOG_LIB} osald GLideNHQd NUI Qt5::Widgets Qt5::Core Qt5::Gui )
+	  target_link_libraries(${GLideN64_DLL_NAME} PRIVATE ${OPENGL_LIBRARIES} ${SDL_LIBRARIES} ${FREETYPE_LIBRARIES} ${LOG_LIB} ${GLIDENUI_LIBRARIES} osald GLideNHQd )
 	endif (NOHQ)
   else(SDL)
 	if (NOHQ)
-	  target_link_libraries(${GLideN64_DLL_NAME} PRIVATE ${OPENGL_LIBRARIES} ${FREETYPE_LIBRARIES} ${LOG_LIB} osald NUI Qt5::Widgets Qt5::Core Qt5::Gui )
+	  target_link_libraries(${GLideN64_DLL_NAME} PRIVATE ${OPENGL_LIBRARIES} ${FREETYPE_LIBRARIES} ${LOG_LIB} ${GLIDENUI_LIBRARIES} osald )
 	else (NOHQ)
-	  target_link_libraries(${GLideN64_DLL_NAME} PRIVATE ${OPENGL_LIBRARIES} ${FREETYPE_LIBRARIES} ${LOG_LIB} osald GLideNHQd NUI Qt5::Widgets Qt5::Core Qt5::Gui )
+	  target_link_libraries(${GLideN64_DLL_NAME} PRIVATE ${OPENGL_LIBRARIES} ${FREETYPE_LIBRARIES} ${LOG_LIB} ${GLIDENUI_LIBRARIES} osald GLideNHQd )
 	endif (NOHQ)
   endif(SDL)
 endif( CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -489,15 +519,15 @@ if( CMAKE_BUILD_TYPE STREQUAL "Release")
 
   if(SDL)
 	if (NOHQ)
-	  target_link_libraries(${GLideN64_DLL_NAME} ${OPENGL_LIBRARIES} ${SDL_LIBRARIES} ${FREETYPE_LIBRARIES} ${LOG_LIB} osal NUI Qt5::Widgets Qt5::Core Qt5::Gui )
+	  target_link_libraries(${GLideN64_DLL_NAME} ${OPENGL_LIBRARIES} ${SDL_LIBRARIES} ${FREETYPE_LIBRARIES} ${LOG_LIB} ${GLIDENUI_LIBRARIES} osal )
 	else (NOHQ)
-	  target_link_libraries(${GLideN64_DLL_NAME} ${OPENGL_LIBRARIES} ${SDL_LIBRARIES} ${FREETYPE_LIBRARIES} ${LOG_LIB} osal GLideNHQ NUI Qt5::Widgets Qt5::Core Qt5::Gui )
+	  target_link_libraries(${GLideN64_DLL_NAME} ${OPENGL_LIBRARIES} ${SDL_LIBRARIES} ${FREETYPE_LIBRARIES} ${LOG_LIB} ${GLIDENUI_LIBRARIES} osal GLideNHQ )
 	endif (NOHQ)
   else(SDL)
 	if (NOHQ)
-	  target_link_libraries(${GLideN64_DLL_NAME} ${OPENGL_LIBRARIES} ${FREETYPE_LIBRARIES} ${LOG_LIB} osal NUI Qt5::Widgets Qt5::Core Qt5::Gui )
+	  target_link_libraries(${GLideN64_DLL_NAME} ${OPENGL_LIBRARIES} ${FREETYPE_LIBRARIES} ${LOG_LIB} ${GLIDENUI_LIBRARIES} osal )
 	else (NOHQ)
-	  target_link_libraries(${GLideN64_DLL_NAME} ${OPENGL_LIBRARIES} ${FREETYPE_LIBRARIES} ${LOG_LIB} osal GLideNHQ NUI Qt5::Widgets Qt5::Core Qt5::Gui )
+	  target_link_libraries(${GLideN64_DLL_NAME} ${OPENGL_LIBRARIES} ${FREETYPE_LIBRARIES} ${LOG_LIB} ${GLIDENUI_LIBRARIES} osal GLideNHQ )
 	endif (NOHQ)
   endif(SDL)
 endif( CMAKE_BUILD_TYPE STREQUAL "Release")

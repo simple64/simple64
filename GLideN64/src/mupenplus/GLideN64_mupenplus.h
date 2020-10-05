@@ -41,7 +41,9 @@ extern ptr_ConfigGetUserCachePath      ConfigGetUserCachePath;
 extern ptr_VidExt_Init                  CoreVideo_Init;
 extern ptr_VidExt_Quit                  CoreVideo_Quit;
 extern ptr_VidExt_ListFullscreenModes   CoreVideo_ListFullscreenModes;
+extern ptr_VidExt_ListFullscreenRates   CoreVideo_ListFullscreenRates;
 extern ptr_VidExt_SetVideoMode          CoreVideo_SetVideoMode;
+extern ptr_VidExt_SetVideoModeWithRate  CoreVideo_SetVideoModeWithRate;
 extern ptr_VidExt_SetCaption            CoreVideo_SetCaption;
 extern ptr_VidExt_ToggleFullScreen      CoreVideo_ToggleFullScreen;
 extern ptr_VidExt_ResizeWindow          CoreVideo_ResizeWindow;
@@ -58,5 +60,10 @@ extern const unsigned int* rdram_size;
 extern void(*renderCallback)(int);
 
 extern m64p_handle g_configVideoGeneral;
+
+#ifndef M64P_GLIDENUI
+extern m64p_handle g_configVideoGliden64;
+bool Config_SetDefault();
+#endif // M64P_GLIDENUI
 
 #endif // GLIDEN64_MUPENPLUS_H

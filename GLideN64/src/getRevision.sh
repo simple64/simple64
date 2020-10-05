@@ -1,6 +1,6 @@
 SCRIPT_DIRECTORY=`dirname $0`
 rev=\"`git rev-parse --short HEAD`\"
-lastrev=$(head -n 1 $SCRIPT_DIRECTORY/Revision.h | awk -F'PLUGIN_REVISION ' {'print $2'})
+lastrev=$(head -n 1 $SCRIPT_DIRECTORY/Revision.h 2> /dev/null | awk -F'PLUGIN_REVISION ' {'print $2'})
 
 echo current revision $rev
 echo last build revision $lastrev
