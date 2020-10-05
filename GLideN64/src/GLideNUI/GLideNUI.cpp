@@ -6,6 +6,7 @@
 #include "AboutDialog.h"
 #include "ConfigDialog.h"
 #include "Settings.h"
+#include "../PluginAPI.h"
 #include "../Config.h"
 
 #ifdef QT_STATICPLUGIN
@@ -27,7 +28,11 @@ int openConfigDialog(const wchar_t * _strFileName, const char * _romName, bool &
 	QString strIniFileName = QString::fromWCharArray(_strFileName);
 	loadSettings(strIniFileName);
 	if (config.generalEmulation.enableCustomSettings != 0 && _romName != nullptr && strlen(_romName) != 0)
-		loadCustomRomSettings(strIniFileName, _romName);
+	{
+		wchar_t strCustomFolderPath[PLUGIN_PATH_SIZE];
+		api().FindPluginPath(strCustomFolderPath);
+		loadCustomRomSettings(QString::fromWCharArray(strCustomFolderPath), _romName);
+	}
 
 	std::unique_ptr<QApplication> pQApp;
 	QCoreApplication* pApp = QCoreApplication::instance();
