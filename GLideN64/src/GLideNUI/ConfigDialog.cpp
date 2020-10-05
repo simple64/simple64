@@ -10,6 +10,7 @@
 #include <QRegExpValidator>
 #include <QInputDialog>
 
+#include "../PluginAPI.h"
 #include "../Config.h"
 #include "../DebugDump.h"
 #include "ui_configDialog.h"
@@ -73,7 +74,9 @@ void ConfigDialog::_init(bool reInit, bool blockCustomSettings)
 	m_blockReInit = true;
 
 	if (reInit && m_romName != nullptr && ui->customSettingsCheckBox->isChecked() && ui->settingsDestGameRadioButton->isChecked()) {
-		loadCustomRomSettings(m_strIniPath, m_romName);
+		wchar_t strCustomFolderPath[PLUGIN_PATH_SIZE];
+		api().FindPluginPath(strCustomFolderPath);
+		loadCustomRomSettings(QString::fromWCharArray(strCustomFolderPath), m_romName);
 	} else if (reInit) {
 		loadSettings(m_strIniPath);
 	}
@@ -643,7 +646,11 @@ void ConfigDialog::accept(bool justSave) {
 		config.debug.dumpMode |= DEBUG_DETAIL;
 
 	if (config.generalEmulation.enableCustomSettings && ui->settingsDestGameRadioButton->isChecked() && m_romName != nullptr)
-		saveCustomRomSettings(m_strIniPath, m_romName);
+	{
+		wchar_t strCustomFolderPath[PLUGIN_PATH_SIZE];
+		api().FindPluginPath(strCustomFolderPath);
+		saveCustomRomSettings(QString::fromWCharArray(strCustomFolderPath), m_romName);
+	}
 	else
 		writeSettings(m_strIniPath);
 
