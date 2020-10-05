@@ -79,9 +79,9 @@ make -j4
 
 cd $base_dir/GLideN64/projects/cmake
 if [[ $UNAME == *"MINGW"* ]]; then
-  cmake -G "MSYS Makefiles" -DNOHQ=On -DVEC4_OPT=On -DCRC_OPT=On -DMUPENPLUSAPI=On ../../src/
+  cmake -G "MSYS Makefiles" -DMUPENPLUSAPI_GLIDENUI=On -DNOHQ=On -DVEC4_OPT=On -DCRC_OPT=On -DMUPENPLUSAPI=On ../../src/
 else
-  cmake -DNOHQ=On -DVEC4_OPT=On -DCRC_OPT=On -DMUPENPLUSAPI=On ../../src/
+  cmake -DMUPENPLUSAPI_GLIDENUI=On -DNOHQ=On -DVEC4_OPT=On -DCRC_OPT=On -DMUPENPLUSAPI=On ../../src/
 fi
 make -j4
 
