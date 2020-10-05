@@ -171,14 +171,6 @@ bool DisplayWindowMupen64plus::_resizeWindow()
 	if (!_supportsWithRateFunctions)
 		m_bFullscreen = false;
 
-	if (m_bFullscreen) {
-		m_resizeWidth = config.video.fullscreenWidth;
-		m_resizeHeight = config.video.fullscreenHeight;
-	} else {
-		m_resizeWidth = config.video.windowedWidth;
-		m_resizeHeight = config.video.windowedHeight;
-	}
-
 	if (_supportsWithRateFunctions) {
 		m64p_video_flags flags = {};
 
