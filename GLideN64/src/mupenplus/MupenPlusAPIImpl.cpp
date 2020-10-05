@@ -37,7 +37,9 @@ ptr_ConfigReceiveNetplayConfig ConfigReceiveNetplayConfig = nullptr;
 ptr_VidExt_Init                  CoreVideo_Init = nullptr;
 ptr_VidExt_Quit                  CoreVideo_Quit = nullptr;
 ptr_VidExt_ListFullscreenModes   CoreVideo_ListFullscreenModes = nullptr;
+ptr_VidExt_ListFullscreenRates   CoreVideo_ListFullscreenRates = nullptr;
 ptr_VidExt_SetVideoMode          CoreVideo_SetVideoMode = nullptr;
+ptr_VidExt_SetVideoModeWithRate  CoreVideo_SetVideoModeWithRate = nullptr;
 ptr_VidExt_SetCaption            CoreVideo_SetCaption = nullptr;
 ptr_VidExt_ToggleFullScreen      CoreVideo_ToggleFullScreen = nullptr;
 ptr_VidExt_ResizeWindow          CoreVideo_ResizeWindow = nullptr;
@@ -82,7 +84,9 @@ m64p_error PluginAPI::PluginStartup(m64p_dynlib_handle _CoreLibHandle)
 	CoreVideo_Init = (ptr_VidExt_Init) DLSYM(_CoreLibHandle, "VidExt_Init");
 	CoreVideo_Quit = (ptr_VidExt_Quit) DLSYM(_CoreLibHandle, "VidExt_Quit");
 	CoreVideo_ListFullscreenModes = (ptr_VidExt_ListFullscreenModes) DLSYM(_CoreLibHandle, "VidExt_ListFullscreenModes");
+	CoreVideo_ListFullscreenRates = (ptr_VidExt_ListFullscreenRates) DLSYM(_CoreLibHandle, "VidExt_ListFullscreenRates");
 	CoreVideo_SetVideoMode = (ptr_VidExt_SetVideoMode) DLSYM(_CoreLibHandle, "VidExt_SetVideoMode");
+	CoreVideo_SetVideoModeWithRate = (ptr_VidExt_SetVideoModeWithRate) DLSYM(_CoreLibHandle, "VidExt_SetVideoModeWithRate");
 	CoreVideo_SetCaption = (ptr_VidExt_SetCaption) DLSYM(_CoreLibHandle, "VidExt_SetCaption");
 	CoreVideo_ToggleFullScreen = (ptr_VidExt_ToggleFullScreen) DLSYM(_CoreLibHandle, "VidExt_ToggleFullScreen");
 	CoreVideo_ResizeWindow = (ptr_VidExt_ResizeWindow) DLSYM(_CoreLibHandle, "VidExt_ResizeWindow");
@@ -94,10 +98,29 @@ m64p_error PluginAPI::PluginStartup(m64p_dynlib_handle _CoreLibHandle)
 
 	CoreGetVersion = (ptr_PluginGetVersion) DLSYM(_CoreLibHandle, "PluginGetVersion");
 
+#ifndef M64P_GLIDENUI
+	if (Config_SetDefault()) {
+		config.version = ConfigGetParamInt(g_configVideoGliden64, "configVersion");
+		if (config.version != CONFIG_VERSION_CURRENT) {
+			ConfigDeleteSection("Video-GLideN64");
+			ConfigSaveFile();
+			Config_SetDefault();
+		}
+	}
+#endif // M64P_GLIDENUI
+
 	config.netplay = 0;
 
 	return M64ERR_SUCCESS;
 }
+
+#ifdef M64P_GLIDENUI
+m64p_error PluginAPI::PluginConfig()
+{
+	Config_DoConfig();
+	return M64ERR_SUCCESS;
+}
+#endif // M64P_GLIDENUI
 
 m64p_error PluginAPI::PluginShutdown()
 {

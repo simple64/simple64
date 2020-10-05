@@ -39,6 +39,9 @@ private:
 	void _changeWindow() override;
 	void _readScreen(void **_pDest, long *_pWidth, long *_pHeight) override {}
 	void _readScreen2(void * _dest, int * _width, int * _height, int _front) override;
+#ifdef M64P_GLIDENUI
+	bool _supportsWithRateFunctions = true;
+#endif // M64P_GLIDENUI
 	graphics::ObjectHandle _getDefaultFramebuffer() override;
 };
 
@@ -88,14 +91,25 @@ bool DisplayWindowMupen64plus::_start()
 	m_bFullscreen = config.video.fullscreen > 0;
 	m_screenWidth = config.video.windowedWidth;
 	m_screenHeight = config.video.windowedHeight;
+	m_screenRefresh = config.video.fullscreenRefresh;
+
 	_getDisplaySize();
 	_setBufferSize();
 
 	LOG(LOG_VERBOSE, "Setting video mode %dx%d", m_screenWidth, m_screenHeight);
 	const m64p_video_flags flags = M64VIDEOFLAG_SUPPORT_RESIZING;
-	returnValue = FunctionWrapper::CoreVideo_SetVideoMode(m_screenWidth, m_screenHeight, 0, m_bFullscreen ? M64VIDEO_FULLSCREEN : M64VIDEO_WINDOWED, flags);
+#ifdef M64P_GLIDENUI
+	returnValue = FunctionWrapper::CoreVideo_SetVideoModeWithRate(m_screenWidth, m_screenHeight, m_screenRefresh, 0, m_bFullscreen ? M64VIDEO_FULLSCREEN : M64VIDEO_WINDOWED, flags);
+	if (returnValue == M64ERR_UNSUPPORTED)
+	{
+		_supportsWithRateFunctions = false;
+#endif // M64P_GLIDENUI
+		returnValue = FunctionWrapper::CoreVideo_SetVideoMode(m_screenWidth, m_screenHeight, 0, m_bFullscreen ? M64VIDEO_FULLSCREEN : M64VIDEO_WINDOWED, flags);
+#ifdef M64P_GLIDENUI
+	}
+#endif // M64P_GLIDENUI
 	if (returnValue != M64ERR_SUCCESS) {
-		LOG(LOG_ERROR, "Error setting videomode %dx%d. Error code: %d", m_screenWidth, m_screenHeight, returnValue);
+		LOG(LOG_ERROR, "Error setting videomode %dx%d @ %d. Error code: %d", m_screenWidth, m_screenHeight, m_screenRefresh, returnValue);
 		FunctionWrapper::CoreVideo_Quit();
 		return false;
 	}
@@ -147,12 +161,47 @@ bool DisplayWindowMupen64plus::_resizeWindow()
 {
 	_setAttributes();
 
+#ifndef M64P_GLIDENUI
 	m_bFullscreen = false;
+#endif // M64P_GLIDENUI
+
+#ifdef M64P_GLIDENUI
+	m64p_error returnValue;
+
+	if (!_supportsWithRateFunctions)
+		m_bFullscreen = false;
+
+	if (m_bFullscreen) {
+		m_resizeWidth = config.video.fullscreenWidth;
+		m_resizeHeight = config.video.fullscreenHeight;
+	} else {
+		m_resizeWidth = config.video.windowedWidth;
+		m_resizeHeight = config.video.windowedHeight;
+	}
+
+	if (_supportsWithRateFunctions) {
+		m64p_video_flags flags = {};
+
+		m_width = m_screenWidth = m_resizeWidth;
+		m_height = m_screenHeight = m_resizeHeight;
+
+		returnValue = FunctionWrapper::CoreVideo_SetVideoModeWithRate(m_screenWidth, m_screenHeight, m_screenRefresh, 0, m_bFullscreen ? M64VIDEO_FULLSCREEN : M64VIDEO_WINDOWED, flags);
+		if (returnValue != M64ERR_SUCCESS) {
+			LOG(LOG_ERROR, "Error setting videomode %dx%d @ %d. Error code: %d", m_screenWidth, m_screenHeight, m_screenRefresh, returnValue);
+			FunctionWrapper::CoreVideo_Quit();
+			return false;
+		}
+
+		_setBufferSize();
+		opengl::Utils::isGLError(); // reset GL error.
+		return true;
+	}
+#endif // M64P_GLIDENUI
+
 	m_width = m_screenWidth = m_resizeWidth;
 	m_height = m_screenHeight = m_resizeHeight;
-	switch (CoreVideo_ResizeWindow(m_screenWidth, m_screenHeight)) 
-	{
-		case M64ERR_INVALID_STATE: 
+	switch (CoreVideo_ResizeWindow(m_screenWidth, m_screenHeight)) {
+		case M64ERR_INVALID_STATE:
 			LOG(LOG_ERROR, "Error setting videomode %dx%d in fullscreen mode", m_screenWidth, m_screenHeight);
 			m_width = m_screenWidth = config.video.windowedWidth;
 			m_height = m_screenHeight = config.video.windowedHeight;
@@ -173,7 +222,32 @@ bool DisplayWindowMupen64plus::_resizeWindow()
 
 void DisplayWindowMupen64plus::_changeWindow()
 {
-	CoreVideo_ToggleFullScreen();
+#ifdef M64P_GLIDENUI
+	if (_supportsWithRateFunctions) {
+		m64p_error returnValue;
+		m_bFullscreen = !m_bFullscreen;
+		if (m_bFullscreen) {
+			m_screenWidth = config.video.fullscreenWidth;
+			m_screenHeight = config.video.fullscreenHeight;
+			m_screenRefresh = config.video.fullscreenRefresh;
+		} else {
+			m_screenWidth = config.video.windowedWidth;
+			m_screenHeight = config.video.windowedHeight;
+		}
+
+		m64p_video_flags flags = {};
+		returnValue = FunctionWrapper::CoreVideo_SetVideoModeWithRate(m_screenWidth, m_screenHeight, m_screenRefresh, 0, m_bFullscreen ? M64VIDEO_FULLSCREEN : M64VIDEO_WINDOWED, flags);
+
+		if (returnValue != M64ERR_SUCCESS) {
+			LOG(LOG_ERROR, "Error setting videomode %dx%d @ %d. Error code: %d", m_screenWidth, m_screenHeight, m_screenRefresh, returnValue);
+			FunctionWrapper::CoreVideo_Quit();
+		}
+	} else {
+#endif // M64P_GLIDENUI
+		CoreVideo_ToggleFullScreen();
+#ifdef M64P_GLIDENUI
+	}
+#endif // M64P_GLIDENUI
 }
 
 void DisplayWindowMupen64plus::_getDisplaySize()

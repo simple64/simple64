@@ -1186,7 +1186,7 @@ void TextureCache::_load(u32 _tile, CachedTexture *_pTexture)
 		{
 			const u32 tileMipLevel = gSP.texture.tile + mipLevel + 1;
 			gDPTile & mipTile = gDP.tiles[tileMipLevel];
-			if (gSP.texture.level > 1 &&
+			if (tmptex.max_level > 1 &&
 				tmptex.width == (mipTile.lrs - mipTile.uls + 1) * 2 &&
 				tmptex.height == (mipTile.lrt - mipTile.ult + 1) * 2)
 			{

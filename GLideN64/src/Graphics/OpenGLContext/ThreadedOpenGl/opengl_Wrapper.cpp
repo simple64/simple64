@@ -1469,6 +1469,18 @@ namespace opengl {
 		return returnValue;
 	}
 
+	m64p_error FunctionWrapper::CoreVideo_SetVideoModeWithRate(int screenWidth, int screenHeight, int refreshRate, int bitsPerPixel, m64p_video_mode mode, m64p_video_flags flags)
+	{
+		m64p_error returnValue;
+
+		if (m_threaded_wrapper)
+			executeCommand(CoreVideoSetVideoModeWithRateCommand::get(screenWidth, screenHeight, refreshRate, bitsPerPixel, mode, flags, returnValue));
+		else
+			CoreVideoSetVideoModeWithRateCommand::get(screenWidth, screenHeight, refreshRate, bitsPerPixel, mode, flags, returnValue)->performCommandSingleThreaded();
+
+		return returnValue;
+	}
+
 	void FunctionWrapper::CoreVideo_GL_SetAttribute(m64p_GLattr attribute, int value)
 	{
 		if (m_threaded_wrapper)

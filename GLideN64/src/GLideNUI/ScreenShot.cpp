@@ -22,7 +22,7 @@ EXPORT void CALL SaveScreenshot(const wchar_t * _folder, const char * _name, int
 	QString fileName;
 	int i;
 	for (i = 0; i < 1000; ++i) {
-		fileName = fileName.sprintf("%lsGLideN64_%ls_%03i.%s", folderName.data(), romName.data(), i, fileExt);
+		fileName = fileName.asprintf("%lsGLideN64_%ls_%03i.%s", folderName.data(), romName.data(), i, fileExt);
 		QFile f(fileName);
 		if (!f.exists())
 			break;
