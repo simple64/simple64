@@ -796,9 +796,9 @@ void MainWindow::on_actionVideo_Settings_triggered()
     if (QtAttachCoreLib()) {
         PluginSearchLoad();
         typedef void (*Config_Func)();
-        Config_Func Config_DoConfig = (Config_Func) osal_dynlib_getproc(g_PluginMap[0].handle, "Config_DoConfig");
-        if (Config_DoConfig)
-            Config_DoConfig();
+        Config_Func PluginConfig = (Config_Func) osal_dynlib_getproc(g_PluginMap[0].handle, "PluginConfig");
+        if (PluginConfig)
+            PluginConfig();
     }
 }
 
