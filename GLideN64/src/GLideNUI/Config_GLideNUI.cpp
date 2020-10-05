@@ -9,7 +9,7 @@
 
 Config config;
 
-EXPORT void CALL Config_DoConfig(/*HWND hParent*/)
+void Config_DoConfig(/*HWND hParent*/)
 {
 	if (config.netplay)
 		return;
