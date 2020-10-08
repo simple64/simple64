@@ -20,6 +20,7 @@ public:
 private:
 	bool _start() override;
 	void _stop() override;
+	void _restart() override;
 	void _swapBuffers() override;
 	void _saveScreenshot() override;
 	void _saveBufferContent(graphics::ObjectHandle _fbo, CachedTexture *_pTexture) override;
@@ -47,6 +48,11 @@ bool DisplayWindowWindows::_start()
 void DisplayWindowWindows::_stop()
 {
 	FunctionWrapper::windowsStop();
+}
+
+void DisplayWindowWindows::_restart()
+{
+
 }
 
 void DisplayWindowWindows::_swapBuffers()

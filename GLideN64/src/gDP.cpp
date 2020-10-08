@@ -863,13 +863,6 @@ void gDPTextureRectangle(f32 ulx, f32 uly, f32 lrx, f32 lry, s32 tile, s16 s, s1
 	if (s == 0x4000 && (gDP.colorImage.width + gSP.textureTile[0]->uls < 512))
 		s = 0;
 
-	gDP.rectColor = gDPInfo::Color();
-	if (gDP.otherMode.cycleType < G_CYC_COPY) {
-		if ((config.generalEmulation.hacks & hack_texrect_shade_alpha) != 0 &&
-			gDP.combine.mA0 == G_ACMUX_0 && gDP.combine.aA0 == G_ACMUX_SHADE)
-			gDP.rectColor.a = 1.0f;
-	}
-
 	GraphicsDrawer & drawer = dwnd().getDrawer();
 	GraphicsDrawer::TexturedRectParams params(ulx, uly, lrx, lry, dsdx, dtdy, s, t,
 		flip, false, true, frameBufferList().getCurrent());

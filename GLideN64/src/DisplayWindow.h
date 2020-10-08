@@ -72,6 +72,7 @@ private:
 
 	virtual bool _start() = 0;
 	virtual void _stop() = 0;
+	virtual void _restart() = 0;
 	virtual void _swapBuffers() = 0;
 	virtual void _saveScreenshot() = 0;
 	virtual void _saveBufferContent(graphics::ObjectHandle _fbo, CachedTexture *_pTexture) = 0;
