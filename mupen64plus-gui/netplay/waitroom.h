@@ -35,7 +35,7 @@ private:
     QString room_name;
     QPushButton *startGameButton;
     QLabel *pingValue;
-    QLabel *discordLink;
+    QLabel *motd;
     QTimer *timer;
 };
 
