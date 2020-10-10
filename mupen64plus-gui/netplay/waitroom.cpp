@@ -70,12 +70,12 @@ WaitRoom::WaitRoom(QString filename, QJsonObject room, QWebSocket *socket, QWidg
     connect(startGameButton, &QPushButton::released, this, &WaitRoom::startGame);
     layout->addWidget(startGameButton, 11, 0, 1, 2);
 
-    discordLink = new QLabel(this);
-    discordLink->setTextFormat(Qt::RichText);
-    discordLink->setTextInteractionFlags(Qt::TextBrowserInteraction);
-    discordLink->setOpenExternalLinks(true);
-    discordLink->setAlignment(Qt::AlignCenter);
-    layout->addWidget(discordLink, 12, 0, 1, 2);
+    motd = new QLabel(this);
+    motd->setTextFormat(Qt::RichText);
+    motd->setTextInteractionFlags(Qt::TextBrowserInteraction);
+    motd->setOpenExternalLinks(true);
+    motd->setAlignment(Qt::AlignCenter);
+    layout->addWidget(motd, 12, 0, 1, 2);
 
     setLayout(layout);
 
@@ -94,10 +94,10 @@ WaitRoom::WaitRoom(QString filename, QJsonObject room, QWebSocket *socket, QWidg
 
 void WaitRoom::sendPing()
 {
-    if (discordLink->text().isEmpty())
+    if (motd->text().isEmpty())
     {
         QJsonObject json;
-        json.insert("type", "get_discord");
+        json.insert("type", "get_motd");
         json.insert("room_name", room_name);
         QJsonDocument json_doc = QJsonDocument(json);
         webSocket->sendBinaryMessage(json_doc.toJson());
@@ -179,9 +179,9 @@ void WaitRoom::processBinaryMessage(QByteArray message)
         w->openROM(file_name, webSocket->peerAddress().toString(), room_port, player_number);
         accept();
     }
-    else if (json.value("type").toString() == "discord_link")
+    else if (json.value("type").toString() == "send_motd")
     {
-        QString link = json.value("link").toString();
-        discordLink->setText("Discord Voice Chat <a href=\"discord://" + link + "\">App Link</a> - <a href=\"http://" + link + "\">Web Link</a>");
+        QString message = json.value("message").toString();
+        motd->setText(message);
     }
 }
