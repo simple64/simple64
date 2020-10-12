@@ -29,7 +29,7 @@ void Config::resetToDefaults()
 #if defined(OS_MAC_OS_X)
 	video.threadedVideo = 0;
 #else
-	video.threadedVideo = 1;
+	video.threadedVideo = 0;
 #endif
 
 	texture.maxAnisotropy = 0;
