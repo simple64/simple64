@@ -554,7 +554,7 @@ public:
 		}
 		m_part +=
 			// Return the vector of the standard basis of R^4 with a 1 at position <pos> and 0 otherwise.
-			"  #define STVEC(pos) step(float(pos) - 0.5, vec4(0.0,1.0,2.0,3.0)) - step(float(pos) + 0.5, vec4(0.0,1.0,2.0,3.0)) \n";
+			"  #define STVEC(pos) (step(float(pos), vec4(0.5,1.5,2.5,3.5)) - step(float(pos), vec4(-0.5,0.5,1.5,2.5))) \n";
 
 	}
 };

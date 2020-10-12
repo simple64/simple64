@@ -667,9 +667,6 @@
     <ClInclude Include="..\..\src\TexrectDrawer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\xxHash\xxh3.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\xxHash\xxhash.h">
       <Filter>Header Files</Filter>
     </ClInclude>
