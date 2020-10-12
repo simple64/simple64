@@ -14,6 +14,8 @@ if [[ $UNAME == *"MINGW"* ]]; then
 elif [[ $UNAME == *"Darwin"* ]]; then
   suffix=".dylib"
   gui_dir_suffix=".app/Contents/MacOs/mupen64plus-gui"
+  export CXXFLAGS='-stdlib=libc++'
+  export LDFLAGS='-mmacosx-version-min=10.7'
 else
   suffix=".so"
 fi
