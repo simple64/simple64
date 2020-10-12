@@ -102,6 +102,7 @@ void Config_LoadConfig()
 	{
 		config.netplay = 1;
 		config.video.verticalSync = 0;
+		config.video.threadedVideo = 0;
 		if (strstr(RSP.romname, (const char *)"GOLDENEYE") != nullptr)
 			config.frameBufferEmulation.copyToRDRAM = 0;
 	}
