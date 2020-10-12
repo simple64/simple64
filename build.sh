@@ -3,6 +3,7 @@
 set -e
 
 UNAME=$(uname -s)
+gui_dir_suffix=""
 if [[ $UNAME == *"MINGW"* ]]; then
   suffix=".dll"
   if [[ $UNAME == *"MINGW64"* ]]; then
@@ -10,6 +11,9 @@ if [[ $UNAME == *"MINGW"* ]]; then
   else
     mingw_prefix="mingw32"
   fi
+elif [[ $UNAME == *"Darwin"* ]]; then
+  suffix=".dylib"
+  gui_dir_suffix=".app/Contents/MacOs/mupen64plus-gui"
 else
   suffix=".so"
 fi
@@ -38,7 +42,7 @@ make -j4
 if [[ $UNAME == *"MINGW"* ]]; then
   cp $base_dir/mupen64plus-input-qt/build/release/mupen64plus-input-qt.dll $install_dir
 else
-  cp $base_dir/mupen64plus-input-qt/build/libmupen64plus-input-qt.so $install_dir/mupen64plus-input-qt.so
+  cp $base_dir/mupen64plus-input-qt/build/libmupen64plus-input-qt$suffix $install_dir/mupen64plus-input-qt$suffix
 fi
 
 cd $base_dir/mupen64plus-audio-sdl2/projects/unix
@@ -65,7 +69,7 @@ make -j4
 if [[ $UNAME == *"MINGW"* ]]; then
   cp $base_dir/mupen64plus-gui/build/release/mupen64plus-gui.exe $install_dir
 else
-  cp $base_dir/mupen64plus-gui/build/mupen64plus-gui $install_dir
+  cp $base_dir/mupen64plus-gui/build/mupen64plus-gui$gui_dir_suffix $install_dir
 fi
 
 cd $base_dir/GLideN64/src
