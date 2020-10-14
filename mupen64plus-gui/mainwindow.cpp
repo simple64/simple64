@@ -770,9 +770,9 @@ void MainWindow::on_actionController_Configuration_triggered()
     if (QtAttachCoreLib()) {
         PluginSearchLoad();
         typedef void (*Config_Func)();
-        Config_Func Config_DoConfig = (Config_Func) osal_dynlib_getproc(g_PluginMap[2].handle, "Config_DoConfig");
-        if (Config_DoConfig)
-            Config_DoConfig();
+        Config_Func PluginConfig = (Config_Func) osal_dynlib_getproc(g_PluginMap[2].handle, "PluginConfig");
+        if (PluginConfig)
+            PluginConfig();
     }
 }
 
