@@ -596,7 +596,7 @@ EXPORT void CALL SDL_KeyUp(int, int keysym)
     myKeyState[keysym] = 0;
 }
 
-EXPORT void CALL Config_DoConfig()
+EXPORT void CALL PluginConfig()
 {
     ConfigDialog config;
     config.exec();
