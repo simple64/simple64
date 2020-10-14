@@ -18,7 +18,7 @@ typedef struct
 
 extern "C"
 {
-    EXPORT void CALL Config_DoConfig();
+    EXPORT void CALL PluginConfig();
 }
 
 // Some stuff from n-rage plugin
