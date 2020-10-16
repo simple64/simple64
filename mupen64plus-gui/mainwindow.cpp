@@ -567,7 +567,7 @@ void MainWindow::createOGLWindow(QSurfaceFormat* format)
     if (my_window) my_window->deleteLater();
 
     my_window = new OGLWindow();
-    QWidget *container = QWidget::createWindowContainer(my_window);
+    QWidget *container = QWidget::createWindowContainer(my_window, this);
     container->setFocusPolicy(Qt::StrongFocus);
 
     my_window->setCursor(Qt::BlankCursor);
