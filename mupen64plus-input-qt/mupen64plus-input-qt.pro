@@ -60,6 +60,6 @@ LIBS += -L/usr/local/lib -ldl -lSDL2
 INCLUDEPATH += /usr/local/include /usr/include/SDL2 /usr/local/include/SDL2
 }
 
-CONFIG += c++11
+CONFIG += optimize_full
 
 QMAKE_PROJECT_DEPTH = 0
