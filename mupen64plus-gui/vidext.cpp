@@ -51,7 +51,7 @@ m64p_error qtVidExtFuncListModes(m64p_2d_size *SizeArray, int *NumSizes)
     return M64ERR_SUCCESS;
 }
 
-m64p_error qtVidExtFuncListRates(m64p_2d_size Size, int *NumRates, int *Rates)
+m64p_error qtVidExtFuncListRates(m64p_2d_size, int*, int*)
 {
     return M64ERR_UNSUPPORTED;
 }
@@ -69,7 +69,7 @@ m64p_error qtVidExtFuncSetMode(int Width, int Height, int, int ScreenMode, int)
     return M64ERR_SUCCESS;
 }
 
-m64p_error qtVidExtFuncSetModeWithRate(int Width, int Height, int RefreshRate, int BitsPerPixel, int ScreenMode, int Flags)
+m64p_error qtVidExtFuncSetModeWithRate(int, int, int, int, int, int)
 {
     return M64ERR_UNSUPPORTED;
 }
