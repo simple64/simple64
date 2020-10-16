@@ -92,6 +92,6 @@ FORMS    += mainwindow.ui
 
 QMAKE_INCDIR += api osal interface
 
-CONFIG += c++11
+CONFIG += optimize_full
 
 QMAKE_PROJECT_DEPTH = 0
