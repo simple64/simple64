@@ -325,6 +325,7 @@ m64p_error launchGame(QString netplay_ip, int netplay_port, int netplay_player)
                 reg_id = rand();
 #endif
             }
+            reg_id += netplay_player;
 
             if ((*CoreDoCommand)(M64CMD_NETPLAY_CONTROL_PLAYER, netplay_player, &reg_id) == M64ERR_SUCCESS)
                 DebugMessage(M64MSG_INFO, "Netplay: registered for player %d", netplay_player);
