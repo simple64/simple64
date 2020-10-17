@@ -9,8 +9,8 @@
 
 void SettingsDialog::handleCoreButton()
 {
-    QString fileName = QFileDialog::getOpenFileName(this,
-        tr("Locate Core Library"), NULL, tr("Shared Libraries (*.dylib *.so* *.dll)"));
+    QString fileName = QFileDialog::getExistingDirectory(this,
+        tr("Locate Core Library"), NULL, QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
     if (!fileName.isNull()) {
         corePath->setText(fileName);
         w->getSettings()->setValue("coreLibPath", fileName);
