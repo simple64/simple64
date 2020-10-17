@@ -29,7 +29,6 @@ public:
     QSettings* getSettings();
     LogViewer* getLogViewer();
 
-    m64p_dynlib_handle getCoreLib();
     m64p_dynlib_handle getAudioPlugin();
     m64p_dynlib_handle getRspPlugin();
     m64p_dynlib_handle getInputPlugin();
@@ -46,6 +45,8 @@ public:
     int getCoreStarted();
     void loadCoreLib();
     void loadPlugins();
+    void closeCoreLib();
+    void closePlugins();
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
@@ -120,8 +121,6 @@ private:
     void updateDD(Ui::MainWindow *ui);
     void updatePIF(Ui::MainWindow *ui);
     void findRecursion(const QString &path, const QString &pattern, QStringList *result);
-    void closeCoreLib();
-    void closePlugins();
     Ui::MainWindow *ui;
     QMenu * OpenRecent;
     int verbose;
