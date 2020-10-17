@@ -42,11 +42,8 @@ public:
     void setGLES();
     int getGLES();
     void updatePlugins();
-    int getCoreStarted();
-    void loadCoreLib();
-    void loadPlugins();
-    void closeCoreLib();
-    void closePlugins();
+    void resetCore();
+    m64p_dynlib_handle getCoreLib();
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
@@ -58,10 +55,8 @@ public slots:
     void toggleFS(int force);
     void createOGLWindow(QSurfaceFormat* format);
     void deleteOGLWindow();
-    void setTitle(std::string title);
     void pluginWarning(QString name);
     void showMessage(QString message);
-    void setCoreStarted(int value);
 
 private slots:
     void volumeValueChanged(int value);
@@ -120,6 +115,10 @@ private:
     void updateGB(Ui::MainWindow *ui);
     void updateDD(Ui::MainWindow *ui);
     void updatePIF(Ui::MainWindow *ui);
+    void loadCoreLib();
+    void loadPlugins();
+    void closeCoreLib();
+    void closePlugins();
     void findRecursion(const QString &path, const QString &pattern, QStringList *result);
     Ui::MainWindow *ui;
     QMenu * OpenRecent;
@@ -139,8 +138,6 @@ private:
     m64p_dynlib_handle audioPlugin;
     m64p_dynlib_handle gfxPlugin;
     m64p_dynlib_handle inputPlugin;
-
-    int coreStarted;
 };
 
 extern MainWindow *w;

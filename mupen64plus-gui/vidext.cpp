@@ -62,6 +62,7 @@ m64p_error qtVidExtFuncSetMode(int Width, int Height, int, int ScreenMode, int)
     if (!init) {
         w->getWorkerThread()->createOGLWindow(&format);
         while (!w->getOGLWindow()->isValid()) {}
+        while (w->getOGLWindow()->context()->thread() != rendering_thread) {}
         w->getWorkerThread()->resizeMainWindow(Width, Height);
         w->getOGLWindow()->makeCurrent();
         init = 1;
@@ -228,10 +229,8 @@ m64p_error qtVidExtFuncGLSwapBuf(void)
     return M64ERR_SUCCESS;
 }
 
-m64p_error qtVidExtFuncSetCaption(const char * _title)
+m64p_error qtVidExtFuncSetCaption(const char *)
 {
-    std::string title = _title;
-    w->getWorkerThread()->setTitle(title);
     return M64ERR_SUCCESS;
 }
 

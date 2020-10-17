@@ -13,11 +13,6 @@ LogViewer::LogViewer(QWidget *parent)
     setLayout(mainLayout);
 }
 
-LogViewer::~LogViewer()
-{
-    file.close();
-}
-
 void LogViewer::showEvent(QShowEvent *event)
 {
     file.flush();

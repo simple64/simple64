@@ -362,10 +362,8 @@ MainWindow::MainWindow(QWidget *parent) :
     QString ini_path = QDir(QCoreApplication::applicationDirPath()).filePath("mupen64plus-gui.ini");
     settings = new QSettings(ini_path, QSettings::IniFormat, this);
 
-    if (!settings->isWritable()) {
-        settings->deleteLater();
+    if (!settings->isWritable())
         settings = new QSettings("mupen64plus", "gui", this);
-    }
 
     if (!settings->contains("version") || settings->value("version").toInt() != SETTINGS_VER)
     {
@@ -423,7 +421,6 @@ MainWindow::MainWindow(QWidget *parent) :
     volumeAction->slider()->setValue(settings->value("volume").toInt());
     ui->menuEmulation->insertAction(ui->actionMute, volumeAction);
 
-    coreStarted = 0;
     coreLib = nullptr;
     gfxPlugin = nullptr;
     rspPlugin = nullptr;
@@ -435,9 +432,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
-    closePlugins();
-    closeCoreLib();
-
     delete ui;
 }
 
@@ -446,8 +440,7 @@ void MainWindow::volumeValueChanged(int value)
     if (value != settings->value("volume").toInt())
     {
         settings->setValue("volume", value);
-        if (coreStarted)
-            (*CoreDoCommand)(M64CMD_CORE_STATE_SET, M64CORE_AUDIO_VOLUME, &value);
+        (*CoreDoCommand)(M64CMD_CORE_STATE_SET, M64CORE_AUDIO_VOLUME, &value);
     }
 }
 
@@ -494,6 +487,8 @@ void MainWindow::resizeMainWindow(int Width, int Height)
 
 void MainWindow::toggleFS(int force)
 {
+    if (coreLib == nullptr) return;
+
     int response = M64VIDEO_NONE;
     if (force == M64VIDEO_NONE)
         (*CoreDoCommand)(M64CMD_CORE_STATE_QUERY, M64CORE_VIDEO_MODE, &response);
@@ -525,6 +520,9 @@ void MainWindow::findRecursion(const QString &path, const QString &pattern, QStr
 void MainWindow::closeEvent (QCloseEvent *event)
 {
     stopGame();
+
+    closePlugins();
+    closeCoreLib();
 
     settings->setValue("geometry", saveGeometry());
     settings->setValue("windowState", saveState());
@@ -563,13 +561,6 @@ void MainWindow::updateOpenRecent()
     });
 }
 
-void MainWindow::setTitle(std::string title)
-{
-    QString _title = QString::fromStdString(title);
-    _title.prepend("mupen64plus: ");
-    this->setWindowTitle(_title);
-}
-
 void MainWindow::pluginWarning(QString name)
 {
     QMessageBox msgBox;
@@ -586,8 +577,6 @@ void MainWindow::showMessage(QString message)
 
 void MainWindow::createOGLWindow(QSurfaceFormat* format)
 {
-    if (my_window) my_window->deleteLater();
-
     my_window = new OGLWindow();
     QWidget *container = QWidget::createWindowContainer(my_window, this);
     container->setFocusPolicy(Qt::StrongFocus);
@@ -606,23 +595,28 @@ void MainWindow::deleteOGLWindow()
     QWidget *container = new QWidget(this);
     setCentralWidget(container);
     my_window->doneCurrent();
-    my_window->deleteLater();
-    my_window = nullptr;
 }
 
 void MainWindow::stopGame()
 {
-    if (coreStarted)
+    if (!coreLib) return;
+
+    int response;
+    (*CoreDoCommand)(M64CMD_CORE_STATE_QUERY, M64CORE_EMU_STATE, &response);
+    if (response != M64EMU_STOPPED)
     {
-        int response;
-        (*CoreDoCommand)(M64CMD_CORE_STATE_QUERY, M64CORE_EMU_STATE, &response);
-        if (response == M64EMU_RUNNING)
-        {
-            (*CoreDoCommand)(M64CMD_STOP, 0, NULL);
-            while (workerThread->isRunning())
-                QCoreApplication::processEvents();
-        }
+        (*CoreDoCommand)(M64CMD_STOP, 0, NULL);
+        while (workerThread->isRunning())
+            QCoreApplication::processEvents();
     }
+}
+
+void MainWindow::resetCore()
+{
+    closePlugins();
+    closeCoreLib();
+    loadCoreLib();
+    loadPlugins();
 }
 
 void MainWindow::openROM(QString filename, QString netplay_ip, int netplay_port, int netplay_player)
@@ -631,9 +625,10 @@ void MainWindow::openROM(QString filename, QString netplay_ip, int netplay_port,
 
     logViewer.clearLog();
 
+    resetCore();
+
     workerThread = new WorkerThread(netplay_ip, netplay_port, netplay_player, this);
     workerThread->setFileName(filename);
-    connect(workerThread, SIGNAL(finished()), workerThread, SLOT(deleteLater()));
     workerThread->start();
 
     QStringList list;
@@ -682,73 +677,62 @@ void MainWindow::on_actionPlugin_Settings_triggered()
 
 void MainWindow::on_actionPause_Game_triggered()
 {
-    if (coreStarted) {
-        int response;
-        (*CoreDoCommand)(M64CMD_CORE_STATE_QUERY, M64CORE_EMU_STATE, &response);
-        if (response == M64EMU_RUNNING)
-            (*CoreDoCommand)(M64CMD_PAUSE, 0, NULL);
-        else if (response == M64EMU_PAUSED)
-            (*CoreDoCommand)(M64CMD_RESUME, 0, NULL);
-    }
+    int response;
+    (*CoreDoCommand)(M64CMD_CORE_STATE_QUERY, M64CORE_EMU_STATE, &response);
+    if (response == M64EMU_RUNNING)
+        (*CoreDoCommand)(M64CMD_PAUSE, 0, NULL);
+    else if (response == M64EMU_PAUSED)
+        (*CoreDoCommand)(M64CMD_RESUME, 0, NULL);
 }
 
 void MainWindow::on_actionMute_triggered()
 {
-    if (coreStarted) {
-        int response;
-        (*CoreDoCommand)(M64CMD_CORE_STATE_QUERY, M64CORE_AUDIO_MUTE, &response);
-        if (response == 0) {
-            response = 1;
-            (*CoreDoCommand)(M64CMD_CORE_STATE_SET, M64CORE_AUDIO_MUTE, &response);
-        } else if (response == 1) {
-            response = 0;
-            (*CoreDoCommand)(M64CMD_CORE_STATE_SET, M64CORE_AUDIO_MUTE, &response);
-        }
+    int response;
+    (*CoreDoCommand)(M64CMD_CORE_STATE_QUERY, M64CORE_AUDIO_MUTE, &response);
+    if (response == 0) {
+        response = 1;
+        (*CoreDoCommand)(M64CMD_CORE_STATE_SET, M64CORE_AUDIO_MUTE, &response);
+    } else if (response == 1) {
+        response = 0;
+        (*CoreDoCommand)(M64CMD_CORE_STATE_SET, M64CORE_AUDIO_MUTE, &response);
     }
 }
 
 void MainWindow::on_actionHard_Reset_triggered()
 {
-    if (coreStarted)
-        (*CoreDoCommand)(M64CMD_RESET, 1, NULL);
+    (*CoreDoCommand)(M64CMD_RESET, 1, NULL);
 }
 
 void MainWindow::on_actionSoft_Reset_triggered()
 {
-    if (coreStarted)
-        (*CoreDoCommand)(M64CMD_RESET, 0, NULL);
+    (*CoreDoCommand)(M64CMD_RESET, 0, NULL);
 }
 
 void MainWindow::on_actionTake_Screenshot_triggered()
 {
-    if (coreStarted)
-        (*CoreDoCommand)(M64CMD_TAKE_NEXT_SCREENSHOT, 0, NULL);
+    (*CoreDoCommand)(M64CMD_TAKE_NEXT_SCREENSHOT, 0, NULL);
 }
 
 void MainWindow::on_actionSave_State_triggered()
 {
-    if (coreStarted)
-        (*CoreDoCommand)(M64CMD_STATE_SAVE, 1, NULL);
+    (*CoreDoCommand)(M64CMD_STATE_SAVE, 1, NULL);
 }
 
 void MainWindow::on_actionLoad_State_triggered()
 {
-    if (coreStarted)
-        (*CoreDoCommand)(M64CMD_STATE_LOAD, 1, NULL);
+    (*CoreDoCommand)(M64CMD_STATE_LOAD, 1, NULL);
 }
 
 void MainWindow::on_actionToggle_Fullscreen_triggered()
 {
-    if (coreStarted) {
-        int response;
-        (*CoreDoCommand)(M64CMD_CORE_STATE_QUERY, M64CORE_VIDEO_MODE, &response);
-        if (response == M64VIDEO_WINDOWED) {
-            response = M64VIDEO_FULLSCREEN;
-            (*CoreDoCommand)(M64CMD_CORE_STATE_SET, M64CORE_VIDEO_MODE, &response);
-        } else if (response == M64VIDEO_FULLSCREEN) {
-            response = M64VIDEO_WINDOWED;
-            (*CoreDoCommand)(M64CMD_CORE_STATE_SET, M64CORE_VIDEO_MODE, &response);
-        }
+    int response;
+    (*CoreDoCommand)(M64CMD_CORE_STATE_QUERY, M64CORE_VIDEO_MODE, &response);
+    if (response == M64VIDEO_WINDOWED) {
+        response = M64VIDEO_FULLSCREEN;
+        (*CoreDoCommand)(M64CMD_CORE_STATE_SET, M64CORE_VIDEO_MODE, &response);
+    } else if (response == M64VIDEO_FULLSCREEN) {
+        response = M64VIDEO_WINDOWED;
+        (*CoreDoCommand)(M64CMD_CORE_STATE_SET, M64CORE_VIDEO_MODE, &response);
     }
 }
 
@@ -759,9 +743,7 @@ void MainWindow::on_actionSave_State_To_triggered()
     if (!filename.isNull()) {
         if (!filename.contains(".st"))
             filename.append(".state");
-        if (coreStarted) {
-            (*CoreDoCommand)(M64CMD_STATE_SAVE, 1, filename.toLatin1().data());
-        }
+        (*CoreDoCommand)(M64CMD_STATE_SAVE, 1, filename.toLatin1().data());
     }
 }
 
@@ -770,9 +752,7 @@ void MainWindow::on_actionLoad_State_From_triggered()
     QString filename = QFileDialog::getOpenFileName(this,
         tr("Open Save State"), NULL, tr("State Files (*.st* *.pj*)"));
     if (!filename.isNull()) {
-        if (coreStarted) {
-            (*CoreDoCommand)(M64CMD_STATE_LOAD, 1, filename.toLatin1().data());
-        }
+        (*CoreDoCommand)(M64CMD_STATE_LOAD, 1, filename.toLatin1().data());
     }
 }
 
@@ -792,12 +772,10 @@ void MainWindow::on_actionController_Configuration_triggered()
 
 void MainWindow::on_actionToggle_Speed_Limiter_triggered()
 {
-    if (coreStarted) {
-        int value;
-        (*CoreDoCommand)(M64CMD_CORE_STATE_QUERY, M64CORE_SPEED_LIMITER, &value);
-        value = !value;
-        (*CoreDoCommand)(M64CMD_CORE_STATE_SET, M64CORE_SPEED_LIMITER, &value);
-    }
+    int value;
+    (*CoreDoCommand)(M64CMD_CORE_STATE_QUERY, M64CORE_SPEED_LIMITER, &value);
+    value = !value;
+    (*CoreDoCommand)(M64CMD_CORE_STATE_SET, M64CORE_SPEED_LIMITER, &value);
 }
 
 void MainWindow::on_actionView_Log_triggered()
@@ -875,25 +853,6 @@ m64p_dynlib_handle MainWindow::getGfxPlugin()
     return gfxPlugin;
 }
 
-void MainWindow::setCoreStarted(int value)
-{
-    coreStarted = value;
-
-    if (value == 0)
-    {
-        this->setWindowTitle(m_title);
-        closePlugins();
-        closeCoreLib();
-        loadCoreLib();
-        loadPlugins();
-    }
-}
-
-int MainWindow::getCoreStarted()
-{
-    return coreStarted;
-}
-
 void MainWindow::closeCoreLib()
 {
     if (coreLib != nullptr)
@@ -906,8 +865,6 @@ void MainWindow::closeCoreLib()
 
 void MainWindow::loadCoreLib()
 {
-    closeCoreLib();
-
     QString corePath = settings->value("coreLibPath").toString();
     corePath.replace("$APP_PATH$", QCoreApplication::applicationDirPath());
 
@@ -992,8 +949,6 @@ void MainWindow::closePlugins()
 
 void MainWindow::loadPlugins()
 {
-    closePlugins();
-
     if (coreLib == nullptr)
         return;
 
@@ -1040,4 +995,9 @@ void MainWindow::loadPlugins()
     }
     PluginStartup = (ptr_PluginStartup) osal_dynlib_getproc(rspPlugin, "PluginStartup");
     (*PluginStartup)(coreLib, (char*)"RSP", DebugCallback);
+}
+
+m64p_dynlib_handle MainWindow::getCoreLib()
+{
+    return coreLib;
 }

@@ -89,6 +89,8 @@ FORMS    += mainwindow.ui
 
 QMAKE_INCDIR += api interface
 
+QMAKE_LFLAGS += -no-pie
+
 CONFIG += optimize_full
 
 QMAKE_PROJECT_DEPTH = 0

@@ -154,12 +154,15 @@ SettingsDialog::SettingsDialog(QWidget *parent)
 void SettingsDialog::closeEvent(QCloseEvent *event)
 {
     w->getSettings()->sync();
-    if (w->getCoreStarted() == 0)
+    int value;
+    if (w->getCoreLib())
     {
-        w->closePlugins();
-        w->closeCoreLib();
-        w->loadCoreLib();
-        w->loadPlugins();
+        (*CoreDoCommand)(M64CMD_CORE_STATE_QUERY, M64CORE_EMU_STATE, &value);
+        if (value == M64EMU_STOPPED)
+            w->resetCore();
     }
+    else
+        w->resetCore();
+
     event->accept();
 }

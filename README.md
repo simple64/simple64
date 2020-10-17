@@ -1,4 +1,4 @@
-# mupen64plus-GLideN64
+# m64p
 
 **Downloads found here: https://github.com/loganmc10/m64p/releases**
 ___

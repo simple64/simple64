@@ -12,7 +12,6 @@ class LogViewer : public QDialog
     Q_OBJECT
 public:
     explicit LogViewer(QWidget *parent = 0);
-    ~LogViewer();
     void addLog(QString text);
     void clearLog();
 protected:

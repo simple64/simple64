@@ -92,6 +92,7 @@ void PluginDialog::handleResetButton()
         (*ConfigDeleteSection)("Core");
         (*ConfigDeleteSection)("Video-General");
         (*ConfigSaveFile)();
+        w->resetCore();
         this->close();
     }
     else {
