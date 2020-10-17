@@ -22,13 +22,12 @@ SOURCES += main.cpp \
     vidext.cpp \
     settingsdialog.cpp \
     interface/common.cpp \
-    interface/core_interface.cpp \
-    interface/plugin.cpp \
     plugindialog.cpp \
     oglwindow.cpp \
     workerthread.cpp \
     settingclasses.cpp \
     cheatdialog.cpp \
+    interface/core_commands.cpp \
     interface/cheat.cpp \
     interface/sdl_key_converter.c \
     logviewer.cpp \
@@ -70,14 +69,12 @@ INCLUDEPATH += /usr/local/include /usr/include/SDL2 /usr/local/include/SDL2
 HEADERS  += mainwindow.h \
     vidext.h \
     interface/common.h \
-    interface/core_interface.h \
-    interface/plugin.h \
     settingsdialog.h \
-    osal/osal_dynamiclib.h \
     workerthread.h \
     plugindialog.h \
     oglwindow.h \
     settingclasses.h \
+    osal/osal_dynamiclib.h \
     cheatdialog.h \
     interface/cheat.h \
     interface/sdl_key_converter.h \
@@ -90,7 +87,7 @@ HEADERS  += mainwindow.h \
 
 FORMS    += mainwindow.ui
 
-QMAKE_INCDIR += api osal interface
+QMAKE_INCDIR += api interface
 
 CONFIG += optimize_full
 

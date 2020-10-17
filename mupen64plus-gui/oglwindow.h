@@ -5,7 +5,6 @@
 #include <QOpenGLWindow>
 #include <QOpenGLFunctions>
 #include "common.h"
-#include "core_interface.h"
 
 class OGLWindow : public QOpenGLWindow
 {

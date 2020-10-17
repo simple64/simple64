@@ -1,8 +1,6 @@
 #include "plugindialog.h"
 #include "mainwindow.h"
-#include "core_interface.h"
-#include "osal_preproc.h"
-#include "plugin.h"
+#include "interface/core_commands.h"
 
 #include <QLabel>
 #include <QScrollArea>
@@ -94,7 +92,6 @@ void PluginDialog::handleResetButton()
         (*ConfigDeleteSection)("Core");
         (*ConfigDeleteSection)("Video-General");
         (*ConfigSaveFile)();
-        DetachCoreLib();
         this->close();
     }
     else {
@@ -110,10 +107,6 @@ PluginDialog::PluginDialog(QWidget *parent)
     m64p_error res;
     int value;
     (*CoreDoCommand)(M64CMD_CORE_STATE_QUERY, M64CORE_EMU_STATE, &value);
-    if (value == M64EMU_STOPPED) {
-        PluginSearchLoad();
-        PluginUnload();
-    }
 
     coreLayoutRow = 0;
     QVBoxLayout *mainLayout = new QVBoxLayout(this);

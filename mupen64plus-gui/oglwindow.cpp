@@ -1,5 +1,8 @@
 
 #include "oglwindow.h"
+#include "mainwindow.h"
+#include "interface/core_commands.h"
+
 extern QThread* rendering_thread;
 
 void OGLWindow::initializeGL() {
@@ -20,7 +23,7 @@ void OGLWindow::resizeEvent(QResizeEvent *event) {
 
 void OGLWindow::timerEvent(QTimerEvent *te) {
     int size = (m_width << 16) + m_height;
-    if (coreStarted)
+    if (w->getCoreStarted())
         (*CoreDoCommand)(M64CMD_CORE_STATE_SET, M64CORE_VIDEO_SIZE, &size);
     killTimer(te->timerId());
     timerId = 0;

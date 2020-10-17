@@ -2,6 +2,7 @@
 #include "workerthread.h"
 #include "vidext.h"
 #include "mainwindow.h"
+#include "interface/core_commands.h"
 #ifndef _WIN32
 #include <QDBusConnection>
 #include <QDBusReply>
@@ -25,6 +26,7 @@ void WorkerThread::run()
     connect(this, SIGNAL(setTitle(std::string)), w, SLOT(setTitle(std::string)), Qt::BlockingQueuedConnection);
     connect(this, SIGNAL(pluginWarning(QString)), w, SLOT(pluginWarning(QString)), Qt::BlockingQueuedConnection);
     connect(this, SIGNAL(showMessage(QString)), w, SLOT(showMessage(QString)), Qt::BlockingQueuedConnection);
+    connect(this, SIGNAL(setCoreStarted(int)), w, SLOT(setCoreStarted(int)), Qt::BlockingQueuedConnection);
 #ifdef _WIN32
     SetThreadExecutionState(ES_CONTINUOUS | ES_DISPLAY_REQUIRED);
 #else
@@ -39,7 +41,10 @@ void WorkerThread::run()
 
     m64p_error res = loadROM(m_fileName.toStdString());
     if (res == M64ERR_SUCCESS)
+    {
+        emit setCoreStarted(1);
         res = launchGame(netplay_ip, netplay_port, netplay_player);
+    }
 
 #ifdef _WIN32
     SetThreadExecutionState(ES_CONTINUOUS);
@@ -47,13 +52,14 @@ void WorkerThread::run()
     if (cookieID)
         screenSaverInterface.call("UnInhibit", cookieID);
 #endif
-    if (res == M64ERR_SUCCESS) {
+
+    if (res == M64ERR_SUCCESS)
         (*ConfigSaveFile)();
 
-        if (w->getNoGUI())
-            QApplication::quit();
-    }
-    w->resetTitle();
+    if (w->getNoGUI())
+        QApplication::quit();
+    else
+        emit setCoreStarted(0);
 }
 
 void WorkerThread::setFileName(QString filename)

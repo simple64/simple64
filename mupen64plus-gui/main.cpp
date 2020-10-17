@@ -2,7 +2,7 @@
 #include <QApplication>
 #include <QCommandLineParser>
 
-MainWindow *w;
+MainWindow *w = nullptr;
 int main(int argc, char *argv[])
 {
     srand (time(NULL));

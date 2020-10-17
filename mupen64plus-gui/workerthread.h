@@ -23,6 +23,7 @@ signals:
     void setTitle(std::string title);
     void pluginWarning(QString name);
     void showMessage(QString message);
+    void setCoreStarted(int value);
 
 private:
     QString m_fileName;

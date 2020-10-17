@@ -13,6 +13,8 @@ class SettingsDialog : public QDialog
 
 public:
     SettingsDialog(QWidget *parent = nullptr);
+protected:
+    void closeEvent(QCloseEvent *event);
 private slots:
     void handleCoreButton();
     void handlePluginButton();
