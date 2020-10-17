@@ -32,7 +32,6 @@ void SettingsDialog::handlePluginButton()
         w->getSettings()->remove("audioPlugin");
         w->getSettings()->remove("rspPlugin");
         w->updatePlugins();
-        initStuff();
     }
 }
 
@@ -68,7 +67,6 @@ void SettingsDialog::handlePluginEdit()
     w->getSettings()->remove("audioPlugin");
     w->getSettings()->remove("rspPlugin");
     w->updatePlugins();
-    initStuff();
 }
 
 void SettingsDialog::handleConfigEdit()
@@ -105,11 +103,7 @@ void SettingsDialog::initStuff()
     QLabel *note = new QLabel("Note: If you change the Config Path, you need to close and re-open mupen64plus-gui before it will take effect.", this);
     QLabel *configLabel = new QLabel("Config Dir Path", this);
     configPath = new QLineEdit(this);
-    QString configDirPath = w->getSettings()->value("configDirPath").toString();
-    if (!configDirPath.isEmpty())
-        configPath->setText(configDirPath);
-    else
-        configPath->setText(ConfigGetUserConfigPath());
+    configPath->setText(w->getSettings()->value("configDirPath").toString());
     QPushButton *configButton = new QPushButton("Set Path", this);
     connect(configButton, SIGNAL (released()),this, SLOT (handleConfigButton()));
     connect(configPath, SIGNAL (editingFinished()),this, SLOT (handleConfigEdit()));
@@ -159,6 +153,7 @@ SettingsDialog::SettingsDialog(QWidget *parent)
 
 void SettingsDialog::closeEvent(QCloseEvent *event)
 {
+    w->getSettings()->sync();
     if (w->getCoreStarted() == 0)
     {
         w->closePlugins();
