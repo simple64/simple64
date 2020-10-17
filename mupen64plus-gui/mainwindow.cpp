@@ -875,6 +875,8 @@ void MainWindow::setCoreStarted(int value)
     if (value == 0)
     {
         this->setWindowTitle(m_title);
+        closePlugins();
+        closeCoreLib();
         loadCoreLib();
         loadPlugins();
     }
