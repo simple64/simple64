@@ -122,7 +122,9 @@ void SettingsDialog::initStuff()
     layout->addWidget(configButton,3,2);
     layout->addWidget(clearConfigButton,3,3);
 
-    QDir PluginDir(w->getSettings()->value("pluginDirPath").toString());
+    QString pluginPath = w->getSettings()->value("pluginDirPath").toString();
+    pluginPath.replace("$APP_PATH$", QCoreApplication::applicationDirPath());
+    QDir PluginDir(pluginPath);
     QStringList Filter;
     Filter.append("");
     QStringList current;
@@ -159,6 +161,8 @@ void SettingsDialog::closeEvent(QCloseEvent *event)
 {
     if (w->getCoreStarted() == 0)
     {
+        w->closePlugins();
+        w->closeCoreLib();
         w->loadCoreLib();
         w->loadPlugins();
     }

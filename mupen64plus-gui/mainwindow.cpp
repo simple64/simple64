@@ -21,6 +21,8 @@
 
 #define RECENT_SIZE 10
 
+#define SETTINGS_VER 2
+
 m64p_video_extension_functions vidExtFunctions = {14,
                                                  qtVidExtFuncInit,
                                                  qtVidExtFuncQuit,
@@ -39,7 +41,9 @@ m64p_video_extension_functions vidExtFunctions = {14,
 
 void MainWindow::updatePlugins()
 {
-    QDir PluginDir(settings->value("pluginDirPath").toString());
+    QString pluginPath = settings->value("pluginDirPath").toString();
+    pluginPath.replace("$APP_PATH$", QCoreApplication::applicationDirPath());
+    QDir PluginDir(pluginPath);
     PluginDir.setFilter(QDir::Files);
     QStringList Filter;
     Filter.append("");
@@ -363,6 +367,12 @@ MainWindow::MainWindow(QWidget *parent) :
         settings = new QSettings("mupen64plus", "gui", this);
     }
 
+    if (!settings->contains("version") || settings->value("version").toInt() != SETTINGS_VER)
+    {
+        settings->clear();
+        settings->setValue("version", SETTINGS_VER);
+    }
+
     restoreGeometry(settings->value("geometry").toByteArray());
     restoreState(settings->value("windowState").toByteArray());
 
@@ -398,9 +408,9 @@ MainWindow::MainWindow(QWidget *parent) :
     updatePIF(ui);
 
     if (!settings->contains("coreLibPath"))
-        settings->setValue("coreLibPath", QDir(QCoreApplication::applicationDirPath()).filePath(OSAL_DEFAULT_DYNLIB_FILENAME));
+        settings->setValue("coreLibPath", "$APP_PATH$");
     if (!settings->contains("pluginDirPath"))
-        settings->setValue("pluginDirPath", QCoreApplication::applicationDirPath());
+        settings->setValue("pluginDirPath", "$APP_PATH$");
 
     updatePlugins();
 
@@ -843,11 +853,6 @@ LogViewer* MainWindow::getLogViewer()
     return &logViewer;
 }
 
-m64p_dynlib_handle MainWindow::getCoreLib()
-{
-    return coreLib;
-}
-
 m64p_dynlib_handle MainWindow::getAudioPlugin()
 {
     return audioPlugin;
@@ -901,7 +906,10 @@ void MainWindow::loadCoreLib()
 {
     closeCoreLib();
 
-    osal_dynlib_open(&coreLib, settings->value("coreLibPath").toString().toLatin1().data());
+    QString corePath = settings->value("coreLibPath").toString();
+    corePath.replace("$APP_PATH$", QCoreApplication::applicationDirPath());
+
+    osal_dynlib_open(&coreLib, QDir(corePath).filePath(OSAL_DEFAULT_DYNLIB_FILENAME).toLatin1().data());
 
     CoreStartup =                 (ptr_CoreStartup) osal_dynlib_getproc(coreLib, "CoreStartup");
     CoreShutdown =                (ptr_CoreShutdown) osal_dynlib_getproc(coreLib, "CoreShutdown");
@@ -975,19 +983,22 @@ void MainWindow::loadPlugins()
 
     ptr_PluginStartup PluginStartup;
 
-    osal_dynlib_open(&gfxPlugin, QDir(settings->value("pluginDirPath").toString()).filePath(settings->value("videoPlugin").toString()).toLatin1().data());
+    QString pluginPath = settings->value("pluginDirPath").toString();
+    pluginPath.replace("$APP_PATH$", QCoreApplication::applicationDirPath());
+
+    osal_dynlib_open(&gfxPlugin, QDir(pluginPath).filePath(settings->value("videoPlugin").toString()).toLatin1().data());
     PluginStartup = (ptr_PluginStartup) osal_dynlib_getproc(gfxPlugin, "PluginStartup");
     (*PluginStartup)(coreLib, (char*)"Video", DebugCallback);
 
-    osal_dynlib_open(&audioPlugin, QDir(settings->value("pluginDirPath").toString()).filePath(settings->value("audioPlugin").toString()).toLatin1().data());
+    osal_dynlib_open(&audioPlugin, QDir(pluginPath).filePath(settings->value("audioPlugin").toString()).toLatin1().data());
     PluginStartup = (ptr_PluginStartup) osal_dynlib_getproc(audioPlugin, "PluginStartup");
     (*PluginStartup)(coreLib, (char*)"Audio", DebugCallback);
 
-    osal_dynlib_open(&inputPlugin, QDir(settings->value("pluginDirPath").toString()).filePath(settings->value("inputPlugin").toString()).toLatin1().data());
+    osal_dynlib_open(&inputPlugin, QDir(pluginPath).filePath(settings->value("inputPlugin").toString()).toLatin1().data());
     PluginStartup = (ptr_PluginStartup) osal_dynlib_getproc(inputPlugin, "PluginStartup");
     (*PluginStartup)(coreLib, (char*)"Input", DebugCallback);
 
-    osal_dynlib_open(&rspPlugin, QDir(settings->value("pluginDirPath").toString()).filePath(settings->value("rspPlugin").toString()).toLatin1().data());
+    osal_dynlib_open(&rspPlugin, QDir(pluginPath).filePath(settings->value("rspPlugin").toString()).toLatin1().data());
     PluginStartup = (ptr_PluginStartup) osal_dynlib_getproc(rspPlugin, "PluginStartup");
     (*PluginStartup)(coreLib, (char*)"RSP", DebugCallback);
 }
