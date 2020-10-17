@@ -5,7 +5,9 @@
 #include "workerthread.h"
 #include "logviewer.h"
 #include "keypressfilter.h"
-
+extern "C" {
+#include "osal/osal_dynamiclib.h"
+}
 #include <QMainWindow>
 #include <QSettings>
 #include <QSurfaceFormat>
@@ -27,8 +29,13 @@ public:
     QSettings* getSettings();
     LogViewer* getLogViewer();
 
+    m64p_dynlib_handle getCoreLib();
+    m64p_dynlib_handle getAudioPlugin();
+    m64p_dynlib_handle getRspPlugin();
+    m64p_dynlib_handle getInputPlugin();
+    m64p_dynlib_handle getGfxPlugin();
+
     void openROM(QString filename, QString netplay_ip, int netplay_port, int netplay_player);
-    void resetTitle();
     void setVerbose();
     int getVerbose();
     void setNoGUI();
@@ -36,6 +43,9 @@ public:
     void setGLES();
     int getGLES();
     void updatePlugins();
+    int getCoreStarted();
+    void loadCoreLib();
+    void loadPlugins();
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
@@ -50,6 +60,7 @@ public slots:
     void setTitle(std::string title);
     void pluginWarning(QString name);
     void showMessage(QString message);
+    void setCoreStarted(int value);
 
 private slots:
     void volumeValueChanged(int value);
@@ -109,6 +120,8 @@ private:
     void updateDD(Ui::MainWindow *ui);
     void updatePIF(Ui::MainWindow *ui);
     void findRecursion(const QString &path, const QString &pattern, QStringList *result);
+    void closeCoreLib();
+    void closePlugins();
     Ui::MainWindow *ui;
     QMenu * OpenRecent;
     int verbose;
@@ -121,6 +134,14 @@ private:
     LogViewer logViewer;
     QSettings *settings = nullptr;
     KeyPressFilter keyPressFilter;
+
+    m64p_dynlib_handle coreLib;
+    m64p_dynlib_handle rspPlugin;
+    m64p_dynlib_handle audioPlugin;
+    m64p_dynlib_handle gfxPlugin;
+    m64p_dynlib_handle inputPlugin;
+
+    int coreStarted;
 };
 
 extern MainWindow *w;

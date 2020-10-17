@@ -29,14 +29,13 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include "common.h"
-#include "plugin.h"
-#include "core_interface.h"
 #include <SDL_keycode.h>
 #include <QProcess>
 #include "version.h"
 #include "cheat.h"
 #include "mainwindow.h"
 #include "logviewer.h"
+#include "core_commands.h"
 
 /*********************************************************************************************************
  *  Callback functions from the core
@@ -79,8 +78,7 @@ void DebugCallback(void *Context, int level, const char *message)
     }
     else
         output = QString("%1 Unknown: %2\n").arg((const char *) Context, message);
-
-    if (!output.isEmpty())
+    if (w != nullptr && !output.isEmpty())
         w->getLogViewer()->addLog(output);
 }
 
@@ -160,9 +158,6 @@ static m64p_media_loader media_loader =
 
 m64p_error loadROM(std::string filename)
 {
-    if (!QtAttachCoreLib())
-        return M64ERR_INVALID_STATE;
-
     char *ROM_buffer = NULL;
     size_t romlength = 0;
 
@@ -179,7 +174,6 @@ m64p_error loadROM(std::string filename)
         if (romlength == 0)
         {
             DebugMessage(M64MSG_ERROR, "couldn't open file '%s' for reading.", filename.c_str());
-            DetachCoreLib();
             return M64ERR_INVALID_STATE;
         }
         ROM_buffer = (char *) malloc(romlength);
@@ -192,7 +186,6 @@ m64p_error loadROM(std::string filename)
         if (!file.open(QIODevice::ReadOnly))
         {
             DebugMessage(M64MSG_ERROR, "couldn't open ROM file '%s' for reading.", filename.c_str());
-            DetachCoreLib();
             return M64ERR_INVALID_STATE;
         }
 
@@ -204,7 +197,6 @@ m64p_error loadROM(std::string filename)
             DebugMessage(M64MSG_ERROR, "couldn't read %li bytes from ROM image file '%s'.", romlength, filename.c_str());
             free(ROM_buffer);
             file.close();
-            DetachCoreLib();
             return M64ERR_INVALID_STATE;
         }
         file.close();
@@ -215,7 +207,6 @@ m64p_error loadROM(std::string filename)
     {
         DebugMessage(M64MSG_ERROR, "core failed to open ROM image file '%s'.", filename.c_str());
         free(ROM_buffer);
-        DetachCoreLib();
         return M64ERR_INVALID_STATE;
     }
     free(ROM_buffer); /* the core copies the ROM image, so we can release this buffer immediately */
@@ -249,31 +240,14 @@ static void loadPif()
 
 m64p_error launchGame(QString netplay_ip, int netplay_port, int netplay_player)
 {
-    uint32_t i;
-
     if (!netplay_port)
         loadPif();
 
-    /* search for and load plugins */
-    m64p_error rval = PluginSearchLoad();
-    if (rval != M64ERR_SUCCESS)
-    {
-        (*CoreDoCommand)(M64CMD_ROM_CLOSE, 0, NULL);
-        DetachCoreLib();
-        return M64ERR_INVALID_STATE;
-    }
-
     /* attach plugins to core */
-    for (i = 0; i < 4; i++)
-    {
-        if ((*CoreAttachPlugin)(g_PluginMap[i].type, g_PluginMap[i].handle) != M64ERR_SUCCESS)
-        {
-            DebugMessage(M64MSG_ERROR, "core error while attaching %s plugin.", g_PluginMap[i].name);
-            (*CoreDoCommand)(M64CMD_ROM_CLOSE, 0, NULL);
-            DetachCoreLib();
-            return M64ERR_INVALID_STATE;
-        }
-    }
+    (*CoreAttachPlugin)(M64PLUGIN_GFX, w->getGfxPlugin());
+    (*CoreAttachPlugin)(M64PLUGIN_AUDIO, w->getAudioPlugin());
+    (*CoreAttachPlugin)(M64PLUGIN_INPUT, w->getInputPlugin());
+    (*CoreAttachPlugin)(M64PLUGIN_RSP, w->getRspPlugin());
 
     m64p_rom_header    l_RomHeader;
     /* get the ROM header for the currently loaded ROM image from the core */
@@ -281,7 +255,6 @@ m64p_error launchGame(QString netplay_ip, int netplay_port, int netplay_player)
     {
         DebugMessage(M64MSG_WARNING, "couldn't get ROM header information from core library");
         (*CoreDoCommand)(M64CMD_ROM_CLOSE, 0, NULL);
-        DetachCoreLib();
         return M64ERR_INVALID_STATE;
     }
 
@@ -338,10 +311,10 @@ m64p_error launchGame(QString netplay_ip, int netplay_port, int netplay_player)
     if (netplay_port)
         (*CoreDoCommand)(M64CMD_NETPLAY_CLOSE, 0, NULL);
 
-    /* detach plugins from core and unload them */
-    for (i = 0; i < 4; i++)
-        (*CoreDetachPlugin)(g_PluginMap[i].type);
-    PluginUnload();
+    (*CoreDetachPlugin)(M64PLUGIN_GFX);
+    (*CoreDetachPlugin)(M64PLUGIN_AUDIO);
+    (*CoreDetachPlugin)(M64PLUGIN_INPUT);
+    (*CoreDetachPlugin)(M64PLUGIN_RSP);
 
     /* close the ROM image */
     (*CoreDoCommand)(M64CMD_ROM_CLOSE, 0, NULL);

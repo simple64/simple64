@@ -6,30 +6,40 @@
 #include <QDesktopServices>
 #include "settingsdialog.h"
 #include "plugindialog.h"
-
-extern "C" {
-#include "osal_dynamiclib.h"
-}
-
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "common.h"
-#include "core_interface.h"
-#include "plugin.h"
 #include "cheatdialog.h"
+#include "vidext.h"
 #include "netplay/createroom.h"
 #include "netplay/joinroom.h"
 
+#include "osal/osal_preproc.h"
+#include "interface/core_commands.h"
+#include "interface/version.h"
+#include "m64p_common.h"
+
 #define RECENT_SIZE 10
 
-void MainWindow::resetTitle()
-{
-    this->setWindowTitle(m_title);
-}
+m64p_video_extension_functions vidExtFunctions = {14,
+                                                 qtVidExtFuncInit,
+                                                 qtVidExtFuncQuit,
+                                                 qtVidExtFuncListModes,
+                                                 qtVidExtFuncListRates,
+                                                 qtVidExtFuncSetMode,
+                                                 qtVidExtFuncSetModeWithRate,
+                                                 qtVidExtFuncGLGetProc,
+                                                 qtVidExtFuncGLSetAttr,
+                                                 qtVidExtFuncGLGetAttr,
+                                                 qtVidExtFuncGLSwapBuf,
+                                                 qtVidExtFuncSetCaption,
+                                                 qtVidExtFuncToggleFS,
+                                                 qtVidExtFuncResizeWindow,
+                                                 qtVidExtFuncGLGetDefaultFramebuffer};
 
 void MainWindow::updatePlugins()
 {
-    QDir PluginDir(qtPluginDir);
+    QDir PluginDir(settings->value("pluginDirPath").toString());
     PluginDir.setFilter(QDir::Files);
     QStringList Filter;
     Filter.append("");
@@ -84,10 +94,6 @@ void MainWindow::updatePlugins()
         else
             settings->setValue("inputPlugin", current.at(0));
     }
-    qtGfxPlugin = settings->value("videoPlugin").toString();
-    qtAudioPlugin = settings->value("audioPlugin").toString();
-    qtRspPlugin = settings->value("rspPlugin").toString();
-    qtInputPlugin = settings->value("inputPlugin").toString();
 }
 
 void MainWindow::updatePIF(Ui::MainWindow *ui)
@@ -347,7 +353,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     m_title = "mupen64plus-gui    Build Date: ";
     m_title += __DATE__;
-    resetTitle();
+    this->setWindowTitle(m_title);
 
     QString ini_path = QDir(QCoreApplication::applicationDirPath()).filePath("mupen64plus-gui.ini");
     settings = new QSettings(ini_path, QSettings::IniFormat, this);
@@ -380,8 +386,7 @@ MainWindow::MainWindow(QWidget *parent) :
         connect(temp_slot, &QAction::triggered,[=](bool checked){
             if (checked) {
                 int slot = temp_slot->text().remove("Slot ").toInt();
-                if (QtAttachCoreLib())
-                    (*CoreDoCommand)(M64CMD_STATE_SET_SLOT, slot, NULL);
+                (*CoreDoCommand)(M64CMD_STATE_SET_SLOT, slot, NULL);
             }
         });
     }
@@ -396,12 +401,6 @@ MainWindow::MainWindow(QWidget *parent) :
         settings->setValue("coreLibPath", QDir(QCoreApplication::applicationDirPath()).filePath(OSAL_DEFAULT_DYNLIB_FILENAME));
     if (!settings->contains("pluginDirPath"))
         settings->setValue("pluginDirPath", QCoreApplication::applicationDirPath());
-    if (!settings->value("coreLibPath").isNull())
-        qtCoreDirPath = settings->value("coreLibPath").toString();
-    if (!settings->value("pluginDirPath").isNull())
-        qtPluginDir = settings->value("pluginDirPath").toString();
-    if (!settings->value("configDirPath").isNull())
-        qtConfigDir = settings->value("configDirPath").toString();
 
     updatePlugins();
 
@@ -411,11 +410,22 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(volumeAction->slider(), SIGNAL(valueChanged(int)), this, SLOT(volumeValueChanged(int)));
     volumeAction->slider()->setValue(settings->value("volume").toInt());
     ui->menuEmulation->insertAction(ui->actionMute, volumeAction);
+
+    coreStarted = 0;
+    coreLib = nullptr;
+    gfxPlugin = nullptr;
+    rspPlugin = nullptr;
+    audioPlugin = nullptr;
+    inputPlugin = nullptr;
+    loadCoreLib();
+    loadPlugins();
 }
 
 MainWindow::~MainWindow()
 {
-    DetachCoreLib();
+    closePlugins();
+    closeCoreLib();
+
     delete ui;
 }
 
@@ -601,9 +611,6 @@ void MainWindow::stopGame()
                 QCoreApplication::processEvents();
         }
     }
-
-    PluginUnload();
-    DetachCoreLib();
 }
 
 void MainWindow::openROM(QString filename, QString netplay_ip, int netplay_port, int netplay_player)
@@ -657,10 +664,8 @@ void MainWindow::on_actionExit_triggered()
 
 void MainWindow::on_actionPlugin_Settings_triggered()
 {
-    if (QtAttachCoreLib()) {
-        PluginDialog *settings = new PluginDialog(this);
-        settings->show();
-    }
+    PluginDialog *settings = new PluginDialog(this);
+    settings->show();
 }
 
 void MainWindow::on_actionPause_Game_triggered()
@@ -767,13 +772,10 @@ void MainWindow::on_actionCheats_triggered()
 
 void MainWindow::on_actionController_Configuration_triggered()
 {
-    if (QtAttachCoreLib()) {
-        PluginSearchLoad();
-        typedef void (*Config_Func)();
-        Config_Func PluginConfig = (Config_Func) osal_dynlib_getproc(g_PluginMap[2].handle, "PluginConfig");
-        if (PluginConfig)
-            PluginConfig();
-    }
+    typedef void (*Config_Func)();
+    Config_Func PluginConfig = (Config_Func) osal_dynlib_getproc(inputPlugin, "PluginConfig");
+    if (PluginConfig)
+        PluginConfig();
 }
 
 void MainWindow::on_actionToggle_Speed_Limiter_triggered()
@@ -793,29 +795,22 @@ void MainWindow::on_actionView_Log_triggered()
 
 void MainWindow::on_actionVideo_Settings_triggered()
 {
-    if (QtAttachCoreLib()) {
-        PluginSearchLoad();
-        typedef void (*Config_Func)();
-        Config_Func PluginConfig = (Config_Func) osal_dynlib_getproc(g_PluginMap[0].handle, "PluginConfig");
-        if (PluginConfig)
-            PluginConfig();
-    }
+    typedef void (*Config_Func)();
+    Config_Func PluginConfig = (Config_Func) osal_dynlib_getproc(gfxPlugin, "PluginConfig");
+    if (PluginConfig)
+        PluginConfig();
 }
 
 void MainWindow::on_actionCreate_Room_triggered()
 {
-    if (QtAttachCoreLib()) {
-        CreateRoom *createRoom = new CreateRoom(this);
-        createRoom->show();
-    }
+    CreateRoom *createRoom = new CreateRoom(this);
+    createRoom->show();
 }
 
 void MainWindow::on_actionJoin_Room_triggered()
 {
-    if (QtAttachCoreLib()) {
-        JoinRoom *joinRoom = new JoinRoom(this);
-        joinRoom->show();
-    }
+    JoinRoom *joinRoom = new JoinRoom(this);
+    joinRoom->show();
 }
 
 void MainWindow::on_actionSupport_on_Patreon_triggered()
@@ -846,4 +841,151 @@ QSettings* MainWindow::getSettings()
 LogViewer* MainWindow::getLogViewer()
 {
     return &logViewer;
+}
+
+m64p_dynlib_handle MainWindow::getCoreLib()
+{
+    return coreLib;
+}
+
+m64p_dynlib_handle MainWindow::getAudioPlugin()
+{
+    return audioPlugin;
+}
+
+m64p_dynlib_handle MainWindow::getRspPlugin()
+{
+    return rspPlugin;
+}
+
+m64p_dynlib_handle MainWindow::getInputPlugin()
+{
+    return inputPlugin;
+}
+
+m64p_dynlib_handle MainWindow::getGfxPlugin()
+{
+    return gfxPlugin;
+}
+
+void MainWindow::setCoreStarted(int value)
+{
+    coreStarted = value;
+
+    if (value == 0)
+    {
+        this->setWindowTitle(m_title);
+        loadCoreLib();
+        loadPlugins();
+    }
+}
+
+int MainWindow::getCoreStarted()
+{
+    return coreStarted;
+}
+
+void MainWindow::closeCoreLib()
+{
+    if (coreLib != nullptr)
+    {
+        (*CoreShutdown)();
+        osal_dynlib_close(coreLib);
+        coreLib = nullptr;
+    }
+}
+
+void MainWindow::loadCoreLib()
+{
+    closeCoreLib();
+
+    osal_dynlib_open(&coreLib, settings->value("coreLibPath").toString().toLatin1().data());
+
+    CoreStartup =                 (ptr_CoreStartup) osal_dynlib_getproc(coreLib, "CoreStartup");
+    CoreShutdown =                (ptr_CoreShutdown) osal_dynlib_getproc(coreLib, "CoreShutdown");
+    CoreDoCommand =               (ptr_CoreDoCommand) osal_dynlib_getproc(coreLib, "CoreDoCommand");
+    CoreAttachPlugin =            (ptr_CoreAttachPlugin) osal_dynlib_getproc(coreLib, "CoreAttachPlugin");
+    CoreDetachPlugin =            (ptr_CoreDetachPlugin) osal_dynlib_getproc(coreLib, "CoreDetachPlugin");
+    CoreOverrideVidExt =          (ptr_CoreOverrideVidExt) osal_dynlib_getproc(coreLib, "CoreOverrideVidExt");
+
+    ConfigGetUserConfigPath =     (ptr_ConfigGetUserConfigPath) osal_dynlib_getproc(coreLib, "ConfigGetUserConfigPath");
+    ConfigSaveFile =              (ptr_ConfigSaveFile) osal_dynlib_getproc(coreLib, "ConfigSaveFile");
+    ConfigGetParameterHelp =      (ptr_ConfigGetParameterHelp) osal_dynlib_getproc(coreLib, "ConfigSaveFile");
+    ConfigGetParamInt =           (ptr_ConfigGetParamInt) osal_dynlib_getproc(coreLib, "ConfigGetParamInt");
+    ConfigGetParamFloat =         (ptr_ConfigGetParamFloat) osal_dynlib_getproc(coreLib, "ConfigGetParamFloat");
+    ConfigGetParamBool =          (ptr_ConfigGetParamBool) osal_dynlib_getproc(coreLib, "ConfigGetParamBool");
+    ConfigGetParamString =        (ptr_ConfigGetParamString) osal_dynlib_getproc(coreLib, "ConfigGetParamString");
+    ConfigSetParameter =          (ptr_ConfigSetParameter) osal_dynlib_getproc(coreLib, "ConfigSetParameter");
+    ConfigDeleteSection =         (ptr_ConfigDeleteSection) osal_dynlib_getproc(coreLib, "ConfigDeleteSection");
+    ConfigOpenSection =           (ptr_ConfigOpenSection) osal_dynlib_getproc(coreLib, "ConfigOpenSection");
+    ConfigListParameters =        (ptr_ConfigListParameters) osal_dynlib_getproc(coreLib, "ConfigListParameters");
+    ConfigGetSharedDataFilepath = (ptr_ConfigGetSharedDataFilepath) osal_dynlib_getproc(coreLib, "ConfigGetSharedDataFilepath");
+
+    CoreAddCheat                = (ptr_CoreAddCheat) osal_dynlib_getproc(coreLib, "CoreAddCheat");
+    CoreCheatEnabled            = (ptr_CoreCheatEnabled) osal_dynlib_getproc(coreLib, "CoreCheatEnabled");
+
+    QString qtConfigDir = settings->value("configDirPath").toString();
+    if (!qtConfigDir.isEmpty())
+        (*CoreStartup)(CORE_API_VERSION, qtConfigDir.toLatin1().data() /*Config dir*/, QCoreApplication::applicationDirPath().toLatin1().data(), (char*)"Core", DebugCallback, NULL, NULL);
+    else
+        (*CoreStartup)(CORE_API_VERSION, NULL /*Config dir*/, QCoreApplication::applicationDirPath().toLatin1().data(), (char*)"Core", DebugCallback, NULL, NULL);
+
+    CoreOverrideVidExt(&vidExtFunctions);
+}
+
+void MainWindow::closePlugins()
+{
+    ptr_PluginShutdown PluginShutdown;
+
+    if (gfxPlugin != nullptr)
+    {
+        PluginShutdown = (ptr_PluginShutdown) osal_dynlib_getproc(gfxPlugin, "PluginShutdown");
+        (*PluginShutdown)();
+        osal_dynlib_close(gfxPlugin);
+        gfxPlugin = nullptr;
+    }
+    if (audioPlugin != nullptr)
+    {
+        PluginShutdown = (ptr_PluginShutdown) osal_dynlib_getproc(audioPlugin, "PluginShutdown");
+        (*PluginShutdown)();
+        osal_dynlib_close(audioPlugin);
+        audioPlugin = nullptr;
+    }
+    if (inputPlugin != nullptr)
+    {
+        PluginShutdown = (ptr_PluginShutdown) osal_dynlib_getproc(inputPlugin, "PluginShutdown");
+        (*PluginShutdown)();
+        osal_dynlib_close(inputPlugin);
+        inputPlugin = nullptr;
+    }
+    if (rspPlugin != nullptr)
+    {
+        PluginShutdown = (ptr_PluginShutdown) osal_dynlib_getproc(rspPlugin, "PluginShutdown");
+        (*PluginShutdown)();
+        osal_dynlib_close(rspPlugin);
+        rspPlugin = nullptr;
+    }
+}
+
+void MainWindow::loadPlugins()
+{
+    closePlugins();
+
+    ptr_PluginStartup PluginStartup;
+
+    osal_dynlib_open(&gfxPlugin, QDir(settings->value("pluginDirPath").toString()).filePath(settings->value("videoPlugin").toString()).toLatin1().data());
+    PluginStartup = (ptr_PluginStartup) osal_dynlib_getproc(gfxPlugin, "PluginStartup");
+    (*PluginStartup)(coreLib, (char*)"Video", DebugCallback);
+
+    osal_dynlib_open(&audioPlugin, QDir(settings->value("pluginDirPath").toString()).filePath(settings->value("audioPlugin").toString()).toLatin1().data());
+    PluginStartup = (ptr_PluginStartup) osal_dynlib_getproc(audioPlugin, "PluginStartup");
+    (*PluginStartup)(coreLib, (char*)"Audio", DebugCallback);
+
+    osal_dynlib_open(&inputPlugin, QDir(settings->value("pluginDirPath").toString()).filePath(settings->value("inputPlugin").toString()).toLatin1().data());
+    PluginStartup = (ptr_PluginStartup) osal_dynlib_getproc(inputPlugin, "PluginStartup");
+    (*PluginStartup)(coreLib, (char*)"Input", DebugCallback);
+
+    osal_dynlib_open(&rspPlugin, QDir(settings->value("pluginDirPath").toString()).filePath(settings->value("rspPlugin").toString()).toLatin1().data());
+    PluginStartup = (ptr_PluginStartup) osal_dynlib_getproc(rspPlugin, "PluginStartup");
+    (*PluginStartup)(coreLib, (char*)"RSP", DebugCallback);
 }

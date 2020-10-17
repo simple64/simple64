@@ -2,6 +2,7 @@
 #include "common.h"
 #include "workerthread.h"
 #include "mainwindow.h"
+#include "interface/core_commands.h"
 #include <stdio.h>
 #include <QDesktopWidget>
 #include <QScreen>

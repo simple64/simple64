@@ -25,8 +25,8 @@
 #include <string.h>
 
 #include "cheat.h"
-#include "core_interface.h"
 #include "common.h"
+#include "core_commands.h"
 
 /* local definitions */
 #define CHEAT_FILE	"mupencheat.txt"

@@ -1,7 +1,6 @@
 #include "settingsdialog.h"
-#include "core_interface.h"
 #include "mainwindow.h"
-#include "plugin.h"
+#include "interface/core_commands.h"
 
 #include <QPushButton>
 #include <QSettings>
@@ -15,7 +14,6 @@ void SettingsDialog::handleCoreButton()
     if (!fileName.isNull()) {
         corePath->setText(fileName);
         w->getSettings()->setValue("coreLibPath", fileName);
-        qtCoreDirPath = w->getSettings()->value("coreLibPath").toString();
     }
 }
 
@@ -28,7 +26,6 @@ void SettingsDialog::handlePluginButton()
     if (!fileName.isNull()) {
         pluginPath->setText(fileName);
         w->getSettings()->setValue("pluginDirPath", fileName);
-        qtPluginDir = w->getSettings()->value("pluginDirPath").toString();
 
         w->getSettings()->remove("inputPlugin");
         w->getSettings()->remove("videoPlugin");
@@ -48,7 +45,6 @@ void SettingsDialog::handleConfigButton()
     if (!fileName.isNull()) {
         configPath->setText(fileName);
         w->getSettings()->setValue("configDirPath", fileName);
-        qtConfigDir = w->getSettings()->value("configDirPath").toString();
     }
 }
 
@@ -56,19 +52,16 @@ void SettingsDialog::handleClearConfigButton()
 {
     configPath->setText("");
     w->getSettings()->remove("configDirPath");
-    qtConfigDir = QString();
 }
 
 void SettingsDialog::handleCoreEdit()
 {
     w->getSettings()->setValue("coreLibPath", corePath->text());
-    qtCoreDirPath = w->getSettings()->value("coreLibPath").toString();
 }
 
 void SettingsDialog::handlePluginEdit()
 {
     w->getSettings()->setValue("pluginDirPath", pluginPath->text());
-    qtPluginDir = w->getSettings()->value("pluginDirPath").toString();
 
     w->getSettings()->remove("inputPlugin");
     w->getSettings()->remove("videoPlugin");
@@ -81,7 +74,6 @@ void SettingsDialog::handlePluginEdit()
 void SettingsDialog::handleConfigEdit()
 {
     w->getSettings()->setValue("configDirPath", configPath->text());
-    qtConfigDir = w->getSettings()->value("configDirPath").toString();
 }
 
 void SettingsDialog::initStuff()
@@ -116,7 +108,7 @@ void SettingsDialog::initStuff()
     QString configDirPath = w->getSettings()->value("configDirPath").toString();
     if (!configDirPath.isEmpty())
         configPath->setText(configDirPath);
-    else if (QtAttachCoreLib())
+    else
         configPath->setText(ConfigGetUserConfigPath());
     QPushButton *configButton = new QPushButton("Set Path", this);
     connect(configButton, SIGNAL (released()),this, SLOT (handleConfigButton()));
@@ -130,7 +122,7 @@ void SettingsDialog::initStuff()
     layout->addWidget(configButton,3,2);
     layout->addWidget(clearConfigButton,3,3);
 
-    QDir PluginDir(qtPluginDir);
+    QDir PluginDir(w->getSettings()->value("pluginDirPath").toString());
     QStringList Filter;
     Filter.append("");
     QStringList current;
@@ -141,6 +133,7 @@ void SettingsDialog::initStuff()
     Filter.replace(0,"mupen64plus-input*");
     current = PluginDir.entryList(Filter);
     inputChoice->addItems(current);
+    QString qtInputPlugin = w->getSettings()->value("inputPlugin").toString();
     int my_index = inputChoice->findText(qtInputPlugin);
     if (my_index == -1) {
         inputChoice->addItem(qtInputPlugin);
@@ -150,7 +143,6 @@ void SettingsDialog::initStuff()
     connect(inputChoice, static_cast<void(QComboBox::*)(const QString &)>(&QComboBox::activated),
         [=](const QString &text) {
             w->getSettings()->setValue("inputPlugin", text);
-            qtInputPlugin = w->getSettings()->value("inputPlugin").toString();
     });
     layout->addWidget(inputChoice,5,1);
 
@@ -161,4 +153,14 @@ SettingsDialog::SettingsDialog(QWidget *parent)
     : QDialog(parent)
 {
     initStuff();
+}
+
+void SettingsDialog::closeEvent(QCloseEvent *event)
+{
+    if (w->getCoreStarted() == 0)
+    {
+        w->loadCoreLib();
+        w->loadPlugins();
+    }
+    event->accept();
 }

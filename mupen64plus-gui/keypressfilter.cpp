@@ -1,6 +1,7 @@
 #include "keypressfilter.h"
-#include "core_interface.h"
+#include "interface/core_commands.h"
 #include "common.h"
+#include "mainwindow.h"
 #include <QKeyEvent>
 
 KeyPressFilter::KeyPressFilter(QObject *parent)
@@ -11,7 +12,7 @@ KeyPressFilter::KeyPressFilter(QObject *parent)
 bool KeyPressFilter::eventFilter(QObject *obj, QEvent *event)
 {
     if (event->type() == QEvent::KeyPress) {
-        if (coreStarted) {
+        if (w->getCoreStarted()) {
             QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
             int modValue = QT2SDL2MOD(keyEvent->modifiers());
             int keyValue = QT2SDL2(keyEvent->key());
@@ -20,7 +21,7 @@ bool KeyPressFilter::eventFilter(QObject *obj, QEvent *event)
         }
         return true;
     } else if (event->type() == QEvent::KeyRelease){
-        if (coreStarted) {
+        if (w->getCoreStarted()) {
             QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
             int modValue = QT2SDL2MOD(keyEvent->modifiers());
             int keyValue = QT2SDL2(keyEvent->key());

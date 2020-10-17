@@ -1,6 +1,7 @@
 #include "joinroom.h"
 #include "waitroom.h"
 #include "mainwindow.h"
+#include "interface/core_commands.h"
 #include "version.h"
 #include <QGridLayout>
 #include <QLabel>

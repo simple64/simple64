@@ -1,8 +1,7 @@
 #include "settingclasses.h"
-#include "core_interface.h"
-#include "plugin.h"
 #include "cheat.h"
 #include "common.h"
+#include "interface/core_commands.h"
 #include <SDL.h>
 #include <QLabel>
 #include <QVBoxLayout>
