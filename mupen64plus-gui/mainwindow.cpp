@@ -411,6 +411,8 @@ MainWindow::MainWindow(QWidget *parent) :
         settings->setValue("coreLibPath", "$APP_PATH$");
     if (!settings->contains("pluginDirPath"))
         settings->setValue("pluginDirPath", "$APP_PATH$");
+    if (!settings->contains("configDirPath"))
+        settings->setValue("configDirPath", "$CONFIG_PATH$");
 
     updatePlugins();
 
@@ -909,7 +911,15 @@ void MainWindow::loadCoreLib()
     QString corePath = settings->value("coreLibPath").toString();
     corePath.replace("$APP_PATH$", QCoreApplication::applicationDirPath());
 
-    osal_dynlib_open(&coreLib, QDir(corePath).filePath(OSAL_DEFAULT_DYNLIB_FILENAME).toLatin1().data());
+    m64p_error res = osal_dynlib_open(&coreLib, QDir(corePath).filePath(OSAL_DEFAULT_DYNLIB_FILENAME).toLatin1().data());
+
+    if (res != M64ERR_SUCCESS)
+    {
+        QMessageBox msgBox;
+        msgBox.setText("Failed to load core library");
+        msgBox.exec();
+        return;
+    }
 
     CoreStartup =                 (ptr_CoreStartup) osal_dynlib_getproc(coreLib, "CoreStartup");
     CoreShutdown =                (ptr_CoreShutdown) osal_dynlib_getproc(coreLib, "CoreShutdown");
@@ -935,6 +945,9 @@ void MainWindow::loadCoreLib()
     CoreCheatEnabled            = (ptr_CoreCheatEnabled) osal_dynlib_getproc(coreLib, "CoreCheatEnabled");
 
     QString qtConfigDir = settings->value("configDirPath").toString();
+    qtConfigDir.replace("$APP_PATH$", QCoreApplication::applicationDirPath());
+    qtConfigDir.replace("$CONFIG_PATH$", ConfigGetUserConfigPath());
+
     if (!qtConfigDir.isEmpty())
         (*CoreStartup)(CORE_API_VERSION, qtConfigDir.toLatin1().data() /*Config dir*/, QCoreApplication::applicationDirPath().toLatin1().data(), (char*)"Core", DebugCallback, NULL, NULL);
     else
@@ -981,24 +994,50 @@ void MainWindow::loadPlugins()
 {
     closePlugins();
 
+    if (coreLib == nullptr)
+        return;
+
     ptr_PluginStartup PluginStartup;
+    m64p_error res;
+    QMessageBox msgBox;
 
     QString pluginPath = settings->value("pluginDirPath").toString();
     pluginPath.replace("$APP_PATH$", QCoreApplication::applicationDirPath());
 
-    osal_dynlib_open(&gfxPlugin, QDir(pluginPath).filePath(settings->value("videoPlugin").toString()).toLatin1().data());
+    res = osal_dynlib_open(&gfxPlugin, QDir(pluginPath).filePath(settings->value("videoPlugin").toString()).toLatin1().data());
+    if (res != M64ERR_SUCCESS)
+    {
+        msgBox.setText("Failed to load video plugin");
+        msgBox.exec();
+        return;
+    }
     PluginStartup = (ptr_PluginStartup) osal_dynlib_getproc(gfxPlugin, "PluginStartup");
     (*PluginStartup)(coreLib, (char*)"Video", DebugCallback);
-
-    osal_dynlib_open(&audioPlugin, QDir(pluginPath).filePath(settings->value("audioPlugin").toString()).toLatin1().data());
+    res = osal_dynlib_open(&audioPlugin, QDir(pluginPath).filePath(settings->value("audioPlugin").toString()).toLatin1().data());
+    if (res != M64ERR_SUCCESS)
+    {
+        msgBox.setText("Failed to load audio plugin");
+        msgBox.exec();
+        return;
+    }
     PluginStartup = (ptr_PluginStartup) osal_dynlib_getproc(audioPlugin, "PluginStartup");
     (*PluginStartup)(coreLib, (char*)"Audio", DebugCallback);
-
-    osal_dynlib_open(&inputPlugin, QDir(pluginPath).filePath(settings->value("inputPlugin").toString()).toLatin1().data());
+    res = osal_dynlib_open(&inputPlugin, QDir(pluginPath).filePath(settings->value("inputPlugin").toString()).toLatin1().data());
+    if (res != M64ERR_SUCCESS)
+    {
+        msgBox.setText("Failed to load input plugin");
+        msgBox.exec();
+        return;
+    }
     PluginStartup = (ptr_PluginStartup) osal_dynlib_getproc(inputPlugin, "PluginStartup");
     (*PluginStartup)(coreLib, (char*)"Input", DebugCallback);
-
-    osal_dynlib_open(&rspPlugin, QDir(pluginPath).filePath(settings->value("rspPlugin").toString()).toLatin1().data());
+    res = osal_dynlib_open(&rspPlugin, QDir(pluginPath).filePath(settings->value("rspPlugin").toString()).toLatin1().data());
+    if (res != M64ERR_SUCCESS)
+    {
+        msgBox.setText("Failed to load rsp plugin");
+        msgBox.exec();
+        return;
+    }
     PluginStartup = (ptr_PluginStartup) osal_dynlib_getproc(rspPlugin, "PluginStartup");
     (*PluginStartup)(coreLib, (char*)"RSP", DebugCallback);
 }
