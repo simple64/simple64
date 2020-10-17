@@ -23,10 +23,8 @@ void WorkerThread::run()
     connect(this, SIGNAL(toggleFS(int)), w, SLOT(toggleFS(int)), Qt::BlockingQueuedConnection);
     connect(this, SIGNAL(createOGLWindow(QSurfaceFormat*)), w, SLOT(createOGLWindow(QSurfaceFormat*)), Qt::BlockingQueuedConnection);
     connect(this, SIGNAL(deleteOGLWindow()), w, SLOT(deleteOGLWindow()), Qt::BlockingQueuedConnection);
-    connect(this, SIGNAL(setTitle(std::string)), w, SLOT(setTitle(std::string)), Qt::BlockingQueuedConnection);
     connect(this, SIGNAL(pluginWarning(QString)), w, SLOT(pluginWarning(QString)), Qt::BlockingQueuedConnection);
     connect(this, SIGNAL(showMessage(QString)), w, SLOT(showMessage(QString)), Qt::BlockingQueuedConnection);
-    connect(this, SIGNAL(setCoreStarted(int)), w, SLOT(setCoreStarted(int)), Qt::BlockingQueuedConnection);
 #ifdef _WIN32
     SetThreadExecutionState(ES_CONTINUOUS | ES_DISPLAY_REQUIRED);
 #else
@@ -41,10 +39,7 @@ void WorkerThread::run()
 
     m64p_error res = loadROM(m_fileName.toStdString());
     if (res == M64ERR_SUCCESS)
-    {
-        emit setCoreStarted(1);
         res = launchGame(netplay_ip, netplay_port, netplay_player);
-    }
 
 #ifdef _WIN32
     SetThreadExecutionState(ES_CONTINUOUS);
@@ -58,8 +53,6 @@ void WorkerThread::run()
 
     if (w->getNoGUI())
         QApplication::quit();
-    else
-        emit setCoreStarted(0);
 }
 
 void WorkerThread::setFileName(QString filename)
