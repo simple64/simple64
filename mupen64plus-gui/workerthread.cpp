@@ -23,7 +23,6 @@ void WorkerThread::run()
     connect(this, SIGNAL(toggleFS(int)), w, SLOT(toggleFS(int)), Qt::BlockingQueuedConnection);
     connect(this, SIGNAL(createOGLWindow(QSurfaceFormat*)), w, SLOT(createOGLWindow(QSurfaceFormat*)), Qt::BlockingQueuedConnection);
     connect(this, SIGNAL(deleteOGLWindow()), w, SLOT(deleteOGLWindow()), Qt::BlockingQueuedConnection);
-    connect(this, SIGNAL(pluginWarning(QString)), w, SLOT(pluginWarning(QString)), Qt::BlockingQueuedConnection);
     connect(this, SIGNAL(showMessage(QString)), w, SLOT(showMessage(QString)), Qt::BlockingQueuedConnection);
 #ifdef _WIN32
     SetThreadExecutionState(ES_CONTINUOUS | ES_DISPLAY_REQUIRED);

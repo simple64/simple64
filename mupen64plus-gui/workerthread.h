@@ -20,7 +20,6 @@ signals:
     void toggleFS(int force);
     void createOGLWindow(QSurfaceFormat* format);
     void deleteOGLWindow();
-    void pluginWarning(QString name);
     void showMessage(QString message);
 
 private:

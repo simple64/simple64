@@ -561,13 +561,6 @@ void MainWindow::updateOpenRecent()
     });
 }
 
-void MainWindow::pluginWarning(QString name)
-{
-    QMessageBox msgBox;
-    msgBox.setText("No " + name + " plugin attached. Please go to \"Settings->Plugin Selection\" and choose one.");
-    msgBox.exec();
-}
-
 void MainWindow::showMessage(QString message)
 {
     QMessageBox *msgBox = new QMessageBox(this);
@@ -593,8 +586,8 @@ void MainWindow::createOGLWindow(QSurfaceFormat* format)
 void MainWindow::deleteOGLWindow()
 {
     QWidget *container = new QWidget(this);
-    setCentralWidget(container);
     my_window->doneCurrent();
+    setCentralWidget(container);
 }
 
 void MainWindow::stopGame()
