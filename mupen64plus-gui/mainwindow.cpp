@@ -978,7 +978,10 @@ void MainWindow::loadPlugins()
         return;
     }
     PluginStartup = (ptr_PluginStartup) osal_dynlib_getproc(inputPlugin, "PluginStartup");
-    (*PluginStartup)(coreLib, (char*)"Input", DebugCallback);
+    if (settings->value("inputPlugin").toString().contains("-qt"))
+        (*PluginStartup)(coreLib, this, nullptr);
+    else
+        (*PluginStartup)(coreLib, (char*)"Input", DebugCallback);
     res = osal_dynlib_open(&rspPlugin, QDir(pluginPath).filePath(settings->value("rspPlugin").toString()).toLatin1().data());
     if (res != M64ERR_SUCCESS)
     {
