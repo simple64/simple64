@@ -46,7 +46,7 @@ SController controller[4];   // 4 controllers
 
 Q_DECLARE_METATYPE(QList<int>)
 
-EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle CoreHandle, void *, void (*)(void *, int, const char *))
+EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle CoreHandle, void * object, void (*)(void *, int, const char *))
 {
     if (l_PluginInit)
         return M64ERR_ALREADY_INIT;
@@ -54,8 +54,8 @@ EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle CoreHandle, void *, void
     ptr_ConfigGetUserConfigPath ConfigGetUserConfigPath = (ptr_ConfigGetUserConfigPath) osal_dynlib_getproc(CoreHandle, "ConfigGetUserConfigPath");
 
     QDir ini_path(ConfigGetUserConfigPath());
-    settings = new QSettings(ini_path.absoluteFilePath("input-profiles.ini"), QSettings::IniFormat);
-    controllerSettings = new QSettings(ini_path.absoluteFilePath("input-settings.ini"), QSettings::IniFormat);
+    settings = new QSettings(ini_path.absoluteFilePath("input-profiles.ini"), QSettings::IniFormat, (QObject*)object);
+    controllerSettings = new QSettings(ini_path.absoluteFilePath("input-settings.ini"), QSettings::IniFormat, (QObject*)object);
 
     QString section;
     for (int i = 1; i < 5; ++i) {
@@ -598,6 +598,6 @@ EXPORT void CALL SDL_KeyUp(int, int keysym)
 
 EXPORT void CALL PluginConfig()
 {
-    ConfigDialog config;
+    ConfigDialog config(settings, controllerSettings);
     config.exec();
 }

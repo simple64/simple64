@@ -8,8 +8,6 @@
 #include <QComboBox>
 #include <SDL2/SDL.h>
 
-extern QSettings* settings;
-extern QSettings* controllerSettings;
 extern int emu_running;
 
 class ControllerTab : public QWidget
@@ -17,7 +15,7 @@ class ControllerTab : public QWidget
     Q_OBJECT
 
 public:
-    ControllerTab(unsigned int controller);
+    ControllerTab(unsigned int controller, QSettings* settings, QSettings* controllerSettings, QWidget *parent);
     QComboBox *profileSelect;
 private:
     QComboBox *gamepadSelect;
@@ -29,7 +27,7 @@ class ConfigDialog : public QDialog
     Q_OBJECT
 
 public:
-    ConfigDialog();
+    ConfigDialog(QSettings* settings, QSettings* controllerSettings);
 
 private:
     QTabWidget *tabWidget;
@@ -41,10 +39,10 @@ class ProfileTab : public QWidget
     Q_OBJECT
 
 public:
-    ProfileTab(ControllerTab **_controllerTabs);
+    ProfileTab(ControllerTab **_controllerTabs, QSettings* settings, QSettings* controllerSettings, QWidget *parent);
 private:
     int checkNotRunning();
-    void setComboBox(QComboBox* box, ControllerTab **_controllerTabs);
+    void setComboBox(QComboBox* box, ControllerTab **_controllerTabs, QSettings* settings, QSettings* controllerSettings);
 };
 
 class CustomButton : public QPushButton
@@ -52,7 +50,7 @@ class CustomButton : public QPushButton
     Q_OBJECT
 
 public:
-    CustomButton(QString section, QString setting, QWidget* parent);
+    CustomButton(QString section, QString setting, QSettings* settings, QWidget* parent);
     int type; //0 = Keyboard, 1 = Button, 2 = Axis
     int axisValue;
     SDL_GameControllerButton button;
@@ -70,7 +68,7 @@ class ProfileEditor : public QDialog
     Q_OBJECT
 
 public:
-    ProfileEditor(QString profile);
+    ProfileEditor(QString profile, QSettings* settings, QWidget* parent);
     ~ProfileEditor();
     void acceptInput(CustomButton* button);
 protected:

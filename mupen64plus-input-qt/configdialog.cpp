@@ -8,7 +8,8 @@
 #include <QMessageBox>
 #include <QKeyEvent>
 
-ControllerTab::ControllerTab(unsigned int controller)
+ControllerTab::ControllerTab(unsigned int controller, QSettings* settings, QSettings* controllerSettings, QWidget *parent)
+    : QWidget(parent)
 {
     QGridLayout *layout = new QGridLayout(this);
     QLabel *profileLabel = new QLabel("Profile", this);
@@ -61,7 +62,7 @@ ControllerTab::ControllerTab(unsigned int controller)
     setLayout(layout);
 }
 
-void ProfileTab::setComboBox(QComboBox* box, ControllerTab **_controllerTabs)
+void ProfileTab::setComboBox(QComboBox* box, ControllerTab **_controllerTabs, QSettings* settings, QSettings* controllerSettings)
 {
     for (int i = 1; i < 5; ++i) {
         QString current = controllerSettings->value("Controller" + QString::number(i) + "/Profile").toString();
@@ -89,31 +90,32 @@ int ProfileTab::checkNotRunning()
     return 1;
 }
 
-ProfileTab::ProfileTab(ControllerTab **_controllerTabs)
+ProfileTab::ProfileTab(ControllerTab **_controllerTabs, QSettings* settings, QSettings* controllerSettings, QWidget *parent)
+    : QWidget(parent)
 {
     QGridLayout *layout = new QGridLayout(this);
     QComboBox *profileSelect = new QComboBox(this);
-    setComboBox(profileSelect, _controllerTabs);
+    setComboBox(profileSelect, _controllerTabs, settings, controllerSettings);
     QPushButton *buttonNewKeyboard = new QPushButton("New Profile (Keyboard)", this);
     connect(buttonNewKeyboard, &QPushButton::released, [=]() {
         if (checkNotRunning()) {
-            ProfileEditor editor("Auto-Keyboard");
+            ProfileEditor editor("Auto-Keyboard", settings, this);
             editor.exec();
-            setComboBox(profileSelect, _controllerTabs);
+            setComboBox(profileSelect, _controllerTabs, settings, controllerSettings);
         }
     });
     QPushButton *buttonNewGamepad = new QPushButton("New Profile (Gamepad)", this);
     connect(buttonNewGamepad, &QPushButton::released, [=]() {
         if (checkNotRunning()) {
-            ProfileEditor editor("Auto-Gamepad");
+            ProfileEditor editor("Auto-Gamepad", settings, this);
             editor.exec();
-            setComboBox(profileSelect, _controllerTabs);
+            setComboBox(profileSelect, _controllerTabs, settings, controllerSettings);
         }
     });
     QPushButton *buttonEdit = new QPushButton("Edit Profile", this);
     connect(buttonEdit, &QPushButton::released, [=]() {
         if (!profileSelect->currentText().isEmpty() && checkNotRunning()) {
-            ProfileEditor editor(profileSelect->currentText());
+            ProfileEditor editor(profileSelect->currentText(), settings, this);
             editor.exec();
         }
     });
@@ -122,7 +124,7 @@ ProfileTab::ProfileTab(ControllerTab **_controllerTabs)
     connect(buttonDelete, &QPushButton::released, [=]() {
         if (!profileSelect->currentText().isEmpty()) {
             settings->remove(profileSelect->currentText());
-            setComboBox(profileSelect, _controllerTabs);
+            setComboBox(profileSelect, _controllerTabs, settings, controllerSettings);
         }
     });
 
@@ -134,7 +136,7 @@ ProfileTab::ProfileTab(ControllerTab **_controllerTabs)
     setLayout(layout);
 }
 
-CustomButton::CustomButton(QString section, QString setting, QWidget* parent)
+CustomButton::CustomButton(QString section, QString setting, QSettings *settings, QWidget* parent)
 {
     ProfileEditor* editor = (ProfileEditor*) parent;
     item = setting;
@@ -304,7 +306,8 @@ ProfileEditor::~ProfileEditor()
     }
 }
 
-ProfileEditor::ProfileEditor(QString profile)
+ProfileEditor::ProfileEditor(QString profile, QSettings *settings, QWidget *parent)
+    : QDialog(parent)
 {
     memset(gamepad, 0, sizeof(SDL_GameController*) * 4);
     memset(joystick, 0, sizeof(SDL_Joystick*) * 4);
@@ -338,42 +341,42 @@ ProfileEditor::ProfileEditor(QString profile)
 
     QLabel *buttonLabelA = new QLabel("A", this);
     buttonLabelA->setAlignment(Qt::AlignCenter);
-    CustomButton *buttonPushA = new CustomButton(section, "A", this);
+    CustomButton *buttonPushA = new CustomButton(section, "A", settings, this);
     buttonList.append(buttonPushA);
     layout->addWidget(buttonLabelA, 2, 0);
     layout->addWidget(buttonPushA, 2, 1);
 
     QLabel *buttonLabelB = new QLabel("B", this);
     buttonLabelB->setAlignment(Qt::AlignCenter);
-    CustomButton *buttonPushB = new CustomButton(section, "B", this);
+    CustomButton *buttonPushB = new CustomButton(section, "B", settings, this);
     buttonList.append(buttonPushB);
     layout->addWidget(buttonLabelB, 3, 0);
     layout->addWidget(buttonPushB, 3, 1);
 
     QLabel *buttonLabelZ = new QLabel("Z", this);
     buttonLabelZ->setAlignment(Qt::AlignCenter);
-    CustomButton *buttonPushZ = new CustomButton(section, "Z", this);
+    CustomButton *buttonPushZ = new CustomButton(section, "Z", settings, this);
     buttonList.append(buttonPushZ);
     layout->addWidget(buttonLabelZ, 4, 0);
     layout->addWidget(buttonPushZ, 4, 1);
 
     QLabel *buttonLabelStart = new QLabel("Start", this);
     buttonLabelStart->setAlignment(Qt::AlignCenter);
-    CustomButton *buttonPushStart = new CustomButton(section, "Start", this);
+    CustomButton *buttonPushStart = new CustomButton(section, "Start", settings, this);
     buttonList.append(buttonPushStart);
     layout->addWidget(buttonLabelStart, 5, 0);
     layout->addWidget(buttonPushStart, 5, 1);
 
     QLabel *buttonLabelLTrigger = new QLabel("Left Trigger", this);
     buttonLabelLTrigger->setAlignment(Qt::AlignCenter);
-    CustomButton *buttonPushLTrigger = new CustomButton(section, "L", this);
+    CustomButton *buttonPushLTrigger = new CustomButton(section, "L", settings, this);
     buttonList.append(buttonPushLTrigger);
     layout->addWidget(buttonLabelLTrigger, 6, 0);
     layout->addWidget(buttonPushLTrigger, 6, 1);
 
     QLabel *buttonLabelRTrigger = new QLabel("Right Trigger", this);
     buttonLabelRTrigger->setAlignment(Qt::AlignCenter);
-    CustomButton *buttonPushRTrigger = new CustomButton(section, "R", this);
+    CustomButton *buttonPushRTrigger = new CustomButton(section, "R", settings, this);
     buttonList.append(buttonPushRTrigger);
     layout->addWidget(buttonLabelRTrigger, 7, 0);
     layout->addWidget(buttonPushRTrigger, 7, 1);
@@ -385,28 +388,28 @@ ProfileEditor::ProfileEditor(QString profile)
 
     QLabel *buttonLabelDPadL = new QLabel("DPad Left", this);
     buttonLabelDPadL->setAlignment(Qt::AlignCenter);
-    CustomButton *buttonPushDPadL = new CustomButton(section, "DPadL", this);
+    CustomButton *buttonPushDPadL = new CustomButton(section, "DPadL", settings, this);
     buttonList.append(buttonPushDPadL);
     layout->addWidget(buttonLabelDPadL, 2, 3);
     layout->addWidget(buttonPushDPadL, 2, 4);
 
     QLabel *buttonLabelDPadR = new QLabel("DPad Right", this);
     buttonLabelDPadR->setAlignment(Qt::AlignCenter);
-    CustomButton *buttonPushDPadR = new CustomButton(section, "DPadR", this);
+    CustomButton *buttonPushDPadR = new CustomButton(section, "DPadR", settings, this);
     buttonList.append(buttonPushDPadR);
     layout->addWidget(buttonLabelDPadR, 3, 3);
     layout->addWidget(buttonPushDPadR, 3, 4);
 
     QLabel *buttonLabelDPadU = new QLabel("DPad Up", this);
     buttonLabelDPadU->setAlignment(Qt::AlignCenter);
-    CustomButton *buttonPushDPadU = new CustomButton(section, "DPadU", this);
+    CustomButton *buttonPushDPadU = new CustomButton(section, "DPadU", settings, this);
     buttonList.append(buttonPushDPadU);
     layout->addWidget(buttonLabelDPadU, 4, 3);
     layout->addWidget(buttonPushDPadU, 4, 4);
 
     QLabel *buttonLabelDPadD = new QLabel("DPad Down", this);
     buttonLabelDPadD->setAlignment(Qt::AlignCenter);
-    CustomButton *buttonPushDPadD = new CustomButton(section, "DPadD", this);
+    CustomButton *buttonPushDPadD = new CustomButton(section, "DPadD", settings, this);
     buttonList.append(buttonPushDPadD);
     layout->addWidget(buttonLabelDPadD, 5, 3);
     layout->addWidget(buttonPushDPadD, 5, 4);
@@ -418,28 +421,28 @@ ProfileEditor::ProfileEditor(QString profile)
 
     QLabel *buttonLabelCL = new QLabel("C Left", this);
     buttonLabelCL->setAlignment(Qt::AlignCenter);
-    CustomButton *buttonPushCL = new CustomButton(section, "CLeft", this);
+    CustomButton *buttonPushCL = new CustomButton(section, "CLeft", settings, this);
     buttonList.append(buttonPushCL);
     layout->addWidget(buttonLabelCL, 2, 6);
     layout->addWidget(buttonPushCL, 2, 7);
 
     QLabel *buttonLabelCR = new QLabel("C Right", this);
     buttonLabelCR->setAlignment(Qt::AlignCenter);
-    CustomButton *buttonPushCR = new CustomButton(section, "CRight", this);
+    CustomButton *buttonPushCR = new CustomButton(section, "CRight", settings, this);
     buttonList.append(buttonPushCR);
     layout->addWidget(buttonLabelCR, 3, 6);
     layout->addWidget(buttonPushCR, 3, 7);
 
     QLabel *buttonLabelCU = new QLabel("C Up", this);
     buttonLabelCU->setAlignment(Qt::AlignCenter);
-    CustomButton *buttonPushCU = new CustomButton(section, "CUp", this);
+    CustomButton *buttonPushCU = new CustomButton(section, "CUp", settings, this);
     buttonList.append(buttonPushCU);
     layout->addWidget(buttonLabelCU, 4, 6);
     layout->addWidget(buttonPushCU, 4, 7);
 
     QLabel *buttonLabelCD = new QLabel("C Down", this);
     buttonLabelCD->setAlignment(Qt::AlignCenter);
-    CustomButton *buttonPushCD = new CustomButton(section, "CDown", this);
+    CustomButton *buttonPushCD = new CustomButton(section, "CDown", settings, this);
     buttonList.append(buttonPushCD);
     layout->addWidget(buttonLabelCD, 5, 6);
     layout->addWidget(buttonPushCD, 5, 7);
@@ -447,28 +450,28 @@ ProfileEditor::ProfileEditor(QString profile)
 
     QLabel *buttonLabelStickL = new QLabel("Control Stick Left", this);
     buttonLabelStickL->setAlignment(Qt::AlignCenter);
-    CustomButton *buttonPushStickL = new CustomButton(section, "AxisLeft", this);
+    CustomButton *buttonPushStickL = new CustomButton(section, "AxisLeft", settings, this);
     buttonList.append(buttonPushStickL);
     layout->addWidget(buttonLabelStickL, 6, 3);
     layout->addWidget(buttonPushStickL, 6, 4);
 
     QLabel *buttonLabelStickR = new QLabel("Control Stick Right", this);
     buttonLabelStickR->setAlignment(Qt::AlignCenter);
-    CustomButton *buttonPushStickR = new CustomButton(section, "AxisRight", this);
+    CustomButton *buttonPushStickR = new CustomButton(section, "AxisRight", settings, this);
     buttonList.append(buttonPushStickR);
     layout->addWidget(buttonLabelStickR, 7, 3);
     layout->addWidget(buttonPushStickR, 7, 4);
 
     QLabel *buttonLabelStickU = new QLabel("Control Stick Up", this);
     buttonLabelStickU->setAlignment(Qt::AlignCenter);
-    CustomButton *buttonPushStickU = new CustomButton(section, "AxisUp", this);
+    CustomButton *buttonPushStickU = new CustomButton(section, "AxisUp", settings, this);
     buttonList.append(buttonPushStickU);
     layout->addWidget(buttonLabelStickU, 6, 6);
     layout->addWidget(buttonPushStickU, 6, 7);
 
     QLabel *buttonLabelStickD = new QLabel("Control Stick Down", this);
     buttonLabelStickD->setAlignment(Qt::AlignCenter);
-    CustomButton *buttonPushStickD = new CustomButton(section, "AxisDown", this);
+    CustomButton *buttonPushStickD = new CustomButton(section, "AxisDown", settings, this);
     buttonList.append(buttonPushStickD);
     layout->addWidget(buttonLabelStickD, 7, 6);
     layout->addWidget(buttonPushStickD, 7, 7);
@@ -590,18 +593,18 @@ ProfileEditor::ProfileEditor(QString profile)
     setWindowTitle(tr("Profile Editor"));
 }
 
-ConfigDialog::ConfigDialog()
+ConfigDialog::ConfigDialog(QSettings* settings, QSettings* controllerSettings)
 {
     unsigned int i;
 
     tabWidget = new QTabWidget(this);
     tabWidget->setUsesScrollButtons(0);
     for (i = 1; i < 5; ++i) {
-        controllerTabs[i-1] = new ControllerTab(i);
+        controllerTabs[i-1] = new ControllerTab(i, settings, controllerSettings, this);
         tabWidget->addTab(controllerTabs[i-1], "Controller " + QString::number(i));
     }
 
-    tabWidget->addTab(new ProfileTab(controllerTabs), tr("Manage Profiles"));
+    tabWidget->addTab(new ProfileTab(controllerTabs, settings, controllerSettings, this), tr("Manage Profiles"));
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
     mainLayout->addWidget(tabWidget);
     setLayout(mainLayout);
