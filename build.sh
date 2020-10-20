@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+export DEBUG=1
+
 set -e
 
 UNAME=$(uname -s)
@@ -39,7 +41,7 @@ cp $base_dir/mupen64plus-input-raphnetraw/projects/unix/*$suffix $install_dir
 
 mkdir -p $base_dir/mupen64plus-input-qt/build
 cd $base_dir/mupen64plus-input-qt/build
-qmake ../mupen64plus-input-qt.pro
+qmake CONFIG+=force_debug_info ../mupen64plus-input-qt.pro
 make -j4
 if [[ $UNAME == *"MINGW"* ]]; then
   cp $base_dir/mupen64plus-input-qt/build/release/mupen64plus-input-qt.dll $install_dir
@@ -66,12 +68,13 @@ fi
 
 mkdir -p $base_dir/mupen64plus-gui/build
 cd $base_dir/mupen64plus-gui/build
-qmake ../mupen64plus-gui.pro
+qmake CONFIG+=force_debug_info ../mupen64plus-gui.pro
 make -j4
 if [[ $UNAME == *"MINGW"* ]]; then
   cp $base_dir/mupen64plus-gui/build/release/mupen64plus-gui.exe $install_dir
 else
-  cp $base_dir/mupen64plus-gui/build/mupen64plus-gui$gui_dir_suffix $install_dir
+  /usr/local/Cellar/qt/5.15.1/bin/macdeployqt $base_dir/mupen64plus-gui/build/mupen64plus-gui.app
+  cp -a $base_dir/mupen64plus-gui/build/mupen64plus-gui.app $install_dir
 fi
 
 cd $base_dir/GLideN64/src
