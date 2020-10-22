@@ -141,40 +141,40 @@ CustomButton::CustomButton(QString section, QString setting, QSettings *settings
     ProfileEditor* editor = (ProfileEditor*) parent;
     item = setting;
     QString direction;
-    QList<int> value = settings->value(section + "/" + item).value<QList<int> >();
-    switch (value.at(1)) {
+    QStringList value = settings->value(section + "/" + item).toString().split(",");
+    switch (value.at(1).toInt()) {
         case 0/*Keyboard*/:
             type = 0;
-            key = (SDL_Scancode)value.at(0);
+            key = (SDL_Scancode)value.at(0).toInt();
             this->setText(SDL_GetScancodeName(key));
             break;
         case 1/*Button*/:
             type = 1;
-            button = (SDL_GameControllerButton)value.at(0);
-            this->setText(SDL_GameControllerGetStringForButton((SDL_GameControllerButton)value.at(0)));
+            button = (SDL_GameControllerButton)value.at(0).toInt();
+            this->setText(SDL_GameControllerGetStringForButton((SDL_GameControllerButton)value.at(0).toInt()));
             break;
         case 2/*Axis*/:
             type = 2;
-            axis = (SDL_GameControllerAxis)value.at(0);
-            axisValue = value.at(2);
+            axis = (SDL_GameControllerAxis)value.at(0).toInt();
+            axisValue = value.at(2).toInt();
             direction = axisValue > 0 ? " +" : " -";
-            this->setText(SDL_GameControllerGetStringForAxis((SDL_GameControllerAxis)value.at(0)) + direction);
+            this->setText(SDL_GameControllerGetStringForAxis((SDL_GameControllerAxis)value.at(0).toInt()) + direction);
             break;
         case 3/*Joystick Hat*/:
             type = 3;
-            joystick_hat = value.at(0);
-            axisValue = value.at(2);
+            joystick_hat = value.at(0).toInt();
+            axisValue = value.at(2).toInt();
             this->setText("Hat " + QString::number(joystick_hat) + " " + QString::number(axisValue));
             break;
         case 4/*Joystick Button*/:
             type = 4;
-            joystick_button = value.at(0);
+            joystick_button = value.at(0).toInt();
             this->setText("Button " + QString::number(joystick_button));
             break;
         case 5/*Joystick Axis*/:
             type = 5;
-            joystick_axis = value.at(0);
-            axisValue = value.at(2);
+            joystick_axis = value.at(0).toInt();
+            axisValue = value.at(2).toInt();
             direction = axisValue > 0 ? " +" : " -";
             this->setText("Axis " + QString::number(joystick_axis) + direction);
            break;
@@ -536,39 +536,39 @@ ProfileEditor::ProfileEditor(QString profile, QSettings *settings, QWidget *pare
     connect(buttonPushSave, &QPushButton::released, [=]() {
         const QString saveSection = profileName->text();
         if (!saveSection.startsWith("Auto-") && !saveSection.isEmpty() && (!settings->contains(saveSection + "/A") || !profileName->isEnabled())) {
-            QList<int> value;
+            QStringList value;
             for (int i = 0; i < buttonList.size(); ++i) {
                 value.clear();
                 switch (buttonList.at(i)->type) {
                     case 0:
-                        value.insert(0, buttonList.at(i)->key);
-                        value.insert(1, 0);
+                        value.insert(0, QString::number(buttonList.at(i)->key));
+                        value.insert(1, QString::number(0));
                         break;
                     case 1:
-                        value.insert(0, buttonList.at(i)->button);
-                        value.insert(1, 1);
+                        value.insert(0, QString::number(buttonList.at(i)->button));
+                        value.insert(1, QString::number(1));
                         break;
                     case 2:
-                        value.insert(0, buttonList.at(i)->axis);
-                        value.insert(1, 2);
-                        value.insert(2, buttonList.at(i)->axisValue);
+                        value.insert(0, QString::number(buttonList.at(i)->axis));
+                        value.insert(1, QString::number(2));
+                        value.insert(2, QString::number(buttonList.at(i)->axisValue));
                         break;
                     case 3:
-                        value.insert(0, buttonList.at(i)->joystick_hat);
-                        value.insert(1, 3);
-                        value.insert(2, buttonList.at(i)->axisValue);
+                        value.insert(0, QString::number(buttonList.at(i)->joystick_hat));
+                        value.insert(1, QString::number(3));
+                        value.insert(2, QString::number(buttonList.at(i)->axisValue));
                         break;
                     case 4:
-                        value.insert(0, buttonList.at(i)->joystick_button);
-                        value.insert(1, 4);
+                        value.insert(0, QString::number(buttonList.at(i)->joystick_button));
+                        value.insert(1, QString::number(4));
                         break;
                     case 5:
-                        value.insert(0, buttonList.at(i)->joystick_axis);
-                        value.insert(1, 5);
-                        value.insert(2, buttonList.at(i)->axisValue);
+                        value.insert(0, QString::number(buttonList.at(i)->joystick_axis));
+                        value.insert(1, QString::number(5));
+                        value.insert(2, QString::number(buttonList.at(i)->axisValue));
                         break;
                 }
-                settings->setValue(saveSection + "/" + buttonList.at(i)->item, QVariant::fromValue(value));
+                settings->setValue(saveSection + "/" + buttonList.at(i)->item, value.join(","));
             }
             float percent = sliderDeadzone->value() / 10.0;
             settings->setValue(saveSection + "/Deadzone", percent);
