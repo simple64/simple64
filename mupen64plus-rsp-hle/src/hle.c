@@ -114,7 +114,9 @@ void hle_execute(struct hle_t* hle)
 
     bool match = false;
     struct cached_ucodes_t * cached_ucodes = &hle->cached_ucodes;
-    struct ucode_info_t *info = &cached_ucodes->infos[cached_ucodes->count-1];
+    struct ucode_info_t *info = NULL;
+    if (cached_ucodes->count > 0)
+        info = &cached_ucodes->infos[cached_ucodes->count-1];
     for (int i = 0; i < cached_ucodes->count; i++)
     {
         if (info->uc_start == uc_start && info->uc_dstart == uc_dstart && info->uc_dsize == uc_dsize)
