@@ -43,6 +43,8 @@ public:
     int getGLES();
     void updatePlugins();
     void resetCore();
+    QThread *getRenderingThread();
+    void setRenderingThread(QThread* thread);
     m64p_dynlib_handle getCoreLib();
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
@@ -127,6 +129,7 @@ private:
     QString m_title;
 
     OGLWindow *my_window = nullptr;
+    QThread *rendering_thread = nullptr;
     WorkerThread *workerThread = nullptr;
     LogViewer logViewer;
     QSettings *settings = nullptr;
