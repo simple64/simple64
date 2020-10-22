@@ -11,7 +11,6 @@ static int init;
 static int needs_toggle;
 static int set_volume;
 static QSurfaceFormat format;
-QThread* rendering_thread;
 
 m64p_error qtVidExtFuncInit(void)
 {
@@ -26,7 +25,7 @@ m64p_error qtVidExtFuncInit(void)
     if (w->getGLES())
         format.setRenderableType(QSurfaceFormat::OpenGLES);
 
-    rendering_thread = QThread::currentThread();
+    w->setRenderingThread(QThread::currentThread());
     return M64ERR_SUCCESS;
 }
 
@@ -34,11 +33,9 @@ m64p_error qtVidExtFuncQuit(void)
 {
     init = 0;
     w->getWorkerThread()->toggleFS(M64VIDEO_WINDOWED);
-    if (w->getOGLWindow() != nullptr) {
-        w->getOGLWindow()->doneCurrent();
-        w->getOGLWindow()->context()->moveToThread(QApplication::instance()->thread());
-        w->getWorkerThread()->deleteOGLWindow();
-    }
+    w->getOGLWindow()->doneCurrent();
+    w->getOGLWindow()->context()->moveToThread(QApplication::instance()->thread());
+    w->getWorkerThread()->deleteOGLWindow();
     return M64ERR_SUCCESS;
 }
 
@@ -62,7 +59,7 @@ m64p_error qtVidExtFuncSetMode(int Width, int Height, int, int ScreenMode, int)
     if (!init) {
         w->getWorkerThread()->createOGLWindow(&format);
         while (!w->getOGLWindow()->isValid()) {}
-        while (w->getOGLWindow()->context()->thread() != rendering_thread) {}
+        while (w->getOGLWindow()->context()->thread() != w->getRenderingThread()) {}
         w->getWorkerThread()->resizeMainWindow(Width, Height);
         w->getOGLWindow()->makeCurrent();
         init = 1;
@@ -207,7 +204,8 @@ m64p_error qtVidExtFuncGLSwapBuf(void)
         int value;
         (*CoreDoCommand)(M64CMD_CORE_STATE_QUERY, M64CORE_EMU_STATE, &value);
         if (value == M64EMU_RUNNING) {
-            int volume = w->getSettings()->value("volume").toInt();
+            QSettings settings(w->getSettings()->fileName(), QSettings::IniFormat);
+            int volume = settings.value("volume").toInt();
             (*CoreDoCommand)(M64CMD_CORE_STATE_SET, M64CORE_AUDIO_VOLUME, &volume);
             set_volume = 0;
         }
@@ -222,7 +220,7 @@ m64p_error qtVidExtFuncGLSwapBuf(void)
         }
     }
 
-    if (QThread::currentThread() == rendering_thread) {
+    if (QThread::currentThread() == w->getRenderingThread()) {
         w->getOGLWindow()->context()->swapBuffers(w->getOGLWindow());
         w->getOGLWindow()->context()->makeCurrent(w->getOGLWindow());
     }
