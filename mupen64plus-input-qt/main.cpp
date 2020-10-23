@@ -39,19 +39,20 @@
 #define QT_INPUT_PLUGIN_VERSION 0x020500
 #define INPUT_PLUGIN_API_VERSION 0x020100
 static int l_PluginInit = 0;
-int emu_running = 0;
 static unsigned char myKeyState[SDL_NUM_SCANCODES];
-QSettings* settings;
-QSettings* controllerSettings;
-QSettings* gameSettings;
-QSettings* gameControllerSettings;
-SController controller[4];   // 4 controllers
-
+static QSettings* settings;
+static QSettings* controllerSettings;
+static QSettings* gameSettings;
+static QSettings* gameControllerSettings;
+static SController controller[4];   // 4 controllers
+static m64p_dynlib_handle coreHandle;
 
 EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle CoreHandle, void * object, void (*)(void *, int, const char *))
 {
     if (l_PluginInit)
         return M64ERR_ALREADY_INIT;
+
+    coreHandle = CoreHandle;
 
     ptr_ConfigGetUserConfigPath ConfigGetUserConfigPath = (ptr_ConfigGetUserConfigPath) osal_dynlib_getproc(CoreHandle, "ConfigGetUserConfigPath");
 
@@ -207,7 +208,6 @@ void closeControllers()
         controller[i].gamepad = NULL;
         controller[i].joystick = NULL;
     }
-    emu_running = 0;
 }
 
 EXPORT m64p_error CALL PluginShutdown(void)
@@ -540,7 +540,7 @@ EXPORT void CALL InitiateControllers(CONTROL_INFO ControlInfo)
         else /*specific gamepad selected*/ {
             controller_index = gamepad.split(":")[0].toInt();
             gamepad_name = gamepad.split(":")[1];
-            if (SDL_IsGameController(controller_index) && gamepad_name == QString(SDL_GameControllerNameForIndex(controller_index))) {
+            if (SDL_IsGameController(controller_index) && gamepad_name == QString(SDL_JoystickNameForIndex(controller_index))) {
                 controller[i].gamepad = SDL_GameControllerOpen(controller_index);
                 used_index[i] = controller_index;
                 if (controller[i].gamepad)
@@ -584,7 +584,6 @@ EXPORT void CALL InitiateControllers(CONTROL_INFO ControlInfo)
 
         setPak(i);
     }
-    emu_running = 1;
 }
 
 EXPORT void CALL ReadController(int, unsigned char *)
@@ -618,6 +617,6 @@ EXPORT void CALL SDL_KeyUp(int, int keysym)
 
 EXPORT void CALL PluginConfig()
 {
-    ConfigDialog config(settings, controllerSettings);
+    ConfigDialog config(coreHandle, settings, controllerSettings);
     config.exec();
 }

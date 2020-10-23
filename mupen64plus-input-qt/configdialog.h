@@ -1,14 +1,15 @@
 #ifndef CONFIGDIALOG_H
 #define CONFIGDIALOG_H
 
+#include "osal/osal_dynamiclib.h"
+#include "m64p_frontend.h"
+
 #include <QDialog>
 #include <QTabWidget>
 #include <QSettings>
 #include <QPushButton>
 #include <QComboBox>
 #include <SDL2/SDL.h>
-
-extern int emu_running;
 
 class ControllerTab : public QWidget
 {
@@ -27,7 +28,7 @@ class ConfigDialog : public QDialog
     Q_OBJECT
 
 public:
-    ConfigDialog(QSettings* settings, QSettings* controllerSettings);
+    ConfigDialog(m64p_dynlib_handle CoreHandle, QSettings* settings, QSettings* controllerSettings);
 
 private:
     QTabWidget *tabWidget;
@@ -39,9 +40,9 @@ class ProfileTab : public QWidget
     Q_OBJECT
 
 public:
-    ProfileTab(ControllerTab **_controllerTabs, QSettings* settings, QSettings* controllerSettings, QWidget *parent);
+    ProfileTab(m64p_dynlib_handle coreHandle, ControllerTab **_controllerTabs, QSettings* settings, QSettings* controllerSettings, QWidget *parent);
 private:
-    int checkNotRunning();
+    int checkNotRunning(m64p_dynlib_handle coreHandle);
     void setComboBox(QComboBox* box, ControllerTab **_controllerTabs, QSettings* settings, QSettings* controllerSettings);
 };
 
@@ -75,7 +76,6 @@ protected:
     void keyReleaseEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
     void timerEvent(QTimerEvent *event) Q_DECL_OVERRIDE;
 private:
-    SDL_GameController* gamepad[4];
     SDL_Joystick* joystick[4];
     QList<CustomButton*> buttonList;
     CustomButton* activeButton;
