@@ -3,6 +3,7 @@
 #include "common.h"
 #include "mainwindow.h"
 #include <QKeyEvent>
+#include <QMessageBox>
 
 KeyPressFilter::KeyPressFilter(QObject *parent)
     : QObject(parent)
@@ -13,6 +14,15 @@ bool KeyPressFilter::eventFilter(QObject *obj, QEvent *event)
 {
     if (event->type() == QEvent::KeyPress) {
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+#ifdef SINGLE_THREAD
+        if (keyEvent->key() == Qt::Key_P)
+        {
+            QMessageBox msgBox;
+            msgBox.setText("Paused");
+            msgBox.exec();
+            return QObject::eventFilter(obj, event);
+        }
+#endif
         int modValue = QT2SDL2MOD(keyEvent->modifiers());
         int keyValue = QT2SDL2(keyEvent->key());
         if (keyValue != 0)

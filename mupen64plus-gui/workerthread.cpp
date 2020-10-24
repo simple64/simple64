@@ -9,21 +9,35 @@
 #include <QDBusInterface>
 #endif
 
+#ifdef SINGLE_THREAD
+#define CONNECTION_TYPE Qt::AutoConnection
+#else
+#define CONNECTION_TYPE Qt::BlockingQueuedConnection
+#endif
+
 WorkerThread::WorkerThread(QString _netplay_ip, int _netplay_port, int _netplay_player, QObject *parent)
+#ifdef SINGLE_THREAD
+    : QObject(parent)
+#else
     : QThread(parent)
+#endif
 {
     netplay_ip = _netplay_ip;
     netplay_port = _netplay_port;
     netplay_player = _netplay_player;
 }
 
+#ifdef SINGLE_THREAD
+void WorkerThread::start()
+#else
 void WorkerThread::run()
+#endif
 {
-    connect(this, SIGNAL(resizeMainWindow(int,int)), w, SLOT(resizeMainWindow(int, int)), Qt::BlockingQueuedConnection);
-    connect(this, SIGNAL(toggleFS(int)), w, SLOT(toggleFS(int)), Qt::BlockingQueuedConnection);
-    connect(this, SIGNAL(createOGLWindow(QSurfaceFormat*)), w, SLOT(createOGLWindow(QSurfaceFormat*)), Qt::BlockingQueuedConnection);
-    connect(this, SIGNAL(deleteOGLWindow()), w, SLOT(deleteOGLWindow()), Qt::BlockingQueuedConnection);
-    connect(this, SIGNAL(showMessage(QString)), w, SLOT(showMessage(QString)), Qt::BlockingQueuedConnection);
+    connect(this, SIGNAL(resizeMainWindow(int,int)), w, SLOT(resizeMainWindow(int, int)), CONNECTION_TYPE);
+    connect(this, SIGNAL(toggleFS(int)), w, SLOT(toggleFS(int)), CONNECTION_TYPE);
+    connect(this, SIGNAL(createOGLWindow(QSurfaceFormat*)), w, SLOT(createOGLWindow(QSurfaceFormat*)), CONNECTION_TYPE);
+    connect(this, SIGNAL(deleteOGLWindow()), w, SLOT(deleteOGLWindow()), CONNECTION_TYPE);
+    connect(this, SIGNAL(showMessage(QString)), w, SLOT(showMessage(QString)), CONNECTION_TYPE);
 #ifdef _WIN32
     SetThreadExecutionState(ES_CONTINUOUS | ES_DISPLAY_REQUIRED);
 #else
