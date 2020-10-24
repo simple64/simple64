@@ -26,5 +26,5 @@ jobs:
         sudo ls -al $(brew ls qt)
         sudo ln -s /usr/local/Cellar/qt/5.13.2/plugins /usr/local/plugins
         sudo ln -s /usr/local/Cellar/qt/5.13.2/mkspecs /usr/local/mkspecs
-        sudo ln -s /usr/local/Cellar/qt/5.13.2/qmake /usr/local/bin/qmake
+        sudo ln -s /usr/local/Cellar/qt/5.13.2/bin/qmake /usr/local/bin/qmake
         sudo sh ./build.sh
