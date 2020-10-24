@@ -25,5 +25,5 @@ jobs:
         ll /usr/local/Cellar/qt
         ln -s /usr/local/Cellar/qt/5.13.2/plugins /usr/local/plugins
         ln -s /usr/local/Cellar/qt/5.13.2/mkspecs /usr/local/mkspecs
-        ln -s /usr/local/Cellar/qt/5.13.2/qmake /usr/local/qmake
+        ln -s /usr/local/Cellar/qt/5.13.2/qmake /usr/local/bin/qmake
         sh ./build.sh
