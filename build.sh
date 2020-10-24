@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-export DEBUG=1
-
 set -e
 
 UNAME=$(uname -s)
@@ -71,7 +69,7 @@ cd $base_dir/mupen64plus-gui/build
 qmake CONFIG+=force_debug_info ../mupen64plus-gui.pro
 make -j4
 if [[ $UNAME == *"MINGW"* ]]; then
-  cp $base_dir/mupen64plus-gui/build/release/mupen64plus-gui.exe $install_dir
+  cp $base_dir/mupen64plus-gui/build/release/mupen64plus-gui.exe -dmg $install_dir
 else
   /usr/local/Cellar/qt/5.15.1/bin/macdeployqt $base_dir/mupen64plus-gui/build/mupen64plus-gui.app
   cp -a $base_dir/mupen64plus-gui/build/mupen64plus-gui.app $install_dir
@@ -136,6 +134,9 @@ if [[ $UNAME == *"MINGW"* ]]; then
   cp /$mingw_prefix/bin/libssl-1_1-x64.dll $install_dir
   cp /$mingw_prefix/bin/libcrypto-1_1-x64.dll $install_dir
   cp $base_dir/7za.exe $install_dir
+elif [[ $UNAME == *"Darwin"* ]]; then
+  cd $base_dir
+  sh ./link-mac.sh
 else
   if [[ $HOST_CPU == "i686" ]]; then
     my_os=linux32
