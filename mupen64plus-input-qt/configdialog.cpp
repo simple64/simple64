@@ -30,12 +30,9 @@ ControllerTab::ControllerTab(unsigned int controller, QSettings* settings, QSett
     layout->addWidget(gamepadLabel, 1, 0);
 
     gamepadSelect = new QComboBox(this);
-    for (int i = 0; i < SDL_NumJoysticks(); ++i) {
-        if (SDL_IsGameController(i))
-            gamepadSelect->addItem(QString::number(i) + ":" + SDL_GameControllerNameForIndex(i));
-        else
-            gamepadSelect->addItem(QString::number(i) + ":" + SDL_JoystickNameForIndex(i));
-    }
+    for (int i = 0; i < SDL_NumJoysticks(); ++i)
+        gamepadSelect->addItem(QString::number(i) + ":" + SDL_JoystickNameForIndex(i));
+
     gamepadSelect->insertItem(0, "Auto");
     gamepadSelect->addItem("Keyboard");
     gamepadSelect->addItem("None");
@@ -79,9 +76,12 @@ void ProfileTab::setComboBox(QComboBox* box, ControllerTab **_controllerTabs, QS
     box->removeItem(box->findText("Auto-Keyboard"));
 }
 
-int ProfileTab::checkNotRunning()
+int ProfileTab::checkNotRunning(m64p_dynlib_handle coreHandle)
 {
-    if (emu_running) {
+    int value;
+    ptr_CoreDoCommand CoreDoCommand = (ptr_CoreDoCommand) osal_dynlib_getproc(coreHandle, "CoreDoCommand");
+    (*CoreDoCommand)(M64CMD_CORE_STATE_QUERY, M64CORE_EMU_STATE, &value);
+    if (value == M64EMU_RUNNING) {
         QMessageBox msgBox;
         msgBox.setText("Stop game before editing profiles.");
         msgBox.exec();
@@ -90,7 +90,7 @@ int ProfileTab::checkNotRunning()
     return 1;
 }
 
-ProfileTab::ProfileTab(ControllerTab **_controllerTabs, QSettings* settings, QSettings* controllerSettings, QWidget *parent)
+ProfileTab::ProfileTab(m64p_dynlib_handle coreHandle, ControllerTab **_controllerTabs, QSettings* settings, QSettings* controllerSettings, QWidget *parent)
     : QWidget(parent)
 {
     QGridLayout *layout = new QGridLayout(this);
@@ -98,7 +98,7 @@ ProfileTab::ProfileTab(ControllerTab **_controllerTabs, QSettings* settings, QSe
     setComboBox(profileSelect, _controllerTabs, settings, controllerSettings);
     QPushButton *buttonNewKeyboard = new QPushButton("New Profile (Keyboard)", this);
     connect(buttonNewKeyboard, &QPushButton::released, [=]() {
-        if (checkNotRunning()) {
+        if (checkNotRunning(coreHandle)) {
             ProfileEditor editor("Auto-Keyboard", settings, this);
             editor.exec();
             setComboBox(profileSelect, _controllerTabs, settings, controllerSettings);
@@ -106,7 +106,7 @@ ProfileTab::ProfileTab(ControllerTab **_controllerTabs, QSettings* settings, QSe
     });
     QPushButton *buttonNewGamepad = new QPushButton("New Profile (Gamepad)", this);
     connect(buttonNewGamepad, &QPushButton::released, [=]() {
-        if (checkNotRunning()) {
+        if (checkNotRunning(coreHandle)) {
             ProfileEditor editor("Auto-Gamepad", settings, this);
             editor.exec();
             setComboBox(profileSelect, _controllerTabs, settings, controllerSettings);
@@ -114,7 +114,7 @@ ProfileTab::ProfileTab(ControllerTab **_controllerTabs, QSettings* settings, QSe
     });
     QPushButton *buttonEdit = new QPushButton("Edit Profile", this);
     connect(buttonEdit, &QPushButton::released, [=]() {
-        if (!profileSelect->currentText().isEmpty() && checkNotRunning()) {
+        if (!profileSelect->currentText().isEmpty() && checkNotRunning(coreHandle)) {
             ProfileEditor editor(profileSelect->currentText(), settings, this);
             editor.exec();
         }
@@ -122,7 +122,7 @@ ProfileTab::ProfileTab(ControllerTab **_controllerTabs, QSettings* settings, QSe
 
     QPushButton *buttonDelete = new QPushButton("Delete Profile", this);
     connect(buttonDelete, &QPushButton::released, [=]() {
-        if (!profileSelect->currentText().isEmpty()) {
+        if (!profileSelect->currentText().isEmpty() && checkNotRunning(coreHandle)) {
             settings->remove(profileSelect->currentText());
             setComboBox(profileSelect, _controllerTabs, settings, controllerSettings);
         }
@@ -141,40 +141,40 @@ CustomButton::CustomButton(QString section, QString setting, QSettings *settings
     ProfileEditor* editor = (ProfileEditor*) parent;
     item = setting;
     QString direction;
-    QList<int> value = settings->value(section + "/" + item).value<QList<int> >();
-    switch (value.at(1)) {
+    QStringList value = settings->value(section + "/" + item).toString().split(",");
+    switch (value.at(1).toInt()) {
         case 0/*Keyboard*/:
             type = 0;
-            key = (SDL_Scancode)value.at(0);
+            key = (SDL_Scancode)value.at(0).toInt();
             this->setText(SDL_GetScancodeName(key));
             break;
         case 1/*Button*/:
             type = 1;
-            button = (SDL_GameControllerButton)value.at(0);
-            this->setText(SDL_GameControllerGetStringForButton((SDL_GameControllerButton)value.at(0)));
+            button = (SDL_GameControllerButton)value.at(0).toInt();
+            this->setText(SDL_GameControllerGetStringForButton((SDL_GameControllerButton)value.at(0).toInt()));
             break;
         case 2/*Axis*/:
             type = 2;
-            axis = (SDL_GameControllerAxis)value.at(0);
-            axisValue = value.at(2);
+            axis = (SDL_GameControllerAxis)value.at(0).toInt();
+            axisValue = value.at(2).toInt();
             direction = axisValue > 0 ? " +" : " -";
-            this->setText(SDL_GameControllerGetStringForAxis((SDL_GameControllerAxis)value.at(0)) + direction);
+            this->setText(SDL_GameControllerGetStringForAxis((SDL_GameControllerAxis)value.at(0).toInt()) + direction);
             break;
         case 3/*Joystick Hat*/:
             type = 3;
-            joystick_hat = value.at(0);
-            axisValue = value.at(2);
+            joystick_hat = value.at(0).toInt();
+            axisValue = value.at(2).toInt();
             this->setText("Hat " + QString::number(joystick_hat) + " " + QString::number(axisValue));
             break;
         case 4/*Joystick Button*/:
             type = 4;
-            joystick_button = value.at(0);
+            joystick_button = value.at(0).toInt();
             this->setText("Button " + QString::number(joystick_button));
             break;
         case 5/*Joystick Axis*/:
             type = 5;
-            joystick_axis = value.at(0);
-            axisValue = value.at(2);
+            joystick_axis = value.at(0).toInt();
+            axisValue = value.at(2).toInt();
             direction = axisValue > 0 ? " +" : " -";
             this->setText("Axis " + QString::number(joystick_axis) + direction);
            break;
@@ -206,29 +206,6 @@ void ProfileEditor::timerEvent(QTimerEvent *)
     SDL_Event e;
     while (SDL_PollEvent(&e)) {
         switch (e.type) {
-            case SDL_CONTROLLERBUTTONDOWN:
-                killTimer(timer);
-                activeButton->type = 1;
-                activeButton->button = (SDL_GameControllerButton)e.cbutton.button;
-                activeButton->setText(SDL_GameControllerGetStringForButton(activeButton->button));
-                activeButton = nullptr;
-                for (i = 0; i < buttonList.size(); ++i)
-                    buttonList.at(i)->setDisabled(0);
-                return;
-            case SDL_CONTROLLERAXISMOTION:
-                if (abs(e.caxis.value) > 16384) {
-                    killTimer(timer);
-                    activeButton->type = 2;
-                    activeButton->axis = (SDL_GameControllerAxis)e.caxis.axis;
-                    activeButton->axisValue = e.caxis.value > 0 ? 1 : -1;
-                    QString direction = activeButton->axisValue > 0 ? " +" : " -";
-                    activeButton->setText(SDL_GameControllerGetStringForAxis(activeButton->axis) + direction);
-                    activeButton = nullptr;
-                    for (i = 0; i < buttonList.size(); ++i)
-                        buttonList.at(i)->setDisabled(0);
-                    return;
-                }
-                break;
             case SDL_JOYHATMOTION:
                 killTimer(timer);
                 activeButton->type = 3;
@@ -295,11 +272,7 @@ void ProfileEditor::acceptInput(CustomButton* button)
 ProfileEditor::~ProfileEditor()
 {
     for (int i = 0; i < 4; ++i) {
-        if (gamepad[i]) {
-            SDL_GameControllerClose(gamepad[i]);
-            gamepad[i] = NULL;
-        }
-        else if (joystick[i]) {
+        if (joystick[i]) {
             SDL_JoystickClose(joystick[i]);
             joystick[i] = NULL;
         }
@@ -309,14 +282,9 @@ ProfileEditor::~ProfileEditor()
 ProfileEditor::ProfileEditor(QString profile, QSettings *settings, QWidget *parent)
     : QDialog(parent)
 {
-    memset(gamepad, 0, sizeof(SDL_GameController*) * 4);
     memset(joystick, 0, sizeof(SDL_Joystick*) * 4);
-    for (int i = 0; i < 4; ++i) {
-        if (SDL_IsGameController(i))
-            gamepad[i] = SDL_GameControllerOpen(i);
-        else
-            joystick[i] = SDL_JoystickOpen(i);
-    }
+    for (int i = 0; i < 4; ++i)
+        joystick[i] = SDL_JoystickOpen(i);
 
     activeButton = nullptr;
     QString section = profile;
@@ -536,39 +504,39 @@ ProfileEditor::ProfileEditor(QString profile, QSettings *settings, QWidget *pare
     connect(buttonPushSave, &QPushButton::released, [=]() {
         const QString saveSection = profileName->text();
         if (!saveSection.startsWith("Auto-") && !saveSection.isEmpty() && (!settings->contains(saveSection + "/A") || !profileName->isEnabled())) {
-            QList<int> value;
+            QStringList value;
             for (int i = 0; i < buttonList.size(); ++i) {
                 value.clear();
                 switch (buttonList.at(i)->type) {
                     case 0:
-                        value.insert(0, buttonList.at(i)->key);
-                        value.insert(1, 0);
+                        value.insert(0, QString::number(buttonList.at(i)->key));
+                        value.insert(1, QString::number(0));
                         break;
                     case 1:
-                        value.insert(0, buttonList.at(i)->button);
-                        value.insert(1, 1);
+                        value.insert(0, QString::number(buttonList.at(i)->button));
+                        value.insert(1, QString::number(1));
                         break;
                     case 2:
-                        value.insert(0, buttonList.at(i)->axis);
-                        value.insert(1, 2);
-                        value.insert(2, buttonList.at(i)->axisValue);
+                        value.insert(0, QString::number(buttonList.at(i)->axis));
+                        value.insert(1, QString::number(2));
+                        value.insert(2, QString::number(buttonList.at(i)->axisValue));
                         break;
                     case 3:
-                        value.insert(0, buttonList.at(i)->joystick_hat);
-                        value.insert(1, 3);
-                        value.insert(2, buttonList.at(i)->axisValue);
+                        value.insert(0, QString::number(buttonList.at(i)->joystick_hat));
+                        value.insert(1, QString::number(3));
+                        value.insert(2, QString::number(buttonList.at(i)->axisValue));
                         break;
                     case 4:
-                        value.insert(0, buttonList.at(i)->joystick_button);
-                        value.insert(1, 4);
+                        value.insert(0, QString::number(buttonList.at(i)->joystick_button));
+                        value.insert(1, QString::number(4));
                         break;
                     case 5:
-                        value.insert(0, buttonList.at(i)->joystick_axis);
-                        value.insert(1, 5);
-                        value.insert(2, buttonList.at(i)->axisValue);
+                        value.insert(0, QString::number(buttonList.at(i)->joystick_axis));
+                        value.insert(1, QString::number(5));
+                        value.insert(2, QString::number(buttonList.at(i)->axisValue));
                         break;
                 }
-                settings->setValue(saveSection + "/" + buttonList.at(i)->item, QVariant::fromValue(value));
+                settings->setValue(saveSection + "/" + buttonList.at(i)->item, value.join(","));
             }
             float percent = sliderDeadzone->value() / 10.0;
             settings->setValue(saveSection + "/Deadzone", percent);
@@ -593,7 +561,7 @@ ProfileEditor::ProfileEditor(QString profile, QSettings *settings, QWidget *pare
     setWindowTitle(tr("Profile Editor"));
 }
 
-ConfigDialog::ConfigDialog(QSettings* settings, QSettings* controllerSettings)
+ConfigDialog::ConfigDialog(m64p_dynlib_handle CoreHandle, QSettings* settings, QSettings* controllerSettings)
 {
     unsigned int i;
 
@@ -604,7 +572,7 @@ ConfigDialog::ConfigDialog(QSettings* settings, QSettings* controllerSettings)
         tabWidget->addTab(controllerTabs[i-1], "Controller " + QString::number(i));
     }
 
-    tabWidget->addTab(new ProfileTab(controllerTabs, settings, controllerSettings, this), tr("Manage Profiles"));
+    tabWidget->addTab(new ProfileTab(CoreHandle, controllerTabs, settings, controllerSettings, this), tr("Manage Profiles"));
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
     mainLayout->addWidget(tabWidget);
     setLayout(mainLayout);

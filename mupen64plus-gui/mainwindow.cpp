@@ -440,6 +440,7 @@ void MainWindow::volumeValueChanged(int value)
     if (value != settings->value("volume").toInt())
     {
         settings->setValue("volume", value);
+        settings->sync();
         (*CoreDoCommand)(M64CMD_CORE_STATE_SET, M64CORE_AUDIO_VOLUME, &value);
     }
 }
@@ -996,4 +997,14 @@ void MainWindow::loadPlugins()
 m64p_dynlib_handle MainWindow::getCoreLib()
 {
     return coreLib;
+}
+
+QThread* MainWindow::getRenderingThread()
+{
+    return rendering_thread;
+}
+
+void MainWindow::setRenderingThread(QThread* thread)
+{
+    rendering_thread = thread;
 }
