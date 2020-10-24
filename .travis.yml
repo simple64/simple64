@@ -24,4 +24,5 @@ jobs:
         # Work around brew + QT bug - https://github.com/Homebrew/legacy-homebrew/issues/29938
         ln -s /usr/local/Cellar/qt/5.15.1/plugins /usr/local/plugins
         ln -s /usr/local/Cellar/qt/5.15.1/mkspecs /usr/local/mkspecs
+        ln -s /usr/local/Cellar/qt/5.15.1/qmake /usr/local/qmake
         sh ./build.sh
