@@ -20,7 +20,7 @@ jobs:
         - clang
       before_install: |
         brew update
-        brew install freetype cmake libsamplerate hidapi unixodbc libpng pkg-config sdl2_net sdl2 qt@5.15.1 libpq
+        brew install freetype cmake libsamplerate hidapi unixodbc libpng pkg-config sdl2_net sdl2 qt libpq
         # Work around brew + QT bug - https://github.com/Homebrew/legacy-homebrew/issues/29938
         ln -s /usr/local/Cellar/qt/5.15.1/plugins /usr/local/plugins
         ln -s /usr/local/Cellar/qt/5.15.1/mkspecs /usr/local/mkspecs
