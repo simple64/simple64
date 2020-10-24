@@ -69,7 +69,7 @@ make -j4
 if [[ $UNAME == *"MINGW"* ]]; then
   cp $base_dir/mupen64plus-gui/build/release/mupen64plus-gui.exe $install_dir
 elif [[ $UNAME == *"Darwin"* ]]; then
-  /usr/local/Cellar/qt/5.15.1/bin/macdeployqt $base_dir/mupen64plus-gui/build/mupen64plus-gui.app
+  /usr/local/Cellar/qt/5.13.2/bin/macdeployqt $base_dir/mupen64plus-gui/build/mupen64plus-gui.app
   cp -a $base_dir/mupen64plus-gui/build/mupen64plus-gui.app $install_dir
 else
   cp $base_dir/mupen64plus-gui/build/mupen64plus-gui $install_dir
