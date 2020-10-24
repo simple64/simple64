@@ -1,6 +1,9 @@
 version: 1.0.{build}
 image: Visual Studio 2017
 clone_folder: c:\mg
+artifacts:
+  - path: '*.zip'
+    name: m64p
 environment:
   MSYS2_DIR: msys64
 
