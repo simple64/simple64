@@ -1,5 +1,7 @@
 language: generic
 dist: bionic
+addons:
+  artifacts: true
 
 before_install:
   - sudo apt-get -qq update
