@@ -3,7 +3,6 @@
 set -e
 
 UNAME=$(uname -s)
-gui_dir_suffix=""
 if [[ $UNAME == *"MINGW"* ]]; then
   suffix=".dll"
   if [[ $UNAME == *"MINGW64"* ]]; then
@@ -13,7 +12,6 @@ if [[ $UNAME == *"MINGW"* ]]; then
   fi
 elif [[ $UNAME == *"Darwin"* ]]; then
   suffix=".dylib"
-  gui_dir_suffix=".app/Contents/MacOs/mupen64plus-gui"
   export CXXFLAGS='-stdlib=libc++'
   export LDFLAGS='-mmacosx-version-min=10.7'
 else
@@ -39,7 +37,7 @@ cp $base_dir/mupen64plus-input-raphnetraw/projects/unix/*$suffix $install_dir
 
 mkdir -p $base_dir/mupen64plus-input-qt/build
 cd $base_dir/mupen64plus-input-qt/build
-qmake CONFIG+=force_debug_info ../mupen64plus-input-qt.pro
+qmake ../mupen64plus-input-qt.pro
 make -j4
 if [[ $UNAME == *"MINGW"* ]]; then
   cp $base_dir/mupen64plus-input-qt/build/release/mupen64plus-input-qt.dll $install_dir
@@ -66,13 +64,15 @@ fi
 
 mkdir -p $base_dir/mupen64plus-gui/build
 cd $base_dir/mupen64plus-gui/build
-qmake CONFIG+=force_debug_info ../mupen64plus-gui.pro
+qmake ../mupen64plus-gui.pro
 make -j4
 if [[ $UNAME == *"MINGW"* ]]; then
-  cp $base_dir/mupen64plus-gui/build/release/mupen64plus-gui.exe -dmg $install_dir
-else
+  cp $base_dir/mupen64plus-gui/build/release/mupen64plus-gui.exe $install_dir
+elif [[ $UNAME == *"Darwin"* ]]; then
   /usr/local/Cellar/qt/5.15.1/bin/macdeployqt $base_dir/mupen64plus-gui/build/mupen64plus-gui.app
   cp -a $base_dir/mupen64plus-gui/build/mupen64plus-gui.app $install_dir
+else
+  cp $base_dir/mupen64plus-gui/build/mupen64plus-gui $install_dir
 fi
 
 cd $base_dir/GLideN64/src
