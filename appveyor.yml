@@ -19,8 +19,6 @@ build_script:
     
     cd %APPVEYOR_BUILD_FOLDER%
 
-    git submodule update --init
-
     @echo on
 
     SET "PATH=C:\%MSYS2_DIR%\%MSYSTEM%\bin;C:\%MSYS2_DIR%\usr\bin;%PATH%"
@@ -39,4 +37,4 @@ build_script:
 
     cd %APPVEYOR_BUILD_FOLDER%
 
-    bash -c "export HOST_CPU=$myarch; ./build.sh"
+    bash ./build.sh
