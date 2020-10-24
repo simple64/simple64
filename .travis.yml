@@ -1,7 +1,9 @@
 language: generic
 dist: bionic
 addons:
-  artifacts: true
+  artifacts:
+    paths:
+    - $(ls $TRAVIS_BUILD_DIR/*.zip)
 
 before_install:
   - sudo apt-get -qq update
