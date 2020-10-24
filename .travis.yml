@@ -8,6 +8,6 @@ addons:
 before_install:
   - sudo apt-get -qq update
   - sudo apt-get -y dist-upgrade
-  - sudo apt-get -y install cmake libhidapi-dev lsb-release wget libminizip-dev libsdl2-dev libfreetype6-dev libgl1-mesa-dev libglu1-mesa-dev pkg-config zlib1g-dev binutils-dev libspeexdsp-dev libsamplerate0-dev awscli qt5-default build-essential nasm git zip libsdl2-net-dev libqt5websockets5-dev
+  - sudo apt-get -y install cmake libhidapi-dev lsb-release wget libminizip-dev libsdl2-dev libfreetype6-dev libgl1-mesa-dev libglu1-mesa-dev pkg-config zlib1g-dev binutils-dev libspeexdsp-dev libsamplerate0-dev qt5-default build-essential nasm git zip libsdl2-net-dev libqt5websockets5-dev
 script:
   - bash ./build.sh
