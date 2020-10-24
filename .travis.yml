@@ -1,15 +1,32 @@
 language: generic
 sudo: required
-services:
-  - docker
 
-before_install:
-   docker pull ubuntu:bionic;
-   docker run --name ubuntu -it -d ubuntu:bionic /bin/bash;
+jobs:
+  include:
+    - stage: build-linux
+      services:
+        - docker
 
-script:
-  - docker exec ubuntu apt-get -qq update
-  - docker exec ubuntu apt-get -y dist-upgrade
-  - docker exec ubuntu /bin/bash -c "export DEBIAN_FRONTEND=noninteractive; apt-get -y install cmake libhidapi-dev lsb-release wget libminizip-dev libsdl2-dev libfreetype6-dev libgl1-mesa-dev libglu1-mesa-dev pkg-config zlib1g-dev binutils-dev libspeexdsp-dev libsamplerate0-dev awscli qt5-default build-essential nasm git zip libsdl2-net-dev libqt5websockets5-dev"
-  - docker exec ubuntu git clone https://github.com/loganmc10/m64p.git
-  - docker exec ubuntu /bin/bash -c "export AWS_ACCESS_KEY_ID=$ACCESS_KEY; export AWS_SECRET_ACCESS_KEY=$SECRET_KEY; cd m64p; if [[ $TRAVIS_PULL_REQUEST == "false" ]]; then ./build.sh aws; fi"
+      before_install:
+        docker pull ubuntu:bionic;
+        docker run --name ubuntu -it -d ubuntu:bionic /bin/bash;
+      script:
+        - docker exec ubuntu apt-get -qq update
+        - docker exec ubuntu apt-get -y dist-upgrade
+        - docker exec ubuntu /bin/bash -c "export DEBIAN_FRONTEND=noninteractive; apt-get -y install cmake libhidapi-dev lsb-release wget libminizip-dev libsdl2-dev libfreetype6-dev libgl1-mesa-dev libglu1-mesa-dev pkg-config zlib1g-dev binutils-dev libspeexdsp-dev libsamplerate0-dev awscli qt5-default build-essential nasm git zip libsdl2-net-dev libqt5websockets5-dev"
+        - docker exec ubuntu git clone https://github.com/loganmc10/m64p.git
+        - docker exec ubuntu /bin/bash -c "export AWS_ACCESS_KEY_ID=$ACCESS_KEY; export AWS_SECRET_ACCESS_KEY=$SECRET_KEY; cd m64p; if [[ $TRAVIS_PULL_REQUEST == "false" ]]; then ./build.sh aws; fi"
+    - stage: build-mac
+      os:
+        - osx
+      compiler:
+        - gcc
+        - clang
+      before_install: |
+        brew update
+        brew install freetype cmake libsamplerate hidapi unixodbc libpng pkg-config sdl2_net sdl2 qt@5.15.1 libpq
+        # Work around brew + QT bug - https://github.com/Homebrew/legacy-homebrew/issues/29938
+        # Note that you should swap out the 5.15.1 with the version of Qt that was installed above
+        ln -s /usr/local/Cellar/qt/5.15.1/plugins /usr/local/plugins
+        ln -s /usr/local/Cellar/qt/5.15.1/mkspecs /usr/local/mkspecs
+        sh ./build.sh
