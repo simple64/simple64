@@ -4,6 +4,8 @@ addons:
   artifacts:
     paths:
     - $(ls $TRAVIS_BUILD_DIR/*.zip)
+    target_paths:
+    - /m64p
 
 before_install:
   - sudo apt-get -qq update
