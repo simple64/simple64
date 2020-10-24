@@ -4,6 +4,7 @@ addons:
   artifacts:
     paths:
     - $(ls $TRAVIS_BUILD_DIR/*.zip)
+    - $(ls $TRAVIS_BUILD_DIR/*.dmg)
     target_paths:
     - /m64p
 
