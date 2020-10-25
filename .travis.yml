@@ -29,7 +29,7 @@ jobs:
     - "cmd //C RefreshEnv.cmd"
     - export PATH=/C/tools/$MSYS2_DIR/$MSYSTEM/bin:/C/tools/$MSYS2_DIR/usr/bin:$PATH
     script:
-    - pacman -Sy --needed --noconfirm pacman
+    - pacman --sync --clean --noconfirm
     - pacman -Syu --noconfirm
     - pacman -Syu --noconfirm
     - pacman -S --needed --noconfirm make mingw-w64-$myarch-cmake mingw-w64-$myarch-gcc mingw-w64-$myarch-hidapi mingw-w64-$myarch-freetype mingw-w64-$myarch-libpng mingw-w64-$myarch-libsamplerate mingw-w64-$myarch-SDL2 mingw-w64-$myarch-SDL2_net mingw-w64-$myarch-jasper mingw-w64-$myarch-qt5 mingw-w64-$myarch-python3-pip mingw-w64-$myarch-python3-pyopenssl zip
