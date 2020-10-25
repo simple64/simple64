@@ -23,13 +23,12 @@ jobs:
     - MSYS2_DIR=msys64
     os: windows
     before_install:
-    - curl -kLo msys2.tar.xz https://github.com/msys2/msys2-installer/releases/download/nightly-x86_64/msys2-base-x86_64-latest.tar.xz
-    - 7z x -so msys2.tar.xz | 7z x -si -ttar
-    - ls -R /c/Windows/
-    - export PATH=$TRAVIS_BUILD_DIR/$MSYS2_DIR/$MSYSTEM/bin:$TRAVIS_BUILD_DIR/$MSYS2_DIR/usr/bin:$PATH
+    - [[ ! -f C:/tools/msys64/msys2_shell.cmd ]] && rm -rf C:/tools/msys64
+    - choco uninstall -y mingw
+    - choco upgrade --no-progress -y msys2
+    - cmd //C RefreshEnv.cmd
+    - export PATH=/C/tools/$MSYS2_DIR/$MSYSTEM/bin:/C/tools/$MSYS2_DIR/usr/bin:$PATH
     script:
-    - pacman-key --init
-    - pacman-key --populate msys2
     - pacman -Sy --needed --noconfirm pacman
     - pacman -Syu --noconfirm
     - pacman -Syu --noconfirm
