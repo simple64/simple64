@@ -1,5 +1,4 @@
 language: generic
-dist: bionic
 addons:
   artifacts:
     paths:
@@ -7,10 +6,31 @@ addons:
     - $(ls $TRAVIS_BUILD_DIR/*.dmg)
     target_paths:
     - /m64p
-
-before_install:
-  - sudo apt-get -qq update
-  - sudo apt-get -y dist-upgrade
-  - sudo apt-get -y install cmake libhidapi-dev lsb-release wget libminizip-dev libsdl2-dev libfreetype6-dev libgl1-mesa-dev libglu1-mesa-dev pkg-config zlib1g-dev binutils-dev libspeexdsp-dev libsamplerate0-dev qt5-default build-essential nasm git zip libsdl2-net-dev libqt5websockets5-dev
-script:
-  - bash ./build.sh
+jobs:
+  include:
+  - stage: build-linux
+    dist: bionic
+    before_install:
+    - sudo apt-get -qq update
+    - sudo apt-get -y dist-upgrade
+    - sudo apt-get -y install cmake libhidapi-dev lsb-release wget libminizip-dev libsdl2-dev libfreetype6-dev libgl1-mesa-dev libglu1-mesa-dev pkg-config zlib1g-dev binutils-dev libspeexdsp-dev libsamplerate0-dev qt5-default build-essential nasm git zip libsdl2-net-dev libqt5websockets5-dev
+    script:
+    - bash ./build.sh
+  - stage: build-windows
+    env:
+    - MSYSTEM=MINGW64
+    - myarch=x86_64
+    os: windows
+    before_install:
+    - curl -kLo msys2.tar.xz https://github.com/msys2/msys2-installer/releases/download/nightly-x86_64/msys2-base-x86_64-latest.tar.xz
+    - 7z x -so msys2.tar.xz | 7z x -si -ttar
+    - move msys64 C:\
+    script:
+    - SET "PATH=C:\%MSYS2_DIR%\%MSYSTEM%\bin;C:\%MSYS2_DIR%\usr\bin;%PATH%"
+    - bash -c "pacman-key --init"
+    - bash -c "pacman-key --populate msys2"
+    - bash -c "pacman -Sy --needed --noconfirm pacman"
+    - bash -c "pacman -Syu --noconfirm"
+    - bash -c "pacman -Syu --noconfirm"
+    - bash -c "pacman -S --needed --noconfirm make mingw-w64-$myarch-cmake mingw-w64-$myarch-gcc mingw-w64-$myarch-hidapi mingw-w64-$myarch-freetype mingw-w64-$myarch-libpng mingw-w64-$myarch-libsamplerate mingw-w64-$myarch-SDL2 mingw-w64-$myarch-SDL2_net mingw-w64-$myarch-jasper mingw-w64-$myarch-qt5 mingw-w64-$myarch-python3-pip mingw-w64-$myarch-python3-pyopenssl zip"
+    - bash -c "export HOST_CPU=$myarch; ./build.sh"
