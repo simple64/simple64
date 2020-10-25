@@ -25,10 +25,8 @@ jobs:
     before_install:
     - curl -kLo msys2.tar.xz https://github.com/msys2/msys2-installer/releases/download/nightly-x86_64/msys2-base-x86_64-latest.tar.xz
     - 7z x -so msys2.tar.xz | 7z x -si -ttar
-    - powershell -Command Move-Item -Path msys64 -Destination C:\
-    - powershell -Command Remove-Item msys2.tar.xz
     script:
-    - SET "PATH=C:\%MSYS2_DIR%\%MSYSTEM%\bin;C:\%MSYS2_DIR%\usr\bin;%PATH%"
+    - SET "PATH=%TRAVIS_BUILD_DIR%\%MSYS2_DIR%\%MSYSTEM%\bin;%TRAVIS_BUILD_DIR%\%MSYS2_DIR%\usr\bin;%PATH%"
     - bash -c "pacman-key --init"
     - bash -c "pacman-key --populate msys2"
     - bash -c "pacman -Sy --needed --noconfirm pacman"
