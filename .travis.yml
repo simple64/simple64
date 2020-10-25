@@ -35,7 +35,6 @@ jobs:
     - $msys2 pacman -Syu --noconfirm
     - $msys2 pacman -S --needed --noconfirm make mingw-w64-$myarch-cmake mingw-w64-$myarch-gcc mingw-w64-$myarch-hidapi mingw-w64-$myarch-freetype mingw-w64-$myarch-libpng mingw-w64-$myarch-libsamplerate mingw-w64-$myarch-SDL2 mingw-w64-$myarch-SDL2_net mingw-w64-$myarch-jasper mingw-w64-$myarch-qt5 mingw-w64-$myarch-python3-pip mingw-w64-$myarch-python3-pyopenssl zip
     - export PATH=/C/tools/msys64/mingw64/bin:$PATH
-    - export MAKE=mingw32-make  # so that Autotools can find it
     script:
     - export HOST_CPU=$myarch; $mingw64 ./build.sh
     before_cache:
