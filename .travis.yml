@@ -23,14 +23,25 @@ jobs:
     - MSYS2_DIR=msys64
     os: windows
     before_install:
-    - rm -rf /C/tools/msys64
     - choco uninstall -y mingw
     - choco upgrade --no-progress -y msys2
-    - "cmd //C RefreshEnv.cmd"
-    - export PATH=/C/tools/$MSYS2_DIR/$MSYSTEM/bin:/C/tools/$MSYS2_DIR/usr/bin:$PATH
+    - export msys2='cmd //C RefreshEnv.cmd '
+    - export msys2+='& set MSYS=winsymlinks:nativestrict '
+    - export msys2+='& C:\\tools\\msys64\\msys2_shell.cmd -defterm -no-start'
+    - export mingw64="$msys2 -mingw64 -full-path -here -c "\"\$@"\" --"
+    - export msys2+=" -msys2 -c "\"\$@"\" --"
+    - $msys2 pacman --sync --noconfirm --needed mingw-w64-x86_64-toolchain
+    - taskkill //IM gpg-agent.exe //F  # https://travis-ci.community/t/4967
+    - export PATH=/C/tools/msys64/mingw64/bin:$PATH
+    - export MAKE=mingw32-make  # so that Autotools can find it
     script:
-    - pacman --sync --clean --noconfirm
-    - pacman -Syu --noconfirm
-    - pacman -Syu --noconfirm
-    - pacman -S --needed --noconfirm make mingw-w64-$myarch-cmake mingw-w64-$myarch-gcc mingw-w64-$myarch-hidapi mingw-w64-$myarch-freetype mingw-w64-$myarch-libpng mingw-w64-$myarch-libsamplerate mingw-w64-$myarch-SDL2 mingw-w64-$myarch-SDL2_net mingw-w64-$myarch-jasper mingw-w64-$myarch-qt5 mingw-w64-$myarch-python3-pip mingw-w64-$myarch-python3-pyopenssl zip
-    - export HOST_CPU=$myarch; ./build.sh
+    - $msys2 pacman -Syu --noconfirm
+    - $msys2 pacman -Syu --noconfirm
+    - $msys2 pacman -S --needed --noconfirm make mingw-w64-$myarch-cmake mingw-w64-$myarch-gcc mingw-w64-$myarch-hidapi mingw-w64-$myarch-freetype mingw-w64-$myarch-libpng mingw-w64-$myarch-libsamplerate mingw-w64-$myarch-SDL2 mingw-w64-$myarch-SDL2_net mingw-w64-$myarch-jasper mingw-w64-$myarch-qt5 mingw-w64-$myarch-python3-pip mingw-w64-$myarch-python3-pyopenssl zip
+    - export HOST_CPU=$myarch; $mingw64 ./build.sh
+    before_cache:
+    - $msys2 pacman --sync --clean --noconfirm
+    cache:
+      directories:
+      - $HOME/AppData/Local/Temp/chocolatey
+      - /C/tools/msys64
