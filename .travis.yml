@@ -23,10 +23,10 @@ jobs:
     - MSYS2_DIR=msys64
     os: windows
     before_install:
-    - [[ ! -f C:/tools/msys64/msys2_shell.cmd ]] && rm -rf C:/tools/msys64
+    - rm -rf /C/tools/msys64
     - choco uninstall -y mingw
     - choco upgrade --no-progress -y msys2
-    - cmd //C RefreshEnv.cmd
+    - "cmd //C RefreshEnv.cmd"
     - export PATH=/C/tools/$MSYS2_DIR/$MSYSTEM/bin:/C/tools/$MSYS2_DIR/usr/bin:$PATH
     script:
     - pacman -Sy --needed --noconfirm pacman
