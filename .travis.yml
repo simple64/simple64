@@ -26,11 +26,11 @@ jobs:
     - curl -kLo msys2.tar.xz https://github.com/msys2/msys2-installer/releases/download/nightly-x86_64/msys2-base-x86_64-latest.tar.xz
     - 7z x -so msys2.tar.xz | 7z x -si -ttar
     script:
-    - SET "PATH=%TRAVIS_BUILD_DIR%\%MSYS2_DIR%\%MSYSTEM%\bin;%TRAVIS_BUILD_DIR%\%MSYS2_DIR%\usr\bin;%PATH%"
-    - bash -c "pacman-key --init"
-    - bash -c "pacman-key --populate msys2"
-    - bash -c "pacman -Sy --needed --noconfirm pacman"
-    - bash -c "pacman -Syu --noconfirm"
-    - bash -c "pacman -Syu --noconfirm"
-    - bash -c "pacman -S --needed --noconfirm make mingw-w64-$myarch-cmake mingw-w64-$myarch-gcc mingw-w64-$myarch-hidapi mingw-w64-$myarch-freetype mingw-w64-$myarch-libpng mingw-w64-$myarch-libsamplerate mingw-w64-$myarch-SDL2 mingw-w64-$myarch-SDL2_net mingw-w64-$myarch-jasper mingw-w64-$myarch-qt5 mingw-w64-$myarch-python3-pip mingw-w64-$myarch-python3-pyopenssl zip"
-    - bash -c "export HOST_CPU=$myarch; ./build.sh"
+    - export PATH=$TRAVIS_BUILD_DIR/$MSYS2_DIR/$MSYSTEM/bin;$TRAVIS_BUILD_DIR/$MSYS2_DIR/usr/bin;$PATH
+    - pacman-key --init
+    - pacman-key --populate msys2
+    - pacman -Sy --needed --noconfirm pacman
+    - pacman -Syu --noconfirm
+    - pacman -Syu --noconfirm
+    - pacman -S --needed --noconfirm make mingw-w64-$myarch-cmake mingw-w64-$myarch-gcc mingw-w64-$myarch-hidapi mingw-w64-$myarch-freetype mingw-w64-$myarch-libpng mingw-w64-$myarch-libsamplerate mingw-w64-$myarch-SDL2 mingw-w64-$myarch-SDL2_net mingw-w64-$myarch-jasper mingw-w64-$myarch-qt5 mingw-w64-$myarch-python3-pip mingw-w64-$myarch-python3-pyopenssl zip
+    - export HOST_CPU=$myarch; ./build.sh
