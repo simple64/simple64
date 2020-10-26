@@ -14,6 +14,7 @@ extern "C" {
 #include <QWidgetAction>
 #include <QSlider>
 #include <QLabel>
+#include <QNetworkReply>
 
 namespace Ui {
 class MainWindow;
@@ -63,6 +64,10 @@ public slots:
     void showMessage(QString message);
 
 private slots:
+    void updateDownloadFinished(QNetworkReply *reply);
+
+    void updateReplyFinished(QNetworkReply *reply);
+
     void volumeValueChanged(int value);
 
     void on_actionOpen_ROM_triggered();
