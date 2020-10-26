@@ -18,6 +18,7 @@
 #include "interface/core_commands.h"
 #include "interface/version.h"
 #include "m64p_common.h"
+#include "version.h"
 
 #define RECENT_SIZE 10
 
@@ -428,11 +429,76 @@ MainWindow::MainWindow(QWidget *parent) :
     inputPlugin = nullptr;
     loadCoreLib();
     loadPlugins();
+
+#ifndef __APPLE__
+    QNetworkAccessManager *updateManager = new QNetworkAccessManager(this);
+    connect(updateManager, &QNetworkAccessManager::finished,
+        this, &MainWindow::updateReplyFinished);
+
+    updateManager->get(QNetworkRequest(QUrl("https://api.github.com/repos/loganmc10/m64p/releases/latest")));
+#endif
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::updateDownloadFinished(QNetworkReply *reply)
+{
+    if (!reply->error())
+    {
+        QTemporaryDir dir;
+        dir.setAutoRemove(false);
+        if (dir.isValid())
+        {
+            QString fullpath = dir.filePath(reply->url().fileName());
+            QFile file(fullpath);
+            file.open(QIODevice::WriteOnly);
+            file.write(reply->readAll());
+            file.setPermissions(QFileDevice::ReadOwner | QFileDevice::WriteOwner | QFileDevice::ExeOwner);
+            file.close();
+            QProcess process;
+            QString command = fullpath + " ";
+            command += QCoreApplication::applicationDirPath();
+            process.startDetached(command);
+            reply->deleteLater();
+            QCoreApplication::quit();
+        }
+    }
+    reply->deleteLater();
+}
+
+void MainWindow::updateReplyFinished(QNetworkReply *reply)
+{
+    if (!reply->error())
+    {
+        QJsonDocument json_doc = QJsonDocument::fromJson(reply->readAll());
+        QJsonObject json = json_doc.object();
+        if (json.value("target_commitish").toString() != QString(GUI_VERSION))
+        {
+            QMessageBox::StandardButton reply;
+            reply = QMessageBox::question(this, "Update Available", "A newer version is available, update?", QMessageBox::Yes|QMessageBox::No);
+            if (reply == QMessageBox::Yes)
+            {
+                QNetworkAccessManager *updateManager = new QNetworkAccessManager(this);
+                connect(updateManager, &QNetworkAccessManager::finished,
+                    this, &MainWindow::updateDownloadFinished);
+#ifdef _WIN32
+                QNetworkRequest req(QUrl("https://github.com/m64p/m64p-updater/releases/download/asset_download/m64p-updater.exe"));
+#else
+                QNetworkRequest req(QUrl("https://github.com/m64p/m64p-updater/releases/download/asset_download/m64p-updater"));
+#endif
+                req.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
+                updateManager->get(req);
+                QMessageBox *message = new QMessageBox(this);
+                message->setStandardButtons(0);
+                message->setText("Downloading updater");
+                message->show();
+            }
+        }
+    }
+    reply->deleteLater();
 }
 
 void MainWindow::volumeValueChanged(int value)
