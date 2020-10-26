@@ -36,6 +36,10 @@ SOURCES += main.cpp \
     netplay/joinroom.cpp \
     netplay/waitroom.cpp
 
+macx {
+DEFINES += SINGLE_THREAD
+}
+
 win32 {
 SOURCES += osal/osal_dynamiclib_win32.c \
     osal/osal_files_win32.c

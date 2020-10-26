@@ -34,7 +34,9 @@ m64p_error qtVidExtFuncQuit(void)
     init = 0;
     w->getWorkerThread()->toggleFS(M64VIDEO_WINDOWED);
     w->getOGLWindow()->doneCurrent();
+#ifndef SINGLE_THREAD
     w->getOGLWindow()->context()->moveToThread(QApplication::instance()->thread());
+#endif
     w->getWorkerThread()->deleteOGLWindow();
     return M64ERR_SUCCESS;
 }
@@ -58,8 +60,12 @@ m64p_error qtVidExtFuncSetMode(int Width, int Height, int, int ScreenMode, int)
 {
     if (!init) {
         w->getWorkerThread()->createOGLWindow(&format);
+#ifdef SINGLE_THREAD
+        QCoreApplication::processEvents();
+#else
         while (!w->getOGLWindow()->isValid()) {}
         while (w->getOGLWindow()->context()->thread() != w->getRenderingThread()) {}
+#endif
         w->getWorkerThread()->resizeMainWindow(Width, Height);
         w->getOGLWindow()->makeCurrent();
         init = 1;
@@ -224,6 +230,10 @@ m64p_error qtVidExtFuncGLSwapBuf(void)
         w->getOGLWindow()->context()->swapBuffers(w->getOGLWindow());
         w->getOGLWindow()->context()->makeCurrent(w->getOGLWindow());
     }
+
+#ifdef SINGLE_THREAD
+    QCoreApplication::processEvents();
+#endif
     return M64ERR_SUCCESS;
 }
 
@@ -243,7 +253,13 @@ m64p_error qtVidExtFuncResizeWindow(int width, int height)
     int response = M64VIDEO_NONE;
     (*CoreDoCommand)(M64CMD_CORE_STATE_QUERY, M64CORE_VIDEO_MODE, &response);
     if (response == M64VIDEO_WINDOWED)
-        w->getWorkerThread()->resizeMainWindow(width, height);
+    {
+        int size = (width << 16) + height;
+        int current_size = 0;
+        (*CoreDoCommand)(M64CMD_CORE_STATE_QUERY, M64CORE_VIDEO_SIZE, &current_size);
+        if (current_size != size)
+            w->getWorkerThread()->resizeMainWindow(width, height);
+    }
     return M64ERR_SUCCESS;
 }
 
