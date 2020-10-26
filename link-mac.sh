@@ -38,6 +38,8 @@ otool -L $contents/Frameworks/libhidapi.0.dylib
 # freetype
 cp /usr/local/opt/freetype/lib/libfreetype.6.dylib $contents/Frameworks
 
+install_name_tool -change /usr/local/opt/libpng/lib/libpng16.16.dylib @executable_path/../Frameworks/libpng16.16.dylib $contents/Frameworks/libfreetype.6.dylib
+
 otool -L $contents/Frameworks/libfreetype.6.dylib
 
 # mupen64plus-gui
@@ -88,4 +90,4 @@ otool -L $contents/MacOS/mupen64plus-video-GLideN64.dylib
 ln -s /Applications mupen64plus/Applications
 
 # 2. Create DMG
-hdiutil create -volname m64p -srcfolder mupen64plus -ov -format UDZO m64p.dmg
+# hdiutil create -volname m64p -srcfolder mupen64plus -ov -format UDZO m64p.dmg
