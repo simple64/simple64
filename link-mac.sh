@@ -81,3 +81,11 @@ install_name_tool -change /usr/local/opt/qt/lib/QtCore.framework/Versions/5/QtCo
 install_name_tool -change /usr/local/opt/freetype/lib/libfreetype.6.dylib @executable_path/../Frameworks/libfreetype.6.dylib $contents/MacOS/mupen64plus-video-GLideN64.dylib
 
 otool -L $contents/MacOS/mupen64plus-video-GLideN64.dylib
+
+# Time to create the DMG
+
+# 1. Create symlink to Applications folder
+ln -s /Applications mupen64plus/Applications
+
+# 2. Create DMG
+hdiutil create -volname m64p -srcfolder mupen64plus -ov -format UDZO m64p.dmg

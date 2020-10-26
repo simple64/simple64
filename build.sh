@@ -12,6 +12,7 @@ if [[ $UNAME == *"MINGW"* ]]; then
   fi
 elif [[ $UNAME == *"Darwin"* ]]; then
   suffix=".dylib"
+  qt_version=$(ls /usr/local/Cellar/qt)
   export CXXFLAGS='-stdlib=libc++'
   export LDFLAGS='-mmacosx-version-min=10.7'
 else
@@ -69,7 +70,7 @@ make -j4
 if [[ $UNAME == *"MINGW"* ]]; then
   cp $base_dir/mupen64plus-gui/build/release/mupen64plus-gui.exe $install_dir
 elif [[ $UNAME == *"Darwin"* ]]; then
-  /usr/local/Cellar/qt/5.13.2/bin/macdeployqt $base_dir/mupen64plus-gui/build/mupen64plus-gui.app
+  /usr/local/Cellar/qt/$qt_version/bin/macdeployqt $base_dir/mupen64plus-gui/build/mupen64plus-gui.app
   cp -a $base_dir/mupen64plus-gui/build/mupen64plus-gui.app $install_dir
 else
   cp $base_dir/mupen64plus-gui/build/mupen64plus-gui $install_dir
