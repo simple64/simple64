@@ -90,4 +90,4 @@ otool -L $contents/MacOS/mupen64plus-video-GLideN64.dylib
 ln -s /Applications mupen64plus/Applications
 
 # 2. Create DMG
-hdiutil create -volname m64p -srcfolder mupen64plus -ov -format UDZO m64p.dmg
+hdiutil create -volname m64p -srcfolder mupen64plus -ov -format UDZO mupen64plus/m64p.dmg
