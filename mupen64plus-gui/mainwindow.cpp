@@ -485,9 +485,9 @@ void MainWindow::updateReplyFinished(QNetworkReply *reply)
                 connect(updateManager, &QNetworkAccessManager::finished,
                     this, &MainWindow::updateDownloadFinished);
 #ifdef _WIN32
-                QNetworkRequest req(QUrl("https://github.com/m64p/m64p-updater/releases/download/asset_download/m64p-updater.exe"));
+                QNetworkRequest req(QUrl("https://github.com/m64p/m64p-updater/releases/latest/download/m64p-updater.exe"));
 #else
-                QNetworkRequest req(QUrl("https://github.com/m64p/m64p-updater/releases/download/asset_download/m64p-updater"));
+                QNetworkRequest req(QUrl("https://github.com/m64p/m64p-updater/releases/latest/download/m64p-updater"));
 #endif
                 req.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
                 updateManager->get(req);
