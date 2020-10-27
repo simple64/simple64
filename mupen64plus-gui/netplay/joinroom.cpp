@@ -261,12 +261,24 @@ void JoinRoom::processBinaryMessage(QByteArray message)
         else if (json.value("accept").toInt() == 2)
         {
             (*CoreDoCommand)(M64CMD_ROM_CLOSE, 0, NULL);
-            msgBox.setText("client versions do not match");
+            msgBox.setText("Client versions do not match");
+            msgBox.exec();
+        }
+        else if (json.value("accept").toInt() == 3)
+        {
+            (*CoreDoCommand)(M64CMD_ROM_CLOSE, 0, NULL);
+            msgBox.setText("Room is full");
+            msgBox.exec();
+        }
+        else if (json.value("accept").toInt() == 4)
+        {
+            (*CoreDoCommand)(M64CMD_ROM_CLOSE, 0, NULL);
+            msgBox.setText("Player name is already taken");
             msgBox.exec();
         }
         else
         {
-           (*CoreDoCommand)(M64CMD_ROM_CLOSE, 0, NULL);
+            (*CoreDoCommand)(M64CMD_ROM_CLOSE, 0, NULL);
             msgBox.setText("Could not join room");
             msgBox.exec();
         }
