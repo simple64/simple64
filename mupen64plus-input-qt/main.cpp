@@ -503,8 +503,7 @@ EXPORT void CALL InitiateControllers(CONTROL_INFO ControlInfo)
     QString gamepad;
     int controller_index;
     QString gamepad_name;
-    int auto_index = 0;
-    int used_index[4] = {-1, -1, -1, -1};
+    QList<int> used_controllers;
     for (i = 0; i < 4; i++) {
         controller[i].control = ControlInfo.Controls + i;
         controller[i].control->RawData = 0;
@@ -518,23 +517,30 @@ EXPORT void CALL InitiateControllers(CONTROL_INFO ControlInfo)
         else if (gamepad == "None")
             controller[i].control->Present = 0;
         else if (gamepad == "Auto") {
-            for (j = 0; j < 4; ++j) {
-                if (auto_index == used_index[j]) {
-                    ++auto_index;
-                    j = -1;
+            for (j = 0; j < SDL_NumJoysticks(); ++j)
+            {
+                if (used_controllers.contains(j))
+                    continue;
+
+                if (SDL_IsGameController(j)) {
+                    controller[i].gamepad = SDL_GameControllerOpen(j);
+                    if (controller[i].gamepad)
+                    {
+                        controller[i].control->Present = 1;
+                        used_controllers.append(j);
+                        break;
+                    }
+                }
+                else {
+                    controller[i].joystick = SDL_JoystickOpen(j);
+                    if (controller[i].joystick)
+                    {
+                        controller[i].control->Present = 1;
+                        used_controllers.append(j);
+                        break;
+                    }
                 }
             }
-            if (SDL_IsGameController(auto_index)) {
-                controller[i].gamepad = SDL_GameControllerOpen(auto_index);
-                if (controller[i].gamepad)
-                    controller[i].control->Present = 1;
-            }
-            else {
-                controller[i].joystick = SDL_JoystickOpen(auto_index);
-                if (controller[i].joystick)
-                    controller[i].control->Present = 1;
-            }
-            ++auto_index;
             if (i == 0) controller[i].control->Present = 1; //Player 1
         }
         else /*specific gamepad selected*/ {
@@ -542,15 +548,19 @@ EXPORT void CALL InitiateControllers(CONTROL_INFO ControlInfo)
             gamepad_name = gamepad.split(":")[1];
             if (SDL_IsGameController(controller_index) && gamepad_name == QString(SDL_JoystickNameForIndex(controller_index))) {
                 controller[i].gamepad = SDL_GameControllerOpen(controller_index);
-                used_index[i] = controller_index;
                 if (controller[i].gamepad)
+                {
                     controller[i].control->Present = 1;
+                    used_controllers.append(controller_index);
+                }
             }
             else if (gamepad_name == QString(SDL_JoystickNameForIndex(controller_index))) {
                 controller[i].joystick = SDL_JoystickOpen(controller_index);
-                used_index[i] = controller_index;
                 if (controller[i].joystick)
+                {
                     controller[i].control->Present = 1;
+                    used_controllers.append(controller_index);
+                }
             }
             if (controller[i].control->Present == 0) {
                 gameControllerSettings->setValue("Controller" + QString::number(i + 1) + "/Gamepad", "Auto");
