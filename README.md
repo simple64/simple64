@@ -28,6 +28,7 @@ brew install freetype cmake libsamplerate hidapi unixodbc libpng pkg-config sdl2
 # Note that you should swap out the 5.15.1 with the version of Qt that was installed above
 ln -s /usr/local/Cellar/qt/5.15.1/plugins /usr/local/plugins
 ln -s /usr/local/Cellar/qt/5.15.1/mkspecs /usr/local/mkspecs
+ln -s /usr/local/Cellar/qt/5.15.1/qmake /usr/local/bin/qmake
 ```
 ___
 Building:

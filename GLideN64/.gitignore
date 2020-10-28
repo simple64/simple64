@@ -19,5 +19,6 @@ src/Revision.h
 /projects/cmake/Makefile
 /projects/cmake/cmake_install.cmake
 /projects/cmake/osal/
+/projects/cmake/mupen64plus-video-GLideN64_autogen/
 .vs
 /translations/wtl

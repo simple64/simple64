@@ -3,7 +3,6 @@
 set -e
 
 UNAME=$(uname -s)
-gui_dir_suffix=""
 if [[ $UNAME == *"MINGW"* ]]; then
   suffix=".dll"
   if [[ $UNAME == *"MINGW64"* ]]; then
@@ -13,7 +12,7 @@ if [[ $UNAME == *"MINGW"* ]]; then
   fi
 elif [[ $UNAME == *"Darwin"* ]]; then
   suffix=".dylib"
-  gui_dir_suffix=".app/Contents/MacOs/mupen64plus-gui"
+  qt_version=$(ls /usr/local/Cellar/qt)
   export CXXFLAGS='-stdlib=libc++'
   export LDFLAGS='-mmacosx-version-min=10.7'
 else
@@ -70,8 +69,11 @@ qmake ../mupen64plus-gui.pro
 make -j4
 if [[ $UNAME == *"MINGW"* ]]; then
   cp $base_dir/mupen64plus-gui/build/release/mupen64plus-gui.exe $install_dir
+elif [[ $UNAME == *"Darwin"* ]]; then
+  /usr/local/Cellar/qt/$qt_version/bin/macdeployqt $base_dir/mupen64plus-gui/build/mupen64plus-gui.app
+  cp -a $base_dir/mupen64plus-gui/build/mupen64plus-gui.app $install_dir
 else
-  cp $base_dir/mupen64plus-gui/build/mupen64plus-gui$gui_dir_suffix $install_dir
+  cp $base_dir/mupen64plus-gui/build/mupen64plus-gui $install_dir
 fi
 
 cd $base_dir/GLideN64/src
@@ -133,6 +135,9 @@ if [[ $UNAME == *"MINGW"* ]]; then
   cp /$mingw_prefix/bin/libssl-1_1-x64.dll $install_dir
   cp /$mingw_prefix/bin/libcrypto-1_1-x64.dll $install_dir
   cp $base_dir/7za.exe $install_dir
+elif [[ $UNAME == *"Darwin"* ]]; then
+  cd $base_dir
+  sh ./link-mac.sh
 else
   if [[ $HOST_CPU == "i686" ]]; then
     my_os=linux32
