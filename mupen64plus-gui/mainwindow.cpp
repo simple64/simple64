@@ -9,7 +9,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "common.h"
-#include "cheatdialog.h"
 #include "vidext.h"
 #include "netplay/createroom.h"
 #include "netplay/joinroom.h"
@@ -399,7 +398,6 @@ MainWindow::MainWindow(QWidget *parent) :
             }
         });
     }
-    my_slots[0]->setChecked(true);
 
     updateOpenRecent();
     updateGB(ui);
@@ -430,6 +428,19 @@ MainWindow::MainWindow(QWidget *parent) :
     loadCoreLib();
     loadPlugins();
 
+    if (coreLib)
+    {
+        m64p_handle coreConfigHandle;
+        m64p_error res = (*ConfigOpenSection)("Core", &coreConfigHandle);
+        if (res == M64ERR_SUCCESS)
+        {
+            int current_slot = (*ConfigGetParamInt)(coreConfigHandle, "CurrentStateSlot");
+            my_slots[current_slot]->setChecked(true);
+        }
+    }
+
+    setupDiscord();
+
 #ifndef __APPLE__
     QNetworkAccessManager *updateManager = new QNetworkAccessManager(this);
     connect(updateManager, &QNetworkAccessManager::finished,
@@ -442,6 +453,55 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::setupDiscord()
+{
+    QLibrary *discordLib = new QLibrary((QDir(QCoreApplication::applicationDirPath()).filePath("discord_game_sdk")), this);
+
+    memset(&discord_app, 0, sizeof(discord_app));
+    memset(&core_events, 0, sizeof(core_events));
+    memset(&activities_events, 0, sizeof(activities_events));
+
+    DiscordCreateParams params;
+    params.client_id = 770838334015930398;
+    params.flags = DiscordCreateFlags_Default;
+    params.events = &core_events;
+    params.activity_events = &activities_events;
+    params.event_data = &discord_app;
+
+    typedef EDiscordResult (*CreatePrototype)(DiscordVersion version, struct DiscordCreateParams* params, struct IDiscordCore** result);
+    CreatePrototype createFunction = (CreatePrototype) discordLib->resolve("DiscordCreate");
+    if (createFunction)
+        createFunction(DISCORD_VERSION, &params, &discord_app.core);
+
+    if (discord_app.core)
+    {
+        discord_app.activities = discord_app.core->get_activity_manager(discord_app.core);
+
+        QTimer *timer = new QTimer(this);
+        connect(timer, &QTimer::timeout, this, &MainWindow::discordCallback);
+        timer->start(1000);
+    }
+}
+
+void MainWindow::updateDiscordActivity(struct DiscordActivity activity)
+{
+    if (discord_app.activities)
+        discord_app.activities->update_activity(discord_app.activities, &activity, &discord_app, nullptr);
+}
+
+void MainWindow::clearDiscordActivity()
+{
+    if (discord_app.activities)
+        discord_app.activities->clear_activity(discord_app.activities, &discord_app, nullptr);
+}
+
+
+void MainWindow::discordCallback()
+{
+    if (discord_app.core)
+        discord_app.core->run_callbacks(discord_app.core);
 }
 
 void MainWindow::updateDownloadFinished(QNetworkReply *reply)
@@ -603,6 +663,14 @@ void MainWindow::closeEvent (QCloseEvent *event)
 
     closePlugins();
     closeCoreLib();
+
+    if (discord_app.activities)
+        discord_app.activities->clear_activity(discord_app.activities, &discord_app, nullptr);
+    if (discord_app.core)
+    {
+        discord_app.core->run_callbacks(discord_app.core);
+        discord_app.core->destroy(discord_app.core);
+    }
 
     settings->setValue("geometry", saveGeometry());
     settings->setValue("windowState", saveState());
@@ -865,12 +933,6 @@ void MainWindow::on_actionLoad_State_From_triggered()
     }
 }
 
-void MainWindow::on_actionCheats_triggered()
-{
-    CheatDialog *cheats = new CheatDialog(this);
-    cheats->show();
-}
-
 void MainWindow::on_actionController_Configuration_triggered()
 {
     if (!coreLib) return;
@@ -973,6 +1035,7 @@ void MainWindow::closeCoreLib()
 {
     if (coreLib != nullptr)
     {
+        (*ConfigSaveFile)();
         (*CoreShutdown)();
         osal_dynlib_close(coreLib);
         coreLib = nullptr;
@@ -1013,9 +1076,6 @@ void MainWindow::loadCoreLib()
     ConfigOpenSection =           (ptr_ConfigOpenSection) osal_dynlib_getproc(coreLib, "ConfigOpenSection");
     ConfigListParameters =        (ptr_ConfigListParameters) osal_dynlib_getproc(coreLib, "ConfigListParameters");
     ConfigGetSharedDataFilepath = (ptr_ConfigGetSharedDataFilepath) osal_dynlib_getproc(coreLib, "ConfigGetSharedDataFilepath");
-
-    CoreAddCheat                = (ptr_CoreAddCheat) osal_dynlib_getproc(coreLib, "CoreAddCheat");
-    CoreCheatEnabled            = (ptr_CoreCheatEnabled) osal_dynlib_getproc(coreLib, "CoreCheatEnabled");
 
     QString qtConfigDir = settings->value("configDirPath").toString();
     qtConfigDir.replace("$APP_PATH$", QCoreApplication::applicationDirPath());
