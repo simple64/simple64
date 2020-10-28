@@ -15,6 +15,9 @@ mv mupen64plus/mupen64plus.ini $contents/MacOS
 mv mupen64plus/mupencheat.txt $contents/MacOS
 
 # SDL
+cp /usr/local/opt/sdl2_net/lib/libSDL2-2.0.0.dylib $contents/Frameworks
+otool -L $contents/Frameworks/libSDL2_net-2.0.0.dylib
+
 cp /usr/local/opt/sdl2_net/lib/libSDL2_net-2.0.0.dylib $contents/Frameworks
 install_name_tool -change /usr/local/opt/sdl2/lib/libSDL2-2.0.0.dylib @executable_path/../Frameworks/libSDL2-2.0.0.dylib $contents/Frameworks/libSDL2_net-2.0.0.dylib
 
@@ -28,7 +31,7 @@ otool -L $contents/Frameworks/libpng16.16.dylib
 # libsamplerate
 cp /usr/local/opt/libsamplerate/lib/libsamplerate.0.dylib $contents/Frameworks
 
-otool -L $contents/Frameworks/libpng16.16.dylib
+otool -L $contents/Frameworks/libsamplerate.0.dylib
 
 # hidapi
 cp /usr/local/opt/hidapi/lib/libhidapi.0.dylib $contents/Frameworks
