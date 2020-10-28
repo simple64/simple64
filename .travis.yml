@@ -1,5 +1,11 @@
+env:
+  - CAN_FAIL=true
+
 language: shell
 jobs:
+  allow_failures: 
+    env:
+      - CAN_FAIL=true
   include:
   - stage: build-mac
     os:
