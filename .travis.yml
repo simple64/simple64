@@ -15,7 +15,8 @@ jobs:
     before_install:
       - brew update
       - brew upgrade
-      - brew install libsamplerate hidapi sdl2_net sdl2
+      - brew update qt libpg
+      - brew install freetype cmake libsamplerate hidapi unixodbc libpng pkg-config sdl2_net sdl2
     script:
       - export qt_version=$(ls /usr/local/Cellar/qt)
       - sudo ln -s /usr/local/Cellar/qt/$qt_version/plugins /usr/local/plugins
