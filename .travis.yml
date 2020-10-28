@@ -1,6 +1,24 @@
 language: shell
 jobs:
   include:
+  - stage: build-mac
+    os:
+      - osx
+    compiler:
+      - gcc
+    before_install: |
+      brew update
+      brew install freetype cmake libsamplerate hidapi unixodbc libpng pkg-config sdl2_net sdl2 qt libpq
+    script: |
+      qt_version=$(ls /usr/local/Cellar/qt)
+      # Work around brew + QT bug - https://github.com/Homebrew/legacy-homebrew/issues/29938
+      sudo ln -s /usr/local/Cellar/qt/$qt_version/plugins /usr/local/plugins
+      sudo ln -s /usr/local/Cellar/qt/$qt_version/mkspecs /usr/local/mkspecs
+      sudo ln -s /usr/local/Cellar/qt/$qt_version/bin/qmake /usr/local/bin/qmake
+      export PATH=$PATH:/usr/local/Cellar/qt/$qt_version/bin
+      sudo sh ./build.sh
+    after_success:
+    - aws s3 cp mupen64plus/m64p.dmg s3://m64p/m64p/ --quiet --acl public-read
   - stage: build-linux
     dist: bionic
     before_install:
