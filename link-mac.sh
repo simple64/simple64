@@ -13,6 +13,7 @@ mv mupen64plus/mupen64plus-rsp-hle.dylib $contents/MacOS
 mv mupen64plus/mupen64plus-video-GLideN64.dylib $contents/MacOS
 mv mupen64plus/mupen64plus.ini $contents/MacOS
 mv mupen64plus/mupencheat.txt $contents/MacOS
+mv mupen64plus/discord_game_sdk.dylib $contents/MacOS
 
 # SDL
 cp /usr/local/opt/sdl2_net/lib/libSDL2-2.0.0.dylib $contents/Frameworks
