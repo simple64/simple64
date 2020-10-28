@@ -38,6 +38,8 @@ void WorkerThread::run()
     connect(this, SIGNAL(createOGLWindow(QSurfaceFormat*)), w, SLOT(createOGLWindow(QSurfaceFormat*)), CONNECTION_TYPE);
     connect(this, SIGNAL(deleteOGLWindow()), w, SLOT(deleteOGLWindow()), CONNECTION_TYPE);
     connect(this, SIGNAL(showMessage(QString)), w, SLOT(showMessage(QString)), CONNECTION_TYPE);
+    connect(this, SIGNAL(updateDiscordActivity(struct DiscordActivity)), w, SLOT(updateDiscordActivity(struct DiscordActivity)), CONNECTION_TYPE);
+    connect(this, SIGNAL(clearDiscordActivity()), w, SLOT(clearDiscordActivity()), CONNECTION_TYPE);
 #ifdef _WIN32
     SetThreadExecutionState(ES_CONTINUOUS | ES_DISPLAY_REQUIRED);
 #else
@@ -52,7 +54,28 @@ void WorkerThread::run()
 
     m64p_error res = loadROM(m_fileName.toStdString());
     if (res == M64ERR_SUCCESS)
+    {
+        m64p_rom_settings rom_settings;
+        (*CoreDoCommand)(M64CMD_ROM_GET_SETTINGS, sizeof(rom_settings), &rom_settings);
+        struct DiscordActivity activity;
+        struct DiscordActivityAssets assets;
+        struct DiscordActivityTimestamps timestamps;
+        memset(&activity, 0, sizeof(activity));
+        memset(&assets, 0, sizeof(assets));
+        memset(&timestamps, 0, sizeof(timestamps));
+        QDateTime current = QDateTime::currentDateTimeUtc();
+        timestamps.start = current.currentSecsSinceEpoch();
+        strcpy(assets.large_image, "6205049");
+        strcpy(assets.large_text, "https://m64p.github.io");
+        activity.assets = assets;
+        activity.timestamps = timestamps;
+        strncpy(activity.details, rom_settings.goodname, 128);
+        emit updateDiscordActivity(activity);
+
         res = launchGame(netplay_ip, netplay_port, netplay_player);
+
+        emit clearDiscordActivity();
+    }
 
 #ifdef _WIN32
     SetThreadExecutionState(ES_CONTINUOUS);

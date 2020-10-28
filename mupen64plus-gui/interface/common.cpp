@@ -32,7 +32,6 @@
 #include <SDL_keycode.h>
 #include <QProcess>
 #include "version.h"
-#include "cheat.h"
 #include "mainwindow.h"
 #include "logviewer.h"
 #include "core_commands.h"
@@ -258,17 +257,6 @@ m64p_error launchGame(QString netplay_ip, int netplay_port, int netplay_player)
         return M64ERR_INVALID_STATE;
     }
 
-    /* generate section name from ROM's CRC and country code */
-    char RomSection[24];
-    sprintf(RomSection, "%08X-%08X-C:%X", sl(l_RomHeader.CRC1), sl(l_RomHeader.CRC2), l_RomHeader.Country_code & 0xff);
-
-    /* parse through the cheat INI file and load up any cheat codes found for this ROM */
-    ReadCheats(RomSection);
-    if (!l_RomFound || l_CheatCodesFound == 0)
-    {
-        DebugMessage(M64MSG_WARNING, "no cheat codes found for ROM image '%.20s'", l_RomHeader.Name);
-    }
-
     if ((*CoreDoCommand)(M64CMD_SET_MEDIA_LOADER, sizeof(media_loader), &media_loader) != M64ERR_SUCCESS)
     {
         DebugMessage(M64MSG_WARNING, "Couldn't set media loader, transferpak and GB carts will not work.");
@@ -318,8 +306,6 @@ m64p_error launchGame(QString netplay_ip, int netplay_port, int netplay_player)
 
     /* close the ROM image */
     (*CoreDoCommand)(M64CMD_ROM_CLOSE, 0, NULL);
-
-    CheatFreeAll();
 
     return M64ERR_SUCCESS;
 }
