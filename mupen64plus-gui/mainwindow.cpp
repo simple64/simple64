@@ -465,7 +465,7 @@ void MainWindow::setupDiscord()
 
     DiscordCreateParams params;
     params.client_id = 770838334015930398;
-    params.flags = DiscordCreateFlags_Default;
+    params.flags = DiscordCreateFlags_NoRequireDiscord;
     params.events = &core_events;
     params.activity_events = &activities_events;
     params.event_data = &discord_app;
