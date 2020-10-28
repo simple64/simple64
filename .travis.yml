@@ -14,7 +14,8 @@ jobs:
       - gcc
     before_install: |
       brew update
-      brew install freetype cmake libsamplerate hidapi unixodbc libpng pkg-config sdl2_net sdl2 qt libpq
+      brew upgrade
+      brew install libsamplerate hidapi sdl2_net sdl2
     script: |
       qt_version=$(ls /usr/local/Cellar/qt)
       # Work around brew + QT bug - https://github.com/Homebrew/legacy-homebrew/issues/29938
