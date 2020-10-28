@@ -6,6 +6,7 @@
 #include <QString>
 #include <QSurfaceFormat>
 #include "common.h"
+#include "discord/discord_game_sdk.h"
 
 class WorkerThread
 #ifndef SINGLE_THREAD
@@ -30,6 +31,8 @@ signals:
     void createOGLWindow(QSurfaceFormat* format);
     void deleteOGLWindow();
     void showMessage(QString message);
+    void updateDiscordActivity(struct DiscordActivity activity);
+    void clearDiscordActivity();
 
 private:
     QString m_fileName;

@@ -63,8 +63,6 @@
     <addaction name="actionSoft_Reset"/>
     <addaction name="actionToggle_Speed_Limiter"/>
     <addaction name="separator"/>
-    <addaction name="actionCheats"/>
-    <addaction name="separator"/>
     <addaction name="actionView_Log"/>
    </widget>
    <widget class="QMenu" name="menuNetplay">
@@ -165,11 +163,6 @@
   <action name="actionToggle_Fullscreen">
    <property name="text">
     <string>Toggle Fullscreen (Alt + Return)</string>
-   </property>
-  </action>
-  <action name="actionCheats">
-   <property name="text">
-    <string>Cheats</string>
    </property>
   </action>
   <action name="actionController_Configuration">

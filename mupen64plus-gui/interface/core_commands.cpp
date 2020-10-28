@@ -19,6 +19,3 @@ ptr_ConfigDeleteSection          ConfigDeleteSection = nullptr;
 ptr_ConfigOpenSection            ConfigOpenSection = nullptr;
 ptr_ConfigListParameters         ConfigListParameters = nullptr;
 ptr_ConfigGetSharedDataFilepath  ConfigGetSharedDataFilepath = nullptr;
-
-ptr_CoreAddCheat                 CoreAddCheat = nullptr;
-ptr_CoreCheatEnabled             CoreCheatEnabled = nullptr;
