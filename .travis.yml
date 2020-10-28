@@ -10,6 +10,7 @@ jobs:
   - stage: build-mac
     os:
       - osx
+    osx_image: xcode10.2
     compiler:
       - gcc
     before_install:
