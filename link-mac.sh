@@ -94,3 +94,4 @@ ln -s /Applications mupen64plus/Applications
 
 # 2. Create DMG
 hdiutil create -volname m64p -srcfolder mupen64plus -ov -format UDZO mupen64plus/m64p.dmg
+
