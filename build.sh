@@ -135,7 +135,9 @@ if [[ $UNAME == *"MINGW"* ]]; then
   cp /$mingw_prefix/bin/libssl-1_1-x64.dll $install_dir
   cp /$mingw_prefix/bin/libcrypto-1_1-x64.dll $install_dir
   cp $base_dir/7za.exe $install_dir
+  cp $base_dir/mupen64plus-gui/discord/discord_game_sdk.dll $install_dir
 elif [[ $UNAME == *"Darwin"* ]]; then
+  cp $base_dir/mupen64plus-gui/discord/discord_game_sdk.dylib $install_dir
   cd $base_dir
   sh ./link-mac.sh
 else
@@ -144,6 +146,7 @@ else
   else
     my_os=linux64
   fi
+  cp $base_dir/mupen64plus-gui/discord/libdiscord_game_sdk.so $install_dir
 fi
 
 if [[ $UNAME != *"Darwin"* ]]; then
