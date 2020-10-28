@@ -12,18 +12,17 @@ jobs:
       - osx
     compiler:
       - gcc
-    before_install: |
-      brew update
-      brew upgrade
-      brew install libsamplerate hidapi sdl2_net sdl2
-    script: |
-      qt_version=$(ls /usr/local/Cellar/qt)
-      # Work around brew + QT bug - https://github.com/Homebrew/legacy-homebrew/issues/29938
-      sudo ln -s /usr/local/Cellar/qt/$qt_version/plugins /usr/local/plugins
-      sudo ln -s /usr/local/Cellar/qt/$qt_version/mkspecs /usr/local/mkspecs
-      sudo ln -s /usr/local/Cellar/qt/$qt_version/bin/qmake /usr/local/bin/qmake
-      export PATH=$PATH:/usr/local/Cellar/qt/$qt_version/bin
-      sudo sh ./build.sh
+    before_install:
+      - brew update
+      - brew upgrade
+      - brew install libsamplerate hidapi sdl2_net sdl2
+    script:
+      - export qt_version=$(ls /usr/local/Cellar/qt)
+      - sudo ln -s /usr/local/Cellar/qt/$qt_version/plugins /usr/local/plugins
+      - sudo ln -s /usr/local/Cellar/qt/$qt_version/mkspecs /usr/local/mkspecs
+      - sudo ln -s /usr/local/Cellar/qt/$qt_version/bin/qmake /usr/local/bin/qmake
+      - export PATH=$PATH:/usr/local/Cellar/qt/$qt_version/bin
+      - sudo sh ./build.sh
     after_success:
     - aws s3 cp mupen64plus/m64p.dmg s3://m64p/m64p/ --quiet --acl public-read
   - stage: build-linux
