@@ -460,14 +460,11 @@ void MainWindow::setupDiscord()
     QLibrary *discordLib = new QLibrary((QDir(QCoreApplication::applicationDirPath()).filePath("discord_game_sdk")), this);
 
     memset(&discord_app, 0, sizeof(discord_app));
-    memset(&core_events, 0, sizeof(core_events));
-    memset(&activities_events, 0, sizeof(activities_events));
 
     DiscordCreateParams params;
-    params.client_id = 770838334015930398;
+    DiscordCreateParamsSetDefault(&params);
+    params.client_id = 770838334015930398LL;
     params.flags = DiscordCreateFlags_NoRequireDiscord;
-    params.events = &core_events;
-    params.activity_events = &activities_events;
     params.event_data = &discord_app;
 
     typedef EDiscordResult (*CreatePrototype)(DiscordVersion version, struct DiscordCreateParams* params, struct IDiscordCore** result);
@@ -478,11 +475,17 @@ void MainWindow::setupDiscord()
     if (discord_app.core)
     {
         discord_app.activities = discord_app.core->get_activity_manager(discord_app.core);
+        discord_app.lobbies = discord_app.core->get_lobby_manager(discord_app.core);
 
         QTimer *timer = new QTimer(this);
         connect(timer, &QTimer::timeout, this, &MainWindow::discordCallback);
         timer->start(1000);
     }
+}
+
+struct Discord_Application* MainWindow::getDiscordApp()
+{
+    return &discord_app;
 }
 
 void MainWindow::updateDiscordActivity(struct DiscordActivity activity)

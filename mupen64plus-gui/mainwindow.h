@@ -21,9 +21,10 @@ namespace Ui {
 class MainWindow;
 }
 
-struct Application {
+struct Discord_Application {
     struct IDiscordCore* core;
     struct IDiscordActivityManager* activities;
+    struct IDiscordLobbyManager* lobbies;
 };
 
 class MainWindow : public QMainWindow
@@ -56,6 +57,7 @@ public:
     QThread *getRenderingThread();
     void setRenderingThread(QThread* thread);
     m64p_dynlib_handle getCoreLib();
+    struct Discord_Application* getDiscordApp();
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
@@ -158,9 +160,7 @@ private:
     m64p_dynlib_handle gfxPlugin;
     m64p_dynlib_handle inputPlugin;
 
-    struct Application discord_app;
-    IDiscordCoreEvents core_events;
-    IDiscordActivityEvents activities_events;
+    struct Discord_Application discord_app;
 };
 
 extern MainWindow *w;
