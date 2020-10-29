@@ -49,7 +49,7 @@ void VI_UpdateSize()
 
 	VI.real_height = vEnd > vStart ? (((vEnd - vStart) >> 1) * vScale) >> 10 : 0;
 	VI.width = *REG.VI_WIDTH;
-	VI.interlaced = (*REG.VI_STATUS & 0x40) != 0;
+	VI.interlaced = (*REG.VI_STATUS & VI_STATUS_SERRATE_ENABLED) != 0;
 
 	if (VI.interlaced) {
 		f32 fullWidth = 640.0f;
@@ -164,13 +164,13 @@ void VI_UpdateScreen()
 						wnd.updateScale();
 						bVIUpdated = true;
 					}
-					const u32 size = *REG.VI_STATUS & 3;
+					const u32 size = *REG.VI_STATUS & VI_STATUS_TYPE_32;
 					if (VI.height > 0 && size > G_IM_SIZ_8b  && VI.width > 0)
 						frameBufferList().saveBuffer(*REG.VI_ORIGIN & 0xffffff, G_IM_FMT_RGBA, size, VI.width, true);
 				}
 			}
 //			if ((((*REG.VI_STATUS) & 3) > 0) && (gDP.colorImage.changed || bCFB)) { // Does not work in release build!!!
-			if (((*REG.VI_STATUS) & 3) > 0) {
+			if (((*REG.VI_STATUS) & VI_STATUS_TYPE_32) > 0) {
 				if (!bVIUpdated) {
 					VI_UpdateSize();
 					bVIUpdated = true;
