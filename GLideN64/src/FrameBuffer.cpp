@@ -1077,7 +1077,7 @@ bool FrameBufferList::RdpUpdate::update(RdpUpdateResult & _result)
 	const s32 delta_y = y2 - y1;
 	const u32 vitype = _SHIFTR( *REG.VI_STATUS, 0, 2 );
 
-	const bool serration_pulses = (*REG.VI_STATUS & 0x40) != 0;
+	const bool serration_pulses = (*REG.VI_STATUS & VI_STATUS_SERRATE_ENABLED) != 0;
 	const bool validinterlace = ((vitype & 2) != 0 ) && serration_pulses;
 	if (validinterlace && prevserrate && emucontrolsvicurrent < 0)
 		emucontrolsvicurrent = (*REG.VI_V_CURRENT_LINE & 1) != prevvicurrent ? 1 : 0;
@@ -1167,7 +1167,7 @@ bool FrameBufferList::RdpUpdate::update(RdpUpdateResult & _result)
 	_result.vi_lowerfield = lowerfield;
 	_result.vi_origin = _SHIFTR(*REG.VI_ORIGIN, 0, 24);
 	_result.vi_fsaa = (*REG.VI_STATUS & 512) == 0;
-	_result.vi_divot = (*REG.VI_STATUS & 16) != 0;
+	_result.vi_divot = (*REG.VI_STATUS & VI_STATUS_DIVOT_ENABLED) != 0;
 	return true;
 
 #if 0

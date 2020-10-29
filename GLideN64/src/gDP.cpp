@@ -896,7 +896,8 @@ void gDPFullSync()
 	frameBufferList().updateCurrentBufferEndAddress();
 
 	FrameBuffer * pCurrentBuffer = frameBufferList().getCurrent();
-	pCurrentBuffer->copyDepthTexture();
+	if (pCurrentBuffer != nullptr)
+		pCurrentBuffer->copyDepthTexture();
 	if ((config.frameBufferEmulation.copyToRDRAM != Config::ctDisable || (config.generalEmulation.hacks & hack_subscreen) != 0) &&
 		!FBInfo::fbInfo.isSupported() &&
 		pCurrentBuffer != nullptr &&

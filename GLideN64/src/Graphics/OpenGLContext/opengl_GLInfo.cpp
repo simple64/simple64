@@ -3,6 +3,8 @@
 #include "opengl_Utils.h"
 #include "opengl_GLInfo.h"
 #include <regex>
+#include <Graphics/Parameters.h>
+
 #ifdef EGL
 #include <EGL/egl.h>
 #endif
@@ -169,6 +171,10 @@ void GLInfo::init() {
 	        ( (isGLES2 && GraphicBufferWrapper::isSupportAvailable()) || (isGLESX && GraphicBufferWrapper::isPublicSupportAvailable()) ) &&
 		    (renderer != Renderer::PowerVR);
 #endif
+
+	if (renderer == Renderer::Intel) {
+		graphics::textureTarget::TEXTURE_EXTERNAL = GL_TEXTURE_2D;
+	}
 
 	eglImageFramebuffer = eglImage && !isGLES2;
 
