@@ -5,6 +5,7 @@
 #include "PostProcessor.h"
 #include "FrameBuffer.h"
 #include "Config.h"
+#include "VI.h"
 
 #include <Graphics/Context.h>
 #include <Graphics/Parameters.h>
@@ -156,7 +157,7 @@ FrameBuffer * PostProcessor::_doGammaCorrection(FrameBuffer * _pBuffer)
 	if (_pBuffer == nullptr)
 		return nullptr;
 
-	if (((*REG.VI_STATUS & 8) | config.gammaCorrection.force) == 0)
+	if (((*REG.VI_STATUS & VI_STATUS_GAMMA_ENABLED) | config.gammaCorrection.force) == 0)
 		return _pBuffer;
 
 	return _doPostProcessing(_pBuffer, m_gammaCorrectionProgram.get());
