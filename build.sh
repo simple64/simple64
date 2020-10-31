@@ -96,7 +96,11 @@ cp $base_dir/GLideN64/ini/GLideN64.custom.ini $install_dir
 
 mkdir -p $base_dir/parallel-rsp/build
 cd $base_dir/parallel-rsp/build
-cmake ..
+if [[ $UNAME == *"MINGW"* ]]; then
+  cmake -G "MSYS Makefiles" -DCMAKE_BUILD_TYPE=Release ..
+else
+  cmake -DCMAKE_BUILD_TYPE=Release ..
+fi
 cmake --build .
 cp mupen64plus-rsp-parallel.* $install_dir
 
