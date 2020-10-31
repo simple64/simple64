@@ -96,12 +96,14 @@ cp $base_dir/GLideN64/ini/GLideN64.custom.ini $install_dir
 
 mkdir -p $base_dir/parallel-rsp/build
 cd $base_dir/parallel-rsp/build
-cmake --build ..
+cmake ..
+cmake --build .
 cp mupen64plus-rsp-parallel.* $install_dir
 
 mkdir -p $base_dir/angrylion-rdp-plus/build
 cd $base_dir/angrylion-rdp-plus/build
-cmake --build ..
+cmake ..
+cmake --build .
 cp mupen64plus-video-angrylion-plus.* $install_dir
 
 if [[ $UNAME == *"MINGW"* ]]; then
