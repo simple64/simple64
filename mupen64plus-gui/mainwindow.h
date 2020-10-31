@@ -129,6 +129,7 @@ private slots:
     void on_actionOpen_Discord_Channel_triggered();
 
 private:
+    void setupLLE();
     void setupDiscord();
     void stopGame();
     void updateOpenRecent();
