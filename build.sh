@@ -106,10 +106,15 @@ cp mupen64plus-rsp-parallel.* $install_dir
 
 mkdir -p $base_dir/angrylion-rdp-plus/build
 cd $base_dir/angrylion-rdp-plus/build
-cmake ..
-cmake --build .
-cp mupen64plus-video-angrylion-plus.* $install_dir
-
+if [[ $UNAME == *"MINGW"* ]]; then
+  cmake -G "MSYS Makefiles" -DCMAKE_BUILD_TYPE=Release ..
+  cmake --build .
+  cp Release/mupen64plus-video-angrylion-plus.* $install_dir
+else
+  cmake -DCMAKE_BUILD_TYPE=Release ..
+  cmake --build .
+  cp mupen64plus-video-angrylion-plus.* $install_dir
+fi
 if [[ $UNAME == *"MINGW"* ]]; then
   cd $install_dir
   windeployqt.exe mupen64plus-gui.exe
