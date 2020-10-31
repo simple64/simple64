@@ -48,6 +48,9 @@
     <addaction name="actionPlugin_Settings"/>
     <addaction name="actionController_Configuration"/>
     <addaction name="actionVideo_Settings"/>
+    <addaction name="separator"/>
+    <addaction name="actionLLE_Graphics"/>
+    <addaction name="actionVI_Filter"/>
    </widget>
    <widget class="QMenu" name="menuEmulation">
     <property name="title">
@@ -203,6 +206,22 @@
   <action name="actionOpen_Discord_Channel">
    <property name="text">
     <string>Join Discord Channel</string>
+   </property>
+  </action>
+  <action name="actionLLE_Graphics">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>LLE Graphics</string>
+   </property>
+  </action>
+  <action name="actionVI_Filter">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>VI Filter</string>
    </property>
   </action>
  </widget>
