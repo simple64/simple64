@@ -100,8 +100,8 @@ cmake ..
 make -j4
 cp mupen64plus-rsp-parallel.* $install_dir
 
-mkdir -p $base_dir/angrylion-plus/build
-cd $base_dir/angrylion-plus/build
+mkdir -p $base_dir/angrylion-rdp-plus/build
+cd $base_dir/angrylion-rdp-plus/build
 cmake ..
 make -j4
 cp mupen64plus-video-angrylion-plus.* $install_dir
