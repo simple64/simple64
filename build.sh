@@ -106,7 +106,7 @@ cp mupen64plus-rsp-parallel.* $install_dir
 
 if [[ $UNAME == *"MINGW"* ]]; then
   cd $base_dir/angrylion-rdp-plus/msvc
-  MSBuild.exe plugin-mupen64plus.vcxproj /property:Configuration=Release
+  MSBuild.exe plugin-mupen64plus.vcxproj /p:Configuration=Release /p:Platform=x64
   cp Release/mupen64plus-video-angrylion-plus.dll $install_dir
 else
   mkdir -p $base_dir/angrylion-rdp-plus/build
