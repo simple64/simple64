@@ -37,6 +37,8 @@ jobs:
     after_success:
     - aws s3 cp m64p-*.zip s3://m64p/m64p/ --quiet
   - stage: build-windows
+    env:
+      - MSBUILD_PATH="c:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\MSBuild\15.0\Bin"
     os: windows
     before_install:
     - "[[ ! -f C:/tools/msys64/msys2_shell.cmd ]] && rm -rf C:/tools/msys64"
@@ -52,6 +54,7 @@ jobs:
     - $msys2 pacman -Syu --noconfirm
     - $msys2 pacman -S --needed --noconfirm make mingw-w64-x86_64-cmake mingw-w64-x86_64-gcc mingw-w64-x86_64-hidapi mingw-w64-x86_64-freetype mingw-w64-x86_64-libpng mingw-w64-x86_64-libsamplerate mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL2_net mingw-w64-x86_64-jasper mingw-w64-x86_64-qt5 mingw-w64-x86_64-python3-pip mingw-w64-x86_64-python3-pyopenssl zip
     - export PATH=/C/tools/msys64/mingw64/bin:$PATH
+    - export PATH=$MSBUILD_PATH:$PATH
     script:
     - export HOST_CPU=x86_64; $mingw64 ./build.sh
     after_success:
