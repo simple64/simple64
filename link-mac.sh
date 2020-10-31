@@ -11,6 +11,8 @@ mv mupen64plus/mupen64plus-input-qt.dylib $contents/MacOS
 mv mupen64plus/mupen64plus-input-raphnetraw.dylib $contents/MacOS
 mv mupen64plus/mupen64plus-rsp-hle.dylib $contents/MacOS
 mv mupen64plus/mupen64plus-video-GLideN64.dylib $contents/MacOS
+mv mupen64plus/mupen64plus-video-angrylion-plus.dylib $contents/MacOS
+mv mupen64plus/mupen64plus-rsp-parallel.dylib $conntents/MacOS
 mv mupen64plus/mupen64plus.ini $contents/MacOS
 mv mupen64plus/mupencheat.txt $contents/MacOS
 mv mupen64plus/discord_game_sdk.dylib $contents/MacOS
@@ -87,6 +89,14 @@ install_name_tool -change /usr/local/opt/qt/lib/QtCore.framework/Versions/5/QtCo
 install_name_tool -change /usr/local/opt/freetype/lib/libfreetype.6.dylib @executable_path/../Frameworks/libfreetype.6.dylib $contents/MacOS/mupen64plus-video-GLideN64.dylib
 
 otool -L $contents/MacOS/mupen64plus-video-GLideN64.dylib
+
+# mupen64plus-video-angrylion-plus.dylib
+
+otool -L $contents/MacOS/mupen64plus-video-angrylion-plus.dylib
+
+# mupen64plus-rsp-parallel.dylib
+
+otool -L $contents/MacOS/mupen64plus-rsp-parallel.dylib
 
 # Time to create the DMG
 
