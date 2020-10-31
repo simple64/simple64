@@ -115,6 +115,7 @@ else
   cmake --build .
   cp mupen64plus-video-angrylion-plus.* $install_dir
 fi
+
 if [[ $UNAME == *"MINGW"* ]]; then
   cd $install_dir
   windeployqt.exe mupen64plus-gui.exe
