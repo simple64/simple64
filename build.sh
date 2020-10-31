@@ -85,7 +85,7 @@ if [[ $UNAME == *"MINGW"* ]]; then
 else
   cmake -DMUPENPLUSAPI_GLIDENUI=On -DNOHQ=On -DVEC4_OPT=On -DCRC_OPT=On -DMUPENPLUSAPI=On ../../src/
 fi
-make -j4
+cmake --build .
 
 if [[ $UNAME == *"MINGW"* ]]; then
   cp mupen64plus-video-GLideN64$suffix $install_dir
@@ -104,17 +104,15 @@ fi
 cmake --build .
 cp mupen64plus-rsp-parallel.* $install_dir
 
+mkdir -p $base_dir/angrylion-rdp-plus/build
+cd $base_dir/angrylion-rdp-plus/build
 if [[ $UNAME == *"MINGW"* ]]; then
-  cd $base_dir/angrylion-rdp-plus/msvc
-  MSBuild.exe plugin-mupen64plus.vcxproj /p:Configuration=Release /p:Platform=x64
-  cp Release/mupen64plus-video-angrylion-plus.dll $install_dir
+  cmake -G "MSYS Makefiles" -DCMAKE_BUILD_TYPE=Release ..
 else
-  mkdir -p $base_dir/angrylion-rdp-plus/build
-  cd $base_dir/angrylion-rdp-plus/build
   cmake -DCMAKE_BUILD_TYPE=Release ..
-  cmake --build .
-  cp mupen64plus-video-angrylion-plus.* $install_dir
 fi
+cmake --build .
+cp mupen64plus-video-angrylion-plus.* $install_dir
 
 if [[ $UNAME == *"MINGW"* ]]; then
   cd $install_dir
