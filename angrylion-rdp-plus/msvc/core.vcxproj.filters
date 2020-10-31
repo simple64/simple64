@@ -1,0 +1,106 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{5467dd49-ff5e-4be4-93ad-8291721fc00d}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{142a5325-573c-4fde-9d8f-af10cb6e28e5}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
+    </Filter>
+    <Filter Include="Source Files\n64video">
+      <UniqueIdentifier>{201fc67f-a10c-47a3-a9f6-47b9ccdf155a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\n64video\vi">
+      <UniqueIdentifier>{9ac263b1-1e35-44a3-8368-2c88ff3bb096}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\n64video\rdp">
+      <UniqueIdentifier>{0def43d5-fe85-4dc1-9b3e-264603cca8fa}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\core\parallel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\core\n64video.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\core\n64video\rdp\blender.c">
+      <Filter>Source Files\n64video\rdp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\core\n64video\rdp\combiner.c">
+      <Filter>Source Files\n64video\rdp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\core\n64video\rdp\coverage.c">
+      <Filter>Source Files\n64video\rdp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\core\n64video\rdp\dither.c">
+      <Filter>Source Files\n64video\rdp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\core\n64video\rdp\fbuffer.c">
+      <Filter>Source Files\n64video\rdp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\core\n64video\rdp\rasterizer.c">
+      <Filter>Source Files\n64video\rdp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\core\n64video\rdp\rdram.c">
+      <Filter>Source Files\n64video\rdp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\core\n64video\rdp\tcoord.c">
+      <Filter>Source Files\n64video\rdp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\core\n64video\rdp\tex.c">
+      <Filter>Source Files\n64video\rdp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\core\n64video\rdp\tmem.c">
+      <Filter>Source Files\n64video\rdp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\core\n64video\rdp\zbuffer.c">
+      <Filter>Source Files\n64video\rdp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\core\n64video\vi\divot.c">
+      <Filter>Source Files\n64video\vi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\core\n64video\vi\fetch.c">
+      <Filter>Source Files\n64video\vi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\core\n64video\vi\gamma.c">
+      <Filter>Source Files\n64video\vi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\core\n64video\vi\lerp.c">
+      <Filter>Source Files\n64video\vi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\core\n64video\vi\restore.c">
+      <Filter>Source Files\n64video\vi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\core\n64video\vi\video.c">
+      <Filter>Source Files\n64video\vi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\core\n64video\rdp.c">
+      <Filter>Source Files\n64video</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\core\n64video\vi.c">
+      <Filter>Source Files\n64video</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\core\common.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\core\msg.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\core\parallel.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\core\n64video.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\src\core\version.h.in">
+      <Filter>Source Files</Filter>
+    </None>
+  </ItemGroup>
+</Project>
