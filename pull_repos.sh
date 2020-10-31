@@ -33,4 +33,14 @@ git fetch mupen64plus-input-raphnetraw
 git merge -s subtree mupen64plus-input-raphnetraw/sdl2 --allow-unrelated-histories --squash
 git commit -m "update raphnet"
 
+git remote add parallel-rsp https://github.com/loganmc10/parallel-rsp.git
+git fetch parallel-rsp
+git merge -s subtree parallel-rsp/master --allow-unrelated-histories --squash
+git commit -m "update parallel rsp"
+
+git remote add angrylion-rdp-plus https://github.com/ata4/angrylion-rdp-plus.git
+git fetch angrylion-rdp-plus
+git merge -s subtree angrylion-rdp-plus/master --allow-unrelated-histories --squash
+git commit -m "update angrylion"
+
 git push origin master
