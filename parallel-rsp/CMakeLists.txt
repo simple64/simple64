@@ -70,6 +70,7 @@ if (PARALLEL_RSP_DEBUG_JIT)
 	endif()
 endif()
 
+set_target_properties(${NAME_PLUGIN_M64P} PROPERTIES PREFIX "")
 target_include_directories(${NAME_PLUGIN_M64P} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(${NAME_PLUGIN_M64P} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/arch/simd/rsp)
 target_include_directories(${NAME_PLUGIN_M64P} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/api)
