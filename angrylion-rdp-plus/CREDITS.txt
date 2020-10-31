@@ -1,0 +1,7 @@
+This little RDP plugin was initially based on MESS 0.128 source code.
+Many thanks to Ville Linde, MooglyGuy and other people who wrote the RDP implementation in MESS 0.128. The rest of the code is by me, angrylion.
+Many thanks to people who helped me in various ways: olivieryuyu, marshallh, LaC, oman, pinchy, ziggy, FatCat, LegendOfDragoon and other folks I forgot.
+The code comes under MAME license.
+Sorry for my terrible English.
+
+angrylion

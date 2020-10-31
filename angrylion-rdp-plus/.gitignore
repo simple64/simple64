@@ -1,0 +1,9 @@
+# Visual Studio cache/options directory
+.vs/
+
+# Visual C++ cache files
+*.aps
+
+src/core/version.h
+private/
+build/
