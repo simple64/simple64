@@ -104,15 +104,19 @@ fi
 cmake --build .
 cp mupen64plus-rsp-parallel.* $install_dir
 
-mkdir -p $base_dir/angrylion-rdp-plus/build
-cd $base_dir/angrylion-rdp-plus/build
 if [[ $UNAME == *"MINGW"* ]]; then
-  cmake -G "MSYS Makefiles" -DCMAKE_BUILD_TYPE=Release ..
+  cd $base_dir/angrylion-rdp-plus/
+  python3 ./make_version.py
+  cd $base_dir/angrylion-rdp-plus/msvc
+  "${MSBUILD_PATH}MSBuild.exe" angrylion-plus.sln -t:plugin-mupen64plus -p:Configuration=Release -p:Platform=x64
+  cp build/Release/mupen64plus-video-angrylion-plus.dll $install_dir
 else
+  mkdir -p $base_dir/angrylion-rdp-plus/build
+  cd $base_dir/angrylion-rdp-plus/build
   cmake -DCMAKE_BUILD_TYPE=Release ..
+  cmake --build .
+  cp mupen64plus-video-angrylion-plus.* $install_dir
 fi
-cmake --build .
-cp mupen64plus-video-angrylion-plus.* $install_dir
 
 if [[ $UNAME == *"MINGW"* ]]; then
   cd $install_dir
