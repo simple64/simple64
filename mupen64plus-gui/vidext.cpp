@@ -22,6 +22,7 @@ m64p_error qtVidExtFuncInit(void)
     format.setProfile(QSurfaceFormat::CompatibilityProfile);
     format.setMajorVersion(2);
     format.setMinorVersion(1);
+    format.setSwapInterval(0);
     if (w->getGLES())
         format.setRenderableType(QSurfaceFormat::OpenGLES);
 
