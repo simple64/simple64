@@ -157,6 +157,8 @@ void CreateRoom::onConnected()
     json.insert("game_name", QString(rom_settings.goodname));
     json.insert("client_sha", QStringLiteral(GUI_VERSION));
     json.insert("netplay_version", NETPLAY_VER);
+    json.insert("lle", w->getSettings()->value("LLE").toInt() ? "Yes" : "No");
+
     QJsonDocument json_doc(json);
     webSocket->sendBinaryMessage(json_doc.toJson());
 }

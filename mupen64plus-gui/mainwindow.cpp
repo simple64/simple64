@@ -98,6 +98,8 @@ void MainWindow::updatePlugins()
         else
             settings->setValue("inputPlugin", current.at(0));
     }
+
+    ui->actionController_Configuration->setEnabled(settings->value("inputPlugin").toString().contains("-qt"));
 }
 
 void MainWindow::updatePIF(Ui::MainWindow *ui)
@@ -464,6 +466,7 @@ void MainWindow::setupLLE()
         settings->setValue("LLE", 0);
     }
 
+    ui->actionVideo_Settings->setEnabled(!settings->value("LLE").toInt());
     ui->actionLLE_Graphics->setChecked(settings->value("LLE").toInt());
 
     m64p_handle lionConfigHandle;
@@ -479,6 +482,14 @@ void MainWindow::setupLLE()
     [=]( bool checked ) {
         settings->setValue("LLE", checked ? 1 : 0);
         ui->actionVI_Filter->setEnabled(checked);
+        ui->actionVideo_Settings->setEnabled(!checked);
+        if (coreLib)
+        {
+            int response;
+            (*CoreDoCommand)(M64CMD_CORE_STATE_QUERY, M64CORE_EMU_STATE, &response);
+            if (response == M64EMU_STOPPED)
+                resetCore();
+        }
     });
 
     connect(ui->actionVI_Filter, &QAction::toggled,
