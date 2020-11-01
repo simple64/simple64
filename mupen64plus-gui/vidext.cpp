@@ -244,7 +244,11 @@ m64p_error qtVidExtFuncSetCaption(const char *)
 
 m64p_error qtVidExtFuncToggleFS(void)
 {
-    w->getWorkerThread()->toggleFS(M64VIDEO_NONE);
+    if (QThread::currentThread() == w->getRenderingThread())
+        w->getWorkerThread()->toggleFS(M64VIDEO_NONE);
+    else
+        w->toggleFS(M64VIDEO_NONE);
+
     return M64ERR_SUCCESS;
 }
 

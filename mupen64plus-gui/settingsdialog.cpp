@@ -139,6 +139,7 @@ void SettingsDialog::initStuff()
     connect(inputChoice, static_cast<void(QComboBox::*)(const QString &)>(&QComboBox::activated),
         [=](const QString &text) {
             w->getSettings()->setValue("inputPlugin", text);
+            w->updatePlugins();
     });
     layout->addWidget(inputChoice,5,1);
 

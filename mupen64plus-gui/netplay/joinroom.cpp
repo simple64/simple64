@@ -102,13 +102,14 @@ void JoinRoom::resetList()
     row = 0;
     rooms.clear();
     listWidget->clear();
-    listWidget->setColumnCount(4);
+    listWidget->setColumnCount(5);
     listWidget->setRowCount(row);
     QStringList headers;
     headers.append("Room Name");
     headers.append("Game Name");
     headers.append("Game MD5");
     headers.append("Password Protected");
+    headers.append("LLE");
     listWidget->setHorizontalHeaderLabels(headers);
     listWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 }
@@ -157,7 +158,25 @@ void JoinRoom::joinGame()
             QJsonObject json = rooms.at(listWidget->currentRow());
             m64p_rom_settings rom_settings;
             (*CoreDoCommand)(M64CMD_ROM_GET_SETTINGS, sizeof(rom_settings), &rom_settings);
-            if (QString(rom_settings.MD5) == json.value("MD5").toString())
+            if (QString(rom_settings.MD5) != json.value("MD5").toString())
+            {
+                (*CoreDoCommand)(M64CMD_ROM_CLOSE, 0, NULL);
+                msgBox.setText("ROM does not match room ROM");
+                msgBox.exec();
+            }
+            else if (json.value("lle").toString() == "Yes" && w->getSettings()->value("LLE").toInt() != 1)
+            {
+                (*CoreDoCommand)(M64CMD_ROM_CLOSE, 0, NULL);
+                msgBox.setText("You must enable LLE graphics");
+                msgBox.exec();
+            }
+            else if (json.value("lle").toString() == "No" && w->getSettings()->value("LLE").toInt() != 0)
+            {
+                (*CoreDoCommand)(M64CMD_ROM_CLOSE, 0, NULL);
+                msgBox.setText("You must disable LLE graphics");
+                msgBox.exec();
+            }
+            else
             {
                 json.insert("type", "join_room");
                 json.insert("player_name", playerName->text());
@@ -165,12 +184,6 @@ void JoinRoom::joinGame()
                 json.insert("client_sha", QStringLiteral(GUI_VERSION));
                 QJsonDocument json_doc(json);
                 webSocket->sendBinaryMessage(json_doc.toJson());
-            }
-            else
-            {
-                (*CoreDoCommand)(M64CMD_ROM_CLOSE, 0, NULL);
-                msgBox.setText("ROM does not match room ROM");
-                msgBox.exec();
             }
         }
         else
@@ -238,6 +251,9 @@ void JoinRoom::processBinaryMessage(QByteArray message)
         newItem = new QTableWidgetItem(json.value("protected").toString());
         newItem->setFlags(newItem->flags() & ~Qt::ItemIsEditable);
         listWidget->setItem(row, 3, newItem);
+        newItem = new QTableWidgetItem(json.value("lle").toString());
+        newItem->setFlags(newItem->flags() & ~Qt::ItemIsEditable);
+        listWidget->setItem(row, 4, newItem);
 
         ++row;
     }
