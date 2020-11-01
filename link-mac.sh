@@ -12,7 +12,7 @@ mv mupen64plus/mupen64plus-input-raphnetraw.dylib $contents/MacOS
 mv mupen64plus/mupen64plus-rsp-hle.dylib $contents/MacOS
 mv mupen64plus/mupen64plus-video-GLideN64.dylib $contents/MacOS
 mv mupen64plus/mupen64plus-video-angrylion-plus.dylib $contents/MacOS
-mv mupen64plus/mupen64plus-rsp-parallel.dylib $conntents/MacOS
+mv mupen64plus/mupen64plus-rsp-parallel.dylib $contents/MacOS
 mv mupen64plus/mupen64plus.ini $contents/MacOS
 mv mupen64plus/mupencheat.txt $contents/MacOS
 mv mupen64plus/discord_game_sdk.dylib $contents/MacOS
