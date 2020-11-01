@@ -572,8 +572,9 @@ void MainWindow::updateDownloadFinished(QNetworkReply *reply)
             file.setPermissions(QFileDevice::ReadOwner | QFileDevice::WriteOwner | QFileDevice::ExeOwner);
             file.close();
             QProcess process;
-            QString command = fullpath + " ";
+            QString command = fullpath + " \"";
             command += QCoreApplication::applicationDirPath();
+            command += "\"";
             process.startDetached(command);
             reply->deleteLater();
             QCoreApplication::quit();
