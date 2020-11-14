@@ -258,7 +258,6 @@ void Debugger::_fillTriInfo(TriInfo & _info)
 	_info.fill_color = gDP.fillColor;
 	_info.blend_color = gDP.blendColor;
 	_info.env_color = gDP.envColor;
-	_info.fill_color = gDP.fillColor;
 	_info.prim_color = gDP.primColor;
 	_info.primDepthZ = gDP.primDepth.z;
 	_info.primDepthDeltaZ = gDP.primDepth.deltaZ;

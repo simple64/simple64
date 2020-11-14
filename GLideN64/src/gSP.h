@@ -5,15 +5,15 @@
 #include "GBI.h"
 #include "gDP.h"
 
-#define CHANGED_VIEWPORT		0x01
-#define CHANGED_MATRIX			0x02
-#define CHANGED_TEXTURE			0x04
-#define CHANGED_GEOMETRYMODE	0x08
-#define CHANGED_FOGPOSITION		0x10
-#define CHANGED_LIGHT			0x20
-#define CHANGED_LOOKAT			0x40
-#define CHANGED_TEXTURESCALE	0x80
-#define CHANGED_HW_LIGHT		0x100
+#define CHANGED_VIEWPORT		0x01U
+#define CHANGED_MATRIX			0x02U
+#define CHANGED_TEXTURE			0x04U
+#define CHANGED_GEOMETRYMODE	0x08U
+#define CHANGED_FOGPOSITION		0x10U
+#define CHANGED_LIGHT			0x20U
+#define CHANGED_LOOKAT			0x40U
+#define CHANGED_TEXTURESCALE	0x80U
+#define CHANGED_HW_LIGHT		0x100U
 
 #define CLIP_X      0x03
 #define CLIP_NEGX   0x01
@@ -192,22 +192,22 @@ void gSPSetGeometryMode( u32 mode );
 void gSPClearGeometryMode( u32 mode );
 void gSPSetOtherMode_H(u32 _length, u32 _shift, u32 _data);
 void gSPSetOtherMode_L(u32 _length, u32 _shift, u32 _data);
-void gSPLine3D(s32 v0, s32 v1, s32 flag);
-void gSPLineW3D( s32 v0, s32 v1, s32 wd, s32 flag );
+void gSPLine3D(u32 v0, u32 v1, u32 flag);
+void gSPLineW3D( u32 v0, u32 v1, u32 wd, u32 flag );
 void gSPSetStatus(u32 sid, u32 val);
 void gSPSetDMAOffsets( u32 mtxoffset, u32 vtxoffset );
 void gSPSetDMATexOffset(u32 _addr);
 void gSPSetVertexColorBase( u32 base );
 void gSPCombineMatrices(u32 _mode);
 
-void gSPTriangle(s32 v0, s32 v1, s32 v2);
-void gSP1Triangle(s32 v0, s32 v1, s32 v2);
-void gSP2Triangles(const s32 v00, const s32 v01, const s32 v02, const s32 flag0,
-					const s32 v10, const s32 v11, const s32 v12, const s32 flag1 );
-void gSP4Triangles(const s32 v00, const s32 v01, const s32 v02,
-					const s32 v10, const s32 v11, const s32 v12,
-					const s32 v20, const s32 v21, const s32 v22,
-					const s32 v30, const s32 v31, const s32 v32 );
+void gSPTriangle(u32 v0, u32 v1, u32 v2);
+void gSP1Triangle(u32 v0, u32 v1, u32 v2);
+void gSP2Triangles(const u32 v00, const u32 v01, const u32 v02, const u32 flag0,
+					const u32 v10, const u32 v11, const u32 v12, const u32 flag1 );
+void gSP4Triangles(const u32 v00, const u32 v01, const u32 v02,
+					const u32 v10, const u32 v11, const u32 v12,
+					const u32 v20, const u32 v21, const u32 v22,
+					const u32 v30, const u32 v31, const u32 v32 );
 
 void gSPLightVertex(SPVertex & _vtx);
 

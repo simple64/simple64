@@ -4,14 +4,14 @@
 #include <list>
 #include <vector>
 
-#include "Types.h"
+#include "gDP.h"
 #include "Textures.h"
 #include "Graphics/ObjectHandle.h"
 
 struct gDPTile;
 struct DepthBuffer;
 
-const int fingerprint[4] = { 2, 6, 4, 3 };
+const u32 fingerprint[4] = { 2, 6, 4, 3 };
 
 struct FrameBuffer
 {
@@ -22,59 +22,60 @@ struct FrameBuffer
 	void resolveMultisampledTexture(bool _bForce = false);
 	void copyDepthTexture();
 	CachedTexture * getTexture(u32 _t);
-	CachedTexture * getTextureBG(u32 _t);
+	CachedTexture * getTextureBG();
 	void setBufferClearParams(u32 _fillcolor, s32 _ulx, s32 _uly, s32 _lrx, s32 _lry);
 	void copyRdram();
 	void setDirty();
 	bool isValid(bool _forceCheck) const;
 	bool isAuxiliary() const;
 
-	u32 m_startAddress;
-	u32 m_endAddress;
-	u32 m_size;
-	u32 m_width;
-	u32 m_height;
-	u32 m_originX;
-	u32 m_originY;
-	u32 m_swapCount;
-	float m_scale;
-	bool m_copiedToRdram;
-	bool m_fingerprint;
-	bool m_cleared;
-	bool m_changed;
-	bool m_cfb;
-	bool m_isDepthBuffer;
-	bool m_isPauseScreen;
-	bool m_isOBScreen;
-	bool m_isMainBuffer;
-	bool m_readable;
-	bool m_copied;
+	u32 m_startAddress = 0;
+	u32 m_endAddress = 0;
+	u32 m_size = 0;
+	u32 m_width = 0;
+	u32 m_height = 0;
+	u32 m_originX = 0;
+	u32 m_originY = 0;
+	u32 m_swapCount = 0;
+	float m_scale = 0.0f;
+	bool m_copiedToRdram = false;
+	bool m_fingerprint = false;
+	bool m_cleared = false;
+	bool m_changed = false;
+	bool m_cfb = false;
+	bool m_isDepthBuffer = false;
+	bool m_isPauseScreen = false;
+	bool m_isOBScreen = false;
+	bool m_isMainBuffer = false;
+	bool m_readable = false;
+	bool m_copied = false;
 
 	struct {
-		u32 uls, ult;
+		u32 uls = 0;
+		u32 ult = 0;;
 	} m_loadTileOrigin;
-	u32 m_loadType;
+	u32 m_loadType = LOADTYPE_BLOCK;
 
 	graphics::ObjectHandle m_FBO;
-	CachedTexture *m_pTexture;
+	CachedTexture *m_pTexture = nullptr;
 
 	graphics::ObjectHandle m_depthFBO;
-	CachedTexture *m_pDepthTexture;
+	CachedTexture *m_pDepthTexture = nullptr;
 
-	DepthBuffer *m_pDepthBuffer;
+	DepthBuffer *m_pDepthBuffer = nullptr;
 
 	// multisampling
 	graphics::ObjectHandle m_resolveFBO;
-	CachedTexture *m_pResolveTexture;
-	bool m_resolved;
+	CachedTexture *m_pResolveTexture = nullptr;
+	bool m_resolved = false;
 
 	// subtexture
 	graphics::ObjectHandle m_SubFBO;
-	CachedTexture *m_pSubTexture;
+	CachedTexture *m_pSubTexture = nullptr;
 
 	// copy FBO
 	graphics::ObjectHandle m_copyFBO;
-	CachedTexture * m_pFrameBufferCopyTexture;
+	CachedTexture * m_pFrameBufferCopyTexture = nullptr;
 
 	std::vector<u8> m_RdramCopy;
 
@@ -94,7 +95,7 @@ private:
 	CachedTexture * _copyFrameBufferTexture();
 	CachedTexture * _getSubTexture(u32 _t);
 
-	mutable u32 m_validityChecked;
+	mutable u32 m_validityChecked = false;
 };
 
 class FrameBufferList

@@ -485,7 +485,6 @@ void ContextImpl::drawLine(f32 _width, SPVertex * _vertices)
 	m_graphicsDrawer->drawLine(_width, _vertices);
 }
 
-
 f32 ContextImpl::getMaxLineWidth()
 {
 	GLfloat lineWidthRange[2] = { 0.0f, 0.0f };
@@ -512,8 +511,10 @@ bool ContextImpl::isSupported(graphics::SpecialFeatures _feature) const
 		return !m_glInfo.isGLES2;
 	case graphics::SpecialFeatures::ClipControl:
 		return !m_glInfo.isGLESX;
-	case graphics::SpecialFeatures::FramebufferFetch:
+	case graphics::SpecialFeatures::FramebufferFetchDepth:
 		return m_glInfo.ext_fetch;
+	case graphics::SpecialFeatures::FramebufferFetchColor:
+		return m_glInfo.ext_fetch || m_glInfo.ext_fetch_arm;
 	case graphics::SpecialFeatures::TextureBarrier:
 		return m_glInfo.texture_barrier || m_glInfo.texture_barrierNV;
 	case graphics::SpecialFeatures::EglImage:
