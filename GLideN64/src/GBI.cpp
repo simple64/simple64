@@ -199,6 +199,7 @@ void GBIInfo::_makeCurrent(MicrocodeInfo * _pCurrent)
 
 		switch (m_pCurrent->type) {
 			case F3D:
+			case Turbo3D:
 				F3D_Init();
 				m_hwlSupported = true;
 			break;
@@ -260,10 +261,6 @@ void GBIInfo::_makeCurrent(MicrocodeInfo * _pCurrent)
 			break;
 			case F3DAM:
 				F3DAM_Init();
-				m_hwlSupported = true;
-			break;
-			case Turbo3D:
-				F3D_Init();
 				m_hwlSupported = true;
 			break;
 			case ZSortp:

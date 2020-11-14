@@ -22,27 +22,28 @@ struct DepthBuffer
 
 	void bindDepthImageTexture(graphics::ObjectHandle _fbo);
 
-	u32 m_address, m_width;
-	bool m_cleared;
+	u32 m_address = 0;
+	u32 m_width = 0;
+	bool m_cleared = false;
 
-	CachedTexture *m_pDepthBufferTexture;
+	CachedTexture *m_pDepthBufferTexture = nullptr;
 
 	graphics::ObjectHandle m_depthRenderbuffer;
-	u32 m_depthRenderbufferWidth;
+	u32 m_depthRenderbufferWidth = 0;
 
-	CachedTexture *m_pDepthImageZTexture;
-	CachedTexture *m_pDepthImageDeltaZTexture;
+	CachedTexture *m_pDepthImageZTexture = nullptr;
+	CachedTexture *m_pDepthImageDeltaZTexture = nullptr;
 	graphics::ObjectHandle m_ZTextureClearFBO;
 	graphics::ObjectHandle m_DeltaZTextureClearFBO;
 
 	// multisampling
-	CachedTexture *m_pResolveDepthBufferTexture;
-	bool m_resolved;
+	CachedTexture *m_pResolveDepthBufferTexture = nullptr;
+	bool m_resolved = false;
 
 	// render to depth buffer
 	graphics::ObjectHandle m_copyFBO;
-	CachedTexture *m_pDepthBufferCopyTexture;
-	bool m_copied;
+	CachedTexture *m_pDepthBufferCopyTexture = nullptr;
+	bool m_copied = false;
 
 	static void copyDepthBufferTexture(FrameBuffer * _pBuffer, CachedTexture *& _pTexture, graphics::ObjectHandle _copyFBO);
 	static void _initDepthBufferTexture(const FrameBuffer * _pBuffer, CachedTexture *_pTexture, bool _multisample);

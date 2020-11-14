@@ -45,6 +45,8 @@ void GLInfo::init() {
 	LOG(LOG_VERBOSE, "OpenGL vendor: %s", glGetString(GL_VENDOR));
 	const char * strRenderer = reinterpret_cast<const char *>(glGetString(GL_RENDERER));
 
+	bool isAnyAdreno = strstr(strRenderer, "Adreno") != nullptr;
+
 	if (std::regex_match(std::string(strRenderer), std::regex("Adreno.*530")))
 		renderer = Renderer::Adreno530;
 	else if (std::regex_match(std::string(strRenderer), std::regex("Adreno.*540")) ||
@@ -163,8 +165,9 @@ void GLInfo::init() {
 
 	ext_fetch = Utils::isExtensionSupported(*this, "GL_EXT_shader_framebuffer_fetch") && !isGLES2 && (!isGLESX || ext_draw_buffers_indexed) && !imageTexturesInterlock;
 	eglImage = (Utils::isEGLExtensionSupported("EGL_KHR_image_base") || Utils::isEGLExtensionSupported("EGL_KHR_image"));
+	ext_fetch_arm =  Utils::isExtensionSupported(*this, "GL_ARM_shader_framebuffer_fetch") && !ext_fetch;
 
-	dual_source_blending = !(isGLESX) || Utils::isExtensionSupported(*this, "GL_EXT_blend_func_extended");
+	dual_source_blending = !isGLESX || (Utils::isExtensionSupported(*this, "GL_EXT_blend_func_extended") && !isAnyAdreno);
 
 #ifdef OS_ANDROID
 	eglImage = eglImage &&

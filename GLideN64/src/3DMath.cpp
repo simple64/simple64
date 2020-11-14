@@ -79,7 +79,7 @@ End:
 	float len;
 
 	len = v[0]*v[0] + v[1]*v[1] + v[2]*v[2];
-	if (len != 0.0)	{
+	if (len != 0.0f)	{
 		len = sqrtf( len );
 		v[0] /= len;
 		v[1] /= len;
@@ -92,7 +92,7 @@ void InverseTransformVectorNormalizeN(float src[][3], float dst[][3], float mtx[
 {
 	for (u32 i = 0; i < count; i++)
 	{
-		InverseTransformVectorNormalize((float(*))src[i], (float(*))dst[i], mtx);
+		InverseTransformVectorNormalize(static_cast<float*>(src[i]), static_cast<float*>(dst[i]), mtx);
 	}
 }
 

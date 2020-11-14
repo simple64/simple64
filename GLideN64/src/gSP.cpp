@@ -66,7 +66,7 @@ void gSPCombineMatrices(u32 _mode)
 	DebugMsg(DEBUG_NORMAL, "gSPCombineMatrices();\n");
 }
 
-void gSPTriangle(s32 v0, s32 v1, s32 v2)
+void gSPTriangle(u32 v0, u32 v1, u32 v2)
 {
 	GraphicsDrawer & drawer = dwnd().getDrawer();
 	if ((v0 < INDEXMAP_SIZE) && (v1 < INDEXMAP_SIZE) && (v2 < INDEXMAP_SIZE)) {
@@ -83,7 +83,7 @@ void gSPTriangle(s32 v0, s32 v1, s32 v2)
 	}
 }
 
-void gSP1Triangle( const s32 v0, const s32 v1, const s32 v2)
+void gSP1Triangle( const u32 v0, const u32 v1, const u32 v2)
 {
 	DebugMsg(DEBUG_NORMAL, "gSP1Triangle (%i, %i, %i)\n", v0, v1, v2);
 
@@ -91,8 +91,8 @@ void gSP1Triangle( const s32 v0, const s32 v1, const s32 v2)
 	gSPFlushTriangles();
 }
 
-void gSP2Triangles(const s32 v00, const s32 v01, const s32 v02, const s32 flag0,
-				   const s32 v10, const s32 v11, const s32 v12, const s32 flag1 )
+void gSP2Triangles(const u32 v00, const u32 v01, const u32 v02, const u32 flag0,
+				   const u32 v10, const u32 v11, const u32 v12, const u32 flag1 )
 {
 	DebugMsg(DEBUG_NORMAL, "gSP2Triangle (%i, %i, %i)-(%i, %i, %i)\n", v00, v01, v02, v10, v11, v12);
 
@@ -101,10 +101,10 @@ void gSP2Triangles(const s32 v00, const s32 v01, const s32 v02, const s32 flag0,
 	gSPFlushTriangles();
 }
 
-void gSP4Triangles(const s32 v00, const s32 v01, const s32 v02,
-				   const s32 v10, const s32 v11, const s32 v12,
-				   const s32 v20, const s32 v21, const s32 v22,
-				   const s32 v30, const s32 v31, const s32 v32 )
+void gSP4Triangles(const u32 v00, const u32 v01, const u32 v02,
+				   const u32 v10, const u32 v11, const u32 v12,
+				   const u32 v20, const u32 v21, const u32 v22,
+				   const u32 v30, const u32 v31, const u32 v32 )
 {
 	DebugMsg(DEBUG_NORMAL, "gSP4Triangle (%i, %i, %i)-(%i, %i, %i)-(%i, %i, %i)-(%i, %i, %i)\n",
 			 v00, v01, v02, v10, v11, v12, v20, v21, v22, v30, v31, v32);
@@ -1944,14 +1944,14 @@ void gSPSetOtherMode_L(u32 _length, u32 _shift, u32 _data)
 	DebugMsg(DEBUG_NORMAL, " result: %08x\n", gDP.otherMode.l);
 }
 
-void gSPLine3D( s32 v0, s32 v1, s32 flag )
+void gSPLine3D(u32 v0, u32 v1, u32 flag )
 {
 	dwnd().getDrawer().drawLine(v0, v1, 1.5f);
 
 	DebugMsg(DEBUG_NORMAL, "gSPLine3D( %i, %i, %i )\n", v0, v1, flag);
 }
 
-void gSPLineW3D( s32 v0, s32 v1, s32 wd, s32 flag )
+void gSPLineW3D(u32 v0, u32 v1, u32 wd, u32 flag )
 {
 	dwnd().getDrawer().drawLine(v0, v1, 1.5f + wd * 0.5f);
 

@@ -191,6 +191,7 @@ namespace opengl {
 
 	class CachedVertexAttribArray {
 	public:
+		CachedVertexAttribArray() = default;
 		void enableVertexAttribArray(u32 _index, bool _enable);
 		void reset();
 

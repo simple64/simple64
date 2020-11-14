@@ -41,7 +41,7 @@ typedef std::chrono::milliseconds Milliseconds;
 class GraphicsDrawer
 {
 public:
-	void addTriangle(int _v0, int _v1, int _v2);
+	void addTriangle(u32 _v0, u32 _v1, u32 _v2);
 
 	void drawTriangles();
 
@@ -49,7 +49,7 @@ public:
 
 	void drawDMATriangles(u32 _numVtx);
 
-	void drawLine(int _v0, int _v1, float _width);
+	void drawLine(u32 _v0, u32 _v1, float _width);
 
 	void drawRect(int _ulx, int _uly, int _lrx, int _lry);
 
@@ -128,12 +128,12 @@ public:
 
 	int getTrianglesCount() const { return triangles.num; }
 
-	bool isClipped(s32 _v0, s32 _v1, s32 _v2) const
+	bool isClipped(u32 _v0, u32 _v1, u32 _v2) const
 	{
 		return (triangles.vertices[_v0].clip & triangles.vertices[_v1].clip & triangles.vertices[_v2].clip) != 0;
 	}
 
-	bool isRejected(s32 _v0, s32 _v1, s32 _v2) const;
+	bool isRejected(u32 _v0, u32 _v1, u32 _v2) const;
 
 	SPVertex & getVertex(u32 _v) { return triangles.vertices[_v]; }
 
@@ -187,7 +187,7 @@ private:
 	void _updateStates(DrawingState _drawingState) const;
 	void _prepareDrawTriangle(DrawingState _drawingState);
 	bool _canDraw() const;
-	void _drawThickLine(int _v0, int _v1, float _width);
+	void _drawThickLine(u32 _v0, u32 _v1, float _width);
 
 	void _drawOSD(const char *_pText, float _x, float & _y);
 
@@ -201,7 +201,7 @@ private:
 		std::array<SPVertex, VERTBUFF_SIZE> vertices;
 		std::array<u16, ELEMBUFF_SIZE> elements;
 		u32 num = 0;
-		int maxElement = 0;
+		u32 maxElement = 0;
 	} triangles;
 
 	std::vector<SPVertex> m_dmaVertices;

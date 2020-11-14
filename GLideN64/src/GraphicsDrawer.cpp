@@ -23,6 +23,7 @@
 #include "RSP.h"
 #include "RDP.h"
 #include "VI.h"
+#include "Log.h"
 
 using namespace graphics;
 
@@ -43,12 +44,12 @@ GraphicsDrawer::~GraphicsDrawer()
 		std::this_thread::sleep_for(Milliseconds(1));
 }
 
-void GraphicsDrawer::addTriangle(int _v0, int _v1, int _v2)
+void GraphicsDrawer::addTriangle(u32 _v0, u32 _v1, u32 _v2)
 {
 	const u32 firstIndex = triangles.num;
-	triangles.elements[triangles.num++] = _v0;
-	triangles.elements[triangles.num++] = _v1;
-	triangles.elements[triangles.num++] = _v2;
+	triangles.elements[triangles.num++] = static_cast<u16>(_v0);
+	triangles.elements[triangles.num++] = static_cast<u16>(_v1);
+	triangles.elements[triangles.num++] = static_cast<u16>(_v2);
 	triangles.maxElement = std::max(triangles.maxElement, _v0);
 	triangles.maxElement = std::max(triangles.maxElement, _v1);
 	triangles.maxElement = std::max(triangles.maxElement, _v2);
@@ -241,8 +242,8 @@ float _adjustViewportX(f32 _X0)
 inline
 void _adjustViewportToClipRatio(s32 & x, s32 & y, s32 & width, s32 & height)
 {
-	x -= (gSP.clipRatio - 1) * width / 2;
-	y -= (gSP.clipRatio - 1) * height / 2;
+	x -= static_cast<s32>(gSP.clipRatio - 1) * width / 2;
+	y -= static_cast<s32>(gSP.clipRatio - 1) * height / 2;
 	width *= gSP.clipRatio;
 	height *= gSP.clipRatio;
 }
@@ -258,10 +259,10 @@ void GraphicsDrawer::_updateViewport() const
 		float Xf = gSP.viewport.vscale[0] < 0 ? (gSP.viewport.x + gSP.viewport.vscale[0] * 2.0f) : gSP.viewport.x;
 		if (_needAdjustCoordinate(wnd))
 			Xf = _adjustViewportX(Xf);
-		s32 X = (s32)(Xf * scaleX);
-		s32 Y = (s32)(gSP.viewport.y * scaleY);
-		s32 WIDTH = std::max((s32)(gSP.viewport.width * scaleX), 0);
-		s32 HEIGHT = std::max((s32)(gSP.viewport.height * scaleY), 0);
+		s32 X = static_cast<s32>(Xf * scaleX);
+		s32 Y = static_cast<s32>(gSP.viewport.y * scaleY);
+		s32 WIDTH = std::max(static_cast<s32>(gSP.viewport.width * scaleX), 0);
+		s32 HEIGHT = std::max(static_cast<s32>(gSP.viewport.height * scaleY), 0);
 		_adjustViewportToClipRatio(X, Y, WIDTH, HEIGHT);
 		gfxContext.setViewport(X, Y, WIDTH, HEIGHT);
 	} else {
@@ -298,11 +299,11 @@ void GraphicsDrawer::_updateScreenCoordsViewport(const FrameBuffer * _pBuffer) c
 		viewportScaleY = wnd.getScaleY();
 	} else {
 		bufferWidth = pCurrentBuffer->m_width;
-		bufferHeight = VI_GetMaxBufferHeight(bufferWidth);
+		bufferHeight = VI_GetMaxBufferHeight(static_cast<u16>(bufferWidth));
 		viewportScaleX = viewportScaleY = pCurrentBuffer->m_scale;
 		X = roundup(f32(pCurrentBuffer->m_originX), viewportScaleX);
 		Y = roundup(f32(pCurrentBuffer->m_originY), viewportScaleY);
-		if (RSP.LLE || gSP.viewport.width == 0) {
+		if (RSP.LLE || gSP.viewport.width == 0.0f) {
 			gSP.viewport.width = f32(bufferWidth);
 			gSP.viewport.height = f32(bufferHeight);
 		}
@@ -675,6 +676,11 @@ void GraphicsDrawer::setBlendMode(bool _forceLegacyBlending) const
 		return;
 	}
 
+	if (Context::FramebufferFetchColor && !isTexrectDrawerMode()) {
+		gfxContext.enable(enable::BLEND, false);
+		return;
+	}
+
 	_ordinaryBlending();
 }
 
@@ -909,7 +915,7 @@ void GraphicsDrawer::drawDMATriangles(u32 _numVtx)
 	}
 }
 
-void GraphicsDrawer::_drawThickLine(int _v0, int _v1, float _width)
+void GraphicsDrawer::_drawThickLine(u32 _v0, u32 _v1, float _width)
 {
 	if ((gSP.geometryMode & G_LIGHTING) == 0) {
 		if ((gSP.geometryMode & G_SHADE) == 0) {
@@ -959,13 +965,11 @@ void GraphicsDrawer::_drawThickLine(int _v0, int _v1, float _width)
 		const f32 Y = pVtx[0].y;
 		pVtx[0].y = pVtx[2].y = Y - _width;
 		pVtx[1].y = pVtx[3].y = Y + _width;
-	}
-	else if (fabs(pVtx[0].x - pVtx[2].x) < 0.0001) {
+	} else if (fabs(pVtx[0].x - pVtx[2].x) < 0.0001) {
 		const f32 X = pVtx[0].x;
 		pVtx[0].x = pVtx[2].x = X - _width;
 		pVtx[1].x = pVtx[3].x = X + _width;
-	}
-	else {
+	} else {
 		const f32 X0 = pVtx[0].x;
 		const f32 Y0 = pVtx[0].y;
 		const f32 X1 = pVtx[2].x;
@@ -987,7 +991,7 @@ void GraphicsDrawer::_drawThickLine(int _v0, int _v1, float _width)
 	drawScreenSpaceTriangle(4);
 }
 
-void GraphicsDrawer::drawLine(int _v0, int _v1, float _width)
+void GraphicsDrawer::drawLine(u32 _v0, u32 _v1, float _width)
 {
 	m_texrectDrawer.draw();
 
@@ -1041,16 +1045,16 @@ void GraphicsDrawer::drawRect(int _ulx, int _uly, int _lrx, int _lry)
 	calcCoordsScales(frameBufferList().getCurrent(), scaleX, scaleY);
 	const float Z = (gDP.otherMode.depthSource == G_ZS_PRIM) ? gDP.primDepth.z : 0.0f;
 	const float W = 1.0f;
-	m_rect[0].x = (float)_ulx * (2.0f * scaleX) - 1.0f;
-	m_rect[0].y = (float)_uly * (2.0f * scaleY) - 1.0f;
+	m_rect[0].x = static_cast<f32>(_ulx) * (2.0f * scaleX) - 1.0f;
+	m_rect[0].y = static_cast<f32>(_uly) * (2.0f * scaleY) - 1.0f;
 	m_rect[0].z = Z;
 	m_rect[0].w = W;
-	m_rect[1].x = (float)_lrx * (2.0f * scaleX) - 1.0f;
+	m_rect[1].x = static_cast<f32>(_lrx) * (2.0f * scaleX) - 1.0f;
 	m_rect[1].y = m_rect[0].y;
 	m_rect[1].z = Z;
 	m_rect[1].w = W;
 	m_rect[2].x = m_rect[0].x;
-	m_rect[2].y = (float)_lry * (2.0f * scaleY) - 1.0f;
+	m_rect[2].y = static_cast<f32>(_lry) * (2.0f * scaleY) - 1.0f;
 	m_rect[2].z = Z;
 	m_rect[2].w = W;
 	m_rect[3].x = m_rect[1].x;
@@ -1059,7 +1063,7 @@ void GraphicsDrawer::drawRect(int _ulx, int _uly, int _lrx, int _lry)
 	m_rect[3].w = W;
 
 	DisplayWindow & wnd = dwnd();
-	if (wnd.isAdjustScreen() && (gDP.colorImage.width > VI.width * 98 / 100) && ((u32)(_lrx - _ulx) < VI.width * 9 / 10)) {
+	if (wnd.isAdjustScreen() && (gDP.colorImage.width > VI.width * 98 / 100) && (static_cast<u32>(_lrx - _ulx) < VI.width * 9 / 10)) {
 		const float scale = wnd.getAdjustScale();
 		for (u32 i = 0; i < 4; ++i)
 			m_rect[i].x *= scale;
@@ -1126,10 +1130,10 @@ bool texturedRectDepthBufferCopy(const GraphicsDrawer::TexturedRectParams & _par
 			RDP_RepeatLastLoadBlock();
 		}
 
-		const u32 width = (u32)(_params.lrx - _params.ulx);
-		const u32 ulx = (u32)_params.ulx;
-		u16 * pSrc = ((u16*)TMEM) + _params.s/32;
-		u16 *pDst = (u16*)(RDRAM + gDP.colorImage.address);
+		const u32 width = static_cast<u32>(_params.lrx - _params.ulx);
+		const u32 ulx = static_cast<u32>(_params.ulx);
+		u16 * pSrc = reinterpret_cast<u16*>(TMEM) + _params.s/32;
+		u16 *pDst = reinterpret_cast<u16*>(RDRAM + gDP.colorImage.address);
 		for (u32 x = 0; x < width; ++x)
 			pDst[(ulx + x) ^ 1] = swapword(pSrc[x]);
 
@@ -1157,13 +1161,13 @@ bool texturedRectBGCopy(const GraphicsDrawer::TexturedRectParams & _params)
 	if (flry > gDP.scissor.lry)
 		flry = gDP.scissor.lry;
 
-	const u32 width = (u32)(_params.lrx - _params.ulx);
+	const u32 width = static_cast<u32>(_params.lrx - _params.ulx);
 	const u32 tex_width = gSP.textureTile[0]->line << 3;
-	const u32 uly = (u32)_params.uly;
-	const u32 lry = (u32)flry;
+	const u32 uly = static_cast<u32>(_params.uly);
+	const u32 lry = static_cast<u32>(flry);
 
 	u8 * texaddr = RDRAM + gDP.loadInfo[gSP.textureTile[0]->tmem].texAddress + tex_width*_params.t/32 + _params.s/32;
-	u8 * fbaddr = RDRAM + gDP.colorImage.address + (u32)_params.ulx;
+	u8 * fbaddr = RDRAM + gDP.colorImage.address + static_cast<u32>(_params.ulx);
 	//	LOG(LOG_VERBOSE, "memrect (%d, %d, %d, %d), ci_width: %d texaddr: 0x%08lx fbaddr: 0x%08lx\n", (u32)_params.ulx, uly, (u32)_params.lrx, lry, gDP.colorImage.width, gSP.textureTile[0]->imageAddress + tex_width*(u32)_params.ult + (u32)_params.uls, gDP.colorImage.address + (u32)_params.ulx);
 
 	for (u32 y = uly; y < lry; ++y) {
@@ -1201,16 +1205,16 @@ bool texturedRectPaletteMod(const GraphicsDrawer::TexturedRectParams & _params)
 	// Modify palette for Paper Mario "2D lighting" effect
 	if (gDP.scissor.lrx != 16 || gDP.scissor.lry != 1 || _params.lrx != 16 || _params.lry != 1)
 		return false;
-	u8 envr = (u8)(gDP.envColor.r * 31.0f);
-	u8 envg = (u8)(gDP.envColor.g * 31.0f);
-	u8 envb = (u8)(gDP.envColor.b * 31.0f);
-	u16 env16 = (u16)((envr << 11) | (envg << 6) | (envb << 1) | 1);
-	u8 prmr = (u8)(gDP.primColor.r * 31.0f);
-	u8 prmg = (u8)(gDP.primColor.g * 31.0f);
-	u8 prmb = (u8)(gDP.primColor.b * 31.0f);
-	u16 prim16 = (u16)((prmr << 11) | (prmg << 6) | (prmb << 1) | 1);
-	u16 * src = (u16*)&TMEM[256];
-	u16 * dst = (u16*)(RDRAM + gDP.colorImage.address);
+	u8 envr = static_cast<u8>(gDP.envColor.r * 31.0f);
+	u8 envg = static_cast<u8>(gDP.envColor.g * 31.0f);
+	u8 envb = static_cast<u8>(gDP.envColor.b * 31.0f);
+	u16 env16 = static_cast<u16>((envr << 11) | (envg << 6) | (envb << 1) | 1);
+	u8 prmr = static_cast<u8>(gDP.primColor.r * 31.0f);
+	u8 prmg = static_cast<u8>(gDP.primColor.g * 31.0f);
+	u8 prmb = static_cast<u8>(gDP.primColor.b * 31.0f);
+	u16 prim16 = static_cast<u16>((prmr << 11) | (prmg << 6) | (prmb << 1) | 1);
+	u16 * src = reinterpret_cast<u16*>(&TMEM[256]);
+	u16 * dst = reinterpret_cast<u16*>(RDRAM + gDP.colorImage.address);
 	for (u32 i = 0; i < 16; ++i)
 		dst[i ^ 1] = (src[i << 2] & 0x100) ? prim16 : env16;
 	return true;
@@ -1218,7 +1222,7 @@ bool texturedRectPaletteMod(const GraphicsDrawer::TexturedRectParams & _params)
 
 // Special processing of textured rect.
 // Return true if actuial rendering is not necessary
-bool(*texturedRectSpecial)(const GraphicsDrawer::TexturedRectParams & _params) = nullptr;
+static bool(*texturedRectSpecial)(const GraphicsDrawer::TexturedRectParams & _params) = nullptr;
 
 void GraphicsDrawer::drawTexturedRect(const TexturedRectParams & _params)
 {
@@ -1311,12 +1315,12 @@ void GraphicsDrawer::drawTexturedRect(const TexturedRectParams & _params)
 			s16 S = _params.s;
 			if (gSP.textureTile[t]->shifts > 10) {
 				const u32 shifts = 16 - gSP.textureTile[t]->shifts;
-				S = (s16)(S << shifts);
-				shiftScaleS = (f32)(1 << shifts);
+				S = static_cast<s16>(S << shifts);
+				shiftScaleS = static_cast<f32>(1 << shifts);
 			} else if (gSP.textureTile[t]->shifts > 0) {
 				const u32 shifts = gSP.textureTile[t]->shifts;
-				S = (s16)(S >> shifts);
-				shiftScaleS /= (f32)(1 << shifts);
+				S = static_cast<s16>(S >> shifts);
+				shiftScaleS /= static_cast<f32>(1 << shifts);
 			}
 			const f32 uls = _FIXED2FLOAT(S, 5);
 			const f32 lrs = uls + offsetX * shiftScaleS;
@@ -1324,12 +1328,12 @@ void GraphicsDrawer::drawTexturedRect(const TexturedRectParams & _params)
 			s16 T = _params.t;
 			if (gSP.textureTile[t]->shiftt > 10) {
 				const u32 shiftt = 16 - gSP.textureTile[t]->shiftt;
-				T = (s16)(T << shiftt);
-				shiftScaleT = (f32)(1 << shiftt);
+				T = static_cast<s16>(T << shiftt);
+				shiftScaleT = static_cast<f32>(1 << shiftt);
 			} else if (gSP.textureTile[t]->shiftt > 0) {
 				const u32 shiftt = gSP.textureTile[t]->shiftt;
-				T = (s16)(T >> shiftt);
-				shiftScaleT /= (f32)(1 << shiftt);
+				T = static_cast<s16>(T >> shiftt);
+				shiftScaleT /= static_cast<f32>(1 << shiftt);
 			}
 			const f32 ult = _FIXED2FLOAT(T, 5);
 			const f32 lrt = ult + offsetY * shiftScaleT;
@@ -1360,15 +1364,15 @@ void GraphicsDrawer::drawTexturedRect(const TexturedRectParams & _params)
 
 				if ((cache.current[t]->mirrorS == 0 && cache.current[t]->maskS == 0 &&
 					(texST[t].s0 < texST[t].s1 ?
-					texST[t].s0 >= 0.0 && texST[t].s1 <= (float)cache.current[t]->width :
-					texST[t].s1 >= 0.0 && texST[t].s0 <= (float)cache.current[t]->width))
+					texST[t].s0 >= 0.0f && texST[t].s1 <= static_cast<f32>(cache.current[t]->width) :
+					texST[t].s1 >= 0.0f && texST[t].s0 <= static_cast<f32>(cache.current[t]->width)))
 					|| (cache.current[t]->maskS == 0 && (texST[t].s0 < -1024.0f || texST[t].s1 > 1023.99f)))
 					texParams.wrapS = textureParameters::WRAP_CLAMP_TO_EDGE;
 
 				if (cache.current[t]->mirrorT == 0 &&
 					(texST[t].t0 < texST[t].t1 ?
-					texST[t].t0 >= 0.0f && texST[t].t1 <= (float)cache.current[t]->height :
-					texST[t].t1 >= 0.0f && texST[t].t0 <= (float)cache.current[t]->height))
+					texST[t].t0 >= 0.0f && texST[t].t1 <= static_cast<f32>(cache.current[t]->height) :
+					texST[t].t1 >= 0.0f && texST[t].t0 <= static_cast<f32>(cache.current[t]->height)))
 					texParams.wrapT = textureParameters::WRAP_CLAMP_TO_EDGE;
 
 				if (texParams.wrapS.isValid() || texParams.wrapT.isValid()) {
@@ -1438,7 +1442,7 @@ void GraphicsDrawer::drawTexturedRect(const TexturedRectParams & _params)
 
 	if (wnd.isAdjustScreen() &&
 		(_params.forceAjustScale ||
-		((gDP.colorImage.width > VI.width * 98 / 100) && ((u32)(_params.lrx - _params.ulx) < VI.width * 9 / 10))))
+		((gDP.colorImage.width > VI.width * 98 / 100) && (static_cast<u32>(_params.lrx - _params.ulx) < VI.width * 9 / 10))))
 	{
 		const float scale = wnd.getAdjustScale();
 		for (u32 i = 0; i < 4; ++i)
@@ -1546,9 +1550,9 @@ void GraphicsDrawer::drawOSD()
 
 	DisplayWindow & wnd = DisplayWindow::get();
 	const s32 X = (wnd.getScreenWidth() - wnd.getWidth()) / 2;
-	const s32 Y = wnd.getHeightOffset();
-	const s32 W = wnd.getWidth();
-	const s32 H = wnd.getHeight();
+	const s32 Y = static_cast<s32>(wnd.getHeightOffset());
+	const s32 W = static_cast<s32>(wnd.getWidth());
+	const s32 H = static_cast<s32>(wnd.getHeight());
 
 	gfxContext.setViewport(X, Y, W, H);
 	gfxContext.setScissor(X, Y, W, H);
@@ -1642,7 +1646,7 @@ void GraphicsDrawer::clearColorBuffer(float *_pColor)
 		gfxContext.clearColorBuffer(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
-bool GraphicsDrawer::isRejected(s32 _v0, s32 _v1, s32 _v2) const
+bool GraphicsDrawer::isRejected(u32 _v0, u32 _v1, u32 _v2) const
 {
 	if (!GBI.isRej() || gSP.clipRatio < 2)
 		return false;
@@ -1657,7 +1661,7 @@ bool GraphicsDrawer::isRejected(s32 _v0, s32 _v1, s32 _v2) const
 		rejectBox.lry = gDP.scissor.lry + scissorHeight2;
 		gDP.changed ^= CHANGED_REJECT_BOX;
 	}
-	s32 verts[3] = { _v0, _v1, _v2 };
+	u32 verts[3] = { _v0, _v1, _v2 };
 	const f32 ySign = GBI.isNegativeY() ? -1.0f : 1.0f;
 	for (u32 i = 0; i < 3; ++i) {
 		const SPVertex & v = triangles.vertices[verts[i]];
@@ -1752,7 +1756,7 @@ void GraphicsDrawer::copyTexturedRect(const CopyRectParams & _params)
 		gfxContext.setTextureParameters(texParams);
 	}
 
-	gfxContext.setViewport(0, 0, _params.dstWidth, _params.dstHeight);
+	gfxContext.setViewport(0, 0, static_cast<s32>(_params.dstWidth), static_cast<s32>(_params.dstHeight));
 	gfxContext.enable(enable::CULL_FACE, false);
 	gfxContext.enable(enable::BLEND, false);
 
@@ -1831,11 +1835,12 @@ void GraphicsDrawer::_initStates()
 	}
 
 	DisplayWindow & wnd = DisplayWindow::get();
-	gfxContext.setViewport(0, wnd.getHeightOffset(), wnd.getScreenWidth(), wnd.getScreenHeight());
+	gfxContext.setViewport(0, static_cast<s32>(wnd.getHeightOffset()),
+						   static_cast<s32>(wnd.getScreenWidth()), static_cast<s32>(wnd.getScreenHeight()));
 
 	gfxContext.clearColorBuffer(0.0f, 0.0f, 0.0f, 0.0f);
 
-	srand((unsigned int)time(nullptr));
+	srand(static_cast<u32>(time(nullptr)));
 
 	wnd.swapBuffers();
 }

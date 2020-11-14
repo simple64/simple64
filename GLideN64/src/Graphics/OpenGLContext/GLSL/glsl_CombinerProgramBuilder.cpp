@@ -95,7 +95,7 @@ const char *AlphaInput[] = {
 };
 
 inline
-int correctFirstStageParam(int _param)
+u32 correctFirstStageParam(u32 _param)
 {
 	switch (_param) {
 	case G_GCI_TEXEL1:
@@ -109,7 +109,7 @@ int correctFirstStageParam(int _param)
 static
 void _correctFirstStageParams(CombinerStage & _stage)
 {
-	for (int i = 0; i < _stage.numOps; ++i) {
+	for (u32 i = 0; i < _stage.numOps; ++i) {
 		_stage.op[i].param1 = correctFirstStageParam(_stage.op[i].param1);
 		_stage.op[i].param2 = correctFirstStageParam(_stage.op[i].param2);
 		_stage.op[i].param3 = correctFirstStageParam(_stage.op[i].param3);
@@ -117,7 +117,7 @@ void _correctFirstStageParams(CombinerStage & _stage)
 }
 
 inline
-int correctFirstStageParam2Cyc(int _param)
+u32 correctFirstStageParam2Cyc(u32 _param)
 {
 	switch (_param) {
 	case G_GCI_COMBINED:
@@ -129,7 +129,7 @@ int correctFirstStageParam2Cyc(int _param)
 static
 void _correctFirstStageParams2Cyc(CombinerStage & _stage)
 {
-	for (int i = 0; i < _stage.numOps; ++i) {
+	for (u32 i = 0; i < _stage.numOps; ++i) {
 		_stage.op[i].param1 = correctFirstStageParam2Cyc(_stage.op[i].param1);
 		_stage.op[i].param2 = correctFirstStageParam2Cyc(_stage.op[i].param2);
 		_stage.op[i].param3 = correctFirstStageParam2Cyc(_stage.op[i].param3);
@@ -137,7 +137,7 @@ void _correctFirstStageParams2Cyc(CombinerStage & _stage)
 }
 
 inline
-int correctSecondStageParam(int _param)
+u32 correctSecondStageParam(u32 _param)
 {
 	switch (_param) {
 	case G_GCI_TEXEL0:
@@ -154,7 +154,7 @@ int correctSecondStageParam(int _param)
 
 static
 void _correctSecondStageParams(CombinerStage & _stage) {
-	for (int i = 0; i < _stage.numOps; ++i) {
+	for (u32 i = 0; i < _stage.numOps; ++i) {
 		_stage.op[i].param1 = correctSecondStageParam(_stage.op[i].param1);
 		_stage.op[i].param2 = correctSecondStageParam(_stage.op[i].param2);
 		_stage.op[i].param3 = correctSecondStageParam(_stage.op[i].param3);
@@ -165,7 +165,7 @@ static
 CombinerInputs _compileCombiner(const CombinerStage & _stage, const char** _Input, std::stringstream & _strShader) {
 	bool bBracketOpen = false;
 	CombinerInputs inputs;
-	for (int i = 0; i < _stage.numOps; ++i) {
+	for (u32 i = 0; i < _stage.numOps; ++i) {
 		switch (_stage.op[i].op) {
 		case LOAD:
 			//			sprintf(buf, "(%s ", _Input[_stage.op[i].param1]);
@@ -516,12 +516,16 @@ public:
 				ss << "#extension GL_NV_shader_noperspective_interpolation : enable" << std::endl;
 			if (_glinfo.dual_source_blending)
 				ss << "#extension GL_EXT_blend_func_extended : enable" << std::endl;
+			if (_glinfo.ext_fetch)
+				ss << "#extension GL_EXT_shader_framebuffer_fetch : enable" << std::endl;
+			if (_glinfo.ext_fetch_arm)
+				ss << "#extension GL_ARM_shader_framebuffer_fetch : enable" << std::endl;
+
 			if (config.frameBufferEmulation.N64DepthCompare == Config::dcFast) {
 				if (_glinfo.imageTextures && _glinfo.fragment_interlockNV) {
 					ss << "#extension GL_NV_fragment_shader_interlock : enable" << std::endl
 						<< "layout(pixel_interlock_ordered) in;" << std::endl;
-				} else if (_glinfo.ext_fetch)
-					ss << "#extension GL_EXT_shader_framebuffer_fetch : enable" << std::endl;
+				}
 			}
 			ss << "# define IN in" << std::endl
 				<< "# define OUT out" << std::endl
@@ -585,17 +589,9 @@ public:
 			"    srcColor1 = muxp;										\n"
 			"    dstFactor1 = muxaf;									\n"
 			"  }														\n"
+			"  fragColor = srcColor1;	\n"
+			"  fragColor1 = vec4(dstFactor1);							\n"
 			;
-		if (_glinfo.dual_source_blending) {
-			m_part +=
-				"  fragColor = srcColor1;								\n"
-				"  fragColor1 = vec4(dstFactor1);						\n"
-				;
-		} else {
-			m_part +=
-				"  fragColor = vec4(srcColor1.rgb, clampedColor.a);	\n"
-				;
-		}
 #else
 		// Keep old code for reference
 		m_part =
@@ -637,17 +633,9 @@ public:
 			"    srcColor2 = muxp;										\n"
 			"    dstFactor2 = muxaf;									\n"
 			"  }														\n"
+			"  fragColor = srcColor2;	\n"
+			"  fragColor1 = vec4(dstFactor2);							\n"
 			;
-		if (_glinfo.dual_source_blending) {
-			m_part +=
-				"  fragColor = srcColor2;								\n"
-				"  fragColor1 = vec4(dstFactor2);						\n"
-				;
-		} else {
-			m_part +=
-				"  fragColor =  vec4(srcColor2.rgb, clampedColor.a);	\n"
-				;
-		}
 
 #else
 		// Keep old code for reference
@@ -670,18 +658,23 @@ class ShaderBlenderAlpha : public ShaderPart
 public:
 	ShaderBlenderAlpha(const opengl::GLInfo & _glinfo)
 	{
-		if (_glinfo.dual_source_blending)
-		m_part +=
-			"if (uBlendAlphaMode != 2) {							\n"
-			"  lowp float cvg = clampedColor.a;						\n"
-			"  lowp vec4 srcAlpha = vec4(cvg, cvg, 1.0, 0.0);		\n"
-			"  lowp vec4 dstFactorAlpha = vec4(1.0, 1.0, 0.0, 1.0);	\n"
-			"  if (uBlendAlphaMode == 0)							\n"
-			"    dstFactorAlpha[0] = 0.0;							\n"
-			"  fragColor.a = srcAlpha[uCvgDest];					\n"
-			"  fragColor1.a = dstFactorAlpha[uCvgDest];				\n"
-			"} else fragColor.a = clampedColor.a;					\n"
-			;
+		if (_glinfo.dual_source_blending || _glinfo.ext_fetch || _glinfo.ext_fetch_arm) {
+			m_part +=
+				"if (uBlendAlphaMode != 2) {							\n"
+				"  lowp float cvg = clampedColor.a;						\n"
+				"  lowp vec4 srcAlpha = vec4(cvg, cvg, 1.0, 0.0);		\n"
+				"  lowp vec4 dstFactorAlpha = vec4(1.0, 1.0, 0.0, 1.0);	\n"
+				"  if (uBlendAlphaMode == 0)							\n"
+				"    dstFactorAlpha[0] = 0.0;							\n"
+				"  fragColor1.a = dstFactorAlpha[uCvgDest];				\n"
+				"  fragColor.a = srcAlpha[uCvgDest] + lastFragColor.a * fragColor1.a;\n"
+				"} else fragColor.a = clampedColor.a;					\n";
+		}
+		else {
+			m_part +=
+				"fragColor.a = clampedColor.a;"
+				;
+		}
 	}
 };
 
@@ -829,14 +822,14 @@ public:
 		}
 
 		m_part +=
-			"  lowp mat4 bayer = mat4( 0.0, 0.25, 0.0625, 0.3125,						\n"
-			"                          0.25, 0.0, 0.3125, 0.0625,						\n"
-			"                          0.1875, 0.4375, 0.125, 0.375,					\n"
-			"                          0.4375, 0.1875, 0.375, 0.125);					\n"
-			"  lowp mat4 mSquare = mat4( 0.0, 0.6875, 0.75, 0.4375,						\n"
-			"                            0.875, 0.3125, 0.125, 0.5625, 					\n"
-			"                            0.1875, 0.5, 0.9375, 0.25,						\n"
-			"                            0.8125, 0.375, 0.0625, 0.625);					\n"
+			"  lowp mat4 bayer = mat4( 0.0, 0.5, 0.125, 0.625,							\n"
+			"                          0.5, 0.0, 0.625, 0.125,							\n"
+			"                          0.375, 0.875, 0.25, 0.75,						\n"
+			"                          0.875, 0.375, 0.75, 0.25);						\n"
+			"  lowp mat4 mSquare = mat4( 0.0, 0.75, 0.125, 0.875,						\n"
+			"                            0.5, 0.25, 0.625, 0.375, 						\n"
+			"                            0.375, 0.625, 0.25, 0.5,						\n"
+			"                            0.875, 0.125, 0.75, 0.0);						\n"
 			// Try to keep dithering visible even at higher resolutions
 			"  lowp float divider = 1.0 + step(3.0, uScreenScale.x);					\n"
 			"  mediump ivec2 position = ivec2(mod((gl_FragCoord.xy - 0.5) / divider,4.0));\n"
@@ -991,13 +984,28 @@ public:
 
 		if (_glinfo.dual_source_blending) {
 			m_part +=
-				"layout(location = 0, index = 0) OUT lowp vec4 fragColor; 	\n"
-				"layout(location = 0, index = 1) OUT lowp vec4 fragColor1;	\n"
-			;
+				"layout(location = 0, index = 0) OUT lowp vec4 fragColor; 	\n"  // MAIN FRAGMENT SHADER OUTPUT 
+				"layout(location = 0, index = 1) OUT lowp vec4 fragColor1;	\n"  // SECONDARY FRAGMENT SHADER OUTPUT
+				"#define LAST_FRAG_COLOR vec4(0.0)							\n"  // DUMMY
+				;
+		} else if (_glinfo.ext_fetch) {
+			m_part +=
+				"layout(location = 0) inout lowp vec4 fragColor;		\n"  // MAIN FRAGMENT SHADER OUTPUT
+				"lowp vec4 fragColor1;									\n"  // DUMMY
+				"#define LAST_FRAG_COLOR fragColor						\n"  // CURRENT FRAMEBUFFER COLOR/ALPHA
+				;
+		} else if (_glinfo.ext_fetch_arm) {
+			m_part +=
+				"OUT lowp vec4 fragColor;								\n"  // MAIN FRAGMENT SHADER OUTPUT
+				"lowp vec4 fragColor1;									\n"  // DUMMY
+				"#define LAST_FRAG_COLOR gl_LastFragColorARM			\n"  // CURRENT FRAMEBUFFER COLOR/ALPHA
+				;
 		} else {
 			m_part +=
-				"OUT lowp vec4 fragColor;	\n"
-			;
+				"OUT lowp vec4 fragColor;								\n"  // MAIN FRAGMENT SHADER OUTPUT
+				"lowp vec4 fragColor1;									\n"  // DUMMY
+ 				"#define LAST_FRAG_COLOR vec4(0.0)						\n"  // DUMMY
+				;
 		}
 
 		if (config.frameBufferEmulation.N64DepthCompare == Config::dcFast && _glinfo.ext_fetch) {
@@ -1082,13 +1090,28 @@ public:
 
 		if (_glinfo.dual_source_blending) {
 			m_part +=
-				"layout(location = 0, index = 0) OUT lowp vec4 fragColor; 	\n"
-				"layout(location = 0, index = 1) OUT lowp vec4 fragColor1;	\n"
-			;
+				"layout(location = 0, index = 0) OUT lowp vec4 fragColor; 	\n"  // MAIN FRAGMENT SHADER OUTPUT
+				"layout(location = 0, index = 1) OUT lowp vec4 fragColor1;	\n"  // SECONDARY FRAGMENT SHADER OUTPUT
+				"#define LAST_FRAG_COLOR vec4(0.0)							\n"  // DUMMY
+				;
+		} else if (_glinfo.ext_fetch) {
+			m_part +=
+				"layout(location = 0) inout lowp vec4 fragColor;		\n"  // MAIN FRAGMENT SHADER OUTPUT
+				"lowp vec4 fragColor1;									\n"  // DUMMY
+				"#define LAST_FRAG_COLOR fragColor						\n"  // CURRENT FRAMEBUFFER COLOR/ALPHA
+				;
+		} else if (_glinfo.ext_fetch_arm) {
+			m_part +=
+				"OUT lowp vec4 fragColor;								\n"  // MAIN FRAGMENT SHADER OUTPUT
+				"lowp vec4 fragColor1;									\n"  // DUMMY
+				"#define LAST_FRAG_COLOR gl_LastFragColorARM			\n"  // CURRENT FRAMEBUFFER COLOR/ALPHA
+				;
 		} else {
 			m_part +=
-				"OUT lowp vec4 fragColor;	\n"
-			;
+				"OUT lowp vec4 fragColor;								\n"  // MAIN FRAGMENT SHADER OUTPUT
+				"lowp vec4 fragColor1;									\n"  // DUMMY
+				"#define LAST_FRAG_COLOR vec4(0.0)						\n"  // DUMMY
+				;
 		}
 
 		if (config.frameBufferEmulation.N64DepthCompare == Config::dcFast && _glinfo.ext_fetch) {
@@ -1502,13 +1525,14 @@ public:
 				"  #define MUXB(pos) dot(muxB, STVEC(pos))									\n"
 				"  #define MUXPM(pos) muxPM*(STVEC(pos))									\n"
 				"  #define MUXF(pos) dot(muxF, STVEC(pos))									\n"
-				"  lowp mat4 muxPM = mat4(vec4(0.0), vec4(0.0), uBlendColor, uFogColor);	\n"
+				"  lowp vec4 lastFragColor = LAST_FRAG_COLOR;								\n"
+				"  lowp mat4 muxPM = mat4(vec4(0.0), lastFragColor, uBlendColor, uFogColor); \n"
 				"  lowp vec4 muxA = vec4(0.0, uFogColor.a, shadeColor.a, 0.0);				\n"
-				"  lowp vec4 muxB = vec4(0.0, 1.0, 1.0, 0.0);								\n"
+				"  lowp vec4 muxB = vec4(0.0, lastFragColor.a, 1.0, 0.0);				\n"
 				"  lowp vec4 muxF = vec4(0.0, 1.0, 0.0, 0.0);								\n"
 				"  lowp vec4 muxp, muxm, srcColor1, srcColor2;								\n"
 				"  lowp float muxa, muxb, dstFactor1, dstFactor2, muxaf, muxbf;				\n"
-			;
+				;
 		}
 	}
 };
@@ -1706,10 +1730,10 @@ public:
 	}
 };
 
-class ShaderFragmentMainEnd : public ShaderPart
+class ShaderFragmentMainEndSpecial : public ShaderPart
 {
 public:
-	ShaderFragmentMainEnd(const opengl::GLInfo & _glinfo)
+	ShaderFragmentMainEndSpecial(const opengl::GLInfo & _glinfo)
 	{
 		if (_glinfo.isGLES2) {
 			m_part =
@@ -1720,6 +1744,23 @@ public:
 			m_part =
 				"} \n\n"
 				;
+		}
+	}
+};
+
+class ShaderFragmentMainEnd : public ShaderPart
+{
+public:
+	ShaderFragmentMainEnd(const opengl::GLInfo & _glinfo)
+	{
+		if (_glinfo.isGLES2) {
+			m_part =
+					"  gl_FragColor = fragColor; \n"
+					"} \n\n";
+		} else {
+			m_part =
+					"} \n\n"
+					;
 		}
 	}
 };
@@ -2121,7 +2162,7 @@ public:
 class ShaderCalcLight : public ShaderPart
 {
 public:
-	ShaderCalcLight(const opengl::GLInfo & _glinfo)
+	ShaderCalcLight(const opengl::GLInfo & /*_glinfo*/)
 	{
 		m_part =
 			"uniform mediump vec3 uLightDirection[8];	\n"
@@ -2673,7 +2714,7 @@ CombinerInputs CombinerProgramBuilder::compileCombiner(const CombinerKey & _key,
 		m_legacyBlender->write(ssShader);
 	}
 
-	_strShader = std::move(ssShader.str());
+	_strShader = ssShader.str();
 	return inputs;
 }
 
@@ -2815,7 +2856,7 @@ graphics::CombinerProgram * CombinerProgramBuilder::buildCombinerProgram(Combine
 
 	m_shaderN64DepthRender->write(ssShader);
 
-	const std::string strFragmentShader(std::move(ssShader.str()));
+	const std::string strFragmentShader(ssShader.str());
 
 	/* Create shader program */
 
@@ -2869,7 +2910,7 @@ GLuint _createVertexShader(ShaderPart * _header, ShaderPart * _body, ShaderPart 
 	_header->write(ssShader);
 	_body->write(ssShader);
 	_footer->write(ssShader);
-	const std::string strShader(std::move(ssShader.str()));
+	const std::string strShader(ssShader.str());
 	const GLchar * strShaderData = strShader.data();
 
 	GLuint shader_object = glCreateShader(GL_VERTEX_SHADER);
