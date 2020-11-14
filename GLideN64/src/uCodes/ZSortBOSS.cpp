@@ -127,7 +127,7 @@ void StoreMatrix( f32 mtx[4][4], u32 address )
 		s16 integer[4][4];
 		u16 fraction[4][4];
 	} *n64Mat = (struct _N64Matrix *)&RDRAM[address];
-	
+
 	for (u32 i = 0; i < 4; i++) {
 		for (u32 j = 0; j < 4; j++) {
 			const auto element = GetIntMatrixElement(mtx[i][j]);
@@ -509,8 +509,6 @@ void ZSortBOSS_Lighting( u32 _w0, u32 _w1 )
 	tdest >>= 1;
 
 	u32 r4 = _w0 << 7;
-	assert(r4 >= 0);
-
 	u32 r9 = DMEM[0x944];
 	assert(r9 == 0);
 
@@ -540,11 +538,11 @@ void ZSortBOSS_Lighting( u32 _w0, u32 _w1 )
 		//DMEM[(cdest++)^3] = (u8)(vtx.g * 255.0f);
 		//DMEM[(cdest++)^3] = (u8)(vtx.b * 255.0f);
 		//DMEM[(cdest++)^3] = (u8)(vtx.a * 255.0f);
-		
+
 		((s16*)DMEM)[(tdest++)^1] = (s16)vtx.s;
 		((s16*)DMEM)[(tdest++)^1] = (s16)vtx.t;
 	}
-	
+
 	LOG(LOG_VERBOSE, "ZSortBOSS_Lighting (0x%08x, 0x%08x)", _w0, _w1);
 }
 
@@ -784,7 +782,8 @@ void ZSortBOSS_UpdateMask( u32 _w0, u32 _w1 )
 
 void ZSortBOSS_SetOtherMode_L( u32 _w0, u32 _w1 )
 {
-	u32 mask = (s32)0x80000000 >> (_w0 & 0x1f);
+	//u32 mask = (s32)0x80000000 >> (_w0 & 0x1f); // unspecified behaviour
+	u32 mask = static_cast<u32>(s32(0x80000000) / (1 << (_w0 & 0x1f)));
 	mask >>= (_w0 >> 8) & 0x1f;
 	gDP.otherMode.l = (gDP.otherMode.l & ~mask) | _w1;
 
@@ -799,7 +798,8 @@ void ZSortBOSS_SetOtherMode_L( u32 _w0, u32 _w1 )
 
 void ZSortBOSS_SetOtherMode_H( u32 _w0, u32 _w1 )
 {
-	u32 mask = (s32)0x80000000 >> (_w0 & 0x1f);
+	//u32 mask = (s32)0x80000000 >> (_w0 & 0x1f); // unspecified behaviour
+	u32 mask = static_cast<u32>(s32(0x80000000) / (1 << (_w0 & 0x1f)));
 	mask >>= (_w0 >> 8) & 0x1f;
 	gDP.otherMode.h = (gDP.otherMode.h & ~mask) | _w1;
 

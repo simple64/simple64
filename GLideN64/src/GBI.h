@@ -56,21 +56,21 @@
 #define FIXED2FLOATRECIP16	1.52587890625e-05f
 
 #define _FIXED2FLOAT( v, b ) \
-	((f32)v * FIXED2FLOATRECIP##b)
+	(static_cast<f32>(v) * FIXED2FLOATRECIP##b)
 
 #define FIXED2FLOATRECIPCOLOR5	3.22580635547637939453125e-02f
 #define FIXED2FLOATRECIPCOLOR7	7.8740157186985015869140625e-03f
 #define FIXED2FLOATRECIPCOLOR8	3.9215688593685626983642578125e-03f
 
 #define _FIXED2FLOATCOLOR( v, b ) \
-	((f32)v * FIXED2FLOATRECIPCOLOR##b)
+	(static_cast<f32>(v) * FIXED2FLOATRECIPCOLOR##b)
 
 
 // Useful macros for decoding GBI command's parameters
 #define _SHIFTL( v, s, w )	\
-	(((u32)v & ((0x01 << w) - 1)) << s)
+	((static_cast<u32>(v) & ((0x01 << w) - 1)) << s)
 #define _SHIFTR( v, s, w )	\
-	(((u32)v >> s) & ((0x01 << w) - 1))
+	((static_cast<u32>(v) >> s) & ((0x01 << w) - 1))
 
 // These are all the constant flags
 #define G_ZBUFFER				0x00000001

@@ -42,7 +42,7 @@ inline float DotProduct(const float v0[3], const float v1[3])
 
 inline float GetFloatMatrixElement(s16 _int, u16 _fract)
 {
-	const s32 element = (_int << 16) | _fract;
+	const s32 element = static_cast<s32>((static_cast<u16>(_int) << 16) | _fract);
 	return _FIXED2FLOAT(element, 16);
 }
 

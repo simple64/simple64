@@ -1576,42 +1576,28 @@ namespace opengl {
 		switch (format)
 		{
 		case GL_RED:
+		case GL_RED_INTEGER:
+		case GL_STENCIL_INDEX:
+		case GL_DEPTH_COMPONENT:
+		case GL_LUMINANCE:
 			components = 1;
 			break;
 		case GL_RG:
+		case GL_RG_INTEGER:
+		case GL_DEPTH_STENCIL:
 			components = 2;
 			break;
 		case GL_RGB:
 		case GL_BGR:
-			components = 3;
-			break;
-		case GL_RGBA:
-		case GL_BGRA:
-			components = 4;
-			break;
-		case GL_RED_INTEGER:
-			components = 1;
-			break;
-		case GL_RG_INTEGER:
-			components = 2;
-			break;
 		case GL_RGB_INTEGER:
 		case GL_BGR_INTEGER:
 			components = 3;
 			break;
+		case GL_RGBA:
+		case GL_BGRA:
 		case GL_RGBA_INTEGER:
 		case GL_BGRA_INTEGER:
 			components = 4;
-			break;
-		case GL_STENCIL_INDEX:
-		case GL_DEPTH_COMPONENT:
-			components = 1;
-			break;
-		case GL_DEPTH_STENCIL:
-			components = 2;
-			break;
-		case GL_LUMINANCE:
-			components = 1;
 			break;
 		default:
 			components = -1;
@@ -1625,15 +1611,11 @@ namespace opengl {
 			break;
 		case GL_UNSIGNED_SHORT:
 		case GL_SHORT:
+		case GL_HALF_FLOAT:
 			bytesPerPixel = components * 2;
 			break;
 		case GL_UNSIGNED_INT:
 		case GL_INT:
-			bytesPerPixel = components * 4;
-			break;
-		case GL_HALF_FLOAT:
-			bytesPerPixel = components * 2;
-			break;
 		case GL_FLOAT:
 			bytesPerPixel = components * 4;
 			break;

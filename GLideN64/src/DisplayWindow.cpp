@@ -129,8 +129,8 @@ void DisplayWindow::updateScale()
 {
 	if (VI.width == 0 || VI.height == 0)
 		return;
-	m_scaleX = m_width / (float)VI.width;
-	m_scaleY = m_height / (float)VI.height;
+	m_scaleX = static_cast<f32>(m_width) / static_cast<f32>(VI.width);
+	m_scaleY = static_cast<f32>(m_height) / static_cast<f32>(VI.height);
 }
 
 void DisplayWindow::_setBufferSize()

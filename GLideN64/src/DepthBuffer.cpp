@@ -17,17 +17,6 @@
 using namespace graphics;
 
 DepthBuffer::DepthBuffer()
-	: m_address(0)
-	, m_width(0)
-	, m_pDepthImageZTexture(nullptr)
-	, m_pDepthImageDeltaZTexture(nullptr)
-	, m_pDepthBufferTexture(nullptr)
-	, m_depthRenderbufferWidth(0)
-	, m_cleared(false)
-	, m_pResolveDepthBufferTexture(nullptr)
-	, m_resolved(false)
-	, m_pDepthBufferCopyTexture(nullptr)
-	, m_copied(false)
 {
 	m_copyFBO = gfxContext.createFramebuffer();
 }
@@ -50,15 +39,15 @@ void DepthBuffer::_initDepthImageTexture(FrameBuffer * _pBuffer, CachedTexture& 
 {
 	const FramebufferTextureFormats & fbTexFormat = gfxContext.getFramebufferTextureFormats();
 
-	_cachedTexture.width = (u32)(_pBuffer->m_pTexture->width);
-	_cachedTexture.height = (u32)(_pBuffer->m_pTexture->height);
+	_cachedTexture.width = _pBuffer->m_pTexture->width;
+	_cachedTexture.height = _pBuffer->m_pTexture->height;
 	_cachedTexture.format = 0;
 	_cachedTexture.size = 2;
 	_cachedTexture.clampS = 1;
 	_cachedTexture.clampT = 1;
 	_cachedTexture.address = _pBuffer->m_startAddress;
-	_cachedTexture.clampWidth = _pBuffer->m_width;
-	_cachedTexture.clampHeight = _pBuffer->m_height;
+	_cachedTexture.clampWidth = static_cast<u16>(_pBuffer->m_width);
+	_cachedTexture.clampHeight = static_cast<u16>(_pBuffer->m_height);
 	_cachedTexture.frameBufferTexture = CachedTexture::fbOneSample;
 	_cachedTexture.maskS = 0;
 	_cachedTexture.maskT = 0;
@@ -117,22 +106,22 @@ void DepthBuffer::_initDepthBufferTexture(const FrameBuffer * _pBuffer, CachedTe
 	const FramebufferTextureFormats & fbTexFormat = gfxContext.getFramebufferTextureFormats();
 
 	if (_pBuffer != nullptr) {
-		_pTexture->width = (u32)(_pBuffer->m_pTexture->width);
-		_pTexture->height = (u32)(_pBuffer->m_pTexture->height);
+		_pTexture->width = _pBuffer->m_pTexture->width;
+		_pTexture->height = _pBuffer->m_pTexture->height;
 		_pTexture->address = _pBuffer->m_startAddress;
-		_pTexture->clampWidth = _pBuffer->m_width;
-		_pTexture->clampHeight = VI_GetMaxBufferHeight(_pBuffer->m_width);
+		_pTexture->clampWidth = static_cast<u16>(_pBuffer->m_width);
+		_pTexture->clampHeight = VI_GetMaxBufferHeight(static_cast<u16>(_pBuffer->m_width));
 	} else {
-		const u16 maxHeight = VI_GetMaxBufferHeight(VI.width);
+		const u16 maxHeight = VI_GetMaxBufferHeight(static_cast<u16>(VI.width));
 		if (config.frameBufferEmulation.nativeResFactor == 0) {
-			_pTexture->width = dwnd().getWidth();
-			_pTexture->height = (u16)(u32)(maxHeight * dwnd().getScaleX());
+			_pTexture->width = static_cast<u16>(dwnd().getWidth());
+			_pTexture->height = static_cast<u16>(static_cast<u32>(static_cast<f32>(maxHeight) * dwnd().getScaleX()));
 		} else {
-			_pTexture->width = VI.width * config.frameBufferEmulation.nativeResFactor;
-			_pTexture->height = maxHeight * config.frameBufferEmulation.nativeResFactor;
+			_pTexture->width = static_cast<u16>(VI.width * config.frameBufferEmulation.nativeResFactor);
+			_pTexture->height = static_cast<u16>(maxHeight * config.frameBufferEmulation.nativeResFactor);
 		}
 		_pTexture->address = gDP.depthImageAddress;
-		_pTexture->clampWidth = VI.width;
+		_pTexture->clampWidth = static_cast<u16>(VI.width);
 		_pTexture->clampHeight = maxHeight;
 	}
 	_pTexture->format = 0;
@@ -175,16 +164,16 @@ void DepthBuffer::_initDepthBufferRenderbuffer(FrameBuffer * _pBuffer)
 	if (m_depthRenderbuffer.isNotNull())
 		return;
 	u32 height;
-	if (_pBuffer != NULL) {
-		m_depthRenderbufferWidth = (u32)(_pBuffer->m_pTexture->width);
-		height = (u32)(_pBuffer->m_pTexture->height);
+	if (_pBuffer != nullptr) {
+		m_depthRenderbufferWidth = _pBuffer->m_pTexture->width;
+		height = _pBuffer->m_pTexture->height;
 	} else {
 		if (config.frameBufferEmulation.nativeResFactor == 0) {
 			m_depthRenderbufferWidth = dwnd().getWidth();
-			height = (u32)(VI_GetMaxBufferHeight(VI.width) * dwnd().getScaleX());
+			height = static_cast<u32>(static_cast<f32>(VI_GetMaxBufferHeight(static_cast<u16>(VI.width))) * dwnd().getScaleX());
 		} else {
 			m_depthRenderbufferWidth = VI.width * config.frameBufferEmulation.nativeResFactor;
-			height = VI_GetMaxBufferHeight(VI.width) * config.frameBufferEmulation.nativeResFactor;
+			height = VI_GetMaxBufferHeight(static_cast<u16>(VI.width)) * config.frameBufferEmulation.nativeResFactor;
 		}
 	}
 
@@ -342,7 +331,7 @@ void DepthBuffer::bindDepthImageTexture(ObjectHandle _fbo)
 		bindParams.imageUnit = textureImageUnits::DepthDeltaZ;
 		bindParams.texture = m_pDepthImageDeltaZTexture->name;
 		gfxContext.bindImageTexture(bindParams);
-	} else if (Context::FramebufferFetch) {
+	} else if (Context::FramebufferFetchDepth) {
 		Context::FrameBufferRenderTarget targetParams;
 		targetParams.bufferHandle = _fbo;
 		targetParams.bufferTarget = bufferTarget::DRAW_FRAMEBUFFER;
@@ -362,7 +351,7 @@ void DepthBuffer::bindDepthImageTexture(ObjectHandle _fbo)
 DepthBufferList::DepthBufferList() : m_pCurrent(nullptr), m_pzLUT(nullptr)
 {
 	m_pzLUT = new u16[0x40000];
-	for (int i = 0; i<0x40000; i++) {
+	for (u32 i = 0; i<0x40000; i++) {
 		u32 exponent = 0;
 		u32 testbit = 1 << 17;
 		while ((i & testbit) && (exponent < 7)) {
@@ -371,7 +360,7 @@ DepthBufferList::DepthBufferList() : m_pCurrent(nullptr), m_pzLUT(nullptr)
 		}
 
 		const u32 mantissa = (i >> (6 - (6 < exponent ? 6 : exponent))) & 0x7ff;
-		m_pzLUT[i] = (u16)(((exponent << 11) | mantissa) << 2);
+		m_pzLUT[i] = static_cast<u16>(((exponent << 11) | mantissa) << 2);
 	}
 }
 

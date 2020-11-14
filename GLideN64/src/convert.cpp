@@ -105,7 +105,7 @@ void UnswapCopyWrap(const u8 *src, u32 srcIdx, u8 *dest, u32 destIdx, u32 destMa
 	u32 leadingBytes = srcIdx & 3;
 	if (leadingBytes != 0) {
 		leadingBytes = 4 - leadingBytes;
-		if ((u32)leadingBytes > numBytes)
+		if (leadingBytes > numBytes)
 			leadingBytes = numBytes;
 		numBytes -= leadingBytes;
 

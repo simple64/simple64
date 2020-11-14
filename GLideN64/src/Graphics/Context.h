@@ -24,7 +24,8 @@ namespace graphics {
 		ImageTextures,
 		IntegerTextures,
 		ClipControl,
-		FramebufferFetch,
+		FramebufferFetchDepth,
+		FramebufferFetchColor,
 		TextureBarrier,
 		EglImage,
 		EglImageFramebuffer,
@@ -299,7 +300,8 @@ namespace graphics {
 		static bool ImageTextures;
 		static bool IntegerTextures;
 		static bool ClipControl;
-		static bool FramebufferFetch;
+		static bool FramebufferFetchDepth;
+		static bool FramebufferFetchColor;
 		static bool TextureBarrier;
 		static bool EglImage;
 		static bool EglImageFramebuffer;

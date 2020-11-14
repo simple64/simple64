@@ -102,7 +102,7 @@ void gDPSetTextureLUT( u32 mode )
 #endif
 }
 
-void gDPSetCombine( s32 muxs0, s32 muxs1 )
+void gDPSetCombine( u32 muxs0, u32 muxs1 )
 {
 	gDP.combine.muxs0 = muxs0;
 	gDP.combine.muxs1 = muxs1;
@@ -143,7 +143,7 @@ void gDPSetColorImage( u32 format, u32 size, u32 width, u32 address )
 	gDP.colorImage.height = 0;
 	gDP.colorImage.address = address;
 
-	frameBufferList().saveBuffer(address, (u16)format, (u16)size, (u16)width, false);
+	frameBufferList().saveBuffer(address, static_cast<u16>(format), static_cast<u16>(size), static_cast<u16>(width), false);
 
 #ifdef DEBUG_DUMP
 	DebugMsg( DEBUG_NORMAL, "gDPSetColorImage( %s, %s, %i, 0x%08X );\n",
@@ -163,7 +163,7 @@ void gDPSetTextureImage(u32 format, u32 size, u32 width, u32 address)
 	gDP.textureImage.bpl = gDP.textureImage.width << gDP.textureImage.size >> 1;
 	if (gSP.DMAOffsets.tex_offset != 0) {
 		if (format == G_IM_FMT_RGBA) {
-			u16 * t = (u16*)(RDRAM + gSP.DMAOffsets.tex_offset);
+			u16 * t = reinterpret_cast<u16*>(RDRAM + gSP.DMAOffsets.tex_offset);
 			gSP.DMAOffsets.tex_shift = t[gSP.DMAOffsets.tex_count ^ 1];
 			gDP.textureImage.address += gSP.DMAOffsets.tex_shift;
 		} else {
@@ -227,8 +227,8 @@ void gDPSetFogColor( u32 r, u32 g, u32 b, u32 a )
 void gDPSetFillColor( u32 c )
 {
 	gDP.fillColor.color = c;
-	gDP.fillColor.z = (f32)_SHIFTR( c,  2, 14 );
-	gDP.fillColor.dz = (f32)_SHIFTR( c, 0, 2 );
+	gDP.fillColor.z = static_cast<f32>(_SHIFTR( c,  2, 14 ));
+	gDP.fillColor.dz = static_cast<f32>(_SHIFTR( c, 0, 2 ));
 
 	DebugMsg( DEBUG_NORMAL, "gDPSetFillColor( 0x%08X );\n", c );
 }
@@ -240,7 +240,7 @@ void gDPGetFillColor(f32 _fillColor[4])
 		_fillColor[0] = _FIXED2FLOATCOLOR( _SHIFTR( c, 11, 5 ), 5 );
 		_fillColor[1] = _FIXED2FLOATCOLOR( _SHIFTR( c,  6, 5 ), 5 );
 		_fillColor[2] = _FIXED2FLOATCOLOR( _SHIFTR( c,  1, 5 ), 5 );
-		_fillColor[3] = (f32)_SHIFTR( c,  0, 1 );
+		_fillColor[3] = static_cast<f32>(_SHIFTR( c,  0, 1 ));
 	} else {
 		_fillColor[0] = _FIXED2FLOATCOLOR( _SHIFTR( c, 24, 8 ), 8 );
 		_fillColor[1] = _FIXED2FLOATCOLOR( _SHIFTR( c, 16, 8 ), 8 );
@@ -380,7 +380,7 @@ bool CheckForFrameBufferTexture(u32 _address, u32 _width, u32 _bytes)
 
 		const u32 texEndAddress = _address + _bytes - 1;
 		if (_address > pBuffer->m_startAddress &&
-			std::abs((s32)pBuffer->m_width - (s32)_width) > 1 &&
+			std::abs(static_cast<s32>(pBuffer->m_width) - static_cast<s32>(_width)) > 1 &&
 			texEndAddress > (pBuffer->m_endAddress + (pBuffer->m_width << pBuffer->m_size >> 1))) {
 			//fbList.removeBuffer(pBuffer->m_startAddress);
 			bRes = false;
@@ -409,7 +409,7 @@ bool CheckForFrameBufferTexture(u32 _address, u32 _width, u32 _bytes)
 		break;
 	}
 
-	for (int nTile = gSP.texture.tile; nTile < 6; ++nTile) {
+	for (u32 nTile = gSP.texture.tile; nTile < 6; ++nTile) {
 		if (gDP.tiles[nTile].tmem == gDP.loadTile->tmem) {
 			gDPTile & curTile = gDP.tiles[nTile];
 			curTile.textureMode = gDP.loadTile->textureMode;
@@ -432,8 +432,8 @@ void gDPLoadTile32b(u32 uls, u32 ult, u32 lrs, u32 lrt)
 	const u32 line = gDP.loadTile->line << 2;
 	const u32 tbase = gDP.loadTile->tmem << 2;
 	const u32 addr = gDP.textureImage.address >> 2;
-	const u32 * src = (const u32*)RDRAM;
-	u16 * tmem16 = (u16*)TMEM;
+	const u32 * src = reinterpret_cast<const u32*>(RDRAM);
+	u16 * tmem16 = reinterpret_cast<u16*>(TMEM);
 	u32 c, ptr, tline, s, xorval;
 
 	for (u32 j = 0; j < height; ++j) {
@@ -483,14 +483,14 @@ void gDPLoadTile(u32 tile, u32 uls, u32 ult, u32 lrs, u32 lrt)
 
 	gDPLoadTileInfo &info = gDP.loadInfo[gDP.loadTile->tmem];
 	info.texAddress = gDP.loadTile->imageAddress;
-	info.uls = gDP.loadTile->uls;
-	info.ult = gDP.loadTile->ult;
-	info.lrs = gDP.loadTile->lrs;
-	info.lrt = gDP.loadTile->lrt;
-	info.width = gDP.loadTile->masks != 0 ? (u16)min(width, 1U << gDP.loadTile->masks) : (u16)width;
-	info.height = gDP.loadTile->maskt != 0 ? (u16)min(height, 1U << gDP.loadTile->maskt) : (u16)height;
-	info.texWidth = gDP.textureImage.width;
-	info.size = gDP.textureImage.size;
+	info.uls = static_cast<u16>(gDP.loadTile->uls);
+	info.ult = static_cast<u16>(gDP.loadTile->ult);
+	info.lrs = static_cast<u16>(gDP.loadTile->lrs);
+	info.lrt = static_cast<u16>(gDP.loadTile->lrt);
+	info.width = static_cast<u16>(gDP.loadTile->masks != 0 ? min(width, 1U << gDP.loadTile->masks) : width);
+	info.height = static_cast<u16>(gDP.loadTile->maskt != 0 ? min(height, 1U << gDP.loadTile->maskt) : height);
+	info.texWidth = static_cast<u16>(gDP.textureImage.width);
+	info.size = static_cast<u8>(gDP.textureImage.size);
 	info.loadType = LOADTYPE_TILE;
 	info.bytes = bpl * height;
 	if (gDP.loadTile->size == G_IM_SIZ_32b)
@@ -504,7 +504,7 @@ void gDPLoadTile(u32 tile, u32 uls, u32 ult, u32 lrs, u32 lrt)
 		gDP.loadTile->loadWidth = max(gDP.loadTile->loadWidth, info.width);
 	if (gDP.loadTile->maskt == 0) {
 		if (gDP.otherMode.cycleType != G_CYC_2CYCLE && gDP.loadTile->tmem % gDP.loadTile->line == 0) {
-			u16 theight = info.height + gDP.loadTile->tmem / gDP.loadTile->line;
+			u16 theight = static_cast<u16>(info.height + gDP.loadTile->tmem / gDP.loadTile->line);
 			gDP.loadTile->loadHeight = max(gDP.loadTile->loadHeight, theight);
 		} else
 			gDP.loadTile->loadHeight = max(gDP.loadTile->loadHeight, info.height);
@@ -516,7 +516,7 @@ void gDPLoadTile(u32 tile, u32 uls, u32 ult, u32 lrs, u32 lrt)
 		bpl2 = (gDP.textureImage.width - gDP.loadTile->uls);
 	u32 height2 = height;
 	if (gDP.loadTile->lrt > gDP.scissor.lry)
-		height2 = (u32)gDP.scissor.lry - gDP.loadTile->ult;
+		height2 = static_cast<u32>(gDP.scissor.lry) - gDP.loadTile->ult;
 
 	if (CheckForFrameBufferTexture(address, info.width, bpl2*height2))
 		return;
@@ -529,11 +529,11 @@ void gDPLoadTile(u32 tile, u32 uls, u32 ult, u32 lrs, u32 lrt)
 		const u32 qwpr = bpr >> 3;
 		for (u32 y = 0; y < height; ++y) {
 			if (address + bpl > RDRAMSize)
-				UnswapCopyWrap(RDRAM, address, (u8*)TMEM, tmemAddr << 3, 0xFFF, RDRAMSize - address);
+				UnswapCopyWrap(RDRAM, address, reinterpret_cast<u8*>(TMEM), tmemAddr << 3, 0xFFF, RDRAMSize - address);
 			else
-				UnswapCopyWrap(RDRAM, address, (u8*)TMEM, tmemAddr << 3, 0xFFF, bpr);
+				UnswapCopyWrap(RDRAM, address, reinterpret_cast<u8*>(TMEM), tmemAddr << 3, 0xFFF, bpr);
 			if (y & 1)
-				DWordInterleaveWrap((u32*)TMEM, tmemAddr << 1, 0x3FF, qwpr);
+				DWordInterleaveWrap(reinterpret_cast<u32*>(TMEM), tmemAddr << 1, 0x3FF, qwpr);
 
 			address += gDP.textureImage.bpl;
 			if (address >= RDRAMSize)
@@ -552,17 +552,17 @@ void gDPLoadTile(u32 tile, u32 uls, u32 ult, u32 lrs, u32 lrt)
 //
 void gDPLoadBlock32(u32 uls,u32 lrs, u32 dxt)
 {
-	const u32 * src = (const u32*)RDRAM;
+	const u32 * src = reinterpret_cast<const u32*>(RDRAM);
 	const u32 tb = gDP.loadTile->tmem << 2;
 	const u32 line = gDP.loadTile->line << 2;
 
-	u16 *tmem16 = (u16*)TMEM;
+	u16 *tmem16 = reinterpret_cast<u16*>(TMEM);
 	u32 addr = gDP.loadTile->imageAddress >> 2;
 	u32 width = (lrs - uls + 1) << 2;
 	if (width == 4) // lr_s == 0, 1x1 texture
 		width = 1;
 	else if (width & 7)
-		width = (width & (~7)) + 8;
+		width = (width & (~7U)) + 8;
 
 	if (dxt != 0) {
 		u32 j = 0;
@@ -617,19 +617,19 @@ void gDPLoadBlock(u32 tile, u32 uls, u32 ult, u32 lrs, u32 dxt)
 
 	gDPLoadTileInfo &info = gDP.loadInfo[gDP.loadTile->tmem];
 	info.texAddress = gDP.loadTile->imageAddress;
-	info.uls = gDP.loadTile->uls;
-	info.ult = gDP.loadTile->ult;
-	info.lrs = gDP.loadTile->lrs;
-	info.lrt = gDP.loadTile->lrt;
-	info.width = gDP.loadTile->lrs;
+	info.uls = static_cast<u16>(gDP.loadTile->uls);
+	info.ult = static_cast<u16>(gDP.loadTile->ult);
+	info.lrs = static_cast<u16>(gDP.loadTile->lrs);
+	info.lrt = static_cast<u16>(gDP.loadTile->lrt);
+	info.width = static_cast<u16>(gDP.loadTile->lrs);
 	info.dxt = dxt;
-	info.size = gDP.textureImage.size;
+	info.size = static_cast<u8>(gDP.textureImage.size);
 	info.loadType = LOADTYPE_BLOCK;
 
 	const u32 width = (lrs - uls + 1) & 0x0FFF;
 	u32 bytes = width << gDP.loadTile->size >> 1;
 	if ((bytes & 7) != 0)
-		bytes = (bytes & (~7)) + 8;
+		bytes = (bytes & (~7U)) + 8;
 
 	info.bytes = bytes;
 	u32 address = gDP.textureImage.address + ult * gDP.textureImage.bpl + (uls << gDP.textureImage.size >> 1);
@@ -658,7 +658,7 @@ void gDPLoadBlock(u32 tile, u32 uls, u32 ult, u32 lrs, u32 dxt)
 		memcpy(TMEM, &RDRAM[address], bytes); // HACK!
 	else {
 		u32 tmemAddr = gDP.loadTile->tmem;
-		UnswapCopyWrap(RDRAM, address, (u8*)TMEM, tmemAddr << 3, 0xFFF, bytes);
+		UnswapCopyWrap(RDRAM, address, reinterpret_cast<u8*>(TMEM), tmemAddr << 3, 0xFFF, bytes);
 		if (dxt != 0) {
 			u32 dxtCounter = 0;
 			u32 qwords = (bytes >> 3);
@@ -678,12 +678,12 @@ void gDPLoadBlock(u32 tile, u32 uls, u32 ult, u32 lrs, u32 dxt)
 						goto end_dxt_test;
 					dxtCounter += dxt;
 				} while ((dxtCounter & 0x800) != 0);
-				DWordInterleaveWrap((u32*)TMEM, tmemAddr << 1, 0x3FF, line);
+				DWordInterleaveWrap(reinterpret_cast<u32*>(TMEM), tmemAddr << 1, 0x3FF, line);
 				tmemAddr += line;
 				line = 0;
 			}
 			end_dxt_test:
-				DWordInterleaveWrap((u32*)TMEM, tmemAddr << 1, 0x3FF, line);
+				DWordInterleaveWrap(reinterpret_cast<u32*>(TMEM), tmemAddr << 1, 0x3FF, line);
 		}
 	}
 
@@ -697,16 +697,16 @@ void gDPLoadTLUT( u32 tile, u32 uls, u32 ult, u32 lrs, u32 lrt )
 		DebugMsg(DEBUG_NORMAL | DEBUG_ERROR, "gDPLoadTLUT wrong tile tmem addr: tile[%d].tmem=%04x;\n", tile, gDP.tiles[tile].tmem);
 		return;
 	}
-	u16 count = (u16)((gDP.tiles[tile].lrs - gDP.tiles[tile].uls + 1) * (gDP.tiles[tile].lrt - gDP.tiles[tile].ult + 1));
+	u16 count = static_cast<u16>((gDP.tiles[tile].lrs - gDP.tiles[tile].uls + 1) * (gDP.tiles[tile].lrt - gDP.tiles[tile].ult + 1));
 	u32 address = gDP.textureImage.address + gDP.tiles[tile].ult * gDP.textureImage.bpl + (gDP.tiles[tile].uls << gDP.textureImage.size >> 1);
-	u16 pal = (u16)((gDP.tiles[tile].tmem - 256) >> 4);
+	u16 pal = static_cast<u16>((gDP.tiles[tile].tmem - 256) >> 4);
 	u16 * dest = reinterpret_cast<u16*>(TMEM);
 	u32 destIdx = gDP.tiles[tile].tmem << 2;
 
 	int i = 0;
 	while (i < count) {
 		for (u16 j = 0; (j < 16) && (i < count); ++j, ++i) {
-			dest[(destIdx | 0x0400) & 0x07FF] = swapword(*(u16*)(RDRAM + (address ^ 2)));
+			dest[(destIdx | 0x0400) & 0x07FF] = swapword(*reinterpret_cast<u16*>(RDRAM + (address ^ 2)));
 			address += 2;
 			destIdx += 4;
 		}
@@ -718,9 +718,9 @@ void gDPLoadTLUT( u32 tile, u32 uls, u32 ult, u32 lrs, u32 lrt )
 	gDP.paletteCRC256 = CRC_Calculate(UINT64_MAX, gDP.paletteCRC16, sizeof(u64) * 16);
 
 	if (TFH.isInited()) {
-		const u16 start = gDP.tiles[tile].tmem - 256; // starting location in the palettes
-		u16 *spal = (u16*)(RDRAM + gDP.textureImage.address);
-		memcpy((u8*)(gDP.TexFilterPalette + start), spal, count<<1);
+		const u16 start = static_cast<u16>(gDP.tiles[tile].tmem) - 256; // starting location in the palettes
+		u16 *spal = reinterpret_cast<u16*>(RDRAM + gDP.textureImage.address);
+		memcpy(reinterpret_cast<u8*>(gDP.TexFilterPalette + start), spal, u32(count)<<1);
 	}
 
 	gDP.changed |= CHANGED_TMEM;
@@ -814,10 +814,10 @@ void gDPFillRectangle( s32 ulx, s32 uly, s32 lrx, s32 lry )
 
 void gDPSetConvert( s32 k0, s32 k1, s32 k2, s32 k3, s32 k4, s32 k5 )
 {
-	gDP.convert.k0 = (SIGN(k0, 9) << 1) + 1;
-	gDP.convert.k1 = (SIGN(k1, 9) << 1) + 1;
-	gDP.convert.k2 = (SIGN(k2, 9) << 1) + 1;
-	gDP.convert.k3 = (SIGN(k3, 9) << 1) + 1;
+	gDP.convert.k0 = static_cast<s32>(static_cast<u32>(SIGN(k0, 9) << 1)) + 1;
+	gDP.convert.k1 = static_cast<s32>(static_cast<u32>(SIGN(k1, 9) << 1)) + 1;
+	gDP.convert.k2 = static_cast<s32>(static_cast<u32>(SIGN(k2, 9) << 1)) + 1;
+	gDP.convert.k3 = static_cast<s32>(static_cast<u32>(SIGN(k3, 9) << 1)) + 1;
 	gDP.convert.k4 = k4;
 	gDP.convert.k5 = k5;
 
@@ -1295,7 +1295,7 @@ void LLETriangle::flush(u32 _cmd)
 #endif
 }
 
-void LLETriangle::draw(bool _shade, bool _texture, bool _zbuffer, s32 * _pData)
+void LLETriangle::draw(bool _shade, bool _texture, bool _zbuffer, u32 * _pData)
 {
 	DebugMsg(DEBUG_NORMAL, "gDPLLETriangle shade: %d, texture: %d, zbuffer: %d\n",
 		int(_shade), int(_texture), int(_zbuffer));
@@ -1305,21 +1305,22 @@ void LLETriangle::draw(bool _shade, bool _texture, bool _zbuffer, s32 * _pData)
 	if (tile != m_tile)
 		flush(0);
 	m_tile = tile;
-	const int flip = (_pData[0] & 0x800000) >> 23;
+//	const int flip = (_pData[0] & 0x800000) >> 23; // unused
 	start(tile);
 
-	int yl = SIGN(_pData[0], 14);
-	int ym = _pData[1] >> 16;
+	s32* pDataSigned = reinterpret_cast<s32*>(_pData);
+	int yl = SIGN(pDataSigned[0], 14);
+	int ym = pDataSigned[1] >> 16;
 	ym = SIGN(ym, 14);
-	int yh = SIGN(_pData[1], 14);
+	int yh = SIGN(pDataSigned[1], 14);
 
-	int xl = SIGN(_pData[2], 28);
-	int xh = SIGN(_pData[4], 28);
-	int xm = SIGN(_pData[6], 28);
+	int xl = SIGN(pDataSigned[2], 28);
+	int xh = SIGN(pDataSigned[4], 28);
+	int xm = SIGN(pDataSigned[6], 28);
 
-	const int dxldy = SIGN(_pData[3], 30);
-	const int dxhdy = SIGN(_pData[5], 30);
-	const int dxmdy = SIGN(_pData[7], 30);
+	const int dxldy = SIGN(pDataSigned[3], 30);
+	const int dxhdy = SIGN(pDataSigned[5], 30);
+	const int dxmdy = SIGN(pDataSigned[7], 30);
 
 	yh &= ~3;
 
@@ -1328,41 +1329,41 @@ void LLETriangle::draw(bool _shade, bool _texture, bool _zbuffer, s32 * _pData)
 	int drde = 0, dgde = 0, dbde = 0, dade = 0;
 
 	if (_shade) {
-		r = (_pData[8] & 0xffff0000) | ((_pData[12] >> 16) & 0x0000ffff);
-		g = ((_pData[8] << 16) & 0xffff0000) | (_pData[12] & 0x0000ffff);
-		b = (_pData[9] & 0xffff0000) | ((_pData[13] >> 16) & 0x0000ffff);
-		a = ((_pData[9] << 16) & 0xffff0000) | (_pData[13] & 0x0000ffff);
-		drdx = (_pData[10] & 0xffff0000) | ((_pData[14] >> 16) & 0x0000ffff);
-		dgdx = ((_pData[10] << 16) & 0xffff0000) | (_pData[14] & 0x0000ffff);
-		dbdx = (_pData[11] & 0xffff0000) | ((_pData[15] >> 16) & 0x0000ffff);
-		dadx = ((_pData[11] << 16) & 0xffff0000) | (_pData[15] & 0x0000ffff);
-		drde = (_pData[16] & 0xffff0000) | ((_pData[20] >> 16) & 0x0000ffff);
-		dgde = ((_pData[16] << 16) & 0xffff0000) | (_pData[20] & 0x0000ffff);
-		dbde = (_pData[17] & 0xffff0000) | ((_pData[21] >> 16) & 0x0000ffff);
-		dade = ((_pData[17] << 16) & 0xffff0000) | (_pData[21] & 0x0000ffff);
+		r = static_cast<int>((_pData[8] & 0xffff0000) | ((_pData[12] >> 16) & 0x0000ffff));
+		g = static_cast<int>(((_pData[8] << 16) & 0xffff0000) | (_pData[12] & 0x0000ffff));
+		b = static_cast<int>((_pData[9] & 0xffff0000) | ((_pData[13] >> 16) & 0x0000ffff));
+		a = static_cast<int>(((_pData[9] << 16) & 0xffff0000) | (_pData[13] & 0x0000ffff));
+		drdx = static_cast<int>((_pData[10] & 0xffff0000) | ((_pData[14] >> 16) & 0x0000ffff));
+		dgdx = static_cast<int>(((_pData[10] << 16) & 0xffff0000) | (_pData[14] & 0x0000ffff));
+		dbdx = static_cast<int>((_pData[11] & 0xffff0000) | ((_pData[15] >> 16) & 0x0000ffff));
+		dadx = static_cast<int>(((_pData[11] << 16) & 0xffff0000) | (_pData[15] & 0x0000ffff));
+		drde = static_cast<int>((_pData[16] & 0xffff0000) | ((_pData[20] >> 16) & 0x0000ffff));
+		dgde = static_cast<int>(((_pData[16] << 16) & 0xffff0000) | (_pData[20] & 0x0000ffff));
+		dbde = static_cast<int>((_pData[17] & 0xffff0000) | ((_pData[21] >> 16) & 0x0000ffff));
+		dade = static_cast<int>(((_pData[17] << 16) & 0xffff0000) | (_pData[21] & 0x0000ffff));
 	}
 
 	int s = 0, t = 0, w = 0x30000;
 	int dsdx = 0, dtdx = 0, dwdx = 0;
 	int dsde = 0, dtde = 0, dwde = 0;
 	if (_texture) {
-		s = (_pData[24] & 0xffff0000) | ((_pData[28] >> 16) & 0x0000ffff);
-		t = ((_pData[24] << 16) & 0xffff0000) | (_pData[28] & 0x0000ffff);
-		w = (_pData[25] & 0xffff0000) | ((_pData[29] >> 16) & 0x0000ffff);
-		dsdx = (_pData[26] & 0xffff0000) | ((_pData[30] >> 16) & 0x0000ffff);
-		dtdx = ((_pData[26] << 16) & 0xffff0000) | (_pData[30] & 0x0000ffff);
-		dwdx = (_pData[27] & 0xffff0000) | ((_pData[31] >> 16) & 0x0000ffff);
-		dsde = (_pData[32] & 0xffff0000) | ((_pData[36] >> 16) & 0x0000ffff);
-		dtde = ((_pData[32] << 16) & 0xffff0000) | (_pData[36] & 0x0000ffff);
-		dwde = (_pData[33] & 0xffff0000) | ((_pData[37] >> 16) & 0x0000ffff);
+		s = static_cast<int>((_pData[24] & 0xffff0000) | ((_pData[28] >> 16) & 0x0000ffff));
+		t = static_cast<int>(((_pData[24] << 16) & 0xffff0000) | (_pData[28] & 0x0000ffff));
+		w = static_cast<int>((_pData[25] & 0xffff0000) | ((_pData[29] >> 16) & 0x0000ffff));
+		dsdx = static_cast<int>((_pData[26] & 0xffff0000) | ((_pData[30] >> 16) & 0x0000ffff));
+		dtdx = static_cast<int>(((_pData[26] << 16) & 0xffff0000) | (_pData[30] & 0x0000ffff));
+		dwdx = static_cast<int>((_pData[27] & 0xffff0000) | ((_pData[31] >> 16) & 0x0000ffff));
+		dsde = static_cast<int>((_pData[32] & 0xffff0000) | ((_pData[36] >> 16) & 0x0000ffff));
+		dtde = static_cast<int>(((_pData[32] << 16) & 0xffff0000) | (_pData[36] & 0x0000ffff));
+		dwde = static_cast<int>((_pData[33] & 0xffff0000) | ((_pData[37] >> 16) & 0x0000ffff));
 	}
 
 	int z = 0xffff0000;
 	int dzdx = 0, dzde = 0;
 	if (_zbuffer) {
-		z = _pData[40];
-		dzdx = _pData[41];
-		dzde = _pData[42];
+		z = pDataSigned[40];
+		dzdx = pDataSigned[41];
+		dzde = pDataSigned[42];
 	}
 
 	std::array<SPVertex, 8> vertices;
@@ -1446,8 +1447,6 @@ void LLETriangle::draw(bool _shade, bool _texture, bool _zbuffer, s32 * _pData)
 		if (_texture) {
 			if (gDP.otherMode.texturePersp != 0) {
 				f32 vw = wf + dwdef * diffY + dwdxf * diffx * 4.0f;
-				if (vw == 0)
-					int t = 0;
 				vtx->w = static_cast<f32>(1.0f / (vw > 0.0f ? vw : (1.0f + vw - ceil(vw))));
 				//vtx->w = static_cast<f32>(1.0f / vw);
 				if (vw <= 0.0f) {
@@ -1503,24 +1502,24 @@ void LLETriangle::draw(bool _shade, bool _texture, bool _zbuffer, s32 * _pData)
 
 			SPVertex * vtx = &vertices[vtxCount++];
 			vtx->x = static_cast<f32>(xhyf);
-			vtx->y = static_cast<f32>(yf * 0.25);
+			vtx->y = static_cast<f32>(yf * 0.25f);
 			updateVtx(vtx, diffyf, 0.0f);
 
 			vtx = &vertices[vtxCount++];
 			vtx->x = static_cast<f32>(xmyf);
-			vtx->y = static_cast<f32>(yf * 0.25);
+			vtx->y = static_cast<f32>(yf * 0.25f);
 			updateVtx(vtx, diffyf, diffxf);
 		}
 #endif
 
 		vtx = &vertices[vtxCount++];
 		vtx->x = static_cast<f32>(xhym);
-		vtx->y = static_cast<f32>(ymf * 0.25);
+		vtx->y = static_cast<f32>(ymf * 0.25f);
 		updateVtx(vtx, diffym, 0.0f);
 
 		vtx = &vertices[vtxCount++];
 		vtx->x = static_cast<f32>(xmym);
-		vtx->y = static_cast<f32>(ymf * 0.25);
+		vtx->y = static_cast<f32>(ymf * 0.25f);
 		updateVtx(vtx, diffym, diffxm);
 
 		if (dxldy != dxmdy && ym < yl) {
@@ -1530,7 +1529,7 @@ void LLETriangle::draw(bool _shade, bool _texture, bool _zbuffer, s32 * _pData)
 			f32 y4f = (lc - hc) / (hk - lk);
 			vtx = &vertices[vtxCount++];
 			vtx->x = static_cast<f32>(hk * y4f + hc);
-			vtx->y = static_cast<f32>(y4f * 0.25);
+			vtx->y = static_cast<f32>(y4f * 0.25f);
 			updateVtx(vtx, (y4f - yhf), 0.0f);
 		}
 	} else {
@@ -1557,7 +1556,7 @@ void LLETriangle::draw(bool _shade, bool _texture, bool _zbuffer, s32 * _pData)
 
 		vtx = &vertices[vtxCount++];
 		vtx->x = static_cast<f32>(xlf);
-		vtx->y = static_cast<f32>(y1f * 0.25);
+		vtx->y = static_cast<f32>(y1f * 0.25f);
 
 		f32 x1f = hk * y1f + hc;
 		f32 diffx1 = xlf - x1f;
@@ -1619,20 +1618,17 @@ void LLETriangle::draw(bool _shade, bool _texture, bool _zbuffer, s32 * _pData)
 			f32 x2f = hk * ylf + hc;
 			f32 diffx2 = vtx->x - x2f;
 			updateVtx(vtx, ydiff, diffx2);
-		}
-		else if (mk == lk) {
+		} else if (mk == lk) {
 			vtx = &vertices[vtxCount++];
 			vtx->x = static_cast<f32>(hk * ylf + hc);
 			vtx->y = static_cast<f32>(ylf * 0.25f);
 			updateVtx(vtx, (ylf - yhf), 0.0f);
-		}
-		else {
+		} else {
 			f32 y2f = ylf;
 
 			if (yl == ym) {
 				y2f = (lc - mc) / (mk - lk);
-			}
-			else {
+			} else {
 				y2f = (lc - hc) / (hk - lk);
 			}
 
@@ -1647,9 +1643,6 @@ void LLETriangle::draw(bool _shade, bool _texture, bool _zbuffer, s32 * _pData)
 		gDP.changed |= CHANGED_TILE;
 	if (_zbuffer)
 		gSP.geometryMode |= G_ZBUFFER;
-
-	if (vtxCount < 3)
-		return;
 
 	GraphicsDrawer & drawer = dwnd().getDrawer();
 
@@ -1671,7 +1664,7 @@ static void gDPTriangle(u32 _w1, u32 _w2, int shade, int texture, int zbuffer)
 void gDPTriFill(u32 w0, u32 w1)
 {
 #ifndef OLD_LLE
-	s32 ewdata[44];
+	u32 ewdata[44];
 	memcpy(&ewdata[0], RDP.cmd_data + RDP.cmd_cur, 8 * sizeof(s32));
 	memset(&ewdata[8], 0, 36 * sizeof(s32));
 	LLETriangle::get().draw(0, 0, 0, ewdata);
@@ -1684,7 +1677,7 @@ void gDPTriFill(u32 w0, u32 w1)
 void gDPTriShade(u32 w0, u32 w1)
 {
 #ifndef OLD_LLE
-	s32 ewdata[44];
+	u32 ewdata[44];
 	memcpy(&ewdata[0], RDP.cmd_data + RDP.cmd_cur, 24 * sizeof(s32));
 	memset(&ewdata[24], 0, 20 * sizeof(s32));
 	LLETriangle::get().draw(1, 0, 0, ewdata);
@@ -1697,7 +1690,7 @@ void gDPTriShade(u32 w0, u32 w1)
 void gDPTriTxtr(u32 w0, u32 w1)
 {
 #ifndef OLD_LLE
-	s32 ewdata[44];
+	u32 ewdata[44];
 	memcpy(&ewdata[0], RDP.cmd_data + RDP.cmd_cur, 8 * sizeof(s32));
 	memset(&ewdata[8], 0, 16 * sizeof(s32));
 	memcpy(&ewdata[24], RDP.cmd_data + RDP.cmd_cur + 8, 16 * sizeof(s32));
@@ -1712,7 +1705,7 @@ void gDPTriTxtr(u32 w0, u32 w1)
 void gDPTriShadeTxtr(u32 w0, u32 w1)
 {
 #ifndef OLD_LLE
-	s32 ewdata[44];
+	u32 ewdata[44];
 	memcpy(&ewdata[0], RDP.cmd_data + RDP.cmd_cur, 40 * sizeof(s32));
 	memset(&ewdata[40], 0, 4 * sizeof(s32));
 	LLETriangle::get().draw(1, 1, 0, ewdata);
@@ -1725,7 +1718,7 @@ void gDPTriShadeTxtr(u32 w0, u32 w1)
 void gDPTriFillZ(u32 w0, u32 w1)
 {
 #ifndef OLD_LLE
-	s32 ewdata[44];
+	u32 ewdata[44];
 	memcpy(&ewdata[0], RDP.cmd_data + RDP.cmd_cur, 8 * sizeof(s32));
 	memset(&ewdata[8], 0, 32 * sizeof(s32));
 	memcpy(&ewdata[40], RDP.cmd_data + RDP.cmd_cur + 8, 4 * sizeof(s32));
@@ -1739,7 +1732,7 @@ void gDPTriFillZ(u32 w0, u32 w1)
 void gDPTriShadeZ(u32 w0, u32 w1)
 {
 #ifndef OLD_LLE
-	s32 ewdata[44];
+	u32 ewdata[44];
 	memcpy(&ewdata[0], RDP.cmd_data + RDP.cmd_cur, 24 * sizeof(s32));
 	memset(&ewdata[24], 0, 16 * sizeof(s32));
 	memcpy(&ewdata[40], RDP.cmd_data + RDP.cmd_cur + 24, 4 * sizeof(s32));
@@ -1753,7 +1746,7 @@ void gDPTriShadeZ(u32 w0, u32 w1)
 void gDPTriTxtrZ(u32 w0, u32 w1)
 {
 #ifndef OLD_LLE
-	s32 ewdata[44];
+	u32 ewdata[44];
 	memcpy(&ewdata[0], RDP.cmd_data + RDP.cmd_cur, 8 * sizeof(s32));
 	memset(&ewdata[8], 0, 16 * sizeof(s32));
 	memcpy(&ewdata[24], RDP.cmd_data + RDP.cmd_cur + 8, 16 * sizeof(s32));
@@ -1768,7 +1761,7 @@ void gDPTriTxtrZ(u32 w0, u32 w1)
 void gDPTriShadeTxtrZ(u32 w0, u32 w1)
 {
 #ifndef OLD_LLE
-	s32 ewdata[44];
+	u32 ewdata[44];
 	memcpy(&ewdata[0], RDP.cmd_data + RDP.cmd_cur, 44 * sizeof(s32));
 	LLETriangle::get().draw(1, 1, 1, ewdata);
 #else

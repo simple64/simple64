@@ -121,12 +121,12 @@
     <message>
         <location filename="configDialog.ui" line="108"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This option selects the resolution for windowed mode. You can also type in a custom window size.&lt;/p&gt;&lt;p&gt;[Recommended: &lt;span style=&quot; font-style:italic;&quot;&gt;640 x 480, 800 x 600, 1024 x 768, 1280 x 960&lt;/span&gt;]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Esta opción selecciona la resolución del modo ventana. Puedes introducir un tamaño personalizado.&lt;/p&gt;&lt;p&gt;[Recomendación: &lt;span style=&quot; font-style:italic;&quot;&gt;640 x 480, 800 x 600, 1024 x 768, 1280 x 960&lt;/span&gt;]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Esta opción selecciona la resolución del modo ventana. Puedes introducir un tamaño personalizado.&lt;/p&gt;&lt;p&gt;[Recomendación: &lt;span style=&quot; font-style:italic;&quot;&gt;640 x 480, 800 x 600, 1024 x 768, 1280 x 960&lt;/span&gt;]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="configDialog.ui" line="216"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Threaded video can improve performance with poor OpenGL drivers at the cost of very marginal input lag, usually less than half a frame.&lt;/p&gt;&lt;p&gt;[Recommended: &lt;span style=&quot; font-style:italic;&quot;&gt;Usually off, unless there are performance issues&lt;/span&gt;]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;El vídeo multihilo puede mejorar el rendimiento con controladores inferiores de OpenGL a costa de provocar un retraso de entrada (input lag) muy escaso, por lo generla de menos de medio fotograma.&lt;/p&gt;&lt;p&gt;[Recomendación: &lt;span style=&quot; font-style:italic;&quot;&gt;Por norma general desactivado, a menos que haya problemas de rendimiento&lt;/span&gt;]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;El vídeo multihilo puede mejorar el rendimiento con controladores inferiores de OpenGL a costa de provocar un retraso de entrada (input lag) muy escaso, por lo general de menos de medio fotograma.&lt;/p&gt;&lt;p&gt;[Recomendación: &lt;span style=&quot; font-style:italic;&quot;&gt;Por norma general desactivado, a menos que haya problemas de rendimiento&lt;/span&gt;]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="configDialog.ui" line="219"/>
@@ -162,7 +162,7 @@
     <message>
         <location filename="configDialog.ui" line="397"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;GLideN64 offers two methods to smooth jagged polygons:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Fast approximate anti-aliasing (FXAA)&lt;/span&gt;: FXAA is a post-processing filter that can provide a decent result, but as good as MSAA. The main reason to use FXAA is to use with &lt;span style=&quot; font-weight:600;&quot;&gt;N64-style depth compare&lt;/span&gt;. FXAA adds some blurriness to the output image, causing some textures like text to possibly look worse.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Multisample anti-aliasing (MSAA)&lt;/span&gt;: MSAA is a standard anti-aliasing technique used in computer graphics to improve image quality. Most modern GPUs support 2, 4, 8, and 16 samples. More samples mean better quality, but are slower. There are two downsides: it&apos;s incompatible with &lt;span style=&quot; font-weight:600;&quot;&gt;N64-style depth compare&lt;/span&gt; and may cause minor glitches in some games.&lt;/p&gt;&lt;p&gt;Recommendation: [&lt;span style=&quot; font-style:italic;&quot;&gt;Usually 16x MSAA, or FXAA with N64-style depth compare&lt;/span&gt;]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;GLideN64 ofrece dos métodos para suavizar los dientes de sierra entre polígonos:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Fast Approximate Anti-Aliasing (FXAA)&lt;/span&gt;: FXAA es un filtro de posprocesado que puede ofrecer un resultado decente, casi tan bueno como el MSAA. El principal motivo para usar FXAA es en conjunto con la &lt;span style=&quot; font-weight:600;&quot;&gt;comparación de profundidad al estilo de N64&lt;/span&gt;. FXAA genera una imagen algo borrosa y hará que ciertas texturas, como los textos, puedan tener una peor calidad.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Multisample Anti-Aliasing (MSAA)&lt;/span&gt;: MSAA es una técnica estándar para suavizar de bordes en gráficos informáticos con la que mejorar la calidad de imagen. La mayoría de GPU modernas admiten 2, 4, 8 y 16 muestras. A mayor muestras, mayor calidad, pero mayor lentitud. Hay dos inconvenientes: es incompatible con la &lt;span style=&quot; font-weight:600;&quot;&gt;comparación de profundidad al estilo de N64&lt;/span&gt; y puede provocar defectos leves en ciertos juegos.&lt;/p&gt;&lt;p&gt;Recomendación: [&lt;span style=&quot; font-style:italic;&quot;&gt;Por norma general MSAA 16x o FSAA si se utiliza la comparación de profundidad al estilo de N64&lt;/span&gt;]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;GLideN64 ofrece dos métodos para suavizar los dientes de sierra entre polígonos:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Fast Approximate Anti-Aliasing (FXAA)&lt;/span&gt;: FXAA es un filtro de posprocesado que puede ofrecer un resultado decente, casi tan bueno como el MSAA. El principal motivo para usar FXAA es en conjunto con la &lt;span style=&quot; font-weight:600;&quot;&gt;comparación de profundidad al estilo de N64&lt;/span&gt;. FXAA genera una imagen algo borrosa y hará que ciertas texturas, como los textos, puedan tener una peor calidad.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Multisample Anti-Aliasing (MSAA)&lt;/span&gt;: MSAA es una técnica estándar para suavizar de bordes en gráficos informáticos y mejorar la calidad de imagen. La mayoría de GPU modernas admiten 2, 4, 8 y 16 muestras. A mayor muestras, mayor calidad, pero mayor lentitud. Hay dos inconvenientes: es incompatible con la &lt;span style=&quot; font-weight:600;&quot;&gt;comparación de profundidad al estilo de N64&lt;/span&gt; y puede provocar defectos leves en ciertos juegos.&lt;/p&gt;&lt;p&gt;Recomendación: [&lt;span style=&quot; font-style:italic;&quot;&gt;Por norma general MSAA 16x o FSAA si se utiliza la comparación de profundidad al estilo de N64&lt;/span&gt;]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="configDialog.ui" line="418"/>
@@ -218,12 +218,12 @@
     <message>
         <location filename="configDialog.ui" line="1086"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When enabled, all non-default values of settings are stored individually for each game.&lt;/p&gt;&lt;p&gt;When a game is running, settings are displayed and saved for the currently running game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Note:&lt;/span&gt; GLideN64 already contains settings for the optimal performance of most games. Be careful when altering options on &apos;Emulation&apos; and &apos;Frame buffer&apos; tab.&lt;/p&gt;&lt;p&gt;[Recommended: &lt;span style=&quot; font-style:italic;&quot;&gt;Checked&lt;/span&gt;]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Al activar esta opción, se almacenarán todos los ajustes diferentes a los predeterminados en función de cada juego.&lt;/p&gt;&lt;p&gt;Cuando se ejecute un juego, se mostrarán los ajustes y se guardarán para el juego cargado.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Nota:&lt;/span&gt; GLideN64 ya contiene ajustes para conseguir un rendimiento óptimo en la mayoría de juegos. Ten cuidado al cambiar las opciones de las pestañas Emulación y «Frame buffer».&lt;/p&gt;&lt;p&gt;[Recomendación: &lt;span style=&quot; font-style:italic;&quot;&gt;Activada&lt;/span&gt;]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Al activar esta opción, se almacenarán todos los ajustes diferentes a los predeterminados en función de cada juego.&lt;/p&gt;&lt;p&gt;Cuando se ejecute un juego, se mostrarán los ajustes y se guardarán para el juego cargado.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Nota:&lt;/span&gt; GLideN64 ya contiene ajustes para conseguir un rendimiento óptimo en la mayoría de juegos. Ten cuidado al cambiar las opciones de las pestañas Emulación y «Frame buffer».&lt;/p&gt;&lt;p&gt;[Recomendación: &lt;span style=&quot; font-style:italic;&quot;&gt;Activada&lt;/span&gt;]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="configDialog.ui" line="1089"/>
         <source>Use per-game settings</source>
-        <translation type="unfinished">Usar ajustes individuales por juego</translation>
+        <translation>Usar ajustes individuales por juego</translation>
     </message>
     <message>
         <location filename="configDialog.ui" line="1170"/>
@@ -243,82 +243,82 @@
     <message>
         <location filename="configDialog.ui" line="1263"/>
         <source>Custom gamma correction level:</source>
-        <translation type="unfinished">Corrección de gamma personalizada:</translation>
+        <translation>Corrección de gamma personalizada:</translation>
     </message>
     <message>
         <location filename="configDialog.ui" line="1355"/>
         <source>Selecting this option overrides gamma correction specified by the game.</source>
-        <translation type="unfinished">Al seleccionar esta opción, se ignorará la corrección de gamma especificada por el juego.</translation>
+        <translation>Al seleccionar esta opción, se ignorará la corrección de gamma especificada por el juego.</translation>
     </message>
     <message>
         <location filename="configDialog.ui" line="1386"/>
         <source>Dithering</source>
-        <translation type="unfinished"></translation>
+        <translation>Tramado</translation>
     </message>
     <message>
         <location filename="configDialog.ui" line="1392"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Like real hardware this setting reduces the number of colors if dithering is used. Removes undesired dithering fragments. Default = enabled.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Tal y como pasaría en un hardware real, este ajuste reduce el número de colores usando un tramado. Elimina fragmentos tramados indeseados. Valor predeterminado: activado.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="configDialog.ui" line="1395"/>
         <source>Enable 5bit quantization</source>
-        <translation type="unfinished"></translation>
+        <translation>Activar cuantificación a 5 bits</translation>
     </message>
     <message>
         <location filename="configDialog.ui" line="1402"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This setting doubles noise resolution to get a finer noise effect at higher resolutions. Default = disabled.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Duplica la resolución del ruido para producir un efecto de ruido más fino en resoluciones más altas. Valor predeterminado: desactivado.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="configDialog.ui" line="1405"/>
         <source>High resolution noise dithering</source>
-        <translation type="unfinished"></translation>
+        <translation>Tramado de ruido en alta resolución</translation>
     </message>
     <message>
         <location filename="configDialog.ui" line="1412"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This setting enables game controlled ordered grid dithering. Enable it for accurate representation. Default = disabled.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Activa el tramado de cuadrícula organizada según el juego. Produce una imagen más fiel al original. Valor predeterminado: desactivado.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="configDialog.ui" line="1415"/>
         <source>Dithering pattern on output image</source>
-        <translation type="unfinished"></translation>
+        <translation>Patrón de tramado en la imagen de salida</translation>
     </message>
     <message>
         <location filename="configDialog.ui" line="1424"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;RDRAM dithering prevents color banding in games with framebuffer effects.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;El tramado en la RDRAM evita que los colores en los juegos con efectos del «frame buffer» se muestren bandeados.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="configDialog.ui" line="1427"/>
         <source>RDRAM image dithering:</source>
-        <translation type="unfinished"></translation>
+        <translation>Tramado de imagen en la RDRAM:</translation>
     </message>
     <message>
         <location filename="configDialog.ui" line="1434"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Settings: Disabled, Bayer ordered grid dithering, Magic Square ordered grid dithering or blue noise dithering. Blue noise dithering produces unobtrusive results. Default = blue noise dithering.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Ajustes disponibles: desactivado, tramado de cuadrícula organizada Bayer, tramado de cuadrícula organizada Cuadrado mágico o tramado de ruido azul. El tramado de ruido azul genera resultados más discretos. Valor predeterminado: tramado de ruido azul.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="configDialog.ui" line="1438"/>
         <source>disable</source>
-        <translation type="unfinished"></translation>
+        <translation>Desactivar</translation>
     </message>
     <message>
         <location filename="configDialog.ui" line="1443"/>
         <source>Bayer</source>
-        <translation type="unfinished"></translation>
+        <translation>Bayer</translation>
     </message>
     <message>
         <location filename="configDialog.ui" line="1448"/>
         <source>Magic square</source>
-        <translation type="unfinished"></translation>
+        <translation>Cuadrado mágico</translation>
     </message>
     <message>
         <location filename="configDialog.ui" line="1453"/>
         <source>Blue noise</source>
-        <translation type="unfinished"></translation>
+        <translation>Ruido azul</translation>
     </message>
     <message>
         <location filename="configDialog.ui" line="1466"/>
@@ -343,12 +343,12 @@
     <message>
         <location filename="configDialog.ui" line="1528"/>
         <source>Try to remove colored halos around transparent objects</source>
-        <translation type="unfinished">Intenta eliminar los bordes de colores alrededor de los objetos transparentes</translation>
+        <translation>Intenta eliminar los bordes de colores alrededor de los objetos transparentes</translation>
     </message>
     <message>
         <location filename="configDialog.ui" line="1628"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Background is a complex macro command used to render large (normally full screen) images. Since background images usually don&apos;t fit texture memory, the microcode splits them on narrow strips and renders them one by one. HLE code has two modes to emulate background commands:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;One piece&lt;/span&gt;: The whole background image rendred as one textured rectangle. This method is normally much faster, but the result is not always correct.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Stripped&lt;/span&gt;: This method emulates background commands as close as possible to actual microcode implementation. It&apos;s slower but more precise. Another problem: some games may have gaps between rendered strips in high resolution. Use &amp;quot;Render 2D elements in N64 resolution&amp;quot; option to remove the gaps.&lt;/p&gt;&lt;p&gt;[Recommended: &lt;span style=&quot; font-style:italic;&quot;&gt;Game dependent, mostly Stripped&lt;/span&gt;]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;El fondo es un comando complejo de macros utilizado para renderizar imágenes grandes (por lo general, a pantalla completa). Ya que las imágenes de fondo no suelen caber en la memoria de texturas, el microcódigo las fragmenta en forma de franjas estrechas y las renderiza una por una. El código HLE tiene dos modos de emular los comandos de fondo:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Monopieza&lt;/span&gt;: Toda la imagen de fondo se renderiza como un rectángulo texturizado. Este método suele ser mucho más rápido, pero el resultado no siempre es el correcto.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Por franjas&lt;/span&gt;: Este método emula los comandos de fondo de una forma lo más fiel posible a la implementación real del microcódigo. Es más lento, pero más preciso. Tiene otro problema: algunos juegos pueden mostrar desajustes entre franja y franja a resoluciones elevadas. Utiliza la opción «Renderizar elementos 2D en la resolución de N64» para eliminar los desajustes.&lt;/p&gt;&lt;p&gt;[Recomendación: &lt;span style=&quot; font-style:italic;&quot;&gt;En función de cada juego, por lo general, por franjas&lt;/span&gt;]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;El fondo es un comando complejo de macros utilizado para renderizar imágenes grandes (por lo general, a pantalla completa). Ya que las imágenes de fondo no suelen caber en la memoria de texturas, el microcódigo las fragmenta en franjas estrechas y las renderiza una por una. El código HLE tiene dos modos de emular los comandos de fondo:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Monopieza&lt;/span&gt;: Toda la imagen de fondo se renderiza como un rectángulo texturizado. Este método suele ser mucho más rápido, pero el resultado no siempre es el correcto.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Por franjas&lt;/span&gt;: Este método emula los comandos de fondo de una forma lo más fiel posible a la implementación real del microcódigo. Es más lento, pero más preciso. Tiene otro problema: algunos juegos pueden mostrar desajustes entre franja y franja a resoluciones elevadas. Utiliza la opción «Renderizar elementos 2D en la resolución de N64» para eliminar los desajustes.&lt;/p&gt;&lt;p&gt;[Recomendación: &lt;span style=&quot; font-style:italic;&quot;&gt;En función de cada juego, por lo general, por franjas&lt;/span&gt;]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="configDialog.ui" line="1649"/>
@@ -374,47 +374,47 @@
         <location filename="configDialog.ui" line="2133"/>
         <location filename="configDialog.ui" line="2143"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The N64 uses a unique method of calculating depth to the camera. When enabled, GlideN64 uses shaders to try to emulate these calculations correctly. Not compatible with anti-aliasing. &lt;span style=&quot; font-weight:600;&quot;&gt;Experimental!&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Fast mode requires OpenGL 4.2 and &amp;quot;fragment shader interlock&amp;quot; extensions.&lt;/p&gt;&lt;p&gt;Compatible mode requires only core OpenGL 4.2 &lt;span style=&quot; font-weight:600;&quot;&gt;Can be slow!&lt;/span&gt;&lt;/p&gt;&lt;p&gt;[Recommended: &lt;span style=&quot; font-style:italic;&quot;&gt;Sometimes checked, for several games&lt;/span&gt;]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;N64 utiliza un método especial para calcular la profundidad que hay hasta la cámara. Al activar esta opción, GlideN64 utilizará shaders para intentar emular estos cálculos correctamente. No es compatible con el suavizado de bordes. &lt;span style=&quot; font-weight:600;&quot;&gt;¡Experimental!&lt;/span&gt;&lt;/p&gt;&lt;p&gt;El modo rápido requiere OpenGL 4.y las extensiones «fragment shader interlock».&lt;/p&gt;&lt;p&gt;El modo compatible solo necesita el modo básico de OpenGL 4.2 &lt;span style=&quot; font-weight:600;&quot;&gt;¡Puede ser lento!&lt;/span&gt;&lt;/p&gt;&lt;p&gt;[Recomendación: &lt;span style=&quot; font-style:italic;&quot;&gt;Activar solo en ciertos juegos&lt;/span&gt;]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="configDialog.ui" line="2136"/>
         <source>N64-style depth compare (experimental, disables MSAA)</source>
-        <translation type="unfinished"></translation>
+        <translation>Comparación de profundidad de N64 (experimental, desactivará el MSAA)</translation>
     </message>
     <message>
         <location filename="configDialog.ui" line="2152"/>
         <source>Fast</source>
-        <translation type="unfinished"></translation>
+        <translation>Rápida</translation>
     </message>
     <message>
         <location filename="configDialog.ui" line="2157"/>
         <source>Compatible</source>
-        <translation type="unfinished"></translation>
+        <translation>Compatible</translation>
     </message>
     <message>
         <location filename="configDialog.ui" line="2683"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This option enables alternative storage for hi-res textures.&lt;/p&gt;&lt;p&gt;Normally memory cache is used. It keeps all hi-res textures in RAM and thus limited by available RAM size.&lt;/p&gt;&lt;p&gt;File storage keeps texture cache on HDD. It is slower than memory cache, but has virtually no limits on cache size.&lt;/p&gt;&lt;p&gt;Disable &amp;quot;Compress texture cache&amp;quot; option for better performance.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Permite almacenar las texturas en alta resolución en un sitio alternativo.&lt;/p&gt;&lt;p&gt;Normalmente se utiliza la caché de memoria para mantener todas las texturas en alta resolución dentro de la RAM, por lo que hay un límite impuesto por la cantidad de RAM disponible.&lt;/p&gt;&lt;p&gt;El almacenamiento en archivo mantiene la caché de texturas en el disco duro. Es más lenta que la caché de memoria, pero prácticamente no tiene límite de tamaño.&lt;/p&gt;&lt;p&gt;Desactiva la opción «comprimir caché de texturas» para mejorar el rendimiento.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="configDialog.ui" line="2696"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This option dumps textures on screen to a texture pack folder. &lt;/p&gt;&lt;p&gt;Hotkey:&lt;br/&gt;Use &lt;span style=&quot; font-weight:600;&quot;&gt;D&lt;/span&gt; to toggle texture dumping on or off&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Esta opción vuelca las texturas que aparezcan en pantalla a una carpeta con un paquete de texturas. &lt;/p&gt;&lt;p&gt;Tecla de acceso directo:&lt;br/&gt;Utiliza &lt;span style=&quot; font-weight:600;&quot;&gt;D&lt;/span&gt; para activar o desactivar el volcado de texturas.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="configDialog.ui" line="2699"/>
         <source>Press &apos;d&apos; to dump N64 textures (for texture artists)</source>
-        <translation type="unfinished"></translation>
+        <translation>Pulsa D para volcar las texturas de N64 (para diseñadores de texturas)</translation>
     </message>
     <message>
         <location filename="configDialog.ui" line="2706"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This option allows texture artists to reload hi-res textures while the game is running to instantly see how they look —big time saver!&lt;/p&gt;&lt;p&gt;Hotkey:&lt;br/&gt;Use &lt;span style=&quot; font-weight:600;&quot;&gt;R&lt;/span&gt; to reload textures from the texture pack&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Esta opción permite a los diseñadores recargar las texturas en alta definición mientras el juego está en marcha, de esta forma podrán ver al instante cómo quedarán. ¡Ahorra mucho tiempo!&lt;/p&gt;&lt;p&gt;Tecla de acceso directo:&lt;br/&gt;Utiliza &lt;span style=&quot; font-weight:600;&quot;&gt;R&lt;/span&gt; para recargar las texturas que se encuentren en el paquete de texturas.&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="configDialog.ui" line="2709"/>
         <source>Press &apos;r&apos; to reload hi-res textures (for texture artists)</source>
-        <translation type="unfinished"></translation>
+        <translation>Pulsa R para recargar las texturas en alta resolución (para diseñadores de texturas)</translation>
     </message>
     <message>
         <location filename="configDialog.ui" line="3350"/>
@@ -487,18 +487,18 @@
     <message>
         <location filename="configDialog.ui" line="3741"/>
         <source>This game</source>
-        <translation type="unfinished">En este juego</translation>
+        <translation>En este juego</translation>
     </message>
     <message>
         <location filename="configDialog.ui" line="3748"/>
         <source>Save settings for:</source>
-        <translation type="unfinished">Guardar configuración para:</translation>
+        <translation>Guardar configuración para:</translation>
     </message>
     <message>
         <location filename="configDialog.ui" line="3755"/>
         <location filename="configDialog.ui" line="3765"/>
         <source>Settings profile:</source>
-        <translation type="unfinished">Perfil de configuración:</translation>
+        <translation>Perfil de configuración:</translation>
     </message>
     <message>
         <location filename="configDialog.ui" line="3785"/>
@@ -734,7 +734,7 @@
         <location filename="configDialog.ui" line="1136"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In N64 games lighting is calculated per vertex. This option enables Phong shading, which provides smoother and more realistic lighting.&lt;br/&gt;&lt;br/&gt;[Recommended: &lt;span style=&quot; font-style:italic;&quot;&gt;Your preference&lt;/span&gt;]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <oldsource>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This option emulates effects that use random color input. Checking this option may cause rare performance problems.&lt;/p&gt;&lt;p&gt;[Recommended: &lt;span style=&quot; font-style:italic;&quot;&gt;Checked&lt;/span&gt;]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</oldsource>
-        <translation type="unfinished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Emula los efectos que utilizan una generación de colores aleatorios. Esta opción podría provocar problemas de rendimiento en casos puntuales.&lt;/p&gt;&lt;p&gt;[Recomendación: &lt;span style=&quot; font-style:italic;&quot;&gt;Activado&lt;/span&gt;]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Emula los efectos que utilizan una generación de colores aleatorios. Esta opción podría provocar problemas de rendimiento en casos puntuales.&lt;/p&gt;&lt;p&gt;[Recomendación: &lt;span style=&quot; font-style:italic;&quot;&gt;Activado&lt;/span&gt;]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="configDialog.ui" line="1139"/>
@@ -896,7 +896,7 @@
     <message>
         <location filename="configDialog.ui" line="2187"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This option is required for some Reshade depth dependant effects, such as SSAO and depth of field.&lt;/p&gt;&lt;p&gt;[Recommended: &lt;span style=&quot; font-style:italic;&quot;&gt;only if you use Reshade and need depth dependant effects&lt;/span&gt;]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Esta opción es necesaria para ciertos efectos de Reshade que dependen de la profundidad, como SSAO y la profundidad de campo.&lt;/p&gt;&lt;p&gt;[Recomendación: &lt;span style=&quot; font-style:italic;&quot;&gt;activar solo si utilizas Reshade y necesitas los efectos que dependen de la profundidad&lt;/span&gt;]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Esta opción es necesaria para ciertos efectos de Reshade que dependen de la profundidad, como SSAO y la profundidad de campo.&lt;/p&gt;&lt;p&gt;[Recomendación: &lt;span style=&quot; font-style:italic;&quot;&gt;activar solo si utilizas Reshade y necesitas los efectos que dependen de la profundidad&lt;/span&gt;]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="configDialog.ui" line="2190"/>
@@ -987,7 +987,7 @@ No texture enhancement</extracomment>
         <location filename="configDialog.ui" line="2491"/>
         <location filename="configDialog.ui" line="2686"/>
         <source>Use file storage instead of memory cache</source>
-        <translation type="unfinished">Usar almacenamiento de archivos en lugar de la caché de memoria</translation>
+        <translation>Usar almacenamiento de archivos en lugar de la caché de memoria</translation>
     </message>
     <message>
         <location filename="configDialog.ui" line="2578"/>

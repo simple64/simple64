@@ -40,7 +40,7 @@ bool CombinerInputs::usesHwLighting() const
 	return (m_inputs & (1 << G_GCI_HW_LIGHT)) != 0;
 }
 
-void CombinerInputs::addInput(int _input)
+void CombinerInputs::addInput(u32 _input)
 {
 	m_inputs |= 1 << _input;
 }

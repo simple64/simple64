@@ -3,20 +3,20 @@
 
 #include "Types.h"
 
-#define CHANGED_RENDERMODE		0x001
-#define CHANGED_CYCLETYPE		0x002
-#define CHANGED_SCISSOR			0x004
-#define CHANGED_TMEM			0x008
-#define CHANGED_TILE			0x010
-#define CHANGED_REJECT_BOX		0x020
+#define CHANGED_RENDERMODE		0x001U
+#define CHANGED_CYCLETYPE		0x002U
+#define CHANGED_SCISSOR			0x004U
+#define CHANGED_TMEM			0x008U
+#define CHANGED_TILE			0x010U
+#define CHANGED_REJECT_BOX		0x020U
 //#define CHANGED_COMBINE_COLORS	0x020
-#define CHANGED_COMBINE			0x040
-#define CHANGED_ALPHACOMPARE	0x080
-#define CHANGED_FOGCOLOR		0x100
-#define CHANGED_BLENDCOLOR      0x200
-#define CHANGED_FB_TEXTURE	    0x400
-#define CHANGED_COLORBUFFER		0x1000
-#define CHANGED_CPU_FB_WRITE	0x2000
+#define CHANGED_COMBINE			0x040U
+#define CHANGED_ALPHACOMPARE	0x080U
+#define CHANGED_FOGCOLOR		0x100U
+#define CHANGED_BLENDCOLOR		0x200U
+#define CHANGED_FB_TEXTURE		0x400U
+#define CHANGED_COLORBUFFER		0x1000U
+#define CHANGED_CPU_FB_WRITE	0x2000U
 
 #define TEXTUREMODE_NORMAL			0
 #define TEXTUREMODE_BGIMAGE			2
@@ -265,7 +265,7 @@ extern gDPInfo gDP;
 class LLETriangle
 {
 public:
-	void draw(bool _shade, bool _texture, bool _zbuffer, s32 * _pData);
+	void draw(bool _shade, bool _texture, bool _zbuffer, u32 * _pData);
 	void flush(u32 _cmd);
 	static LLETriangle& get();
 
@@ -284,7 +284,7 @@ void gDPSetOtherMode( u32 mode0, u32 mode1 );
 void gDPSetPrimDepth( u16 z, u16 dz );
 void gDPSetTexturePersp( u32 enable );
 void gDPSetTextureLUT( u32 mode );
-void gDPSetCombine( s32 muxs0, s32 muxs1 );
+void gDPSetCombine( u32 muxs0, u32 muxs1 );
 void gDPSetColorImage( u32 format, u32 size, u32 width, u32 address );
 void gDPSetTextureImage( u32 format, u32 size, u32 width, u32 address );
 void gDPSetDepthImage( u32 address );

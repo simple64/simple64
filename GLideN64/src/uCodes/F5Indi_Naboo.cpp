@@ -630,14 +630,14 @@ void F5INDI_CalcST(const u32* params, u32 * _st)
 		s32 X1 = X * mtx[0 + 4 * 0] + Y * mtx[0 + 4 * 1] + Z * mtx[0 + 4 * 2] + mtx[0 + 4 * 3];
 		s32 Y1 = X * mtx[1 + 4 * 0] + Y * mtx[1 + 4 * 1] + Z * mtx[1 + 4 * 2] + mtx[1 + 4 * 3];
 		s32 Z1 = X * mtx[2 + 4 * 0] + Y * mtx[2 + 4 * 1] + Z * mtx[2 + 4 * 2] + mtx[2 + 4 * 3];
-		X1 -= subs[0 ^ 1] << 16;
-		Y1 -= subs[1 ^ 1] << 16;
-		Z1 -= subs[2 ^ 1] << 16;
-		u64 X2 = static_cast<s32>(X1);
+		X1 -= static_cast<s32>(static_cast<u32>(subs[0 ^ 1]) << 16);
+		Y1 -= static_cast<s32>(static_cast<u32>(subs[1 ^ 1]) << 16);
+		Z1 -= static_cast<s32>(static_cast<u32>(subs[2 ^ 1]) << 16);
+		u64 X2 = static_cast<u64>(X1);
 		u64 X2_2 = (X2 * X2) >> 16;
-		u64 Y2 = static_cast<s32>(Y1);
+		u64 Y2 = static_cast<u64>(Y1);
 		u64 Y2_2 = (Y2 * Y2) >> 16;
-		u64 Z2 = static_cast<s32>(Z1);
+		u64 Z2 = static_cast<u64>(Z1);
 		u64 Z2_2 = (Z2 * Z2) >> 16;
 		u64 R = X2_2 + Y2_2 + Z2_2;
 		u32 R1 = static_cast<u32>(R);
@@ -2277,7 +2277,8 @@ void F5INDI_MoveWord(u32 _w0, u32 _w1)
 static
 void F5INDI_SetOtherMode(u32 w0, u32 w1)
 {
-	u32 mask = (s32)0x80000000 >> _SHIFTR(w0, 0, 5);
+	//u32 mask = (s32)0x80000000 >> _SHIFTR(w0, 0, 5); // unspecified behaviour
+	u32 mask = static_cast<u32>(s32(0x80000000) / (1 << _SHIFTR(w0, 0, 5)));
 	mask >>= _SHIFTR(w0, 8, 5);
 
 	const u32 A0 = _SHIFTR(w0, 16, 3);
