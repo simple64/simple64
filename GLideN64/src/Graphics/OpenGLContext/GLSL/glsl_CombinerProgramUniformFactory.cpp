@@ -974,12 +974,12 @@ public:
 
 	void update(bool _force) override
 	{
-		std::array<f32, 2> aTexWrap[2] = { {0.0f,0.0f}, {0.0f,0.0f} };
-		std::array<f32, 2> aTexClamp[2] = { { 0.0f,0.0f },{ 0.0f,0.0f } };
-		std::array<f32, 2> aTexWrapEn[2] = { { 0.0f,0.0f },{ 0.0f,0.0f } };
-		std::array<f32, 2> aTexClampEn[2] = { { 0.0f,0.0f },{ 0.0f,0.0f } };
-		std::array<f32, 2> aTexMirrorEn[2] = { { 0.0f,0.0f },{ 0.0f,0.0f } };
-		std::array<f32, 2> aTexSize[2] = { { 0.0f,0.0f },{ 0.0f,0.0f } };
+		std::array<f32, 2> aTexWrap[2] = { { 1024.0f, 1024.0f }, { 1024.0f, 1024.0f } };
+		std::array<f32, 2> aTexClamp[2] = { { 1024.0f, 1024.0f }, { 1024.0f, 1024.0f } };
+		std::array<f32, 2> aTexWrapEn[2] = { { 0.0f, 0.0f }, { 0.0f, 0.0f } };
+		std::array<f32, 2> aTexClampEn[2] = { { 0.0f, 0.0f }, { 0.0f, 0.0f } };
+		std::array<f32, 2> aTexMirrorEn[2] = { { 0.0f, 0.0f }, { 0.0f,0.0f }};
+		std::array<f32, 2> aTexSize[2] = { { 1024.0f, 1024.0f }, { 1024.0f, 1024.0f } };
 
 		TextureCache & cache = textureCache();
 		const bool replaceTex1ByTex0 = needReplaceTex1ByTex0();
@@ -997,18 +997,21 @@ public:
 			aTexSize[t][1] = pTexture->height * pTexture->hdRatioT;
 
 			/* Not sure if special treatment of framebuffer textures is correct */
-			if (pTexture->frameBufferTexture != CachedTexture::fbNone ||
-				pTile->textureMode != TEXTUREMODE_NORMAL ||
-				g_debugger.isDebugMode())
+			if (pTexture->frameBufferTexture != CachedTexture::fbNone)
 			{
-				aTexWrap[t][0] = pTexture->hdRatioS;
-				aTexWrap[t][1] = pTexture->hdRatioT;
 				aTexClamp[t][0] = f32(pTexture->width) * pTexture->hdRatioS - 1.0f;
 				aTexClamp[t][1] = f32(pTexture->height) * pTexture->hdRatioT - 1.0f;
 				aTexWrapEn[t][0] = 0.0;
 				aTexWrapEn[t][1] = 0.0;
 				aTexClampEn[t][0] = 1.0;
 				aTexClampEn[t][1] = 1.0;
+				aTexMirrorEn[t][0] = 0.0;
+				aTexMirrorEn[t][1] = 0.0;
+			} else if (pTile->textureMode != TEXTUREMODE_NORMAL || g_debugger.isDebugMode()) {
+				aTexWrapEn[t][0] = 0.0;
+				aTexWrapEn[t][1] = 0.0;
+				aTexClampEn[t][0] = 0.0;
+				aTexClampEn[t][1] = 0.0;
 				aTexMirrorEn[t][0] = 0.0;
 				aTexMirrorEn[t][1] = 0.0;
 			} else {

@@ -1408,6 +1408,8 @@ void TextureCache::activateTexture(u32 _t, CachedTexture *_pTexture)
 				case DrawingState::ScreenSpaceTriangle:
 					params.maxAnisotropy = Parameter(config.texture.maxAnisotropyF);
 					break;
+				default:
+					break;
 			}
 		}
 	}

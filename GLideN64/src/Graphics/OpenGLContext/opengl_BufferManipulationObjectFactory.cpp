@@ -311,7 +311,7 @@ struct FramebufferTextureFormatsGLES3 : public graphics::FramebufferTextureForma
 
 #ifdef OS_ANDROID
 		// If EGL image support is available, override above
-		if (m_glinfo.eglImage) {
+		if (_glinfo.eglImage) {
 			colorInternalFormat = GL_RGBA8;
 			colorFormat = GL_RGBA;
 			colorType = GL_UNSIGNED_BYTE;
