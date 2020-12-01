@@ -2,6 +2,7 @@
 #define CREATEROOM_H
 
 #include <QDialog>
+#include <QCheckBox>
 #include <QPushButton>
 #include <QWebSocket>
 #include <QComboBox>
@@ -21,6 +22,7 @@ private slots:
     void processBinaryMessage(QByteArray message);
     void onFinished(int result);
     void processBroadcast();
+    void handleUseInputDelay(bool useInputDelay);
 private:
     QPushButton *romButton;
     QPushButton *createButton;
@@ -31,6 +33,8 @@ private:
     QLineEdit *nameEdit;
     QLineEdit *passwordEdit;
     QLineEdit *playerNameEdit;
+    QCheckBox *useInputDelay;
+    QLineEdit *inputDelay;
     int launched;
     QString filename;
     QUdpSocket broadcastSocket;

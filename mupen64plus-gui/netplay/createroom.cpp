@@ -5,6 +5,7 @@
 #include "interface/core_commands.h"
 #include <QGridLayout>
 #include <QLabel>
+#include <QCheckBox>
 #include <QLineEdit>
 #include <QFileDialog>
 #include <QMessageBox>
@@ -39,20 +40,33 @@ CreateRoom::CreateRoom(QWidget *parent)
         playerNameEdit->setText(w->getSettings()->value("netplay_name").toString());
     layout->addWidget(playerNameEdit, 3, 1);
 
+    QLabel *useInputDelayLabel = new QLabel("Use Fixed Input Delay?", this);
+    layout->addWidget(useInputDelayLabel, 4, 0);
+    useInputDelay = new QCheckBox(this);
+    layout->addWidget(useInputDelay, 4, 1);
+    connect(useInputDelay, SIGNAL (clicked(bool)), this, SLOT(handleUseInputDelay(bool)));
+
+    QLabel *inputDelayLabel = new QLabel("Input Delay", this);
+    layout->addWidget(inputDelayLabel, 5, 0);
+    inputDelay = new QLineEdit(this);
+    inputDelay->setEnabled(false);
+    inputDelay->setValidator(new QIntValidator(0, 100, this));
+    layout->addWidget(inputDelay, 5, 1);
+
     QLabel *serverLabel = new QLabel("Server", this);
-    layout->addWidget(serverLabel, 4, 0);
+    layout->addWidget(serverLabel, 6, 0);
     serverChooser = new QComboBox(this);
     serverChooser->setSizeAdjustPolicy(QComboBox::AdjustToContents);
-    layout->addWidget(serverChooser, 4, 1);
+    layout->addWidget(serverChooser, 6, 1);
 
     QFrame* lineH1 = new QFrame(this);
     lineH1->setFrameShape(QFrame::HLine);
     lineH1->setFrameShadow(QFrame::Sunken);
-    layout->addWidget(lineH1, 5, 0, 1, 2);
+    layout->addWidget(lineH1, 7, 0, 1, 2);
 
     createButton = new QPushButton("Create Game", this);
     connect(createButton, SIGNAL (released()), this, SLOT (handleCreateButton()));
-    layout->addWidget(createButton, 6, 0, 1, 2);
+    layout->addWidget(createButton, 8, 0, 1, 2);
 
     setLayout(layout);
 
@@ -158,6 +172,9 @@ void CreateRoom::onConnected()
     json.insert("client_sha", QStringLiteral(GUI_VERSION));
     json.insert("netplay_version", NETPLAY_VER);
     json.insert("lle", w->getSettings()->value("LLE").toInt() ? "Yes" : "No");
+    json.insert("use_input_delay", useInputDelay->isChecked());
+    if (useInputDelay->isChecked())
+        json.insert("input_delay", inputDelay->text().toInt());
 
     QJsonDocument json_doc(json);
     webSocket->sendBinaryMessage(json_doc.toJson());
@@ -197,4 +214,9 @@ void CreateRoom::downloadFinished(QNetworkReply *reply)
     }
 
     reply->deleteLater();
+}
+
+void CreateRoom::handleUseInputDelay(bool useInputDelay)
+{
+    inputDelay->setEnabled(useInputDelay);
 }
