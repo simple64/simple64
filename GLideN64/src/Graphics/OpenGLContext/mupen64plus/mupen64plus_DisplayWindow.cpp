@@ -101,7 +101,7 @@ bool DisplayWindowMupen64plus::_start()
 	const m64p_video_flags flags = M64VIDEOFLAG_SUPPORT_RESIZING;
 #ifdef M64P_GLIDENUI
 	returnValue = FunctionWrapper::CoreVideo_SetVideoModeWithRate(m_screenWidth, m_screenHeight, m_screenRefresh, 0, m_bFullscreen ? M64VIDEO_FULLSCREEN : M64VIDEO_WINDOWED, flags);
-	if (returnValue == M64ERR_UNSUPPORTED)
+	if (returnValue != M64ERR_SUCCESS)
 	{
 		_supportsWithRateFunctions = false;
 #endif // M64P_GLIDENUI

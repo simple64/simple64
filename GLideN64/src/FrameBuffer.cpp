@@ -303,6 +303,9 @@ void FrameBuffer::resolveMultisampledTexture(bool _bForce)
 	if (m_resolved && !_bForce)
 		return;
 
+	if (!m_pResolveTexture)
+		return;
+
 	Context::BlitFramebuffersParams blitParams;
 	blitParams.readBuffer = m_FBO;
 	blitParams.drawBuffer = m_resolveFBO;
