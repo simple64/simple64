@@ -151,7 +151,7 @@ m64p_error PluginAPI::PluginGetVersion(
 		*_APIVersion = VIDEO_PLUGIN_API_VERSION;
 
 	if (_PluginNamePtr != nullptr)
-		*_PluginNamePtr = pluginName;
+		*_PluginNamePtr = pluginNameWithRevision;
 
 	if (_Capabilities != nullptr)
 	{

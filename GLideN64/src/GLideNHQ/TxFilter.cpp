@@ -129,6 +129,9 @@ TxFilter::TxFilter(int maxwidth,
 	if (ident && wcscmp(ident, wst("DEFAULT")) != 0)
 		_ident.assign(ident);
 
+	/* replace ':' in ROM name with '-' */
+	removeColon(_ident);
+
 	if (TxMemBuf::getInstance()->init(_maxwidth, _maxheight)) {
 		if (!_tex1)
 			_tex1 = TxMemBuf::getInstance()->get(0);
