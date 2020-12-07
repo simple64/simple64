@@ -16,6 +16,9 @@
 #include "ui_configDialog.h"
 #include "Settings.h"
 #include "ConfigDialog.h"
+#include "qevent.h"
+#include "osal_keys.h"
+#include "QtKeyToHID.h"
 
 static
 struct
@@ -66,6 +69,48 @@ u32 powof(u32 dim)
 	return i;
 }
 
+QString ConfigDialog::_hotkeyDescription(quint32 _idx) const
+{
+	switch (_idx)
+	{
+	case Config::HotKey::hkTexDump:
+		return tr("Toggle textures dump");
+	case Config::HotKey::hkHdTexReload:
+		return tr("Reload HD textures");
+	case Config::HotKey::hkHdTexToggle:
+		return tr("Toggle HD textures");
+	case Config::HotKey::hkVsync:
+		return tr("Toggle VSync");
+	case Config::HotKey::hkFBEmulation:
+		return tr("Toggle frame buffer emulation");
+	case Config::HotKey::hkN64DepthCompare:
+		return tr("Toggle N64 depth compare");
+	case Config::HotKey::hkOsdVis:
+		return tr("Toggle OSD VI/S");
+	case Config::HotKey::hkOsdFps:
+		return tr("Toggle OSD FPS");
+	case Config::HotKey::hkOsdPercent:
+		return tr("Toggle OSD percent");
+	case Config::HotKey::hkOsdInternalResolution:
+		return tr("Toggle OSD internal resolution");
+	case Config::HotKey::hkOsdRenderingResolution:
+		return tr("Toggle OSD rendering resolution");
+	case Config::HotKey::hkForceGammaCorrection:
+		return tr("Toggle force gamma correction");
+	}
+	return tr("Unknown hotkey");
+}
+
+class HotkeyItemWidget : public QWidget
+{
+//	Q_OBJECT
+public:
+	HotkeyItemWidget(QWidget* pParent = Q_NULLPTR) : QWidget(pParent) {}
+	quint32 hidCode() const { return m_hid; }
+	void setHidCode(quint32 _code) { m_hid = _code; }
+private:
+	quint32 m_hid = 0;
+};
 
 void ConfigDialog::_init(bool reInit, bool blockCustomSettings)
 {
@@ -265,10 +310,6 @@ void ConfigDialog::_init(bool reInit, bool blockCustomSettings)
 	ui->texturePackGroupBox->setChecked(config.textureFilter.txHiresEnable != 0);
 	ui->alphaChannelCheckBox->setChecked(config.textureFilter.txHiresFullAlphaChannel != 0);
 	ui->alternativeCRCCheckBox->setChecked(config.textureFilter.txHresAltCRC != 0);
-	ui->textureDumpCheckBox->toggle();
-	ui->textureDumpCheckBox->setChecked(config.textureFilter.txDump != 0);
-	ui->textureReloadCheckBox->toggle();
-	ui->textureReloadCheckBox->setChecked(config.textureFilter.txReloadHiresTex != 0);
 	ui->force16bppCheckBox->setChecked(config.textureFilter.txForce16bpp != 0);
 	ui->compressCacheCheckBox->setChecked(config.textureFilter.txCacheCompression != 0);
 	ui->saveTextureCacheCheckBox->setChecked(config.textureFilter.txSaveCache != 0);
@@ -334,6 +375,31 @@ void ConfigDialog::_init(bool reInit, bool blockCustomSettings)
 	ui->dumpLowCheckBox->setChecked((config.debug.dumpMode & DEBUG_LOW) != 0);
 	ui->dumpNormalCheckBox->setChecked((config.debug.dumpMode & DEBUG_NORMAL) != 0);
 	ui->dumpDetailCheckBox->setChecked((config.debug.dumpMode & DEBUG_DETAIL) != 0);
+
+	{
+		ui->hotkeyListWidget->clear();
+		for (quint32 idx = 0; idx < Config::HotKey::hkTotal; ++idx) {
+			HotkeyItemWidget* pWgt = new HotkeyItemWidget;
+			QLayout* pLayout = new QHBoxLayout;
+			pLayout->addWidget(new QLabel(_hotkeyDescription(idx)));
+
+			QPushButton* pBtn = new QPushButton(tr("Click me"));
+			connect(pBtn, SIGNAL(clicked()), SLOT(on_btn_clicked()));
+			pLayout->addWidget(pBtn);
+			pWgt->setLayout(pLayout);
+
+			QListWidgetItem* pItem = new QListWidgetItem(ui->hotkeyListWidget);
+			pItem->setSizeHint(pWgt->sizeHint());
+			pItem->setCheckState(Qt::Unchecked);
+			ui->hotkeyListWidget->setItemWidget(pItem, pWgt);
+
+			if (config.hotkeys.keys[idx] != 0) {
+				pWgt->setHidCode(config.hotkeys.keys[idx]);
+				pBtn->setText(osal_keycode_name(config.hotkeys.keys[idx]));
+				pItem->setCheckState(Qt::Checked);
+			}
+		}
+	}
 
 #ifndef DEBUG_DUMP
 	for (int i = 0; i < ui->tabWidget->count(); ++i) {
@@ -546,8 +612,6 @@ void ConfigDialog::accept(bool justSave) {
 	config.textureFilter.txHiresEnable = ui->texturePackGroupBox->isChecked() ? 1 : 0;
 	config.textureFilter.txHiresFullAlphaChannel = ui->alphaChannelCheckBox->isChecked() ? 1 : 0;
 	config.textureFilter.txHresAltCRC = ui->alternativeCRCCheckBox->isChecked() ? 1 : 0;
-	config.textureFilter.txDump = ui->textureDumpCheckBox->isChecked() ? 1 : 0;
-	config.textureFilter.txReloadHiresTex = ui->textureReloadCheckBox->isChecked() ? 1 : 0;
 
 	config.textureFilter.txCacheCompression = ui->compressCacheCheckBox->isChecked() ? 1 : 0;
 	config.textureFilter.txForce16bpp = ui->force16bppCheckBox->isChecked() ? 1 : 0;
@@ -588,7 +652,7 @@ void ConfigDialog::accept(bool justSave) {
 	QDir txDumpPath(ui->texDumpPathLineEdit->text());
 	if (txDumpPath.exists()) {
 		config.textureFilter.txDumpPath[txDumpPath.absolutePath().toWCharArray(config.textureFilter.txDumpPath)] = L'\0';
-	} else if (config.textureFilter.txHiresEnable != 0 && config.textureFilter.txDump != 0) {
+	} else if (config.textureFilter.txHiresEnable != 0 && config.hotkeys.keys[Config::HotKey::hkTexDump] != 0) {
 		QMessageBox msgBox;
 		msgBox.setStandardButtons(QMessageBox::Close);
 		msgBox.setWindowTitle("GLideN64");
@@ -636,6 +700,15 @@ void ConfigDialog::accept(bool justSave) {
 	config.onScreenDisplay.percent = ui->percentCheckBox->isChecked() ? 1 : 0;
 	config.onScreenDisplay.internalResolution = ui->internalResolutionCheckBox->isChecked() ? 1 : 0;
 	config.onScreenDisplay.renderingResolution = ui->renderingResolutionCheckBox->isChecked() ? 1 : 0;
+
+	for (quint32 idx = 0; idx < Config::HotKey::hkTotal; ++idx) {
+		config.hotkeys.keys[idx] = 0;
+		QListWidgetItem * pItem = ui->hotkeyListWidget->item(idx);
+		if (pItem->checkState() == Qt::Checked) {
+			HotkeyItemWidget* pWgt = (HotkeyItemWidget*)ui->hotkeyListWidget->itemWidget(pItem);
+			config.hotkeys.keys[idx] = pWgt->hidCode();
+		}
+	}
 
 	config.debug.dumpMode = 0;
 	if (ui->dumpLowCheckBox->isChecked())
@@ -955,4 +1028,65 @@ void ConfigDialog::on_n64DepthCompareComboBox_currentIndexChanged(int index)
 		ui->fxaaRadioButton->setChecked(true);
 	ui->msaaRadioButton->setDisabled(index > 0);
 	ui->n64DepthCompareComboBox->setStyleSheet("");
+}
+
+void ConfigDialog::on_hotkeyListWidget_itemClicked(QListWidgetItem *item)
+{
+    if (item->checkState() == Qt::Unchecked)
+        item->setCheckState(Qt::Checked);
+    else
+        item->setCheckState(Qt::Unchecked);
+}
+
+class HotkeyMessageBox: public QMessageBox
+{
+public:
+	HotkeyMessageBox(QWidget *parent = Q_NULLPTR) : QMessageBox(parent)
+	{
+		setWindowTitle("Hotkey");
+		setIcon(QMessageBox::Information);
+	}
+
+	void keyPressEvent(QKeyEvent * pEvent) override
+	{
+		switch (pEvent->key())
+		{
+		case Qt::Key_Escape:
+		case Qt::Key_Return:
+		case Qt::Key_Enter:
+			QMessageBox::keyPressEvent(pEvent);
+			return;
+		}
+		m_Key = pEvent->key();
+		QMessageBox::keyPressEvent(pEvent);
+		close();
+	}
+
+	quint32 m_Key = Qt::Key::Key_unknown;
+};
+
+void ConfigDialog::on_btn_clicked() {
+	if (QPushButton* pBtn = qobject_cast<QPushButton*>(sender())) {
+		if (QLabel* pLabel = pBtn->parent()->findChild< QLabel* >()) {
+			HotkeyMessageBox msgBox(this);
+			msgBox.setInformativeText(QString("Press a key for ") + pLabel->text());
+			msgBox.exec();
+			if (msgBox.m_Key != Qt::Key::Key_unknown) {
+				const unsigned int hidCode = QtKeyToHID(msgBox.m_Key);
+				for (quint32 idx = 0; idx < Config::HotKey::hkTotal; ++idx) {
+					QListWidgetItem * pItem = ui->hotkeyListWidget->item(idx);
+					HotkeyItemWidget* pWgt = (HotkeyItemWidget*)ui->hotkeyListWidget->itemWidget(pItem);
+					if (pWgt->hidCode() == hidCode) {
+						QPushButton* pButton = pWgt->findChild<QPushButton*>();
+						if (pButton != nullptr)
+							pButton->setText(tr("Click me"));
+						pWgt->setHidCode(0u);
+						break;
+					}
+				}
+				pBtn->setText(osal_keycode_name(hidCode));
+				((HotkeyItemWidget*)pBtn->parent())->setHidCode(hidCode);
+			}
+		}
+	}
 }

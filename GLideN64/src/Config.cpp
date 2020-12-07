@@ -8,6 +8,7 @@
 #include "Config.h"
 #include "GBI.h"
 #include "wst.h"
+#include "osal_keys.h"
 
 void Config::resetToDefaults()
 {
@@ -91,8 +92,6 @@ void Config::resetToDefaults()
 	textureFilter.txHiresEnable = 0;
 	textureFilter.txHiresFullAlphaChannel = 1;
 	textureFilter.txHresAltCRC = 0;
-	textureFilter.txDump = 0;
-	textureFilter.txReloadHiresTex = 0;
 
 	textureFilter.txForce16bpp = 0;
 	textureFilter.txCacheCompression = 1;
@@ -133,6 +132,9 @@ void Config::resetToDefaults()
 	onScreenDisplay.percent = 0;
 	onScreenDisplay.pos = posBottomLeft;
 
+	for (u32 idx = 0; idx < HotKey::hkTotal; ++idx)
+		hotkeys.keys[idx] = 0;
+
 	debug.dumpMode = 0;
 }
 
@@ -154,4 +156,36 @@ void Config::validate()
 		if (graphics2D.enableNativeResTexrects != 0)
 			graphics2D.correctTexrectCoords = tcDisable;
 	}
+}
+
+const char* Config::hotkeyIniName(u32 _idx)
+{
+	switch (_idx)
+	{
+	case Config::HotKey::hkTexDump:
+		return "hkTexDump";
+	case Config::HotKey::hkHdTexReload:
+		return "hkHdTexReload";
+	case Config::HotKey::hkHdTexToggle:
+		return "hkHdTexToggle";
+	case Config::HotKey::hkVsync:
+		return "hkVsync";
+	case Config::HotKey::hkFBEmulation:
+		return "hkFBEmulation";
+	case Config::HotKey::hkN64DepthCompare:
+		return "hkN64DepthCompare";
+	case Config::HotKey::hkOsdVis:
+		return "hkOsdVis";
+	case Config::HotKey::hkOsdFps:
+		return "hkOsdFps";
+	case Config::HotKey::hkOsdPercent:
+		return "hkOsdPercent";
+	case Config::HotKey::hkOsdInternalResolution:
+		return "hkOsdInternalResolution";
+	case Config::HotKey::hkOsdRenderingResolution:
+		return "hkOsdRenderingResolution";
+	case Config::HotKey::hkForceGammaCorrection:
+		return "hkForceGammaCorrection";
+	}
+	return nullptr;
 }

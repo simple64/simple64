@@ -41,7 +41,6 @@ set(GLideN64_SOURCES
   GLideN64.cpp
   GraphicsDrawer.cpp
   gSP.cpp
-  Keys.cpp
   Log.cpp
   N64.cpp
   NoiseTexture.cpp
@@ -131,6 +130,7 @@ set(GLideNUI_SOURCES
   GLideNUI/GLideNUI.cpp
   GLideNUI/ScreenShot.cpp
   GLideNUI/Settings.cpp
+  GLideNUI/QtKeyToHID.cpp
   GLideNUI/configDialog.ui
   GLideNUI/icon.qrc
 )

@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>559</width>
-    <height>613</height>
+    <width>747</width>
+    <height>715</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -29,6 +29,9 @@
    </property>
    <item>
     <widget class="QTabWidget" name="tabWidget">
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
      <property name="usesScrollButtons">
       <bool>false</bool>
      </property>
@@ -3013,6 +3016,20 @@
        </item>
       </layout>
      </widget>
+     <widget class="QWidget" name="hotkeyTab">
+      <attribute name="title">
+       <string>Hotkey</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_45">
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_40">
+         <item>
+          <widget class="QListWidget" name="hotkeyListWidget"/>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
      <widget class="QWidget" name="debugTab">
       <attribute name="title">
        <string>Debug</string>
@@ -3304,54 +3321,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>textureDumpCheckBox</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>texDumpPathLabel</receiver>
-   <slot>setEnabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>129</x>
-     <y>356</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>125</x>
-     <y>257</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>textureDumpCheckBox</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>texDumpPathLineEdit</receiver>
-   <slot>setEnabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>385</x>
-     <y>356</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>471</x>
-     <y>255</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>textureDumpCheckBox</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>texDumpPathButton</receiver>
-   <slot>setEnabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>525</x>
-     <y>356</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>526</x>
-     <y>257</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>gammaCorrectionCheckBox</sender>
    <signal>toggled(bool)</signal>
    <receiver>gammaCorrectionNoteFrame</receiver>
@@ -3433,9 +3402,9 @@
   </connection>
  </connections>
  <buttongroups>
-  <buttongroup name="factorButtonGroup"/>
-  <buttongroup name="osdButtonGroup"/>
   <buttongroup name="fixTexrectCoordsButtonGroup"/>
   <buttongroup name="screenshotButtonGroup"/>
+  <buttongroup name="factorButtonGroup"/>
+  <buttongroup name="osdButtonGroup"/>
  </buttongroups>
 </ui>

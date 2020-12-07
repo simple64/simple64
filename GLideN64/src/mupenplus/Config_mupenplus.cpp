@@ -18,6 +18,76 @@ Config config;
 m64p_handle g_configVideoGeneral = nullptr;
 m64p_handle g_configVideoGliden64 = nullptr;
 
+static
+const char* _hotkeyDescription(u32 _idx)
+{
+	switch (_idx)
+	{
+	case Config::HotKey::hkTexDump:
+		return "Hotkey: toggle textures dump";
+	case Config::HotKey::hkHdTexReload:
+		return "Hotkey: reload HD textures";
+	case Config::HotKey::hkHdTexToggle:
+		return "Hotkey: toggle HD textures";
+	case Config::HotKey::hkVsync:
+		return "Hotkey: toggle VSync";
+	case Config::HotKey::hkFBEmulation:
+		return "Hotkey: toggle frame buffer emulation";
+	case Config::HotKey::hkN64DepthCompare:
+		return "Hotkey: toggle N64 depth compare";
+	case Config::HotKey::hkOsdVis:
+		return "Hotkey: toggle OSD VI/S";
+	case Config::HotKey::hkOsdFps:
+		return "Hotkey: toggle OSD FPS";
+	case Config::HotKey::hkOsdPercent:
+		return "Hotkey: toggle OSD percent";
+	case Config::HotKey::hkOsdInternalResolution:
+		return "Hotkey: toggle OSD internal resolution";
+	case Config::HotKey::hkOsdRenderingResolution:
+		return "Hotkey: toggle OSD rendering resolution";
+	case Config::HotKey::hkForceGammaCorrection:
+		return "Hotkey: toggle force gamma correction";
+	}
+	return "Unknown hotkey";
+}
+
+//static const unsigned char HID_TO_ASCII[256] = {
+//	0,  0,  0,  0, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76,
+//	77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 49, 50,
+//	51, 52, 53, 54, 55, 56, 57, 48,  0,  0,  0, 32, 45, 43, 91, 93,
+//	92, 59, 34,  0, 44,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+//	0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+//	0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+//	0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+//	0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+//	0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+//	0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+//	0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+//	0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+//	0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+//	0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+//	0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+//	0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+//};
+
+static
+u8 ASCIItoHID(const char * pStr) {
+	static const unsigned char ASCII_TO_HID[128] = {
+	  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+	  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+	 44,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+	 39, 30, 31, 32, 33, 34, 35, 36, 37, 38,  0,  0,  0,  0,  0,  0,
+	  0,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
+	 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29,  0,  0,  0,  0,  0,
+	  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+	  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+	};
+
+	if (strlen(pStr) != 1 || pStr[0] < 0)
+		return 0;
+	return ASCII_TO_HID[pStr[0]];
+}
+
 bool Config_SetDefault()
 {
 	if (ConfigOpenSection("Video-General", &g_configVideoGeneral) != M64ERR_SUCCESS) {
@@ -167,10 +237,6 @@ bool Config_SetDefault()
 	assert(res == M64ERR_SUCCESS);
 	res = ConfigSetDefaultBool(g_configVideoGliden64, "txHresAltCRC", config.textureFilter.txHresAltCRC, "Use alternative method of paletted textures CRC calculation.");
 	assert(res == M64ERR_SUCCESS);
-	res = ConfigSetDefaultBool(g_configVideoGliden64, "txDump", config.textureFilter.txDump, "Press 'd' to start dump of N64 textures.");
-	assert(res == M64ERR_SUCCESS);
-	res = ConfigSetDefaultBool(g_configVideoGliden64, "txReloadHiresTex", config.textureFilter.txReloadHiresTex, "Press 'r' to reload HD textures.");
-	assert(res == M64ERR_SUCCESS);
 	res = ConfigSetDefaultBool(g_configVideoGliden64, "txCacheCompression", config.textureFilter.txCacheCompression, "Zip textures cache.");
 	assert(res == M64ERR_SUCCESS);
 	res = ConfigSetDefaultBool(g_configVideoGliden64, "txForce16bpp", config.textureFilter.txForce16bpp, "Force use 16bit texture formats for HD textures.");
@@ -220,6 +286,12 @@ bool Config_SetDefault()
 	res = ConfigSetDefaultInt(g_configVideoGliden64, "CountersPos", config.onScreenDisplay.pos,
 		"Counters position (1=top left, 2=top center, 4=top right, 8=bottom left, 16=bottom center, 32=bottom right)");
 	assert(res == M64ERR_SUCCESS);
+
+	//#Hotkey settings
+	for (u32 idx = 0; idx < Config::HotKey::hkTotal; ++idx) {
+		res = ConfigSetDefaultString(g_configVideoGliden64, Config::hotkeyIniName(idx), "", _hotkeyDescription(idx));
+		assert(res == M64ERR_SUCCESS);
+	}
 
 #ifdef DEBUG_DUMP
 	//#Debug settings
@@ -370,10 +442,6 @@ void Config_LoadCustomConfig()
 	result = ConfigExternalGetParameter(fileHandle, sectionName, "textureFilter\\txHresAltCRC", value, sizeof(value));
 	if (result == M64ERR_SUCCESS) config.textureFilter.txHresAltCRC = atoi(value);
 	result = ConfigExternalGetParameter(fileHandle, sectionName, "textureFilter\\txDump", value, sizeof(value));
-	if (result == M64ERR_SUCCESS) config.textureFilter.txDump = atoi(value);
-	result = ConfigExternalGetParameter(fileHandle, sectionName, "textureFilter\\txReloadHiresTex", value, sizeof(value));
-	if (result == M64ERR_SUCCESS) config.textureFilter.txReloadHiresTex = atoi(value);
-	result = ConfigExternalGetParameter(fileHandle, sectionName, "textureFilter\\txForce16bpp", value, sizeof(value));
 	if (result == M64ERR_SUCCESS) config.textureFilter.txForce16bpp = atoi(value);
 	result = ConfigExternalGetParameter(fileHandle, sectionName, "textureFilter\\txCacheCompression", value, sizeof(value));
 	if (result == M64ERR_SUCCESS) config.textureFilter.txCacheCompression = atoi(value);
@@ -464,8 +532,6 @@ void Config_LoadConfig()
 	config.textureFilter.txHiresEnable = ConfigGetParamBool(g_configVideoGliden64, "txHiresEnable");
 	config.textureFilter.txHiresFullAlphaChannel = ConfigGetParamBool(g_configVideoGliden64, "txHiresFullAlphaChannel");
 	config.textureFilter.txHresAltCRC = ConfigGetParamBool(g_configVideoGliden64, "txHresAltCRC");
-	config.textureFilter.txDump = ConfigGetParamBool(g_configVideoGliden64, "txDump");
-	config.textureFilter.txReloadHiresTex = ConfigGetParamBool(g_configVideoGliden64, "txReloadHiresTex");
 	config.textureFilter.txForce16bpp = ConfigGetParamBool(g_configVideoGliden64, "txForce16bpp");
 	config.textureFilter.txCacheCompression = ConfigGetParamBool(g_configVideoGliden64, "txCacheCompression");
 	config.textureFilter.txSaveCache = ConfigGetParamBool(g_configVideoGliden64, "txSaveCache");
@@ -507,6 +573,11 @@ void Config_LoadConfig()
 	config.onScreenDisplay.internalResolution = ConfigGetParamBool(g_configVideoGliden64, "ShowInternalResolution");
 	config.onScreenDisplay.renderingResolution = ConfigGetParamBool(g_configVideoGliden64, "ShowRenderingResolution");
 	config.onScreenDisplay.pos = ConfigGetParamInt(g_configVideoGliden64, "CountersPos");
+
+	//#Hotkey settings
+	for (u32 idx = 0; idx < Config::HotKey::hkTotal; ++idx) {
+		config.hotkeys.keys[idx] = ASCIItoHID(ConfigGetParamString(g_configVideoGliden64, Config::hotkeyIniName(idx)));
+	}
 
 #ifdef DEBUG_DUMP
 	config.debug.dumpMode = ConfigGetParamInt(g_configVideoGliden64, "DebugDumpMode");
