@@ -14,9 +14,18 @@
     <ClInclude Include="..\..\src\osal\osal_files.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\osal\osal_keys.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\osal\osal_export.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\osal\osal_files_win32.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\osal\osal_keys_win.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

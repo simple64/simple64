@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include <QTreeWidgetItem>
+#include "QListWidget"
 
 namespace Ui {
 class ConfigDialog;
@@ -70,10 +71,15 @@ private slots:
 
 	void on_n64DepthCompareComboBox_currentIndexChanged(int index);
 
+    void on_hotkeyListWidget_itemClicked(QListWidgetItem *item);
+
+	void on_btn_clicked();
+
 private:
 	void _init(bool reInit = false, bool blockCustomSettings = false);
 	void _getTranslations(QStringList & _translationFiles) const;
 	void _switchDest(bool isGame);
+	QString _hotkeyDescription(quint32 _idx) const;
 
 	Ui::ConfigDialog *ui;
 	QFont m_font;

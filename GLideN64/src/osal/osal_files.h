@@ -26,6 +26,8 @@
 #if !defined(OSAL_FILES_H)
 #define OSAL_FILES_H
 
+#include "osal_export.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -34,15 +36,11 @@ extern "C" {
 #define OSAL_DIR_SEPARATOR_CHAR      L'/'
 
 #if defined(OS_WINDOWS)
-#define EXPORT	__declspec(dllexport)
-#define CALL		__cdecl
 #ifndef PATH_MAX
 #define PATH_MAX _MAX_PATH
 #endif
 #define strdup _strdup
-#else  /* Not WIN32 */
-#define EXPORT 	__attribute__((visibility("default")))
-#define CALL
+#else  /* Not WINDOWS */
 #ifndef PATH_MAX
 #define PATH_MAX 260
 #endif

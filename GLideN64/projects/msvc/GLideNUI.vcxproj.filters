@@ -90,6 +90,9 @@
     <ClCompile Include="GeneratedFiles\qrc_icon.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\GLideNUI\QtKeyToHID.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\src\GLideNUI\AboutDialog.h">

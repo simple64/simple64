@@ -5,7 +5,6 @@
 #include "GLideN64.h"
 #include "Revision.h"
 #include "RSP.h"
-#include "Keys.h"
 #include "Config.h"
 #include "Combiner.h"
 #include "FrameBuffer.h"
@@ -13,6 +12,7 @@
 #include "TextDrawer.h"
 #include "DebugDump.h"
 #include "Debugger.h"
+#include "osal_keys.h"
 
 #ifndef MUPENPLUSAPI
 #include "windows/GLideN64_windows.h"
@@ -153,30 +153,30 @@ Debugger::~Debugger()
 
 void Debugger::checkDebugState()
 {
-	if (isKeyPressed(G64_VK_SCROLL, 0x0001))
+	if (osal_is_key_pressed(KEY_ScrollLock, 0x0001))
 		m_bDebugMode = !m_bDebugMode;
 
-	if (m_bDebugMode && isKeyPressed(G64_VK_INSERT, 0x0001))
+	if (m_bDebugMode && osal_is_key_pressed(KEY_Insert, 0x0001))
 		m_bCapture = true;
 }
 
 void Debugger::_debugKeys()
 {
-	if (isKeyPressed(G64_VK_RIGHT, 0x0001)) {
+	if (osal_is_key_pressed(KEY_Right, 0x0001)) {
 		if (std::next(m_triSel) != m_triangles.cend())
 			++m_triSel;
 		else
 			m_triSel = m_triangles.cbegin();
 	}
 
-	if (isKeyPressed(G64_VK_LEFT, 0x0001)) {
+	if (osal_is_key_pressed(KEY_Left, 0x0001)) {
 		if (m_triSel != m_triangles.cbegin())
 			--m_triSel;
 		else
 			m_triSel = std::prev(m_triangles.cend());
 	}
 
-	if (isKeyPressed(G64_VK_F, 0x0001)) {
+	if (osal_is_key_pressed(KEY_F, 0x0001)) {
 		if (m_pCurTexInfo != nullptr) {
 			auto curTexName = m_pCurTexInfo->texture->name;
 			auto beginItr =
@@ -200,51 +200,51 @@ void Debugger::_debugKeys()
 		}
 	}
 
-	if (isKeyPressed(G64_VK_B, 0x0001)) {
+	if (osal_is_key_pressed(KEY_B, 0x0001)) {
 		if (std::next(m_curFBAddr) != m_fbAddrs.end())
 			++m_curFBAddr;
 		else
 			m_curFBAddr = m_fbAddrs.begin();
 	}
 
-	if (isKeyPressed(G64_VK_V, 0x0001)) {
+	if (osal_is_key_pressed(KEY_V, 0x0001)) {
 		if (m_curFBAddr != m_fbAddrs.begin())
 			--m_curFBAddr;
 		else
 			m_curFBAddr = std::prev(m_fbAddrs.end());
 	}
 
-	if (isKeyPressed(G64_VK_Q, 0x0001))
+	if (osal_is_key_pressed(KEY_Q, 0x0001))
 		m_tmu = 0;
-	if (isKeyPressed(G64_VK_W, 0x0001))
+	if (osal_is_key_pressed(KEY_W, 0x0001))
 		m_tmu = 1;
 
-	if (isKeyPressed(G64_VK_A, 0x0001))
+	if (osal_is_key_pressed(KEY_A, 0x0001))
 		m_textureMode = TextureMode::both;  // texture & texture alpha
-	if (isKeyPressed(G64_VK_S, 0x0001))
+	if (osal_is_key_pressed(KEY_S, 0x0001))
 		m_textureMode = TextureMode::texture;  // texture
-	if (isKeyPressed(G64_VK_D, 0x0001))
+	if (osal_is_key_pressed(KEY_D, 0x0001))
 		m_textureMode = TextureMode::alpha;  // texture alpha
 
-	if (isKeyPressed(G64_VK_1, 0x0001))
+	if (osal_is_key_pressed(KEY_1, 0x0001))
 		m_curPage = Page::general;
-	if (isKeyPressed(G64_VK_2, 0x0001))
+	if (osal_is_key_pressed(KEY_2, 0x0001))
 		m_curPage = Page::tex1;
-	if (isKeyPressed(G64_VK_3, 0x0001))
+	if (osal_is_key_pressed(KEY_3, 0x0001))
 		m_curPage = Page::tex2;
-	if (isKeyPressed(G64_VK_4, 0x0001))
+	if (osal_is_key_pressed(KEY_4, 0x0001))
 		m_curPage = Page::colors;
-	if (isKeyPressed(G64_VK_5, 0x0001))
+	if (osal_is_key_pressed(KEY_5, 0x0001))
 		m_curPage = Page::blender;
-	if (isKeyPressed(G64_VK_6, 0x0001))
+	if (osal_is_key_pressed(KEY_6, 0x0001))
 		m_curPage = Page::othermode_l;
-	if (isKeyPressed(G64_VK_7, 0x0001))
+	if (osal_is_key_pressed(KEY_7, 0x0001))
 		m_curPage = Page::othermode_h;
-	if (isKeyPressed(G64_VK_8, 0x0001))
+	if (osal_is_key_pressed(KEY_8, 0x0001))
 		m_curPage = Page::texcoords;
-	if (isKeyPressed(G64_VK_9, 0x0001))
+	if (osal_is_key_pressed(KEY_9, 0x0001))
 		m_curPage = Page::coords;
-	if (isKeyPressed(G64_VK_0, 0x0001))
+	if (osal_is_key_pressed(KEY_0, 0x0001))
 		m_curPage = Page::texinfo;
 }
 
@@ -517,17 +517,17 @@ void Debugger::_drawTextureCache()
 		}
 	}
 
-	if (isKeyPressed(G64_VK_UP, 0x0001)) {
+	if (osal_is_key_pressed(KEY_Up, 0x0001)) {
 		if ((m_startTexRow[m_tmu] + 1) * m_cacheViewerCols < texInfos.size())
 			m_startTexRow[m_tmu]++;
 	}
 
-	if (isKeyPressed(G64_VK_DOWN, 0x0001)) {
+	if (osal_is_key_pressed(KEY_Down, 0x0001)) {
 		if (m_startTexRow[m_tmu] > 0)
 			--m_startTexRow[m_tmu];
 	}
 
-	if (isKeyPressed(G64_VK_SPACE, 0x0001)) {
+	if (osal_is_key_pressed(KEY_Space, 0x0001)) {
 		if (m_triSel->tex_info[m_tmu]) {
 			graphics::ObjectHandle tex = m_triSel->tex_info[m_tmu]->texture->name;
 			auto iter = std::find_if(texInfos.begin(),
@@ -1264,12 +1264,13 @@ void Debugger::_drawDebugInfo()
 	const f32 lrx = (f32)(winWidth) * (2.0f * scaleX) - 1.0f;
 	const f32 lry = -((f32)(winHeight * 5 / 8)* (2.0f * scaleY) - 1.0f);
 
-	while (!isKeyPressed(G64_VK_INSERT, 0x0001)) {
+	while (!osal_is_key_pressed(KEY_Insert, 0x0001)) {
+		osal_keys_update_state();
 		_debugKeys();
 		_drawFrameBuffer(frameBufferList().findBuffer(*m_curFBAddr));
 		_drawTextureCache();
 
-		if (isKeyPressed(G64_VK_LBUTTON, 0x0001))
+		if (osal_is_key_pressed(MB_Left, 0x0001))
 			_findSelected();
 		_drawTriangleFrame();
 		_drawMouseCursor();

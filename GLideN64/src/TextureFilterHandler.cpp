@@ -55,7 +55,7 @@ u32 TextureFilterHandler::_getConfigOptions() const
 		options |= (DUMP_TEXCACHE | DUMP_HIRESTEXCACHE);
 	if (config.textureFilter.txHiresFullAlphaChannel)
 		options |= LET_TEXARTISTS_FLY;
-	if (config.textureFilter.txDump)
+	if (config.hotkeys.keys[Config::HotKey::hkTexDump] != 0)
 		options |= DUMP_TEX;
 	if (config.textureFilter.txDeposterize)
 		options |= DEPOSTERIZE;
