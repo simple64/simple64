@@ -13,8 +13,9 @@
 #include "Performance.h"
 #include "Debugger.h"
 #include "DebugDump.h"
-#include "Keys.h"
+#include "osal_keys.h"
 #include "DisplayWindow.h"
+#include "GLideNHQ/Ext_TxFilter.h"
 #include <Graphics/Context.h>
 
 using namespace std;
@@ -98,6 +99,104 @@ void VI_UpdateSize()
 	VI.rheight = VI.height != 0 ? 1.0f / VI.height : 0.0f;
 }
 
+static void checkHotkeys()
+{
+	osal_keys_update_state();
+
+	if (osal_is_key_pressed(KEY_G, 0x0001)) {
+		SwitchDump(config.debug.dumpMode);
+	}
+
+	if (osal_is_key_pressed(config.hotkeys.keys[Config::hkHdTexToggle], 0x0001)) {
+		if (config.textureFilter.txHiresEnable == 0)
+			dwnd().getDrawer().showMessage("Enable HD textures\n", Milliseconds(750));
+		else
+			dwnd().getDrawer().showMessage("Disable HD textures\n", Milliseconds(750));
+		config.textureFilter.txHiresEnable = !config.textureFilter.txHiresEnable;
+		textureCache().clear();
+	}
+
+	if (config.textureFilter.txHiresEnable != 0) {
+		/* Force reload hi-res textures. Useful for texture artists */
+		if (osal_is_key_pressed(config.hotkeys.keys[Config::hkHdTexReload], 0x0001)) {
+			dwnd().getDrawer().showMessage("Reload HD textures\n", Milliseconds(750));
+			if (txfilter_reloadhirestex()) {
+				textureCache().clear();
+			}
+		}
+
+		/* Turn on texture dump */
+		if (osal_is_key_pressed(config.hotkeys.keys[Config::hkTexDump], 0x0001))
+			textureCache().toggleDumpTex();
+	}
+
+
+	if (osal_is_key_pressed(config.hotkeys.keys[Config::hkVsync], 0x0001)) {
+		config.video.verticalSync = !config.video.verticalSync;
+		dwnd().stop();
+		dwnd().start();
+		if (config.video.verticalSync == 0)
+			dwnd().getDrawer().showMessage("Disable vertical sync\n", Milliseconds(1000));
+		else
+			dwnd().getDrawer().showMessage("Enable vertical sync\n", Milliseconds(1000));
+	}
+
+
+	if (osal_is_key_pressed(config.hotkeys.keys[Config::hkFBEmulation], 0x0001)) {
+		config.frameBufferEmulation.enable = !config.frameBufferEmulation.enable;
+		dwnd().stop();
+		dwnd().start();
+		if (config.frameBufferEmulation.enable == 0)
+			dwnd().getDrawer().showMessage("Disable frame buffer emulation\n", Milliseconds(2000));
+		else
+			dwnd().getDrawer().showMessage("Enable frame buffer emulation\n", Milliseconds(1000));
+	}
+
+	if (config.frameBufferEmulation.enable != 0 &&
+		osal_is_key_pressed(config.hotkeys.keys[Config::hkN64DepthCompare], 0x0001)) {
+		static u32 N64DepthCompare = Config::N64DepthCompareMode::dcCompatible;
+		if (config.frameBufferEmulation.N64DepthCompare != Config::N64DepthCompareMode::dcDisable) {
+			N64DepthCompare = config.frameBufferEmulation.N64DepthCompare;
+			config.frameBufferEmulation.N64DepthCompare = Config::N64DepthCompareMode::dcDisable;
+		} else
+			config.frameBufferEmulation.N64DepthCompare = N64DepthCompare;
+		dwnd().stop();
+		dwnd().start();
+		if (config.frameBufferEmulation.N64DepthCompare == Config::N64DepthCompareMode::dcDisable)
+			dwnd().getDrawer().showMessage("Disable N64 depth compare\n", Milliseconds(1000));
+		else
+			dwnd().getDrawer().showMessage("Enable N64 depth compare\n", Milliseconds(1000));
+	}
+
+	if (osal_is_key_pressed(config.hotkeys.keys[Config::hkOsdVis], 0x0001)) {
+		config.onScreenDisplay.vis = !config.onScreenDisplay.vis;
+	}
+
+	if (osal_is_key_pressed(config.hotkeys.keys[Config::hkOsdFps], 0x0001)) {
+		config.onScreenDisplay.fps = !config.onScreenDisplay.fps;
+	}
+
+	if (osal_is_key_pressed(config.hotkeys.keys[Config::hkOsdPercent], 0x0001)) {
+		config.onScreenDisplay.percent = !config.onScreenDisplay.percent;
+	}
+
+	if (osal_is_key_pressed(config.hotkeys.keys[Config::hkOsdInternalResolution], 0x0001)) {
+		config.onScreenDisplay.internalResolution = !config.onScreenDisplay.internalResolution;
+	}
+
+	if (osal_is_key_pressed(config.hotkeys.keys[Config::hkOsdRenderingResolution], 0x0001)) {
+		config.onScreenDisplay.renderingResolution = !config.onScreenDisplay.renderingResolution;
+	}
+
+	if (osal_is_key_pressed(config.hotkeys.keys[Config::hkForceGammaCorrection], 0x0001)) {
+		if (config.gammaCorrection.force == 0)
+			dwnd().getDrawer().showMessage("Force gamma correction on\n", Milliseconds(750));
+		else
+			dwnd().getDrawer().showMessage("Force gamma correction off\n", Milliseconds(750));
+		config.gammaCorrection.force = !config.gammaCorrection.force;
+	}
+}
+
 void VI_UpdateScreen()
 {
 	if (VI.lastOrigin == -1) // Workaround for Mupen64Plus issue with initialization
@@ -117,9 +216,7 @@ void VI_UpdateScreen()
 	wnd.saveScreenshot();
 	g_debugger.checkDebugState();
 
-	if (isKeyPressed(G64_VK_G, 0x0001)) {
-		SwitchDump(config.debug.dumpMode);
-	}
+	checkHotkeys();
 
 	bool bVIUpdated = false;
 	if (*REG.VI_ORIGIN != VI.lastOrigin) {

@@ -322,7 +322,6 @@ copy /Y "$(OutDir)$(TargetName).*" "$(Mupen64PluginsDir_x64)")</Command>
     <ClCompile Include="..\..\src\iob.cpp">
       <ExcludedFromBuild Condition="'$(Platform)'=='Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\src\Keys.cpp" />
     <ClCompile Include="..\..\src\Log.cpp" />
     <ClCompile Include="..\..\src\MupenPlusPluginAPI.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)'=='Debug_qt' Or '$(Configuration)'=='Debug_wtl' Or '$(Configuration)'=='Release_qt' Or '$(Configuration)'=='Release_wtl'">true</ExcludedFromBuild>
@@ -476,7 +475,6 @@ copy /Y "$(OutDir)$(TargetName).*" "$(Mupen64PluginsDir_x64)")</Command>
     <ClInclude Include="..\..\src\Graphics\ShaderProgram.h" />
     <ClInclude Include="..\..\src\gSP.h" />
     <ClInclude Include="..\..\src\inc\glext.h" />
-    <ClInclude Include="..\..\src\Keys.h" />
     <ClInclude Include="..\..\src\Log.h" />
     <ClInclude Include="..\..\src\MemoryStatus.h" />
     <ClInclude Include="..\..\src\mupenplus\GLideN64_mupenplus.h">

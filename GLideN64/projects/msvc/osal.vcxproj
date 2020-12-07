@@ -79,10 +79,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\src\osal\osal_export.h" />
     <ClInclude Include="..\..\src\osal\osal_files.h" />
+    <ClInclude Include="..\..\src\osal\osal_keys.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\osal\osal_files_win32.c" />
+    <ClCompile Include="..\..\src\osal\osal_keys_win.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

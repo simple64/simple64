@@ -92,8 +92,6 @@ void _loadSettings(QSettings & settings)
 	config.textureFilter.txHiresEnable = settings.value("txHiresEnable", config.textureFilter.txHiresEnable).toInt();
 	config.textureFilter.txHiresFullAlphaChannel = settings.value("txHiresFullAlphaChannel", config.textureFilter.txHiresFullAlphaChannel).toInt();
 	config.textureFilter.txHresAltCRC = settings.value("txHresAltCRC", config.textureFilter.txHresAltCRC).toInt();
-	config.textureFilter.txDump = settings.value("txDump", config.textureFilter.txDump).toInt();
-	config.textureFilter.txReloadHiresTex = settings.value("txReloadHiresTex", config.textureFilter.txReloadHiresTex).toInt();
 	config.textureFilter.txForce16bpp = settings.value("txForce16bpp", config.textureFilter.txForce16bpp).toInt();
 	config.textureFilter.txCacheCompression = settings.value("txCacheCompression", config.textureFilter.txCacheCompression).toInt();
 	config.textureFilter.txSaveCache = settings.value("txSaveCache", config.textureFilter.txSaveCache).toInt();
@@ -134,6 +132,12 @@ void _loadSettings(QSettings & settings)
 	config.onScreenDisplay.internalResolution = settings.value("showInternalResolution", config.onScreenDisplay.internalResolution).toInt();
 	config.onScreenDisplay.renderingResolution = settings.value("showRenderingResolution", config.onScreenDisplay.renderingResolution).toInt();
 	config.onScreenDisplay.pos = settings.value("osdPos", config.onScreenDisplay.pos).toInt();
+	settings.endGroup();
+
+	settings.beginGroup("hotkeys");
+	for (u32 idx = 0; idx < Config::HotKey::hkTotal; ++idx) {
+		config.hotkeys.keys[idx] = settings.value(Config::hotkeyIniName(idx), config.hotkeys.keys[idx]).toInt();
+	}
 	settings.endGroup();
 
 	settings.beginGroup("debug");
@@ -268,8 +272,6 @@ void writeSettings(const QString & _strIniFolder)
 	settings.setValue("txHiresEnable", config.textureFilter.txHiresEnable);
 	settings.setValue("txHiresFullAlphaChannel", config.textureFilter.txHiresFullAlphaChannel);
 	settings.setValue("txHresAltCRC", config.textureFilter.txHresAltCRC);
-	settings.setValue("txDump", config.textureFilter.txDump);
-	settings.setValue("txReloadHiresTex", config.textureFilter.txReloadHiresTex);
 	settings.setValue("txForce16bpp", config.textureFilter.txForce16bpp);
 	settings.setValue("txCacheCompression", config.textureFilter.txCacheCompression);
 	settings.setValue("txSaveCache", config.textureFilter.txSaveCache);
@@ -298,6 +300,12 @@ void writeSettings(const QString & _strIniFolder)
 	settings.setValue("showInternalResolution", config.onScreenDisplay.internalResolution);
 	settings.setValue("showRenderingResolution", config.onScreenDisplay.renderingResolution);
 	settings.setValue("osdPos", config.onScreenDisplay.pos);
+	settings.endGroup();
+
+	settings.beginGroup("hotkeys");
+	for (u32 idx = 0; idx < Config::HotKey::hkTotal; ++idx) {
+		settings.setValue(Config::hotkeyIniName(idx), config.hotkeys.keys[idx]);
+	}
 	settings.endGroup();
 
 	settings.beginGroup("debug");
@@ -461,8 +469,6 @@ void saveCustomRomSettings(const QString & _strIniFolder, const char * _strRomNa
 	WriteCustomSetting(textureFilter, txHiresEnable);
 	WriteCustomSetting(textureFilter, txHiresFullAlphaChannel);
 	WriteCustomSetting(textureFilter, txHresAltCRC);
-	WriteCustomSetting(textureFilter, txDump);
-	WriteCustomSetting(textureFilter, txReloadHiresTex);
 	WriteCustomSetting(textureFilter, txForce16bpp);
 	WriteCustomSetting(textureFilter, txCacheCompression);
 	WriteCustomSetting(textureFilter, txSaveCache);
