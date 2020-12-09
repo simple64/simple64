@@ -18,7 +18,7 @@ jobs:
       - name: Upload zip
         uses: actions/upload-artifact@v2
         with:
-          name: linux-package
+          name: linux-package.zip
           path: m64p-*.zip
   build-windows:
     runs-on: windows-latest
@@ -47,10 +47,11 @@ jobs:
         run: msys2 -c './build.sh'
         env:
           HOST_CPU: x86_64
+          MSBUILD_PATH: "/c/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/MSBuild/Current/Bin/"
       - name: Upload zip
         uses: actions/upload-artifact@v2
         with:
-          name: windows-package
+          name: windows-package.zip
           path: m64p-*.zip
   build-mac:
     runs-on: macos-10.15
@@ -60,7 +61,7 @@ jobs:
         run: |
           brew update
           brew upgrade
-          brew install libsamplerate hidapi sdl2_net sdl2
+          brew install libsamplerate hidapi sdl2_net sdl2 qt
       - name: Run build script
         run: |
           export qt_version=$(ls /usr/local/Cellar/qt)
@@ -72,5 +73,5 @@ jobs:
       - name: Upload dmg
         uses: actions/upload-artifact@v2
         with:
-          name: mac-package
+          name: mac-package.dmg
           path: m64p-*.dmg
