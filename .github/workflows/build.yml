@@ -40,6 +40,7 @@ jobs:
             mingw-w64-x86_64-jasper
             mingw-w64-x86_64-qt5
             mingw-w64-x86_64-python3-pip
+            mingw-w64-x86_64-git
             mingw-w64-x86_64-python3-pyopenssl
             zip
       - name: Run build script
