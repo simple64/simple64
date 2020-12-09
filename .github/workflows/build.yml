@@ -43,7 +43,7 @@ jobs:
             mingw-w64-x86_64-python3-pyopenssl
             zip
       - name: Run build script
-        run: msys2 -c 'build.sh'
+        run: msys2 -c './build.sh'
         env:
           HOST_CPU: x86_64
       - name: Upload zip
