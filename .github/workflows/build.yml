@@ -74,4 +74,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: mac-package.dmg
-          path: m64p-*.dmg
+          path: mupen64plus/m64p-*.dmg
