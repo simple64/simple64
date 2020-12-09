@@ -18,7 +18,7 @@ jobs:
       - name: Upload zip
         uses: actions/upload-artifact@v2
         with:
-          name: linux-package.zip
+          name: m64p-linux64-${{ env.GITHUB_SHA::7 }}.zip
           path: m64p-*.zip
   build-windows:
     runs-on: windows-latest
@@ -51,7 +51,7 @@ jobs:
       - name: Upload zip
         uses: actions/upload-artifact@v2
         with:
-          name: windows-package.zip
+          name: m64p-win64-${{ env.GITHUB_SHA::7 }}.zip
           path: m64p-*.zip
   build-mac:
     runs-on: macos-10.15
@@ -73,5 +73,5 @@ jobs:
       - name: Upload dmg
         uses: actions/upload-artifact@v2
         with:
-          name: mac-package.dmg
+          name: m64p-osx-${{ env.GITHUB_SHA::7 }}.dmg
           path: mupen64plus/m64p-*.dmg
