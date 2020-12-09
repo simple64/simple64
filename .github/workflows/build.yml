@@ -40,8 +40,8 @@ jobs:
             mingw-w64-x86_64-jasper
             mingw-w64-x86_64-qt5
             mingw-w64-x86_64-python3-pip
-            mingw-w64-x86_64-git
             mingw-w64-x86_64-python3-pyopenssl
+            git
             zip
       - name: Run build script
         run: msys2 -c './build.sh'
