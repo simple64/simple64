@@ -18,8 +18,10 @@ jobs:
       - name: Upload zip
         uses: actions/upload-artifact@v2
         with:
-          name: m64p-linux64-${{ env.GITHUB_SHA::7 }}.zip
+          name: m64p-linux64-${{ env.SHA7 }}.zip
           path: m64p-*.zip
+        env:
+          SHA7: ${GITHUB_SHA::7}
   build-windows:
     runs-on: windows-latest
     steps:
@@ -51,8 +53,10 @@ jobs:
       - name: Upload zip
         uses: actions/upload-artifact@v2
         with:
-          name: m64p-win64-${{ env.GITHUB_SHA::7 }}.zip
+          name: m64p-win64-${{ env.SHA7 }}.zip
           path: m64p-*.zip
+        env:
+          SHA7: ${GITHUB_SHA::7}
   build-mac:
     runs-on: macos-10.15
     steps:
@@ -73,5 +77,7 @@ jobs:
       - name: Upload dmg
         uses: actions/upload-artifact@v2
         with:
-          name: m64p-osx-${{ env.GITHUB_SHA::7 }}.dmg
+          name: m64p-osx-${{ env.SHA7 }}.dmg
           path: mupen64plus/m64p-*.dmg
+        env:
+          SHA7: ${GITHUB_SHA::7}
