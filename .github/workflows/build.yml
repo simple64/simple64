@@ -5,16 +5,16 @@ on: push
 jobs:
   build-linux:
     runs-on: ubuntu-18.04
-	steps:
+      steps:
       - uses: actions/checkout@v2
-	  - name: Update and install packages
-	    run: |
-		  sudo apt-get -qq update
-		  sudo apt-get -y dist-upgrade
-		  sudo apt-get -y install awscli cmake libhidapi-dev lsb-release wget libminizip-dev libsdl2-dev libfreetype6-dev libgl1-mesa-dev libglu1-mesa-dev pkg-config zlib1g-dev binutils-dev libspeexdsp-dev libsamplerate0-dev qt5-default build-essential nasm git zip libsdl2-net-dev libqt5websockets5-dev
-	  - name: Run build script
-	    run: |
-		  bash ./build.sh
-		with:
-		  name: linux-package
-		  path: m64p-*.zip
+      - name: Update and install packages
+        run: |
+          sudo apt-get -qq update
+          sudo apt-get -y dist-upgrade
+          sudo apt-get -y install awscli cmake libhidapi-dev lsb-release wget libminizip-dev libsdl2-dev libfreetype6-dev libgl1-mesa-dev libglu1-mesa-dev pkg-config zlib1g-dev binutils-dev libspeexdsp-dev libsamplerate0-dev qt5-default build-essential nasm git zip libsdl2-net-dev libqt5websockets5-dev
+      - name: Run build script
+        run: |
+          bash ./build.sh
+        with:
+          name: linux-package
+          path: m64p-*.zip
