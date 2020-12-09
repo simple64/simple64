@@ -20,3 +20,56 @@ jobs:
         with:
           name: linux-package
           path: m64p-*.zip
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          install: >-
+            make
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-hidapi
+            mingw-w64-x86_64-freetype
+            mingw-w64-x86_64-libpng
+            mingw-w64-x86_64-libsamplerate
+            mingw-w64-x86_64-SDL2
+            mingw-w64-x86_64-SDL2_net
+            mingw-w64-x86_64-jasper
+            mingw-w64-x86_64-qt5
+            mingw-w64-x86_64-python3-pip
+            mingw-w64-x86_64-python3-pyopenssl
+            zip
+      - name: Run build script
+        run: msys2 -c 'build.sh'
+        env:
+          HOST_CPU: x86_64
+      - name: Upload zip
+        uses: actions/upload-artifact@v2
+        with:
+          name: windows-package
+          path: m64p-*.zip
+  build-mac:
+    runs-on: macos-10.15
+    steps:
+      - uses: actions/checkout@v2
+      - name: brew update
+        run: |
+          brew update
+          brew upgrade
+          brew install libsamplerate hidapi sdl2_net sdl2 awscli
+      - name: Run build script
+        run: |
+          export qt_version=$(ls /usr/local/Cellar/qt)
+          sudo ln -s /usr/local/Cellar/qt/$qt_version/plugins /usr/local/plugins
+          sudo ln -s /usr/local/Cellar/qt/$qt_version/mkspecs /usr/local/mkspecs
+          sudo ln -s /usr/local/Cellar/qt/$qt_version/bin/qmake /usr/local/bin/qmake
+          export PATH=$PATH:/usr/local/Cellar/qt/$qt_version/bin
+          sudo sh ./build.sh
+      - name: Upload dmg
+        uses: actions/upload-artifact@v2
+        with:
+          name: mac-package
+          path: m64p-*.dmg
