@@ -15,7 +15,8 @@ ICON = mupen64plus.icns
 DEFINES += "NETPLAY_VER=7"
 
 INCLUDEPATH += \
-        "../../mupen64plus-core/src/api"
+        "../../mupen64plus-core/src/api" \
+        "../core/src/api"
 
 SOURCES += main.cpp \
     mainwindow.cpp \

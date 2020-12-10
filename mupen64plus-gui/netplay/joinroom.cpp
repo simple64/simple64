@@ -10,6 +10,7 @@
 #include <QHeaderView>
 #include <QMessageBox>
 #include <QFileDialog>
+#include <QInputDialog>
 
 JoinRoom::JoinRoom(QWidget *parent)
     : QDialog(parent)
@@ -126,6 +127,7 @@ void JoinRoom::downloadFinished(QNetworkReply *reply)
         QStringList servers = json.keys();
         for (int i = 0; i < servers.size(); ++i)
             serverChooser->addItem(servers.at(i), json.value(servers.at(i)).toString());
+        serverChooser->addItem(QString("Custom"), QString("Custom"));
     }
 
     reply->deleteLater();
@@ -133,7 +135,7 @@ void JoinRoom::downloadFinished(QNetworkReply *reply)
 
 void JoinRoom::refresh()
 {
-    serverChanged("");
+    serverChanged(serverChooser->currentData().toString());
 }
 
 void JoinRoom::joinGame()
@@ -208,22 +210,64 @@ void JoinRoom::joinGame()
     }
 }
 
-void JoinRoom::serverChanged(QString)
+void JoinRoom::serverChanged(QString serverName)
 {
     if (webSocket)
     {
         webSocket->close();
         webSocket->deleteLater();
+        webSocket = NULL;
+    }
+
+    if (serverName == "Custom")
+    {
+        bool ok;
+        customServerAddress = QInputDialog::getText(this, "Custom Netplay Server", "IP Address / Host:", QLineEdit::Normal, "", &ok);
+
+        if (!ok || customServerAddress.isEmpty())
+        {
+            customServerAddress = QString::null;
+            resetList();
+            return;
+        }
+        else
+        {
+            customServerAddress.prepend("ws://");
+        }
+    }
+    else
+    {
+        customServerAddress = QString::null;
     }
 
     resetList();
     webSocket = new QWebSocket();
     connect(webSocket, &QWebSocket::connected, this, &JoinRoom::onConnected);
-    webSocket->open(QUrl(serverChooser->currentData().toString()));
+    connectionTimer = new QTimer(this);
+    connectionTimer->setSingleShot(true);
+    connectionTimer->start(1000);
+    connect(connectionTimer, SIGNAL(timeout()), this, SLOT(connectionFailed()));
+
+    QString serverUrlStr = customServerAddress.isNull() ? serverChooser->currentData().toString() : customServerAddress;
+    QUrl serverUrl = QUrl(serverUrlStr);
+    if (!customServerAddress.isNull() && serverUrl.port() < 0)
+        // Be forgiving of custom server addresses that forget the port
+        serverUrl.setPort(45000);
+
+    webSocket->open(serverUrl);
+}
+
+void JoinRoom::connectionFailed()
+{
+    QMessageBox msgBox;
+    msgBox.setText("Could not connect to netplay server.");
+    msgBox.exec();
+    serverChanged(serverChooser->currentData().toString());
 }
 
 void JoinRoom::onConnected()
 {
+    connectionTimer->stop();
     connect(webSocket, &QWebSocket::binaryMessageReceived,
             this, &JoinRoom::processBinaryMessage);
 

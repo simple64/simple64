@@ -23,6 +23,9 @@ private slots:
     void onFinished(int result);
     void processBroadcast();
     void handleUseInputDelay(bool useInputDelay);
+    void handleServerChanged(int index);
+    void handleConnectionError(QAbstractSocket::SocketError error);
+    void connectionFailed();
 private:
     QPushButton *romButton;
     QPushButton *createButton;
@@ -38,6 +41,8 @@ private:
     int launched;
     QString filename;
     QUdpSocket broadcastSocket;
+    QString customServerHost;
+    QTimer *connectionTimer;
 };
 
 #endif // CREATEROOM_H
