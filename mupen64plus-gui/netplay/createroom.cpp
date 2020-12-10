@@ -11,6 +11,7 @@
 #include <QMessageBox>
 #include <QJsonObject>
 #include <QJsonDocument>
+#include <QInputDialog>
 
 CreateRoom::CreateRoom(QWidget *parent)
     : QDialog(parent)
@@ -58,6 +59,7 @@ CreateRoom::CreateRoom(QWidget *parent)
     serverChooser = new QComboBox(this);
     serverChooser->setSizeAdjustPolicy(QComboBox::AdjustToContents);
     layout->addWidget(serverChooser, 6, 1);
+    connect(serverChooser, SIGNAL(currentIndexChanged(int)), this, SLOT(handleServerChanged(int)));
 
     QFrame* lineH1 = new QFrame(this);
     lineH1->setFrameShape(QFrame::HLine);
@@ -107,6 +109,7 @@ void CreateRoom::onFinished(int)
     (*CoreDoCommand)(M64CMD_ROM_CLOSE, 0, NULL);
     if (!launched && webSocket)
     {
+        disconnect(webSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(handleConnectionError(QAbstractSocket::SocketError)));
         webSocket->close();
         webSocket->deleteLater();
     }
@@ -137,6 +140,12 @@ void CreateRoom::handleCreateButton()
         msgBox.exec();
         return;
     }
+    if (serverChooser->currentData() == "Custom" && (customServerHost == NULL || customServerHost.isEmpty()))
+    {
+        msgBox.setText("Custom Server Address is invalid");
+        msgBox.exec();
+        return;
+    }
     if (loadROM(romButton->text().toStdString()) == M64ERR_SUCCESS)
     {
         createButton->setEnabled(false);
@@ -148,7 +157,17 @@ void CreateRoom::handleCreateButton()
         webSocket = new QWebSocket;
         (*CoreDoCommand)(M64CMD_ROM_GET_SETTINGS, sizeof(rom_settings), &rom_settings);
         connect(webSocket, &QWebSocket::connected, this, &CreateRoom::onConnected);
-        webSocket->open(QUrl(serverChooser->currentData().toString()));
+        connect(webSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(handleConnectionError(QAbstractSocket::SocketError)));
+        QString serverAddress = serverChooser->currentData() == "Custom" ? customServerHost.prepend("ws://") : serverChooser->currentData().toString();
+        QUrl serverUrl = QUrl(serverAddress);
+        if (serverChooser->currentData() == "Custom" && serverUrl.port() < 0)
+            // Be forgiving of custom server addresses that forget the port
+            serverUrl.setPort(45000);
+        connectionTimer = new QTimer(this);
+        connectionTimer->setSingleShot(true);
+        connectionTimer->start(1000);
+        connect(connectionTimer, SIGNAL(timeout()), this, SLOT(connectionFailed()));
+        webSocket->open(serverUrl);
     }
     else
     {
@@ -162,6 +181,7 @@ void CreateRoom::onConnected()
     connect(webSocket, &QWebSocket::binaryMessageReceived,
             this, &CreateRoom::processBinaryMessage);
 
+    connectionTimer->stop();
     QJsonObject json;
     json.insert("type", "create_room");
     json.insert("room_name", nameEdit->text());
@@ -211,6 +231,7 @@ void CreateRoom::downloadFinished(QNetworkReply *reply)
         QStringList servers = json.keys();
         for (int i = 0; i < servers.size(); ++i)
             serverChooser->addItem(servers.at(i), json.value(servers.at(i)).toString());
+        serverChooser->addItem(QString("Custom"), QString("Custom"));
     }
 
     reply->deleteLater();
@@ -219,4 +240,34 @@ void CreateRoom::downloadFinished(QNetworkReply *reply)
 void CreateRoom::handleUseInputDelay(bool useInputDelay)
 {
     inputDelay->setEnabled(useInputDelay);
+}
+
+void CreateRoom::handleServerChanged(int index)
+{
+    if (serverChooser->itemData(index) == "Custom") {
+        bool ok;
+        QString host = QInputDialog::getText(this, "Custom Netplay Server", "IP Address / Host:", QLineEdit::Normal, "", &ok);
+
+        if (ok && !host.isEmpty()) {
+            customServerHost = host;
+        }
+    }
+}
+
+void CreateRoom::handleConnectionError(QAbstractSocket::SocketError error)
+{
+    connectionFailed();
+}
+
+void CreateRoom::connectionFailed()
+{
+    disconnect(webSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(handleConnectionError(QAbstractSocket::SocketError)));
+    (*CoreDoCommand)(M64CMD_ROM_CLOSE, 0, NULL);
+    QMessageBox msgBox;
+    msgBox.setText("Could not connect to netplay server.");
+    msgBox.exec();
+    // Allow them to try again
+    createButton->setEnabled(true);
+    // Trigger input dialog for custom IP address, if using custom IP
+    handleServerChanged(serverChooser->currentIndex());
 }

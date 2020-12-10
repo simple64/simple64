@@ -1,0 +1,49 @@
+name: Build project
+
+on: [push, pull_request]
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Checkout core repo
+        uses: actions/checkout@v2
+        with:
+          repository: mupen64plus/mupen64plus-core
+          path: core
+      - name: Update and install packages
+        run: |
+          sudo apt-get -qq update
+          sudo apt-get -y install build-essential qt5-default libqt5websockets5-dev libsdl2-dev
+      - name: Run build script
+        run: |
+          echo "#define GUI_VERSION \"a12345\"" > version.h
+          mkdir build
+          cd build
+          qmake ..
+          make
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Checkout core repo
+        uses: actions/checkout@v2
+        with:
+          repository: mupen64plus/mupen64plus-core
+          path: core
+      - uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          install: >-
+            make
+            mingw-w64-x86_64-SDL2
+            mingw-w64-x86_64-qt5
+            mingw-w64-x86_64-gcc
+      - name: Run build script
+        run: |
+          echo '#define GUI_VERSION "a12345"' > version.h
+          mkdir build
+          cd build
+          msys2 -c 'qmake ..'
+          msys2 -c 'make'

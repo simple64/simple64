@@ -23,6 +23,7 @@ private slots:
     void joinGame();
     void onFinished(int result);
     void processBroadcast();
+    void connectionFailed();
 private:
     void resetList();
     QComboBox *serverChooser;
@@ -39,6 +40,8 @@ private:
     int launched;
     QString filename;
     QUdpSocket broadcastSocket;
+    QTimer *connectionTimer;
+    QString customServerAddress;
 };
 
 #endif // JOINROOM_H
