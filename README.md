@@ -9,7 +9,7 @@ sudo apt install qt5-default libqt5websockets5 libsdl2-2.0-0 libsdl2-net-2.0-0 l
 ```
 Linux Dependencies (Manjaro/Arch)
 ```
-sudo pacman -S --needed qt5-base qt5-websockets sdl2 sdl2_net hidapi minizip p7zip
+sudo pacman -S --needed qt5-base qt5-websockets sdl2 sdl2_net hidapi minizip p7zip zip
 ```
 Linux Dependencies (Fedora)
 ```
