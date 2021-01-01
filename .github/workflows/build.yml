@@ -66,11 +66,11 @@ jobs:
       - name: Get short SHA
         id: slug
         run: echo "::set-output name=sha7::$(git rev-parse --short HEAD)"
-      - name: Workaround for failing build
-        run: |
-          brew uninstall openssl@1.0.2t
-          rm -rf /usr/local/etc/openssl
-          rm -rf /usr/local/etc/openssl@1.1
+      #- name: Workaround for failing build
+      #  run: |
+      #    brew uninstall openssl@1.0.2t
+      #    rm -rf /usr/local/etc/openssl
+      #    rm -rf /usr/local/etc/openssl@1.1
       - name: brew update
         run: |
           brew update
