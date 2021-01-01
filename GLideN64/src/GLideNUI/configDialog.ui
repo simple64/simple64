@@ -445,7 +445,7 @@
                       <item>
                        <widget class="QSlider" name="aliasingSlider">
                         <property name="maximum">
-                         <number>3</number>
+                         <number>4</number>
                         </property>
                         <property name="singleStep">
                          <number>1</number>
@@ -1106,6 +1106,16 @@
               </property>
               <property name="text">
                <string>Enable per-pixel lighting (better quality, HLE only)</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="enableCoverageCheckBox">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Enable pixel coverage calculation. &lt;/span&gt;&lt;/p&gt;&lt;p&gt;Enables approximated pixel coverage calculation. N64 uses pixel coverage for anti-aliasing and in some special blending modes. Some games have wire-frame mode aka 'pen and ink' mode. This mode also needs pixel coverage calculated. &lt;/p&gt;&lt;p&gt;[Recommended: Checked, unless performance is hurt]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="text">
+               <string>Enable pixel coverage calculation</string>
               </property>
              </widget>
             </item>

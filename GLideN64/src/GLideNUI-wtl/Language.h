@@ -118,6 +118,8 @@ enum languageStringID
 	EMULATION_BACKGROUND_TOOLTIP = 3030,
 	EMULATION_ONE_PIECE = 3031,
 	EMULATION_STRIPPED = 3032,
+	EMULATION_PIXEL_COVERAGE = 3033,
+	EMULATION_PIXEL_COVERAGE_TOOLTIP = 3034,
 
 	/*********************************************************************************
 	* Frame Buffer Tab															   *

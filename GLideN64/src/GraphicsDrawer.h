@@ -34,6 +34,7 @@ struct RectVertex
 {
 	float x, y, z, w;
 	float s0, t0, s1, t1;
+	float bc0, bc1;
 };
 
 typedef std::chrono::milliseconds Milliseconds;

@@ -38,6 +38,7 @@ struct GLInfo {
 	bool eglImage = false;
 	bool eglImageFramebuffer = false;
 	bool dual_source_blending = false;
+	bool coverage = false;
 	Renderer renderer = Renderer::Other;
 
 	void init();

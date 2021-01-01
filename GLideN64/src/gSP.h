@@ -40,6 +40,7 @@ struct SPVertex
 	f32 r, g, b, a;
 	f32 flat_r, flat_g, flat_b, flat_a;
 	f32 s, t;
+	f32 bc0, bc1;
 	u32 modify;
 	u8 HWLight;
 	u8 clip;

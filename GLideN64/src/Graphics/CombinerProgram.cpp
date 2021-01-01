@@ -16,6 +16,7 @@ namespace graphics {
 		vecOptions.push_back(config.generalEmulation.enableDitheringPattern);
 		vecOptions.push_back(config.generalEmulation.enableDitheringQuantization);
 		vecOptions.push_back(config.generalEmulation.enableLOD);
+		vecOptions.push_back(config.generalEmulation.enableCoverage);
 		vecOptions.push_back(config.frameBufferEmulation.N64DepthCompare == Config::dcFast ? 1 : 0);
 		vecOptions.push_back(config.frameBufferEmulation.N64DepthCompare == Config::dcCompatible ? 1 : 0);
 		vecOptions.push_back(config.generalEmulation.enableLegacyBlending);

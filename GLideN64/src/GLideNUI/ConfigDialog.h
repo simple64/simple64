@@ -15,7 +15,7 @@ class ConfigDialog : public QDialog
 	Q_OBJECT
 
 public:
-	explicit ConfigDialog(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags());
+	explicit ConfigDialog(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags(), unsigned int _maxMsaaLevel = 8);
 	~ConfigDialog();
 
 	void setIniPath(const QString & _strIniPath);
@@ -89,6 +89,7 @@ private:
 	bool m_blockReInit;
 	QString m_strIniPath;
 	const char * m_romName;
+	unsigned int m_maxMSAA;
 };
 
 #endif // CONFIGDIALOG_H

@@ -13,7 +13,6 @@ public:
 	static void swapBuffers();
 
 private:
-
 	static HGLRC hRC;
 	static HDC hDC;
 };

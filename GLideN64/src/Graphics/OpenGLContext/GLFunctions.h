@@ -3,6 +3,7 @@
 
 #ifdef OS_WINDOWS
 #include <windows.h>
+//#define FORCE_UNBUFFERED_DRAWER // Debug option.
 #elif defined(OS_LINUX)
 #include <winlnxdefs.h>
 #endif

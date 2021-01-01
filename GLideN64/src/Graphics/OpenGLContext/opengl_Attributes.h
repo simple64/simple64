@@ -10,6 +10,7 @@ namespace opengl {
 		extern const GLuint texcoord;
 		extern const GLuint numlights;
 		extern const GLuint modify;
+		extern const GLuint barycoords;
 	}
 
 	// Rect attributes
@@ -17,7 +18,8 @@ namespace opengl {
 		extern const GLuint position;
 		extern const GLuint texcoord0;
 		extern const GLuint texcoord1;
+		extern const GLuint barycoords;
 	}
 
-#define MaxAttribIndex 8
+#define MaxAttribIndex 10
 }

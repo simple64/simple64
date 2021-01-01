@@ -205,17 +205,28 @@ void CTextureEnhancementTab::SaveDirectory(int EditCtrl, wchar_t * txPath)
 	int TxtLen = EditWnd.GetWindowTextLength();
 	std::wstring Path;
 	Path.resize(TxtLen + 1);
-	EditWnd.GetWindowText((wchar_t *)Path.data(), static_cast<int>(Path.size()));
+	EditWnd.GetWindowTextW((wchar_t *)Path.data(), static_cast<int>(Path.size()));
 
-	WIN32_FIND_DATA	FindData;
-	HANDLE hFindFile = FindFirstFile(Path.c_str(), &FindData);
-	bool exists = (hFindFile != INVALID_HANDLE_VALUE);
+	bool exists = osal_path_existsW(Path.data());
 
-	if (hFindFile != NULL)
-		FindClose(hFindFile);
-
-	if (exists)
-		wcscpy(txPath, Path.c_str());
+	if (!exists) {
+		if (osal_mkdirp(Path.data()) != 0) {
+			switch (EditCtrl) {
+				case IDC_TEX_PACK_PATH_EDIT:
+					MessageBox(L"Failed to create the texture pack folder. Please change the folder or turn off texture packs.", L"GLideN64", MB_OK | MB_ICONWARNING);
+					return;
+				case IDC_TEX_CACHE_PATH_EDIT:
+					MessageBox(L"Failed to create the texture pack cache folder. Please change the folder or turn off texture packs.", L"GLideN64", MB_OK | MB_ICONWARNING);
+					return;
+				case IDC_TEX_DUMP_PATH_EDIT:
+					MessageBox(L"Failed to create the texture dump folder. Please change the folder or turn off texture packs.", L"GLideN64", MB_OK | MB_ICONWARNING);
+					return;
+				default:
+					return;
+			}
+		}
+	}
+	wcscpy(txPath, Path.c_str());
 }
 
 void CTextureEnhancementTab::SaveSettings()
@@ -291,3 +302,4 @@ int CALLBACK CTextureEnhancementTab::SelectDirCallBack(HWND hwnd, uint32_t uMsg,
 	}
 	return 0;
 }
+
