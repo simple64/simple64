@@ -542,22 +542,6 @@ namespace glsl {
 		}
 	};
 
-	class OrientationCorrection : public ShaderPart
-	{
-	public:
-		OrientationCorrection(const opengl::GLInfo & _glinfo)
-		{
-			m_part =
-				"IN mediump vec2 vTexCoord0;													\n"
-				"uniform sampler2D uTex0;													\n"
-				"OUT lowp vec4 fragColor;													\n"
-				"void main()																\n"
-				"{																			\n"
-				"    fragColor = texture2D(uTex0, vec2(1.0 - vTexCoord0.x, 1.0 - vTexCoord0.y));       \n"
-			;
-		}
-	};
-
 	/*---------------TextDrawerShaderPart-------------*/
 
 	class TextDraw : public ShaderPart
@@ -903,25 +887,6 @@ namespace glsl {
 		}
 	};
 
-	typedef SpecialShader<VertexShaderTexturedRect, OrientationCorrection> OrientationCorrectionShaderBase;
-
-	class OrientationCorrectionShader : public OrientationCorrectionShaderBase
-	{
-	public:
-		OrientationCorrectionShader(const opengl::GLInfo & _glinfo,
-			opengl::CachedUseProgram * _useProgram,
-			const ShaderPart * _vertexHeader,
-			const ShaderPart * _fragmentHeader,
-			const ShaderPart * _fragmentEnd)
-			: OrientationCorrectionShaderBase(_glinfo, _useProgram, _vertexHeader, _fragmentHeader, _fragmentEnd)
-		{
-			m_useProgram->useProgram(m_program);
-			const int texLoc = glGetUniformLocation(GLuint(m_program), "uTex0");
-			glUniform1i(texLoc, 0);
-			m_useProgram->useProgram(graphics::ObjectHandle::null);
-		}
-	};
-
 	/*---------------TexrectDrawerShader-------------*/
 
 	typedef SpecialShader<VertexShaderTexturedRect, TextDraw, graphics::TextDrawerShaderProgram> TextDrawerShaderBase;
@@ -1016,11 +981,6 @@ namespace glsl {
 	graphics::ShaderProgram * SpecialShadersFactory::createGammaCorrectionShader() const
 	{
 		return new GammaCorrectionShader(m_glinfo, m_useProgram, m_vertexHeader, m_fragmentHeader, m_fragmentEnd);
-	}
-
-	graphics::ShaderProgram * SpecialShadersFactory::createOrientationCorrectionShader() const
-	{
-		return new OrientationCorrectionShader(m_glinfo, m_useProgram, m_vertexHeader, m_fragmentHeader, m_fragmentEnd);
 	}
 
 	graphics::ShaderProgram * SpecialShadersFactory::createFXAAShader() const

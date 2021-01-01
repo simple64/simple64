@@ -25,6 +25,7 @@ void Config::resetToDefaults()
 	video.fullscreenRefresh = 60;
 	video.fxaa = 0;
 	video.multisampling = 0;
+	video.maxMultiSampling = 0;
 	video.verticalSync = 0;
 
 #if defined(OS_MAC_OS_X)
@@ -44,6 +45,7 @@ void Config::resetToDefaults()
 	generalEmulation.enableDitheringQuantization = 1;
 	generalEmulation.rdramImageDitheringMode = BufferDitheringMode::bdmBlueNoise;
 	generalEmulation.enableHWLighting = 0;
+	generalEmulation.enableCoverage = 1;
 	generalEmulation.enableCustomSettings = 1;
 	generalEmulation.enableShadersStorage = 1;
 	generalEmulation.enableLegacyBlending = 0;
@@ -51,7 +53,6 @@ void Config::resetToDefaults()
 	generalEmulation.hacks = 0;
 #if defined(OS_ANDROID) || defined(OS_IOS)
 	generalEmulation.enableFragmentDepthWrite = 0;
-	generalEmulation.enableBlitScreenWorkaround = 0;
 	generalEmulation.forcePolygonOffset = 0;
 	generalEmulation.polygonOffsetFactor = 0.0f;
 	generalEmulation.polygonOffsetUnits = 0.0f;

@@ -25,6 +25,7 @@ void _loadSettings(QSettings & settings)
 	config.video.windowedHeight = settings.value("windowedHeight", config.video.windowedHeight).toInt();
 	config.video.fullscreen = settings.value("fullscreen", config.video.fullscreen).toInt();
 	config.video.multisampling = settings.value("multisampling", config.video.multisampling).toInt();
+	config.video.maxMultiSampling = settings.value("maxMultiSampling", config.video.maxMultiSampling).toInt();
 	config.video.fxaa= settings.value("fxaa", config.video.fxaa).toInt();
 	config.video.verticalSync = settings.value("verticalSync", config.video.verticalSync).toInt();
 	config.video.threadedVideo = settings.value("threadedVideo", config.video.threadedVideo).toInt();
@@ -44,6 +45,7 @@ void _loadSettings(QSettings & settings)
 	config.generalEmulation.rdramImageDitheringMode = settings.value("rdramImageDitheringMode", config.generalEmulation.rdramImageDitheringMode).toInt();
 	config.generalEmulation.enableLOD = settings.value("enableLOD", config.generalEmulation.enableLOD).toInt();
 	config.generalEmulation.enableHWLighting = settings.value("enableHWLighting", config.generalEmulation.enableHWLighting).toInt();
+	config.generalEmulation.enableCoverage = settings.value("enableCoverage", config.generalEmulation.enableCoverage).toInt();
 	config.generalEmulation.enableShadersStorage = settings.value("enableShadersStorage", config.generalEmulation.enableShadersStorage).toInt();
 	config.generalEmulation.enableLegacyBlending = settings.value("enableLegacyBlending", config.generalEmulation.enableLegacyBlending).toInt();			 //ini only
 	config.generalEmulation.enableHybridFilter = settings.value("enableHybridFilter", config.generalEmulation.enableHybridFilter).toInt();					 //ini only
@@ -205,6 +207,7 @@ void writeSettings(const QString & _strIniFolder)
 	settings.setValue("windowedHeight", config.video.windowedHeight);
 	settings.setValue("fullscreen", config.video.fullscreen);
 	settings.setValue("multisampling", config.video.multisampling);
+	settings.setValue("maxMultiSampling", config.video.maxMultiSampling);
 	settings.setValue("fxaa", config.video.fxaa);
 	settings.setValue("verticalSync", config.video.verticalSync);
 	settings.setValue("threadedVideo", config.video.threadedVideo);
@@ -224,6 +227,7 @@ void writeSettings(const QString & _strIniFolder)
 	settings.setValue("rdramImageDitheringMode", config.generalEmulation.rdramImageDitheringMode);
 	settings.setValue("enableLOD", config.generalEmulation.enableLOD);
 	settings.setValue("enableHWLighting", config.generalEmulation.enableHWLighting);
+	settings.setValue("enableCoverage", config.generalEmulation.enableCoverage);
 	settings.setValue("enableShadersStorage", config.generalEmulation.enableShadersStorage);
 	settings.setValue("enableLegacyBlending", config.generalEmulation.enableLegacyBlending);		 //ini only
 	settings.setValue("enableHybridFilter", config.generalEmulation.enableHybridFilter);			 //ini only
@@ -392,8 +396,8 @@ void saveCustomRomSettings(const QString & _strIniFolder, const char * _strRomNa
 		origConfig.G.S != settings.value(#S, config.G.S).toFloat()) \
 		settings.setValue(#S, config.G.S)
 #define WriteCustomSettingS(S) \
-	const QString new##S = QString::fromWCharArray(config.textureFilter.txPath); \
-	const QString orig##S = QString::fromWCharArray(origConfig.textureFilter.txPath); \
+	const QString new##S = QString::fromWCharArray(config.textureFilter.S); \
+	const QString orig##S = QString::fromWCharArray(origConfig.textureFilter.S); \
 	if (orig##S  != new##S || \
 		orig##S != settings.value(#S, new##S).toString()) \
 		settings.setValue(#S, new##S)
@@ -423,6 +427,7 @@ void saveCustomRomSettings(const QString & _strIniFolder, const char * _strRomNa
 	WriteCustomSetting(generalEmulation, rdramImageDitheringMode);
 	WriteCustomSetting(generalEmulation, enableLOD);
 	WriteCustomSetting(generalEmulation, enableHWLighting);
+	WriteCustomSetting(generalEmulation, enableCoverage);
 	WriteCustomSetting(generalEmulation, enableShadersStorage);
 	settings.endGroup();
 

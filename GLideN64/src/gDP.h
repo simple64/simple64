@@ -260,8 +260,6 @@ struct gDPInfo
 
 extern gDPInfo gDP;
 
-//#define OLD_LLE
-
 class LLETriangle
 {
 public:

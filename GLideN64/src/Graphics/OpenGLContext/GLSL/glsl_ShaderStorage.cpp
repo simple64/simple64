@@ -100,7 +100,6 @@ bool ShaderStorage::_saveCombinerKeys(const graphics::Combiners & _combiners) co
 
 	std::sort(keysData.begin(), keysData.end());
 	keysOut << "0x" << std::hex << std::setfill('0') << std::setw(8) << m_keysFormatVersion << "\n";
-	keysOut << "0x" << std::hex << std::setfill('0') << std::setw(8) << static_cast<u32>(GBI.isHWLSupported()) << "\n";
 	keysOut << "0x" << std::hex << std::setfill('0') << std::setw(8) << keysData.size() << "\n";
 	for (u64 key : keysData)
 		keysOut << "0x" << std::hex << std::setfill('0') << std::setw(16) << key << "\n";
@@ -202,7 +201,7 @@ bool ShaderStorage::saveShadersStorage(const graphics::Combiners & _combiners) c
 }
 
 static
-CombinerProgramImpl * _readCominerProgramFromStream(std::istream & _is,
+CombinerProgramImpl * _readCombinerProgramFromStream(std::istream & _is,
 	CombinerProgramUniformFactory & _uniformFactory,
 	opengl::CachedUseProgram * _useProgram)
 {
@@ -245,12 +244,16 @@ bool ShaderStorage::_loadFromCombinerKeys(graphics::Combiners & _combiners)
 
 	u32 version;
 	fin >> std::hex >> version;
-	if (version != m_keysFormatVersion)
+	if (version < 4)
 		return false;
 
-	u32 hwlSupport;
-	fin >> std::hex >> hwlSupport;
-	GBI.setHWLSupported(hwlSupport != 0);
+	const bool useGlobalHWLSuport = version == 4;
+
+	if (useGlobalHWLSuport) {
+		u32 hwlSupport = 0;
+		fin >> std::hex >> hwlSupport;
+		GBI.setHWLSupported(hwlSupport != 0);
+	}
 
 	displayLoadProgress(L"LOAD COMBINER SHADERS %.1f%%", 0.0f);
 
@@ -260,10 +263,13 @@ bool ShaderStorage::_loadFromCombinerKeys(graphics::Combiners & _combiners)
 	const f32 step = 100.0f / szCombiners;
 	f32 progress = 0.0f;
 	f32 percents = percent;
-	u64 key;
+	u64 mux;
 	for (u32 i = 0; i < szCombiners; ++i) {
-		fin >> std::hex >> key;
-		graphics::CombinerProgram * pCombiner = Combiner_Compile(CombinerKey(key, false));
+		fin >> std::hex >> mux;
+		CombinerKey key(mux, false);
+		if (!useGlobalHWLSuport)
+			GBI.setHWLSupported(key.isHWLSupported());
+		graphics::CombinerProgram * pCombiner = Combiner_Compile(key);
 		pCombiner->update(true);
 		_combiners[pCombiner->getKey()] = pCombiner;
 		progress += step;
@@ -338,7 +344,7 @@ bool ShaderStorage::loadShadersStorage(graphics::Combiners & _combiners)
 		f32 progress = 0.0f;
 		f32 percents = percent;
 		for (u32 i = 0; i < len; ++i) {
-			CombinerProgramImpl * pCombiner = _readCominerProgramFromStream(fin, uniformFactory, m_useProgram);
+			CombinerProgramImpl * pCombiner = _readCombinerProgramFromStream(fin, uniformFactory, m_useProgram);
 			pCombiner->update(true);
 			_combiners[pCombiner->getKey()] = pCombiner;
 			progress += step;

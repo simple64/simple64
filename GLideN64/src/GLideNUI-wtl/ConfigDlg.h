@@ -26,7 +26,7 @@ public:
 		COMMAND_HANDLER(IDC_PROFILE, CBN_SELCHANGE, OnProfileChanged)
 		COMMAND_HANDLER_EX(IDC_GAME_PROFILE, BN_CLICKED, OnGameProfile)
 		COMMAND_HANDLER_EX(IDC_USE_PROFILE, BN_CLICKED, OnUseProfile)
-		COMMAND_ID_HANDLER(IDC_REMOVE_PROFILE, OnRemoveProfile)		
+		COMMAND_ID_HANDLER(IDC_REMOVE_PROFILE, OnRemoveProfile)
 		COMMAND_ID_HANDLER(ID_RESTORE_DEFAULTS, OnRestoreDefaults)
 		COMMAND_ID_HANDLER(ID_SAVECLOSE, OnSaveClose)
 		COMMAND_ID_HANDLER(ID_SAVE, OnSave)
@@ -35,6 +35,8 @@ public:
 
 	void setIniPath(const std::string & IniPath);
 	void setRomName(const char * RomName);
+	void setMSAALevel(uint32_t _maxMSAALevel);
+	uint32_t getMSAALevel() const;
 	bool Saved(void) const { return m_Saved; }
 	void OnCustomSettingsToggled(bool checked);
 	void SetLanguage(const std::string & language);
@@ -62,6 +64,7 @@ protected:
 	std::vector<CConfigTab *> m_TabWindows;
 	std::string m_strIniPath;
 	const char * m_romName;
+	uint32_t m_maxMSAALevel;
 	bool m_blockReInit;
 	CFrameBufferTab * m_FrameBufferTab;
 	CVideoTab * m_VideoTab;

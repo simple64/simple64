@@ -358,7 +358,7 @@ public:
 		const int forceBlend2 = gDP.otherMode.forceBlender;
 		uForceBlendCycle2.set(forceBlend2, _force);
 
-		if (!graphics::Context::DualSourceBlending || dwnd().getDrawer().isTexrectDrawerMode()) {
+		if (!(graphics::Context::DualSourceBlending || graphics::Context::FramebufferFetchColor) || dwnd().getDrawer().isTexrectDrawerMode()) {
 			// Modes, which shader blender can't emulate
 			const u32 mode = _SHIFTR(gDP.otherMode.l, 16, 16);
 			switch (mode) {
@@ -574,24 +574,23 @@ public:
 	{
 		if (gDP.otherMode.cycleType == G_CYC_FILL) {
 			uEnableAlphaTest.set(0, _force);
-		}
-		else if (gDP.otherMode.cycleType == G_CYC_COPY) {
+			uAlphaCvgSel.set(0, _force);
+
+		} else if (gDP.otherMode.cycleType == G_CYC_COPY) {
+			uAlphaCvgSel.set(0, _force);
 			if (gDP.otherMode.alphaCompare & G_AC_THRESHOLD) {
 				uEnableAlphaTest.set(1, _force);
-				uAlphaCvgSel.set(0, _force);
 				uAlphaTestValue.set(0.5f, _force);
-			}
-			else {
+			} else {
 				uEnableAlphaTest.set(0, _force);
 			}
-		}
-		else if ((gDP.otherMode.alphaCompare & G_AC_THRESHOLD) != 0) {
+		} else if ((gDP.otherMode.alphaCompare & G_AC_THRESHOLD) != 0) {
 			uEnableAlphaTest.set(1, _force);
 			uAlphaTestValue.set(gDP.blendColor.a, _force);
 			uAlphaCvgSel.set(gDP.otherMode.alphaCvgSel, _force);
-		}
-		else {
+		} else {
 			uEnableAlphaTest.set(0, _force);
+			uAlphaCvgSel.set(gDP.otherMode.alphaCvgSel, _force);
 		}
 
 		uCvgXAlpha.set(gDP.otherMode.cvgXAlpha, _force);

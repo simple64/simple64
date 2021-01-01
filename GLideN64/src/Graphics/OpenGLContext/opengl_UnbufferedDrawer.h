@@ -24,6 +24,7 @@ namespace opengl {
 		const GLInfo & m_glInfo;
 		CachedVertexAttribArray * m_cachedAttribArray;
 		std::array<const void*, MaxAttribIndex> m_attribsData;
+		bool m_useCoverage = false;
 	};
 
 }

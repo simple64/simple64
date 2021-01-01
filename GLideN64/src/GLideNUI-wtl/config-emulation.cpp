@@ -70,6 +70,7 @@ void CEmulationTab::ApplyLanguage(void)
 	SetDlgItemTextW(IDC_CHK_USE_PER_GAME, wGS(EMULATION_USE_PER_GAME).c_str());
 	SetDlgItemTextW(IDC_CHK_N64_STYLE_MIP_MAPPING, wGS(EMULATION_N64_STYLE_MIP_MAPPING).c_str());
 	SetDlgItemTextW(IDC_CHK_HWLIGHTING, wGS(EMULATION_HWLIGHTING).c_str());
+	SetDlgItemTextW(IDC_CHK_PIXEL_COVERAGE, wGS(EMULATION_PIXEL_COVERAGE).c_str());
 	SetDlgItemTextW(IDC_CHK_SHADERS_STORAGE, wGS(EMULATION_SHADERS_STORAGE).c_str());
 	SetDlgItemTextW(IDC_INTERNAL_RES_GROUP, wGS(EMULATION_INTERNAL_RES).c_str());
 	SetDlgItemTextW(IDC_FACTOR0X_RADIO, wGS(EMULATION_FACTOR0X).c_str());
@@ -95,6 +96,8 @@ void CEmulationTab::ApplyLanguage(void)
 	TTSetTxt(GetDlgItem(IDC_CHK_N64_STYLE_MIP_MAPPING), tooltip.c_str());
 	tooltip = wGS(EMULATION_HWLIGHTING_TOOLTIP);
 	TTSetTxt(GetDlgItem(IDC_CHK_HWLIGHTING), tooltip.c_str());
+	tooltip = wGS(EMULATION_PIXEL_COVERAGE_TOOLTIP);
+	TTSetTxt(GetDlgItem(IDC_CHK_PIXEL_COVERAGE), tooltip.c_str());
 	tooltip = wGS(EMULATION_SHADERS_STORAGE_TOOLTIP);
 	TTSetTxt(GetDlgItem(IDC_CHK_SHADERS_STORAGE), tooltip.c_str());
 	tooltip = wGS(EMULATION_INTERNAL_RES_TOOLTIP);
@@ -136,6 +139,7 @@ void CEmulationTab::LoadSettings(bool blockCustomSettings)
 	}
 	CButton(GetDlgItem(IDC_CHK_N64_STYLE_MIP_MAPPING)).SetCheck(config.generalEmulation.enableLOD != 0 ? BST_CHECKED : BST_UNCHECKED);
 	CButton(GetDlgItem(IDC_CHK_HWLIGHTING)).SetCheck(config.generalEmulation.enableHWLighting != 0 ? BST_CHECKED : BST_UNCHECKED);
+	CButton(GetDlgItem(IDC_CHK_PIXEL_COVERAGE)).SetCheck(config.generalEmulation.enableCoverage != 0 ? BST_CHECKED : BST_UNCHECKED);
 	CButton(GetDlgItem(IDC_CHK_SHADERS_STORAGE)).SetCheck(config.generalEmulation.enableShadersStorage != 0 ? BST_CHECKED : BST_UNCHECKED);
 	
 	CButton(GetDlgItem(IDC_CHK_HALOS_REMOVAL)).SetCheck(config.texture.enableHalosRemoval != 0 ? BST_CHECKED : BST_UNCHECKED);
@@ -168,6 +172,7 @@ void CEmulationTab::SaveSettings()
 	config.generalEmulation.enableCustomSettings = CButton(GetDlgItem(IDC_CHK_USE_PER_GAME)).GetCheck() == BST_CHECKED ? 1 : 0;
 	config.generalEmulation.enableLOD = CButton(GetDlgItem(IDC_CHK_N64_STYLE_MIP_MAPPING)).GetCheck() == BST_CHECKED ? 1 : 0;
 	config.generalEmulation.enableHWLighting = CButton(GetDlgItem(IDC_CHK_HWLIGHTING)).GetCheck() == BST_CHECKED ? 1 : 0;
+	config.generalEmulation.enableCoverage = CButton(GetDlgItem(IDC_CHK_PIXEL_COVERAGE)).GetCheck() == BST_CHECKED ? 1 : 0;
 	config.generalEmulation.enableShadersStorage = CButton(GetDlgItem(IDC_CHK_SHADERS_STORAGE)).GetCheck() == BST_CHECKED ? 1 : 0;
 	
 	if (CButton(GetDlgItem(IDC_FACTOR0X_RADIO)).GetCheck() == BST_CHECKED) {

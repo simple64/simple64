@@ -57,6 +57,7 @@ namespace opengl {
 			f32 x, y, z, w;
 			f32 r, g, b, a;
 			f32 s, t;
+			f32 bc0, bc1;
 			u32 modify;
 		};
 
