@@ -28,7 +28,7 @@ struct Config
 		u32 windowedWidth, windowedHeight;
 		u32 fullscreenWidth, fullscreenHeight, fullscreenRefresh;
 		u32 fxaa;
-		u32 multisampling;
+		u32 multisampling, maxMultiSampling;
 		u32 verticalSync;
 		u32 threadedVideo;
 	} video;
@@ -62,12 +62,12 @@ struct Config
 		u32 rdramImageDitheringMode;
 		u32 enableLOD;
 		u32 enableHWLighting;
+		u32 enableCoverage;
 		u32 enableCustomSettings;
 		u32 enableShadersStorage;
 		u32 enableLegacyBlending;
 		u32 enableHybridFilter;
 		u32 enableFragmentDepthWrite;
-		u32 enableBlitScreenWorkaround;
 		u32 hacks;
 #if defined(OS_ANDROID) || defined(OS_IOS)
 		u32 forcePolygonOffset;

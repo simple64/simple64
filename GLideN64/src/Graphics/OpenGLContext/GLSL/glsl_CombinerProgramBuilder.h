@@ -92,6 +92,7 @@ namespace glsl {
 		ShaderPartPtr m_shaderN64DepthCompare;
 		ShaderPartPtr m_shaderN64DepthRender;
 		ShaderPartPtr m_shaderTextureEngine;
+		ShaderPartPtr m_shaderCoverage;
 
 		std::unique_ptr<CombinerProgramUniformFactory> m_uniformFactory;
 
@@ -101,6 +102,7 @@ namespace glsl {
 		GLuint  m_vertexShaderTexturedTriangle;
 		opengl::CachedUseProgram * m_useProgram;
 		u32 m_combinerOptionsBits;
+		bool m_useCoverage = false;
 	};
 
 }

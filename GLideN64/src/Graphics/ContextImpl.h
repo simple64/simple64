@@ -63,7 +63,6 @@ namespace graphics {
 		virtual ShaderProgram * createTexrectDownscaleCopyShader() = 0;
 		virtual ShaderProgram * createTexrectColorAndDepthDownscaleCopyShader() = 0;
 		virtual ShaderProgram * createGammaCorrectionShader() = 0;
-		virtual ShaderProgram * createOrientationCorrectionShader() = 0;
 		virtual ShaderProgram * createFXAAShader() = 0;
 		virtual TextDrawerShaderProgram * createTextDrawerShader() = 0;
 		virtual void resetShaderProgram() = 0;
@@ -72,6 +71,7 @@ namespace graphics {
 		virtual void drawLine(f32 _width, SPVertex * _vertices) = 0;
 		virtual f32 getMaxLineWidth() = 0;
 		virtual bool isSupported(SpecialFeatures _feature) const = 0;
+		virtual s32 getMaxMSAALevel() = 0;
 		virtual bool isError() const = 0;
 		virtual bool isFramebufferError() const = 0;
 	};

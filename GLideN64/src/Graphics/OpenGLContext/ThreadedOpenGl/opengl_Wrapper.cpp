@@ -375,7 +375,7 @@ namespace opengl {
 			ptrDrawElements(mode, count, type, indices);
 			return;
 		}
-		
+
 		int typeSizeBytes;
 		unsigned int maxElementIndex;
 
@@ -1443,7 +1443,7 @@ namespace opengl {
 		if (m_threaded_wrapper) {
 			executeCommand(CoreVideoQuitCommand::get());
 			executeCommand(ShutdownCommand::get());
-		} 
+		}
 		else
 			CoreVideoQuitCommand::get()->performCommandSingleThreaded();
 

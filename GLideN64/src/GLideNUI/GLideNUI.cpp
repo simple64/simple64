@@ -21,7 +21,7 @@ inline void initMyResource() { Q_INIT_RESOURCE(icon); }
 inline void cleanMyResource() { Q_CLEANUP_RESOURCE(icon); }
 
 static
-int openConfigDialog(const wchar_t * _strFileName, const char * _romName, bool & _accepted)
+int openConfigDialog(const wchar_t * _strFileName, const char * _romName, unsigned int _maxMSAALevel, bool & _accepted)
 {
 	cleanMyResource();
 	initMyResource();
@@ -48,7 +48,7 @@ int openConfigDialog(const wchar_t * _strFileName, const char * _romName, bool &
 	if (translator.load(getTranslationFile(), strIniFileName))
 		pApp->installTranslator(&translator);
 
-	ConfigDialog w(Q_NULLPTR, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint);
+	ConfigDialog w(Q_NULLPTR, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint, _maxMSAALevel);
 
 	w.setIniPath(strIniFileName);
 	w.setRomName(_romName);
@@ -79,13 +79,13 @@ int openAboutDialog(const wchar_t * _strFileName)
 	return a.exec();
 }
 
-bool runConfigThread(const wchar_t * _strFileName, const char * _romName) {
+bool runConfigThread(const wchar_t * _strFileName, const char * _romName, unsigned int _maxMSAALevel) {
 	bool accepted = false;
 #ifdef RUN_DIALOG_IN_THREAD
-	std::thread configThread(openConfigDialog, _strFileName, std::ref(accepted));
+	std::thread configThread(openConfigDialog, _strFileName, _maxMSAALevel, std::ref(accepted));
 	configThread.join();
 #else
-	openConfigDialog(_strFileName, _romName, accepted);
+	openConfigDialog(_strFileName, _romName, _maxMSAALevel, accepted);
 #endif
 	return accepted;
 
@@ -101,9 +101,9 @@ int runAboutThread(const wchar_t * _strFileName) {
 	return 0;
 }
 
-EXPORT bool CALL RunConfig(const wchar_t * _strFileName, const char * _romName)
+EXPORT bool CALL RunConfig(const wchar_t * _strFileName, const char * _romName, unsigned int _maxMSAALevel)
 {
-	return runConfigThread(_strFileName, _romName);
+	return runConfigThread(_strFileName, _romName, _maxMSAALevel);
 }
 
 EXPORT int CALL RunAbout(const wchar_t * _strFileName)
