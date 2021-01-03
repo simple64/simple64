@@ -49,6 +49,7 @@ static HWND dlg_check_vi_widescreen;
 static HWND dlg_check_vi_overscan;
 static HWND dlg_check_vi_exclusive;
 static HWND dlg_check_vi_vsync;
+static HWND dlg_check_vi_integer_scaling;
 static HWND dlg_combo_dp_compat;
 static HWND dlg_spin_workers;
 static HWND dlg_edit_workers;
@@ -97,8 +98,9 @@ INT_PTR CALLBACK config_dialog_proc(HWND hwnd, UINT iMessage, WPARAM wParam, LPA
             config_dialog_fill_combo(dlg_combo_vi_mode, vi_mode_strings, VI_MODE_NUM, config.vi.mode);
 
             char* vi_interp_strings[] = {
-                "Nearest-neighbor", // VI_INTERP_NEAREST
-                "Linear"            // VI_INTERP_LINEAR
+                "Blocky (nearest-neightbor)",   // VI_INTERP_NEAREST
+                "Blurry (bilinear)",            // VI_INTERP_LINEAR
+                "Soft (bilinear + NN)"          // VI_INTERP_HYBRID
             };
 
             dlg_combo_vi_interp = GetDlgItem(hwnd, IDC_COMBO_VI_INTERP);
@@ -118,6 +120,7 @@ INT_PTR CALLBACK config_dialog_proc(HWND hwnd, UINT iMessage, WPARAM wParam, LPA
             CONFIG_DLG_INIT_CHECKBOX(IDC_CHECK_VI_OVERSCAN, dlg_check_vi_overscan, config.vi.hide_overscan);
             CONFIG_DLG_INIT_CHECKBOX(IDC_CHECK_VI_EXCLUSIVE, dlg_check_vi_exclusive, config.vi.exclusive);
             CONFIG_DLG_INIT_CHECKBOX(IDC_CHECK_VI_VSYNC, dlg_check_vi_vsync, config.vi.vsync);
+            CONFIG_DLG_INIT_CHECKBOX(IDC_CHECK_VI_INTEGER_SCALING, dlg_check_vi_integer_scaling, config.vi.integer_scaling);
 
             dlg_edit_workers = GetDlgItem(hwnd, IDC_EDIT_WORKERS);
             SetDlgItemInt(hwnd, IDC_EDIT_WORKERS, config.num_workers, FALSE);
@@ -158,6 +161,7 @@ INT_PTR CALLBACK config_dialog_proc(HWND hwnd, UINT iMessage, WPARAM wParam, LPA
                     config.vi.hide_overscan = SendMessage(dlg_check_vi_overscan, BM_GETCHECK, 0, 0);
                     config.vi.exclusive = SendMessage(dlg_check_vi_exclusive, BM_GETCHECK, 0, 0);
                     config.vi.vsync = SendMessage(dlg_check_vi_vsync, BM_GETCHECK, 0, 0);
+                    config.vi.integer_scaling = SendMessage(dlg_check_vi_integer_scaling, BM_GETCHECK, 0, 0);
                     config.dp.compat = SendMessage(dlg_combo_dp_compat, CB_GETCURSEL, 0, 0);
                     config.parallel = SendMessage(dlg_check_multithread, BM_GETCHECK, 0, 0);
                     config.num_workers = GetDlgItemInt(hwnd, IDC_EDIT_WORKERS, FALSE, FALSE);
