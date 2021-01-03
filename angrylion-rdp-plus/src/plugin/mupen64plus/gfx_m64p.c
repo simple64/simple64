@@ -33,6 +33,7 @@
 #define KEY_VI_INTERP "ViInterpolation"
 #define KEY_VI_WIDESCREEN "ViWidescreen"
 #define KEY_VI_HIDE_OVERSCAN "ViHideOverscan"
+#define KEY_VI_INTEGER_SCALING "ViIntegerScaling"
 
 #define KEY_DP_COMPAT "DpCompat"
 
@@ -117,6 +118,7 @@ EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle _CoreLibHandle, void *Co
     ConfigSetDefaultInt(configVideoAngrylionPlus, KEY_VI_INTERP, config.vi.interp, "Scaling interpolation type (0=NN, 1=Linear)");
     ConfigSetDefaultBool(configVideoAngrylionPlus, KEY_VI_WIDESCREEN, config.vi.widescreen, "Use anamorphic 16:9 output mode if True");
     ConfigSetDefaultBool(configVideoAngrylionPlus, KEY_VI_HIDE_OVERSCAN, config.vi.hide_overscan, "Hide overscan area in filteded mode if True");
+    ConfigSetDefaultBool(configVideoAngrylionPlus, KEY_VI_INTEGER_SCALING, config.vi.integer_scaling, "Display upscaled pixels as groups of 1x1, 2x2, 3x3, etc. if True");
     ConfigSetDefaultInt(configVideoAngrylionPlus, KEY_DP_COMPAT, config.dp.compat, "Compatibility mode (0=Fast 1=Moderate 2=Slow");
 
     ConfigSaveSection("Video-General");
@@ -204,6 +206,7 @@ EXPORT int CALL RomOpen (void)
     config.vi.interp = ConfigGetParamInt(configVideoAngrylionPlus, KEY_VI_INTERP);
     config.vi.widescreen = ConfigGetParamBool(configVideoAngrylionPlus, KEY_VI_WIDESCREEN);
     config.vi.hide_overscan = ConfigGetParamBool(configVideoAngrylionPlus, KEY_VI_HIDE_OVERSCAN);
+    config.vi.integer_scaling = ConfigGetParamBool(configVideoAngrylionPlus, KEY_VI_INTEGER_SCALING);
 
     config.dp.compat = ConfigGetParamInt(configVideoAngrylionPlus, KEY_DP_COMPAT);
 
