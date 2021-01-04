@@ -11,6 +11,7 @@
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QInputDialog>
+#include <QLabel>
 
 JoinRoom::JoinRoom(QWidget *parent)
     : QDialog(parent)
@@ -31,22 +32,26 @@ JoinRoom::JoinRoom(QWidget *parent)
     inputDelay->setValidator(new QIntValidator(0, 100, this));
     inputDelay->setMaximumWidth(80);
     layout->addWidget(inputDelay, 0, 1);
+
+    pingLabel = new QLabel("Ping: (Calculating)", this);
+    layout->addWidget(pingLabel, 0, 2);
+
     serverChooser = new QComboBox(this);
     serverChooser->setSizeAdjustPolicy(QComboBox::AdjustToContents);
-    connect(serverChooser, SIGNAL(currentTextChanged(QString)), this, SLOT(serverChanged(QString)));
+    connect(serverChooser, SIGNAL(currentIndexChanged(int)), this, SLOT(serverChanged(int)));
 
-    layout->addWidget(serverChooser, 0, 2);
+    layout->addWidget(serverChooser, 0, 3);
 
     refreshButton = new QPushButton(this);
     refreshButton->setText("Refresh");
-    layout->addWidget(refreshButton, 0, 3);
+    layout->addWidget(refreshButton, 0, 4);
     connect(refreshButton, &QPushButton::released, this, &JoinRoom::refresh);
 
     listWidget = new QTableWidget(this);
     listWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
     resetList();
 
-    layout->addWidget(listWidget, 1, 0, 1, 4);
+    layout->addWidget(listWidget, 1, 0, 1, 5);
 
     passwordEdit = new QLineEdit(this);
     passwordEdit->setPlaceholderText("Password (if required)");
@@ -135,7 +140,7 @@ void JoinRoom::downloadFinished(QNetworkReply *reply)
 
 void JoinRoom::refresh()
 {
-    serverChanged(serverChooser->currentData().toString());
+    serverChanged(serverChooser->currentIndex());
 }
 
 void JoinRoom::joinGame()
@@ -210,8 +215,9 @@ void JoinRoom::joinGame()
     }
 }
 
-void JoinRoom::serverChanged(QString serverName)
+void JoinRoom::serverChanged(int index)
 {
+    QString serverName = serverChooser->itemData(index).toString();
     if (webSocket)
     {
         webSocket->close();
@@ -240,13 +246,24 @@ void JoinRoom::serverChanged(QString serverName)
         customServerAddress = QString::null;
     }
 
+    pingLabel->setText("Ping: (Calculating)");
+
     resetList();
     webSocket = new QWebSocket();
     connect(webSocket, &QWebSocket::connected, this, &JoinRoom::onConnected);
     connectionTimer = new QTimer(this);
     connectionTimer->setSingleShot(true);
-    connectionTimer->start(1000);
-    connect(connectionTimer, SIGNAL(timeout()), this, SLOT(connectionFailed()));
+    connectionTimer->start(5000);
+    connect(webSocket, &QWebSocket::disconnected, connectionTimer, &QTimer::stop);
+    connect(webSocket, &QObject::destroyed, connectionTimer, &QTimer::stop);
+
+    QTimer *pingTimer = new QTimer(this);
+    connect(webSocket, &QWebSocket::pong, this, &JoinRoom::updatePing);
+    connect(pingTimer, &QTimer::timeout, this, &JoinRoom::sendPing);
+    connect(webSocket, &QWebSocket::disconnected, pingTimer, &QTimer::stop);
+    connect(webSocket, &QObject::destroyed, pingTimer, &QTimer::stop);
+    pingTimer->start(2500);
+    webSocket->ping();
 
     QString serverUrlStr = customServerAddress.isNull() ? serverChooser->currentData().toString() : customServerAddress;
     QUrl serverUrl = QUrl(serverUrlStr);
@@ -257,13 +274,6 @@ void JoinRoom::serverChanged(QString serverName)
     webSocket->open(serverUrl);
 }
 
-void JoinRoom::connectionFailed()
-{
-    QMessageBox msgBox;
-    msgBox.setText("Could not connect to netplay server.");
-    msgBox.exec();
-    serverChanged(serverChooser->currentData().toString());
-}
 
 void JoinRoom::onConnected()
 {
@@ -361,4 +371,14 @@ void JoinRoom::processBinaryMessage(QByteArray message)
             msgBox.exec();
         }
     }
+}
+
+void JoinRoom::updatePing(quint64 elapsedTime, const QByteArray&)
+{
+    pingLabel->setText("Ping: " + QString::number(elapsedTime) + " ms");
+}
+
+void JoinRoom::sendPing()
+{
+    webSocket->ping();
 }
