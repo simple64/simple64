@@ -12,6 +12,7 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QInputDialog>
+#include <QLabel>
 
 CreateRoom::CreateRoom(QWidget *parent)
     : QDialog(parent)
@@ -61,14 +62,20 @@ CreateRoom::CreateRoom(QWidget *parent)
     layout->addWidget(serverChooser, 6, 1);
     connect(serverChooser, SIGNAL(currentIndexChanged(int)), this, SLOT(handleServerChanged(int)));
 
+    QLabel *pingLabel = new QLabel("Your ping:", this);
+    layout->addWidget(pingLabel, 7, 0);
+    pingValue = new QLabel(this);
+    pingValue->setText("(Calculating)");
+    layout->addWidget(pingValue, 7, 1);
+
     QFrame* lineH1 = new QFrame(this);
     lineH1->setFrameShape(QFrame::HLine);
     lineH1->setFrameShadow(QFrame::Sunken);
-    layout->addWidget(lineH1, 7, 0, 1, 2);
+    layout->addWidget(lineH1, 8, 0, 1, 2);
 
     createButton = new QPushButton("Create Game", this);
     connect(createButton, SIGNAL (released()), this, SLOT (handleCreateButton()));
-    layout->addWidget(createButton, 8, 0, 1, 2);
+    layout->addWidget(createButton, 9, 0, 1, 2);
 
     setLayout(layout);
 
@@ -109,7 +116,6 @@ void CreateRoom::onFinished(int)
     (*CoreDoCommand)(M64CMD_ROM_CLOSE, 0, NULL);
     if (!launched && webSocket)
     {
-        disconnect(webSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(handleConnectionError(QAbstractSocket::SocketError)));
         webSocket->close();
         webSocket->deleteLater();
     }
@@ -149,25 +155,23 @@ void CreateRoom::handleCreateButton()
     if (loadROM(romButton->text().toStdString()) == M64ERR_SUCCESS)
     {
         createButton->setEnabled(false);
-        if (webSocket)
-        {
-            webSocket->close();
-            webSocket->deleteLater();
-        }
-        webSocket = new QWebSocket;
         (*CoreDoCommand)(M64CMD_ROM_GET_SETTINGS, sizeof(rom_settings), &rom_settings);
-        connect(webSocket, &QWebSocket::connected, this, &CreateRoom::onConnected);
-        connect(webSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(handleConnectionError(QAbstractSocket::SocketError)));
-        QString serverAddress = serverChooser->currentData() == "Custom" ? customServerHost.prepend("ws://") : serverChooser->currentData().toString();
-        QUrl serverUrl = QUrl(serverAddress);
-        if (serverChooser->currentData() == "Custom" && serverUrl.port() < 0)
-            // Be forgiving of custom server addresses that forget the port
-            serverUrl.setPort(45000);
+
         connectionTimer = new QTimer(this);
         connectionTimer->setSingleShot(true);
-        connectionTimer->start(1000);
+        connectionTimer->start(5000);
         connect(connectionTimer, SIGNAL(timeout()), this, SLOT(connectionFailed()));
-        webSocket->open(serverUrl);
+        connect(webSocket, &QWebSocket::disconnected, connectionTimer, &QTimer::stop);
+        connect(webSocket, &QObject::destroyed, connectionTimer, &QTimer::stop);
+
+        if (webSocket->isValid())
+        {
+            createRoom();
+        }
+        else
+        {
+            connect(webSocket, &QWebSocket::connected, this, &CreateRoom::createRoom);
+        }
     }
     else
     {
@@ -176,7 +180,7 @@ void CreateRoom::handleCreateButton()
     }
 }
 
-void CreateRoom::onConnected()
+void CreateRoom::createRoom()
 {
     connect(webSocket, &QWebSocket::binaryMessageReceived,
             this, &CreateRoom::processBinaryMessage);
@@ -252,16 +256,34 @@ void CreateRoom::handleServerChanged(int index)
             customServerHost = host;
         }
     }
-}
 
-void CreateRoom::handleConnectionError(QAbstractSocket::SocketError error)
-{
-    connectionFailed();
+    if (webSocket)
+    {
+        webSocket->close();
+        webSocket->deleteLater();
+    }
+
+    pingValue->setText("(Calculating)");
+
+    webSocket = new QWebSocket;
+    connect(webSocket, &QWebSocket::pong, this, &CreateRoom::updatePing);
+    QTimer *timer = new QTimer(this);
+    connect(timer, &QTimer::timeout, this, &CreateRoom::sendPing);
+    connect(webSocket, &QWebSocket::disconnected, timer, &QTimer::stop);
+    connect(webSocket, &QObject::destroyed, timer, &QTimer::stop);
+
+    timer->start(2500);
+    QString serverAddress = serverChooser->itemData(index) == "Custom" ? customServerHost.prepend("ws://") : serverChooser->itemData(index).toString();
+    QUrl serverUrl = QUrl(serverAddress);
+    if (serverChooser->itemData(index) == "Custom" && serverUrl.port() < 0)
+        // Be forgiving of custom server addresses that forget the port
+        serverUrl.setPort(45000);
+
+    webSocket->open(serverUrl);
 }
 
 void CreateRoom::connectionFailed()
 {
-    disconnect(webSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(handleConnectionError(QAbstractSocket::SocketError)));
     (*CoreDoCommand)(M64CMD_ROM_CLOSE, 0, NULL);
     QMessageBox msgBox;
     msgBox.setText("Could not connect to netplay server.");
@@ -270,4 +292,14 @@ void CreateRoom::connectionFailed()
     createButton->setEnabled(true);
     // Trigger input dialog for custom IP address, if using custom IP
     handleServerChanged(serverChooser->currentIndex());
+}
+
+void CreateRoom::updatePing(quint64 elapsedTime, const QByteArray&)
+{
+    pingValue->setText(QString::number(elapsedTime) + " ms");
+}
+
+void CreateRoom::sendPing()
+{
+    webSocket->ping();
 }
