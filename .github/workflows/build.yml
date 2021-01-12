@@ -66,13 +66,12 @@ jobs:
       - name: Get short SHA
         id: slug
         run: echo "::set-output name=sha7::$(git rev-parse --short HEAD)"
-      - name: Workaround for failing build
-        run: |
-          rm -rf /usr/local/bin/2to3
+      #- name: Workaround for failing build
+      #  run: |
+      #    rm -rf /usr/local/bin/2to3
       - name: brew update
         run: |
           brew update
-          brew upgrade
           brew install libsamplerate hidapi sdl2_net sdl2 qt
       - name: Run build script
         run: |
