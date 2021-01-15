@@ -244,6 +244,9 @@ public:
 				"#else						\n"
 				"# define IN attribute		\n"
 				"# define OUT varying		\n"
+	 			"#ifndef GL_FRAGMENT_PRECISION_HIGH \n"
+	 			"# define highp mediump		\n"
+	 			"#endif						\n"
 				"#endif // __VERSION		\n"
 				;
 		}
@@ -350,7 +353,7 @@ public:
 			"    else														\n"
 			"      vShadeColor.rgb = vec3(fp);								\n"
 			"  }															\n"
-			"  vBaryCoords = vec4(aBaryCoords, 1.0 - aBaryCoords.x - aBaryCoords.y, 0.5f);	\n"
+			"  vBaryCoords = vec4(aBaryCoords, 1.0 - aBaryCoords.x - aBaryCoords.y, 0.5);	\n"
 			;
 	}
 };
@@ -410,7 +413,7 @@ public:
 			"    else														\n"
 			"      vShadeColor.rgb = vec3(fp);								\n"
 			"  }															\n"
-			"  vBaryCoords = vec4(aBaryCoords, 1.0 - aBaryCoords.x - aBaryCoords.y, 0.5f); \n"
+			"  vBaryCoords = vec4(aBaryCoords, 1.0 - aBaryCoords.x - aBaryCoords.y, 0.5); \n"
 			;
 	}
 };
@@ -472,7 +475,7 @@ public:
 			"  gl_Position = aRectPosition;						\n"
 			"  vShadeColor = uRectColor;						\n"
 			"  vShadeColorNoperspective = uRectColor;			\n"
-			"  vBaryCoords = vec4(aBaryCoords, vec2(1.0f) - aBaryCoords);\n"
+			"  vBaryCoords = vec4(aBaryCoords, vec2(1.0) - aBaryCoords);\n"
 			;
 	}
 };
@@ -519,6 +522,9 @@ public:
 				"#else							\n"
 				"# define IN varying			\n"
 				"# define OUT					\n"
+				"#ifndef GL_FRAGMENT_PRECISION_HIGH \n"
+				"# define highp mediump		\n"
+				"#endif						\n"
 				"#endif // __VERSION __			\n"
 			;
 		} else if (_glinfo.isGLESX) {
@@ -940,7 +946,7 @@ public:
 			"highp vec2 tcData1[5];					\n"
 			"uniform lowp int uCvgDest;				\n"
 			"uniform lowp int uBlendAlphaMode;		\n"
-			"lowp float cvg;"
+			"lowp float cvg;		\n"
 			;
 
 		if (config.generalEmulation.enableLegacyBlending != 0) {
@@ -2826,7 +2832,7 @@ graphics::CombinerProgram * CombinerProgramBuilder::buildCombinerProgram(Combine
 	if (g_cycleType <= G_CYC_2CYCLE && m_useCoverage)
 		m_shaderCoverage->write(ssShader);
 	else
-		ssShader << "cvg = 1.0f; \n" << std::endl;
+		ssShader << "cvg = 1.0; \n" << std::endl;
 
 
 	if (bUseTextures) {
