@@ -8,6 +8,10 @@
 #include "PluginAPI.h"
 #include "FrameBuffer.h"
 
+#ifdef min
+#undef min
+#endif
+
 bool DisplayWindow::start()
 {
 	if (!_start())
@@ -79,7 +83,7 @@ void DisplayWindow::saveBufferContent(graphics::ObjectHandle _fbo, CachedTexture
 		std::wstring pluginPath(m_strScreenDirectory);
 		if (pluginPath.back() != L'/')
 			pluginPath += L'/';
-		::wcsncpy(m_strScreenDirectory, pluginPath.c_str(), pluginPath.length() + 1);
+		::wcsncpy(m_strScreenDirectory, pluginPath.c_str(), std::min(size_t(PLUGIN_PATH_SIZE), pluginPath.length() + 1));
 	}
 	_saveBufferContent(_fbo, _pTexture);
 }
