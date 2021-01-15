@@ -32,7 +32,13 @@ int main(int argc, char *argv[])
     if (parser.isSet(GLESOption))
         w->setGLES();
     if (args.size() > 0)
+#ifndef SINGLE_THREAD
         w->openROM(args.at(0), "", 0, 0);
+#else
+        w->singleThreadLaunch(args.at(0), "", 0, 0);
+#endif
+    else
+        w->updateApp();
 
     return a.exec();
 }
