@@ -59,6 +59,7 @@ public:
     m64p_dynlib_handle getCoreLib();
     struct Discord_Application* getDiscordApp();
     explicit MainWindow(QWidget *parent = 0);
+    void updateApp();
     ~MainWindow();
 
 protected:

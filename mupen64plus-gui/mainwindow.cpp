@@ -444,7 +444,15 @@ MainWindow::MainWindow(QWidget *parent) :
     }
 
     setupDiscord();
+}
 
+MainWindow::~MainWindow()
+{
+    delete ui;
+}
+
+void MainWindow::updateApp()
+{
 #ifndef __APPLE__
     QNetworkAccessManager *updateManager = new QNetworkAccessManager(this);
     connect(updateManager, &QNetworkAccessManager::finished,
@@ -452,11 +460,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     updateManager->get(QNetworkRequest(QUrl("https://api.github.com/repos/loganmc10/m64p/releases/latest")));
 #endif
-}
-
-MainWindow::~MainWindow()
-{
-    delete ui;
 }
 
 void MainWindow::setupLLE()
