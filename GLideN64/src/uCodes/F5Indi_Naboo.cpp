@@ -231,7 +231,7 @@ void F5INDI_Lighting_Overlay1(u32 _w0, u32 _w1)
 					u32 D = (_SHIFTR(*V, 24, 8) * P1) >> 16;
 					u32 E = (_SHIFTR(*V, 16, 8) * P1) >> 16;
 					u32 F = (_SHIFTR(*V, 8, 8) * P1) >> 16;
-					u32 J = (_SHIFTR(factors[j], 0, 8) * data[3 ^ 3]) >> 8;
+					u32 J = (_SHIFTR(factors[j], 0, 8) * data[0x3 ^ 3]) >> 8;
 
 					if (*light == 4) {
 						*dst = J;
@@ -243,9 +243,9 @@ void F5INDI_Lighting_Overlay1(u32 _w0, u32 _w1)
 						*dst = std::min(*dst + D, 0xFFU);
 						dst++;
 					} else {
-						D += (_SHIFTR(factors[j], 24, 8) * data[0 ^ 3]) >> 8;
-						E += (_SHIFTR(factors[j], 16, 8) * data[1 ^ 3]) >> 8;
-						F += (_SHIFTR(factors[j], 8, 8) * data[2 ^ 3]) >> 8;
+						D += (_SHIFTR(factors[j], 24, 8) * data[0x0 ^ 3]) >> 8;
+						E += (_SHIFTR(factors[j], 16, 8) * data[0x1 ^ 3]) >> 8;
+						F += (_SHIFTR(factors[j], 8, 8) * data[0x2 ^ 3]) >> 8;
 						*dst = J;
 						dst++;
 						*dst = std::min(F >> 1, 0xFFU);
@@ -476,9 +476,9 @@ const SWVertex * F5INDI_LoadVtx(u32 _w0, u32 _w1, std::vector<SWVertex> & _vres)
 	const u32 base_addr = *CAST_DMEM(const u32*, 0x154);
 	u32 * pres = reinterpret_cast<u32*>(_vres.data());
 	const u16* v0_data = CAST_DMEM(const u16*, 0x128);
-	const u16 X0 = v0_data[0 ^ 1];
-	const u16 Y0 = v0_data[1 ^ 1];
-	const u16 Z0 = v0_data[2 ^ 1];
+	const u16 X0 = v0_data[0x0 ^ 1];
+	const u16 Y0 = v0_data[0x1 ^ 1];
+	const u16 Z0 = v0_data[0x2 ^ 1];
 	for (u32 i = 0; i < count; ++i) {
 		const u32 rdram_addr = dmem_data[i ^ 1] * 6 + base_addr;
 		const u16* rdram_data = CAST_RDRAM(const u16*, (rdram_addr & 0x00FFFFF8));
@@ -499,17 +499,17 @@ const SWVertex * F5INDI_AdjustVtx(u32 _w0, u32 _w1, std::vector<SWVertex> & _vre
 	if (*CAST_DMEM(const u64*, 0x128) == 0)
 		return CAST_DMEM(const SWVertex*, dmem_addr);
 	const u16* v0_data = CAST_DMEM(const u16*, 0x128);
-	const u16 X0 = v0_data[0 ^ 1];
-	const u16 Y0 = v0_data[1 ^ 1];
-	const u16 Z0 = v0_data[2 ^ 1];
+	const u16 X0 = v0_data[0x0 ^ 1];
+	const u16 Y0 = v0_data[0x1 ^ 1];
+	const u16 Z0 = v0_data[0x2 ^ 1];
 	const u32 count = _SHIFTR(_w1, 24, 7);
 	_vres.resize(count);
 	u32 * pres = reinterpret_cast<u32*>(_vres.data());
 	const u16* dmem_data = CAST_DMEM(const u16*, dmem_addr);
 	for (u32 i = 0; i < count; ++i) {
-		const u16 X = dmem_data[0 ^ 1] + X0;
-		const u16 Y = dmem_data[1 ^ 1] + Y0;
-		const u16 Z = dmem_data[2 ^ 1] + Z0;
+		const u16 X = dmem_data[0x0 ^ 1] + X0;
+		const u16 Y = dmem_data[0x1 ^ 1] + Y0;
+		const u16 Z = dmem_data[0x2 ^ 1] + Z0;
 		*pres++ = (X << 16) | Y;
 		*pres++ = Z << 16;
 		dmem_data += 4;
@@ -624,15 +624,15 @@ void F5INDI_CalcST(const u32* params, u32 * _st)
 	for (u32 i = 0; i < num; ++i) {
 		const u32 idx = _SHIFTR(params[i + 4], 0, 8);
 		const s16 * coords = CAST_DMEM(const s16*, 0x170 + idx);
-		s16 X = coords[0 ^ 1];
-		s16 Y = coords[1 ^ 1];
-		s16 Z = coords[2 ^ 1];
+		s16 X = coords[0x0 ^ 1];
+		s16 Y = coords[0x1 ^ 1];
+		s16 Z = coords[0x2 ^ 1];
 		s32 X1 = X * mtx[0 + 4 * 0] + Y * mtx[0 + 4 * 1] + Z * mtx[0 + 4 * 2] + mtx[0 + 4 * 3];
 		s32 Y1 = X * mtx[1 + 4 * 0] + Y * mtx[1 + 4 * 1] + Z * mtx[1 + 4 * 2] + mtx[1 + 4 * 3];
 		s32 Z1 = X * mtx[2 + 4 * 0] + Y * mtx[2 + 4 * 1] + Z * mtx[2 + 4 * 2] + mtx[2 + 4 * 3];
-		X1 -= static_cast<s32>(static_cast<u32>(subs[0 ^ 1]) << 16);
-		Y1 -= static_cast<s32>(static_cast<u32>(subs[1 ^ 1]) << 16);
-		Z1 -= static_cast<s32>(static_cast<u32>(subs[2 ^ 1]) << 16);
+		X1 -= static_cast<s32>(static_cast<u32>(subs[0x0 ^ 1]) << 16);
+		Y1 -= static_cast<s32>(static_cast<u32>(subs[0x1 ^ 1]) << 16);
+		Z1 -= static_cast<s32>(static_cast<u32>(subs[0x2 ^ 1]) << 16);
 		u64 X2 = static_cast<u64>(X1);
 		u64 X2_2 = (X2 * X2) >> 16;
 		u64 Y2 = static_cast<u64>(Y1);
@@ -647,8 +647,8 @@ void F5INDI_CalcST(const u32* params, u32 * _st)
 		D = 0xFFFFFFFF / (D * 0x300);
 		u32 V = static_cast<u32>((D * X2) >> 16);
 		u32 W = static_cast<u32>((D * Y2) >> 16);
-		u32 S = (V * muls[0 ^ 1]) >> 16;
-		u32 T = (W * muls[1 ^ 1]) >> 16;
+		u32 S = (V * muls[0x0 ^ 1]) >> 16;
+		u32 T = (W * muls[0x1 ^ 1]) >> 16;
 		_st[i] = (S << 16) | T;
 	}
 }
@@ -865,22 +865,22 @@ void F5INDI_GenParticlesVertices()
 	while (U != 0) {
 		SWVertex * vertex = CAST_DMEM(SWVertex*, vtxAddr);
 		u16* light = CAST_DMEM(u16*, lightAddr);
-		u16 F = (((light[0 ^ 1] << 12) + light[1 ^ 1] * corrector) << 4) >> 16;
+		u16 F = (((light[0x0 ^ 1] << 12) + light[0x1 ^ 1] * corrector) << 4) >> 16;
 		bool endCycle = false;
 		if ((M & 0x2000) == 0) {
 			// Step 2
 			s16 F1;
 			do {
-				F = (((light[0 ^ 1] << 12) + light[1 ^ 1] * corrector) << 4) >> 16;
+				F = (((light[0x0 ^ 1] << 12) + light[0x1 ^ 1] * corrector) << 4) >> 16;
 				F1 = F + 0xF000;
 				if (F1 < 0) {
-					light[0 ^ 1] = F;
+					light[0x0 ^ 1] = F;
 					if ((M & 0x40) != 0)
 						vertex->flag = (((F >> 4)&0xFC) << 8) | (vertex->flag & 0xFF);
 					if ((M & 0x20) != 0)
 						vertex->flag = ((F >> 4) & 0xFC) | (vertex->flag & 0xFF00);
 				} else {
-					light[0 ^ 1] = 0U;
+					light[0x0 ^ 1] = 0U;
 					if ((M & 0x4000) != 0) {
 						//const u32 dpc_clock = *REG.DPC_CLOCK;
 						const u32 dpc_clock = static_cast<u32>(time(NULL)) - dpc_clock0;
@@ -1461,7 +1461,7 @@ void F5Naboo_PrepareAndDrawTriangle(const u32 _vert[3], GraphicsDrawer & _drawer
 	const u16 A = _SHIFTR(*CAST_DMEM(const u32*, 0x100), 8, 16);
 	const u8 B = *(DMEM + (0x103 ^ 3));
 	const u32 C = A | B;
-	CAST_DMEM(u16*, 0x100)[0^1] = C;
+	CAST_DMEM(u16*, 0x100)[0x0 ^ 1] = C;
 
 	auto doCommands = [](u32 addr)
 	{
@@ -1567,11 +1567,11 @@ void F5Naboo_DrawPolygons()
 			vtxIdx[i] = (vtxAddr - 0x600) / 40;
 			SPVertex & vtx = drawer.getVertex(vtxIdx[i]);
 			u8* color = DMEM + 0x0B78 + idxs[i] * 2 + (data.HH & 0xFFF);
-			vtx.r = _FIXED2FLOATCOLOR(color[0 ^ 3], 8);
-			vtx.g = _FIXED2FLOATCOLOR(color[1 ^ 3], 8);
-			vtx.b = _FIXED2FLOATCOLOR(color[2 ^ 3], 8);
-			vtx.a = _FIXED2FLOATCOLOR(color[3 ^ 3], 8);
-			alphaSum += color[3 ^ 3];
+			vtx.r = _FIXED2FLOATCOLOR(color[0x0 ^ 3], 8);
+			vtx.g = _FIXED2FLOATCOLOR(color[0x1 ^ 3], 8);
+			vtx.b = _FIXED2FLOATCOLOR(color[0x2 ^ 3], 8);
+			vtx.a = _FIXED2FLOATCOLOR(color[0x3 ^ 3], 8);
+			alphaSum += color[0x3 ^ 3];
 		}
 		if (data.HH == 0) {
 			*CAST_DMEM(u32*, 0x100) = 0;
@@ -1594,7 +1594,7 @@ void F5Naboo_DrawPolygons()
 						for (u32 i = 0; i < 3; ++i) {
 							u32 offset = 0xB00 + idxs[i] * 2 + (data.HH & 0xFFF);
 							u8* color = DMEM + offset;
-							alphas[i] = color[3 ^ 3];
+							alphas[i] = color[0x3 ^ 3];
 							alphaSum2 += alphas[i];
 						}
 						if (alphaSum2 == 0) {
@@ -1875,9 +1875,9 @@ void F5Naboo_GenVertices0C()
 
 	// Step 10
 	const u16* v0_data = CAST_DMEM(const u16*, 0x128);
-	const u16 X0 = v0_data[0 ^ 1];
-	const u16 Y0 = v0_data[1 ^ 1];
-	const u16 Z0 = v0_data[2 ^ 1];
+	const u16 X0 = v0_data[0x0 ^ 1];
+	const u16 Y0 = v0_data[0x1 ^ 1];
+	const u16 Z0 = v0_data[0x2 ^ 1];
 	const bool needAdjustVertices = (X0 | Y0 | Z0) != 0;
 
 	auto processVertices = [&](u32 _param, u32 _dmemSrcAddr, u32 _dstOffset) {
@@ -1909,10 +1909,10 @@ void F5Naboo_GenVertices0C()
 	NabooData & data = getNabooData();
 	u8* params8 = RDRAM + RSP.PC[RSP.PCi];
 	u16* params16 = reinterpret_cast<u16*>(params8);
-	data.AA = params16[6 ^ 1];
-	data.BB = params16[7 ^ 1];
-	data.CC = params8[1 ^ 3];
-	data.TT = params8[5 ^ 3];
+	data.AA = params16[0x6 ^ 1];
+	data.BB = params16[0x7 ^ 1];
+	data.CC = params8[0x1 ^ 3];
+	data.TT = params8[0x5 ^ 3];
 	data.EE = dmemSrcAddr;
 	data.HH = _SHIFTR(*CAST_DMEM(const u32*, 0xDB8), 16, 16);
 	data.DD = 0;
@@ -2114,9 +2114,9 @@ void F5Naboo_GenVertices09()
 
 	// Step 9
 	const u16* v0_data = CAST_DMEM(const u16*, 0x128);
-	const u16 X0 = v0_data[0 ^ 1];
-	const u16 Y0 = v0_data[1 ^ 1];
-	const u16 Z0 = v0_data[2 ^ 1];
+	const u16 X0 = v0_data[0x0 ^ 1];
+	const u16 Y0 = v0_data[0x1 ^ 1];
+	const u16 Z0 = v0_data[0x2 ^ 1];
 	const bool needAdjustVertices = (X0 | Y0 | Z0) != 0;
 
 	auto processVertices = [&](u32 _param, u32 _dmemSrcAddr, u32 _dstOffset) {
@@ -2148,10 +2148,10 @@ void F5Naboo_GenVertices09()
 	NabooData & data = getNabooData();
 	u8* params8 = RDRAM + RSP.PC[RSP.PCi];
 	u16* params16 = reinterpret_cast<u16*>(params8);
-	data.AA = params16[6 ^ 1];
-	data.BB = params16[7 ^ 1];
-	data.CC = params8[1 ^ 3];
-	data.TT = params8[5 ^ 3];
+	data.AA = params16[0x6 ^ 1];
+	data.BB = params16[0x7 ^ 1];
+	data.CC = params8[0x1 ^ 3];
+	data.TT = params8[0x5 ^ 3];
 	data.EE = dmemSrcAddr;
 	data.HH = _SHIFTR(*CAST_DMEM(const u32*, 0xDB8), 16, 16);
 	data.DD = 0;

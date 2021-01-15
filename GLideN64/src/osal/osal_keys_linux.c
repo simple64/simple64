@@ -118,7 +118,8 @@ EXPORT void CALL osal_keys_init()
 		/* check if file_name contains kbd */
 		if (strstr(file_name, "kbd") != NULL) { 
 			/* follow symlink and get full path */
-			realpath(file_name, real_file_name);
+			if (realpath(file_name, real_file_name) == NULL)
+				continue;
 
 			/* attempt to open the file */
 			kbd_file = l_Keyboards[kbd_index].file = fopen(real_file_name, "r");
