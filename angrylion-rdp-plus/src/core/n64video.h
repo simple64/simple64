@@ -106,6 +106,7 @@ struct n64video_config
         enum dp_compat_profile compat;  // multithreading compatibility mode
     } dp;
     bool parallel;                  // use multithreaded renderer if true
+    bool busyloop;                  // use a busyloop while waiting for work
     uint32_t num_workers;           // number of rendering workers
 };
 

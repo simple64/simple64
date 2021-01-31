@@ -214,12 +214,8 @@ void n64video_init(struct n64video_config* _config)
     memset(&onetimewarnings, 0, sizeof(onetimewarnings));
 
     if (config.parallel) {
-        // init worker system, use busy looping for Android
-#ifdef ANDROID
-        parallel_init(config.num_workers, true);
-#else
-        parallel_init(config.num_workers, false);
-#endif
+        // init worker system, use busy looping
+        parallel_init(config.num_workers, config.busyloop);
 
         // sync states from main worker
         for (uint32_t i = 1; i < parallel_num_workers(); i++) {
