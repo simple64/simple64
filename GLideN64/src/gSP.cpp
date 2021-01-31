@@ -2077,8 +2077,8 @@ void gSPSprite2DBase(u32 _base)
 
 		f32 uls = pSprite->imageX;
 		f32 ult = pSprite->imageY;
-		f32 lrs = uls + pSprite->imageW - 1;
-		f32 lrt = ult + pSprite->imageH - 1;
+		f32 lrs = uls + pSprite->imageW;
+		f32 lrt = ult + pSprite->imageH;
 
 		// Hack for WCW Nitro.
 		if ((config.generalEmulation.hacks & hack_WCWNitro) != 0) {

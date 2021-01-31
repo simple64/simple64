@@ -256,7 +256,7 @@ public:
 			ss << "# define IN in" << std::endl << "# define OUT out" << std::endl;
 			if (_glinfo.noPerspective) {
 				ss << "#extension GL_NV_shader_noperspective_interpolation : enable" << std::endl
-					<< "noperspective OUT highp float vZCoord;" << std::endl << "uniform lowp int uClampMode;" << std::endl;
+				   << "noperspective OUT highp float vZCoord;" << std::endl;
 			}
 			m_part = ss.str();
 		}
@@ -322,7 +322,6 @@ public:
 			"{																\n"
 			"  gl_Position = aPosition;										\n"
 			"  vShadeColor = aColor;										\n"
-			"  vShadeColorNoperspective = aColor;							\n"
 			"  vec2 texCoord = aTexCoord;									\n"
 			"  texCoord *= uTexScale;										\n"
 			"  if (uTexturePersp == 0 && aModify[2] == 0.0) texCoord *= 0.5;\n"
@@ -354,6 +353,7 @@ public:
 			"      vShadeColor.rgb = vec3(fp);								\n"
 			"  }															\n"
 			"  vBaryCoords = vec4(aBaryCoords, 1.0 - aBaryCoords.x - aBaryCoords.y, 0.5);	\n"
+			"  vShadeColorNoperspective = vShadeColor;							\n"
 			;
 	}
 };
@@ -388,7 +388,6 @@ public:
 			"{																\n"
 			"  gl_Position = aPosition;										\n"
 			"  vShadeColor = aColor;										\n"
-			"  vShadeColorNoperspective = aColor;							\n"
 			"  vNumLights = aNumLights;										\n"
 			"  if (aModify != vec4(0.0)) {									\n"
 			"    if ((aModify[0]) != 0.0) {									\n"
@@ -414,6 +413,7 @@ public:
 			"      vShadeColor.rgb = vec3(fp);								\n"
 			"  }															\n"
 			"  vBaryCoords = vec4(aBaryCoords, 1.0 - aBaryCoords.x - aBaryCoords.y, 0.5); \n"
+			"  vShadeColorNoperspective = vShadeColor;							\n"
 			;
 	}
 };
@@ -489,12 +489,17 @@ public:
 			m_part =
 				"  gl_ClipDistance[0] = gl_Position.w - gl_Position.z;	\n"
 				;
-		} else if (config.generalEmulation.enableFragmentDepthWrite != 0 && _glinfo.noPerspective) {
-				m_part =
-					"  vZCoord = gl_Position.z / gl_Position.w;	\n"
-					"  if (uClampMode > 0)	\n"
-					"    gl_Position.z = 0.0;	\n"
-					;
+		} else if (config.generalEmulation.enableClipping != 0) {
+
+			if (config.generalEmulation.enableFragmentDepthWrite != 0 && _glinfo.noPerspective) {
+				m_part = "  vZCoord = gl_Position.z / gl_Position.w;	\n";
+				m_part += "  gl_Position.z = 0.0;	\n";
+			} else {
+				// Move the near plane towards the camera.
+				// It helps to avoid issues with near-plane clipping in games, which do not use it.
+				// Z must be scaled back in fragment shader.
+				m_part = "  gl_Position.z /= 8.0;	\n";
+			}
 		}
 		m_part +=
 			" gl_Position.zw *= vec2(uClipRatio);	 \n"
@@ -1171,15 +1176,15 @@ public:
 			m_part =
 				"highp float writeDepth();\n";
 			;
-			if (_glinfo.isGLESX &&  _glinfo.noPerspective) {
-				m_part =
-					"noperspective IN highp float vZCoord;	\n"
-					"uniform lowp float uPolygonOffset;	\n"
-					"uniform lowp int uClampMode;	\n"
-					+ m_part
-				;
-			}
 		}
+		if (_glinfo.isGLESX &&  _glinfo.noPerspective) {
+			m_part =
+				"noperspective IN highp float vZCoord;	\n"
+				"uniform lowp float uPolygonOffset;	\n"
+				+ m_part
+				;
+		}
+
 	}
 };
 
@@ -1507,8 +1512,16 @@ public:
 			"  lowp vec4 vec_color;				\n"
 			"  lowp float alpha1;				\n"
 			"  lowp vec3 color1, input_color;	\n"
-			"  lowp vec4 shadeColor = uScreenSpaceTriangle == 0 ? vShadeColor : vShadeColorNoperspective;	\n"
 		;
+		if (config.generalEmulation.enableClipping != 0)
+			m_part +=
+			"  lowp vec4 shadeColor = vShadeColorNoperspective;	\n"
+			;
+		else
+			m_part +=
+			"  lowp vec4 shadeColor = uScreenSpaceTriangle == 0 ? vShadeColor : vShadeColorNoperspective;	\n"
+			;
+
 		m_part += "#define WRAP(x, low, high) mod((x)-(low), (high)-(low)) + (low) \n"; // Return wrapped value of x in interval [low, high)
 		// m_part += "#define WRAP(x, low, high) (x) - ((high)-(low)) * floor(((x)-(low))/((high)-(low)))  \n"; // Perhaps more compatible?
 		// m_part += "#define WRAP(x, low, high) (x) + ((high)-(low)) * (1.0-step(low,x)) - ((high)-(low)) * step(high,x) \n"; // Step based version. Only wraps correctly if input is in the range [low-(high-low), high + (high-low)). Similar to old code.
@@ -1534,8 +1547,16 @@ public:
 			"  lowp vec4 vec_color, combined_color;		\n"
 			"  lowp float alpha1, alpha2;				\n"
 			"  lowp vec3 color1, color2, input_color;	\n"
-			"  lowp vec4 shadeColor = uScreenSpaceTriangle == 0 ? vShadeColor : vShadeColorNoperspective;	\n"
 		;
+		if (config.generalEmulation.enableClipping != 0)
+			m_part +=
+			"  lowp vec4 shadeColor = vShadeColorNoperspective;	\n"
+			;
+		else
+			m_part +=
+			"  lowp vec4 shadeColor = uScreenSpaceTriangle == 0 ? vShadeColor : vShadeColorNoperspective;	\n"
+			;
+
 		m_part += "#define WRAP(x, low, high) mod((x)-(low), (high)-(low)) + (low) \n"; // Return wrapped value of x in interval [low, high)
 		// m_part += "#define WRAP(x, low, high) (x) - ((high)-(low)) * floor(((x)-(low))/((high)-(low)))  \n"; // Perhaps more compatible?
 		// m_part += "#define WRAP(x, low, high) (x) + (2.0) * (1.0-step(low,x)) - (2.0) * step(high,x) \n"; // Step based version. Only wraps correctly if input is in the range [low-(high-low), high + (high-low)). Similar to old code.
@@ -1909,12 +1930,18 @@ public:
 						"highp float writeDepth()																		\n"
 						"{																								\n"
 						;
-					if (_glinfo.isGLESX && _glinfo.noPerspective) {
-						m_part +=
-							"  if (uClampMode == 1 && (vZCoord > 1.0)) discard;	\n"
-							"  highp float FragDepth = (uDepthSource != 0) ? uPrimDepth :								\n"
-							"           clamp((vZCoord - uPolygonOffset) * uDepthScale.s + uDepthScale.t, 0.0, 1.0);	\n"
-							;
+					if (_glinfo.isGLESX && config.generalEmulation.enableClipping != 0) {
+						if (_glinfo.noPerspective) {
+							m_part +=
+								"  highp float FragDepth = (uDepthSource != 0) ? uPrimDepth :								\n"
+								"      clamp((vZCoord - uPolygonOffset) * uDepthScale.s + uDepthScale.t, 0.0, 1.0);	\n"
+								;
+						} else {
+							m_part +=
+								"  highp float FragDepth = (uDepthSource != 0) ? uPrimDepth :								\n"
+								"      clamp(8.0 * (gl_FragCoord.z * 2.0 - 1.0) * uDepthScale.s + uDepthScale.t, 0.0, 1.0);	\n"
+								;
+						}
 					} else {
 						m_part +=
 							"  highp float FragDepth = (uDepthSource != 0) ? uPrimDepth :								\n"
@@ -1922,23 +1949,33 @@ public:
 						;
 					}
 					m_part +=
-						"  highp int iZ = FragDepth > 0.999 ? 262143 : int(floor(FragDepth * 262143.0));				\n"
+						"  highp int iZ = FragDepth > 0.999 ? 262143 : int(floor(FragDepth * 262143.0));					\n"
 						"  mediump int y0 = clamp(iZ/512, 0, 511);															\n"
 						"  mediump int x0 = iZ - 512*y0;																	\n"
-						"  highp uint iN64z = texelFetch(uZlutImage,ivec2(x0,y0), 0).r;											\n"
-						"  return clamp(float(iN64z)/65532.0, 0.0, 1.0);											\n"
+						"  highp uint iN64z = texelFetch(uZlutImage,ivec2(x0,y0), 0).r;										\n"
+						"  return clamp(float(iN64z)/65532.0, 0.0, 1.0);													\n"
 						"}																									\n"
 						;
 				} else {
-					if (_glinfo.isGLESX && _glinfo.noPerspective) {
-						 m_part =
-							"highp float writeDepth()																	\n"
-							"{																							\n"
-							"  if (uClampMode == 1 && (vZCoord > 1.0)) discard;											\n"
-							"  if (uDepthSource != 0) return uPrimDepth;												\n"
-							"  return clamp((vZCoord - uPolygonOffset) * uDepthScale.s + uDepthScale.t, 0.0, 1.0);		\n"
-							"}																							\n"
-							;
+					if (_glinfo.isGLESX && config.generalEmulation.enableClipping != 0) {
+						if (_glinfo.noPerspective) {
+							m_part =
+								"highp float writeDepth()																	\n"
+								"{																							\n"
+								"  if (uDepthSource != 0) return uPrimDepth;												\n"
+								"  return clamp((vZCoord - uPolygonOffset) * uDepthScale.s + uDepthScale.t, 0.0, 1.0);		\n"
+								"}																							\n"
+								;
+						} else {
+							m_part =
+								"highp float writeDepth()						        										\n"
+								"{																								\n"
+								"  if (uDepthSource != 0) return uPrimDepth;													\n"
+								"  return clamp(8.0 * (gl_FragCoord.z * 2.0 - 1.0) * uDepthScale.s + uDepthScale.t, 0.0, 1.0);	\n"
+								"}																								\n"
+								;
+						}
+
 					} else {
 						m_part =
 							"highp float writeDepth()						        									\n"
@@ -1946,7 +1983,7 @@ public:
 							"  if (uDepthSource != 0) return uPrimDepth;												\n"
 							"  return clamp((gl_FragCoord.z * 2.0 - 1.0) * uDepthScale.s + uDepthScale.t, 0.0, 1.0);	\n"
 							"}																							\n"
-							;
+						;
 					}
 				}
 			}
