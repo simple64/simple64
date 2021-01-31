@@ -126,6 +126,7 @@ namespace graphics {
 	namespace drawmode {
 		DrawModeParam TRIANGLES(GL_TRIANGLES);
 		DrawModeParam TRIANGLE_STRIP(GL_TRIANGLE_STRIP);
+		DrawModeParam TRIANGLE_FAN(GL_TRIANGLE_FAN);
 		DrawModeParam LINES(GL_LINES);
 	}
 

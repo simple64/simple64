@@ -7,10 +7,12 @@
 #define TOP         4
 #define BOT         8
 
+struct SPVertex;
+
 struct vertexclip
 {
-	float x,y,z;
-	int visible;
+	float x, y, z;
+	int clip;
 };
 
 /*
@@ -22,6 +24,10 @@ struct vertexclip
  *
  *      function returns the number of vertices in the resulting polygon
  */
-int ClipPolygon(vertexclip *** final, vertexclip * vbp, int numVertices);
+unsigned int clipInScreenSpace(vertexclip *** final, vertexclip * vbp, unsigned int numVertices);
+
+unsigned int clipW(const SPVertex ** _vsrc, SPVertex * _vdst);
+
+void clipInHomogeneousSpace(SPVertex * pFragments, std::vector<SPVertex> & _vResult, int _clipPlane = 1);
 
 #endif // CLIP_POLYGON_H

@@ -709,35 +709,6 @@ private:
 	iUniform uRenderTarget;
 };
 
-class UClampMode : public UniformGroup
-{
-public:
-	UClampMode(GLuint _program) {
-		LocateUniform(uClampMode);
-	}
-
-	void update(bool _force) override
-	{
-		int clampMode = -1;
-		switch (gfxContext.getClampMode())
-		{
-		case graphics::ClampMode::ClippingEnabled:
-			clampMode = 0;
-			break;
-		case graphics::ClampMode::NoNearPlaneClipping:
-			clampMode = 1;
-			break;
-		case graphics::ClampMode::NoClipping:
-			clampMode = 2;
-			break;
-		}
-		uClampMode.set(clampMode, _force);
-	}
-
-private:
-	iUniform uClampMode;
-};
-
 class UClipRatio : public UniformGroup
 {
 public:
@@ -770,7 +741,6 @@ public:
 private:
 	fUniform uPolygonOffset;
 };
-
 
 class UScreenCoordsScale : public UniformGroup
 {
@@ -1162,7 +1132,6 @@ void CombinerProgramUniformFactory::buildUniforms(GLuint _program,
 		_uniforms.emplace_back(new URenderTarget(_program));
 
 	if (m_glInfo.isGLESX && m_glInfo.noPerspective) {
-		_uniforms.emplace_back(new UClampMode(_program));
 		_uniforms.emplace_back(new UPolygonOffset(_program));
 	}
 
