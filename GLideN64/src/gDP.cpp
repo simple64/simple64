@@ -850,8 +850,9 @@ void gDPTextureRectangle(f32 ulx, f32 uly, f32 lrx, f32 lry, s32 tile, s16 s, s1
 		dsdx /= 4.0f;
 		lrx += 1.0f;
 		lry += 1.0f;
+	} else if (lry - uly < 1.0f) {
+		lry = ceil(lry);
 	}
-	lry = ceil(lry);
 
 	gDPTile *textureTileOrg[2];
 	textureTileOrg[0] = gSP.textureTile[0];

@@ -813,7 +813,6 @@ void GraphicsDrawer::drawTriangles()
 	}
 
 	_prepareDrawTriangle(DrawingState::Triangle);
-
 	Context::DrawTriangleParameters triParams;
 	triParams.mode = drawmode::TRIANGLES;
 	triParams.flatColors = m_bFlatColors;
@@ -823,11 +822,16 @@ void GraphicsDrawer::drawTriangles()
 	triParams.vertices = triangles.vertices.data();
 	triParams.elements = triangles.elements.data();
 	triParams.combiner = currentCombiner();
-	gfxContext.drawTriangles(triParams);
 	g_debugger.addTriangles(triParams);
 
 	if (config.frameBufferEmulation.enable != 0) {
-		const f32 maxY = renderTriangles(triangles.vertices.data(), triangles.elements.data(), triangles.num);
+		f32 maxY;
+		if (config.generalEmulation.enableClipping != 0) {
+			maxY = renderAndDrawTriangles(triangles.vertices.data(), triangles.elements.data(), triangles.num, m_bFlatColors);
+		} else {
+			gfxContext.drawTriangles(triParams);
+			maxY = renderTriangles(triangles.vertices.data(), triangles.elements.data(), triangles.num);
+		}
 		frameBufferList().setBufferChanged(maxY);
 		if (config.frameBufferEmulation.copyDepthToRDRAM == Config::cdSoftwareRender &&
 			gDP.otherMode.depthUpdate != 0) {
@@ -835,6 +839,8 @@ void GraphicsDrawer::drawTriangles()
 			if (pCurrentDepthBuffer != nullptr)
 				pCurrentDepthBuffer->setDirty();
 		}
+	} else {
+		gfxContext.drawTriangles(triParams);
 	}
 
 	triangles.num = 0;
@@ -880,7 +886,7 @@ void GraphicsDrawer::drawScreenSpaceTriangle(u32 _numVtx, graphics::DrawModePara
 	m_dmaVerticesNum = 0;
 
 	if (config.frameBufferEmulation.enable != 0) {
-		const f32 maxY = renderTriangles(m_dmaVertices.data(), nullptr, _numVtx);
+		const f32 maxY = renderScreenSpaceTriangles(m_dmaVertices.data(), _numVtx);
 		frameBufferList().setBufferChanged(maxY);
 		if (config.frameBufferEmulation.copyDepthToRDRAM == Config::cdSoftwareRender &&
 			gDP.otherMode.depthUpdate != 0) {
@@ -905,12 +911,18 @@ void GraphicsDrawer::drawDMATriangles(u32 _numVtx)
 	triParams.verticesCount = _numVtx;
 	triParams.vertices = m_dmaVertices.data();
 	triParams.combiner = currentCombiner();
-	gfxContext.drawTriangles(triParams);
 	g_debugger.addTriangles(triParams);
 	m_dmaVerticesNum = 0;
 
 	if (config.frameBufferEmulation.enable != 0) {
-		const f32 maxY = renderTriangles(m_dmaVertices.data(), nullptr, _numVtx);
+		f32 maxY;
+		if (config.generalEmulation.enableClipping != 0) {
+			maxY = renderAndDrawTriangles(m_dmaVertices.data(), nullptr, _numVtx, m_bFlatColors);
+		}
+		else {
+			gfxContext.drawTriangles(triParams);
+			maxY = renderTriangles(m_dmaVertices.data(), nullptr, _numVtx);
+		}
 		frameBufferList().setBufferChanged(maxY);
 		if (config.frameBufferEmulation.copyDepthToRDRAM == Config::cdSoftwareRender &&
 			gDP.otherMode.depthUpdate != 0) {
@@ -918,6 +930,8 @@ void GraphicsDrawer::drawDMATriangles(u32 _numVtx)
 			if (pCurrentDepthBuffer != nullptr)
 				pCurrentDepthBuffer->setDirty();
 		}
+	} else {
+		gfxContext.drawTriangles(triParams);
 	}
 }
 

@@ -126,6 +126,7 @@ namespace graphics {
 	namespace drawmode {
 		extern DrawModeParam TRIANGLES;
 		extern DrawModeParam TRIANGLE_STRIP;
+		extern DrawModeParam TRIANGLE_FAN;
 		extern DrawModeParam LINES;
 	}
 
