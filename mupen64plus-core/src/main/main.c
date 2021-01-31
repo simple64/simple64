@@ -1064,7 +1064,7 @@ static void open_eep_file(struct file_storage* fstorage)
     }
 
     /* Truncate to 4k bit if necessary */
-    if (ROM_SETTINGS.savetype != EEPROM_16KB) {
+    if (ROM_SETTINGS.savetype != SAVETYPE_EEPROM_16KB) {
         fstorage->size = 0x200;
     }
 }
@@ -1142,21 +1142,38 @@ static void load_dd_disk(struct dd_disk* dd_disk, const struct storage_backend_i
         goto no_disk;
     }
 
-    struct file_storage* fstorage = malloc(sizeof(struct file_storage));
-    if (fstorage == NULL) {
-        DebugMessage(M64MSG_ERROR, "Failed to allocate DD file_storage");
+    /* Get DD Disk size */
+    size_t dd_size = 0;
+    if (get_file_size(dd_disk_filename, &dd_size) != file_ok) {
+        DebugMessage(M64MSG_ERROR, "Can't get DD disk file size");
         goto no_disk;
     }
 
-    /* Determine disk save file format and name */
+    struct file_storage* fstorage = malloc(sizeof(struct file_storage));
+    struct file_storage* fstorage_save = malloc(sizeof(struct file_storage));
+    if (fstorage == NULL || fstorage_save == NULL) {
+        DebugMessage(M64MSG_ERROR, "Failed to allocate DD file_storage");
+        if (fstorage != NULL)      { free(fstorage);      fstorage = NULL; }
+        if (fstorage_save != NULL) { free(fstorage_save); fstorage_save = NULL; }
+        goto no_disk;
+    }
+
+    /* Determine disk save format */
     int save_format = ConfigGetParamInt(g_CoreConfig, "SaveDiskFormat");
+    /* MAME disks only support full disk save */
+    if (dd_size == MAME_FORMAT_DUMP_SIZE && save_format != 0) {
+        DebugMessage(M64MSG_WARNING, "MAME disks only support full disk save format, switching to full disk format !");
+        save_format = 0;
+    }
+
+    /* Determine save file name */
     char* save_filename = get_dd_disk_save_path(namefrompath(dd_disk_filename), save_format);
     if (save_filename == NULL) {
         DebugMessage(M64MSG_ERROR, "Failed to get DD save path, DD will be read-only.");
         save_format = -1;
     }
 
-    /* Try loading *.{nd,d6}r file first (if SaveDiskFormat == 0 */
+    /* Try loading *.{nd,d6}r file first (if SaveDiskFormat == 0) */
     if (save_format == 0)
     {
         if (open_rom_file_storage(fstorage, save_filename) != file_ok) {
@@ -1210,10 +1227,33 @@ static void load_dd_disk(struct dd_disk* dd_disk, const struct storage_backend_i
         }
     }
 
-    /* Setup dd_{,i}disk */
-    *dd_idisk = &g_istorage_disk;
+    switch(save_format)
+    {
+    case 0: /* Full disk */
+        *dd_idisk = &g_istorage_disk_full;
+        fstorage_save->filename = save_filename;
+        fstorage_save->data = fstorage->data;
+        fstorage_save->size = fstorage->size;
+        fstorage_save->first_access = 1;
+        break;
+    case 1: /* RAM only */
+        *dd_idisk = &g_istorage_disk_ram_only;
+        fstorage_save->filename = save_filename;
+        fstorage_save->data = &fstorage->data[offset_ram];
+        fstorage_save->size = size_ram;
+        fstorage_save->first_access = 1;
+        break;
+    default: /* read only */
+        *dd_idisk = &g_istorage_disk_read_only;
+        free(fstorage_save);
+        fstorage_save = NULL;
+    }
+
+    /* Setup dd_disk */
     dd_disk->storage = fstorage;
-    dd_disk->istorage = (save_format >= 0) ? &g_ifile_storage : &g_ifile_storage_ro;
+    dd_disk->istorage = &g_ifile_storage_ro;
+    dd_disk->save_storage = fstorage_save;
+    dd_disk->isave_storage = (save_format >= 0) ? &g_ifile_storage : NULL;
     dd_disk->format = format;
     dd_disk->development = development;
     dd_disk->offset_sys = offset_sys;
@@ -1237,9 +1277,11 @@ static void load_dd_disk(struct dd_disk* dd_disk, const struct storage_backend_i
     return;
 
 wrong_disk_format:
+    /* no need to close save_storage as it is a child of disk->storage */
     close_file_storage(fstorage);
 free_fstorage:
     free(fstorage);
+    free(fstorage_save);
 no_disk:
     free(dd_disk_filename);
     *dd_idisk = NULL;
@@ -1247,6 +1289,12 @@ no_disk:
 
 static void close_dd_disk(struct dd_disk* disk)
 {
+    if (disk->save_storage != NULL) {
+        /* no need to close save_storage as it is a child of disk->storage */
+        free(disk->save_storage);
+        disk->save_storage = NULL;
+    }
+
     if (disk->storage != NULL) {
         close_file_storage(disk->storage);
         free(disk->storage);
@@ -1434,8 +1482,8 @@ m64p_error main_run(void)
     randomize_interrupt = !netplay_is_init() ? ConfigGetParamBool(g_CoreConfig, "RandomizeInterrupt") : 0;
     count_per_op = ConfigGetParamInt(g_CoreConfig, "CountPerOp");
 
-    if (ROM_PARAMS.disableextramem)
-        disable_extra_mem = ROM_PARAMS.disableextramem;
+    if (ROM_SETTINGS.disableextramem)
+        disable_extra_mem = ROM_SETTINGS.disableextramem;
     else
         disable_extra_mem = ConfigGetParamInt(g_CoreConfig, "DisableExtraMem");
 
@@ -1443,11 +1491,11 @@ m64p_error main_run(void)
     rdram_size = (disable_extra_mem == 0) ? 0x800000 : 0x400000;
 
     if (count_per_op <= 0)
-        count_per_op = ROM_PARAMS.countperop;
+        count_per_op = ROM_SETTINGS.countperop;
 
     si_dma_duration = ConfigGetParamInt(g_CoreConfig, "SiDmaDuration");
     if (si_dma_duration < 0)
-        si_dma_duration = ROM_PARAMS.sidmaduration;
+        si_dma_duration = ROM_SETTINGS.sidmaduration;
 
     //During netplay, player 1 is the source of truth for these settings
     netplay_sync_settings(&count_per_op, &disable_extra_mem, &si_dma_duration, &emumode, &no_compiled_jump);
@@ -1678,7 +1726,7 @@ m64p_error main_run(void)
                 vi_clock_from_tv_standard(ROM_PARAMS.systemtype), vi_expected_refresh_rate_from_tv_standard(ROM_PARAMS.systemtype),
                 NULL, &g_iclock_ctime_plus_delta,
                 g_rom_size,
-                (ROM_SETTINGS.savetype != EEPROM_16KB) ? JDT_EEPROM_4K : JDT_EEPROM_16K,
+                (ROM_SETTINGS.savetype != SAVETYPE_EEPROM_16KB) ? JDT_EEPROM_4K : JDT_EEPROM_16K,
                 &eep, &g_ifile_storage,
                 flashram_type,
                 &fla, &g_ifile_storage,
