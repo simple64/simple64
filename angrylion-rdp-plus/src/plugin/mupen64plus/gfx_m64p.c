@@ -28,6 +28,7 @@
 #define KEY_SCREEN_HEIGHT "ScreenHeight"
 #define KEY_PARALLEL "Parallel"
 #define KEY_NUM_WORKERS "NumWorkers"
+#define KEY_BUSY_LOOP "BusyLoop"
 
 #define KEY_VI_MODE "ViMode"
 #define KEY_VI_INTERP "ViInterpolation"
@@ -114,6 +115,7 @@ EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle _CoreLibHandle, void *Co
 
     ConfigSetDefaultBool(configVideoAngrylionPlus, KEY_PARALLEL, config.parallel, "Distribute rendering between multiple processors if True");
     ConfigSetDefaultInt(configVideoAngrylionPlus, KEY_NUM_WORKERS, config.num_workers, "Rendering Workers (0=Use all logical processors)");
+    ConfigSetDefaultBool(configVideoAngrylionPlus, KEY_BUSY_LOOP, config.busyloop, "Use a busyloop while waiting for work");
     ConfigSetDefaultInt(configVideoAngrylionPlus, KEY_VI_MODE, config.vi.mode, "VI mode (0=Filtered, 1=Unfiltered, 2=Depth, 3=Coverage)");
     ConfigSetDefaultInt(configVideoAngrylionPlus, KEY_VI_INTERP, config.vi.interp, "Scaling interpolation type (0=NN, 1=Linear)");
     ConfigSetDefaultBool(configVideoAngrylionPlus, KEY_VI_WIDESCREEN, config.vi.widescreen, "Use anamorphic 16:9 output mode if True");
@@ -202,6 +204,7 @@ EXPORT int CALL RomOpen (void)
 
     config.parallel = ConfigGetParamBool(configVideoAngrylionPlus, KEY_PARALLEL);
     config.num_workers = ConfigGetParamInt(configVideoAngrylionPlus, KEY_NUM_WORKERS);
+    config.busyloop = ConfigGetParamBool(configVideoAngrylionPlus, KEY_BUSY_LOOP);
     config.vi.mode = ConfigGetParamInt(configVideoAngrylionPlus, KEY_VI_MODE);
     config.vi.interp = ConfigGetParamInt(configVideoAngrylionPlus, KEY_VI_INTERP);
     config.vi.widescreen = ConfigGetParamBool(configVideoAngrylionPlus, KEY_VI_WIDESCREEN);
