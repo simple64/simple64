@@ -453,12 +453,14 @@ MainWindow::~MainWindow()
 
 void MainWindow::updateApp()
 {
+#ifdef _AUTOUPDATE
 #ifndef __APPLE__
     QNetworkAccessManager *updateManager = new QNetworkAccessManager(this);
     connect(updateManager, &QNetworkAccessManager::finished,
         this, &MainWindow::updateReplyFinished);
 
     updateManager->get(QNetworkRequest(QUrl("https://api.github.com/repos/loganmc10/m64p/releases/latest")));
+#endif
 #endif
 }
 
