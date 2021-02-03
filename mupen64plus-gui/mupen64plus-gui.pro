@@ -14,6 +14,15 @@ ICON = mupen64plus.icns
 
 DEFINES += "NETPLAY_VER=7"
 
+_AUTOUPDATE = $$(M64P_AUTOUPDATE)
+isEmpty(_AUTOUPDATE) {
+message("Not enabling auto updater")
+}
+else {
+message("Enabling auto updater")
+DEFINES += _AUTOUPDATE
+}
+
 INCLUDEPATH += \
         "../../mupen64plus-core/src/api" \
         "../core/src/api"
