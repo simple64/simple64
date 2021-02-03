@@ -17,6 +17,7 @@ jobs:
           sudo apt-get -y install cmake libhidapi-dev lsb-release wget libminizip-dev libsdl2-dev libfreetype6-dev libgl1-mesa-dev libglu1-mesa-dev pkg-config zlib1g-dev binutils-dev libspeexdsp-dev libsamplerate0-dev qt5-default build-essential nasm git zip libsdl2-net-dev libqt5websockets5-dev
       - name: Run build script
         run: |
+          export M64P_AUTOUPDATE=1
           bash ./build.sh
       - name: Upload zip
         uses: actions/upload-artifact@v2
@@ -50,7 +51,7 @@ jobs:
             git
             zip
       - name: Run build script
-        run: msys2 -c './build.sh'
+        run: msys2 -c 'export M64P_AUTOUPDATE=1; ./build.sh'
         env:
           HOST_CPU: x86_64
           MSBUILD_PATH: "/c/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/MSBuild/Current/Bin/"
