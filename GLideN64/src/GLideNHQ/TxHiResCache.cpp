@@ -237,6 +237,7 @@ TxHiResCache::LoadResult TxHiResCache::loadHiResTextures(const wchar_t * dir_pat
 		/* Rice hi-res textures: begin
 		 */
 		uint32 chksum = 0, fmt = 0, siz = 0, palchksum = 0;
+		bool hasWildcard = false;
 		char *pfname = nullptr, fname[MAX_PATH];
 		std::string ident;
 		FILE *fp = nullptr;
@@ -255,6 +256,7 @@ TxHiResCache::LoadResult TxHiResCache::loadHiResTextures(const wchar_t * dir_pat
 
 		/* read in Rice's file naming convention */
 #define CRCFMTSIZ_LEN 13
+#define CRCWILDCARD_LEN 15
 #define PALCRC_LEN 9
 		wcstombs(fname, foundfilename, MAX_PATH);
 		/* XXX case sensitivity fiasco!
@@ -281,13 +283,33 @@ TxHiResCache::LoadResult TxHiResCache::loadHiResTextures(const wchar_t * dir_pat
 		pfname = strstr(fname, ident.c_str());
 		if (pfname != fname) pfname = 0;
 		if (pfname) {
-			if (sscanf(pfname + ident.size(), "#%08X#%01X#%01X#%08X", &chksum, &fmt, &siz, &palchksum) == 4)
-				pfname += (ident.size() + CRCFMTSIZ_LEN + PALCRC_LEN);
-			else if (sscanf(pfname + ident.size(), "#%08X#%01X#%01X", &chksum, &fmt, &siz) == 3)
-				pfname += (ident.size() + CRCFMTSIZ_LEN);
-			else
+			uint32_t length = 0;
+			const char* strName = pfname + ident.size();
+
+			/* wildcard support */
+			if (strchr(strName, '$')) {
+				if (sscanf(strName, "#%08X#%01X#%01X#$", &chksum, &fmt, &siz) == 3) {
+					length = CRCWILDCARD_LEN;
+				} else if (sscanf(strName, "#$#%01X#%01X#%08X", &fmt, &siz, &palchksum) == 3) {
+					length = CRCWILDCARD_LEN;
+				}
+
+				hasWildcard = (length != 0);
+			} else {
+				if (sscanf(strName, "#%08X#%01X#%01X#%08X", &chksum, &fmt, &siz, &palchksum) == 4) {
+					length = CRCFMTSIZ_LEN + PALCRC_LEN;
+				} else if (sscanf(strName, "#%08X#%01X#%01X", &chksum, &fmt, &siz) == 3) {
+					length = CRCFMTSIZ_LEN;
+				}
+			}
+
+			if (length) {
+				pfname += (ident.size() + length);
+			} else {
 				pfname = 0;
+			}
 		}
+
 		if (!pfname) {
 #if !DEBUG
 			INFO(80, wst("-----\n"));
@@ -297,7 +319,7 @@ TxHiResCache::LoadResult TxHiResCache::loadHiResTextures(const wchar_t * dir_pat
 			INFO(80, wst("Error: not Rice texture naming convention!\n"));
 			continue;
 		}
-		if (!chksum) {
+		if (!chksum && !hasWildcard) {
 #if !DEBUG
 			INFO(80, wst("-----\n"));
 			INFO(80, wst("path: %ls\n"), dir_path.string().c_str());
@@ -310,8 +332,10 @@ TxHiResCache::LoadResult TxHiResCache::loadHiResTextures(const wchar_t * dir_pat
 		/* check if we already have it in hires texture cache */
 		if (!replace) {
 			uint64 chksum64 = (uint64)palchksum;
-			chksum64 <<= 32;
-			chksum64 |= (uint64)chksum;
+			if (chksum) {
+				chksum64 <<= 32;
+				chksum64 |= (uint64)chksum;
+			}
 			if (isCached(chksum64)) {
 #if !DEBUG
 				INFO(80, wst("-----\n"));
@@ -714,7 +738,7 @@ TxHiResCache::LoadResult TxHiResCache::loadHiResTextures(const wchar_t * dir_pat
 
 
 		/* last minute validations */
-		if (!tex || !chksum || !width || !height || format == graphics::internalcolorFormat::NOCOLOR || width > _maxwidth || height > _maxheight) {
+		if (!tex || (!chksum && !hasWildcard) || !width || !height || format == graphics::internalcolorFormat::NOCOLOR || width > _maxwidth || height > _maxheight) {
 #if !DEBUG
 			INFO(80, wst("-----\n"));
 			INFO(80, wst("path: %ls\n"), dir_path.string().c_str());
@@ -734,8 +758,10 @@ TxHiResCache::LoadResult TxHiResCache::loadHiResTextures(const wchar_t * dir_pat
 		/* load it into hires texture cache. */
 	{
 		uint64 chksum64 = (uint64)palchksum;
-		chksum64 <<= 32;
-		chksum64 |= (uint64)chksum;
+		if (chksum) {
+			chksum64 <<= 32;
+			chksum64 |= (uint64)chksum;
+		}
 
 		GHQTexInfo tmpInfo;
 		tmpInfo.data = tex;
