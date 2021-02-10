@@ -105,8 +105,12 @@ void GLInfo::init() {
 	}
 
 	drawElementsBaseVertex = !isGLESX ||
-		(Utils::isExtensionSupported(*this, "GL_EXT_draw_elements_base_vertex") && (renderer != Renderer::PowerVR ||
-		numericVersion >= 32));
+		(Utils::isExtensionSupported(*this, "GL_EXT_draw_elements_base_vertex") || numericVersion >= 32);
+#ifdef EGL
+	if (isGLESX && Utils::isExtensionSupported(*this, "GL_EXT_draw_elements_base_vertex") && numericVersion < 32) {
+		ptrDrawRangeElementsBaseVertex = (PFNGLDRAWRANGEELEMENTSBASEVERTEXPROC) eglGetProcAddress("glDrawRangeElementsBaseVertexEXT");
+	}
+#endif
 
 	bufferStorage = (!isGLESX && (numericVersion >= 44)) || Utils::isExtensionSupported(*this, "GL_ARB_buffer_storage") ||
 			Utils::isExtensionSupported(*this, "GL_EXT_buffer_storage");
