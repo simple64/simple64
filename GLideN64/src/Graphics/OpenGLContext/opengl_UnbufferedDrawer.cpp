@@ -183,8 +183,11 @@ void UnbufferedDrawer::drawLine(f32 _width, SPVertex * _vertices)
 
 	m_cachedAttribArray->enableVertexAttribArray(triangleAttrib::texcoord, false);
 	m_cachedAttribArray->enableVertexAttribArray(triangleAttrib::modify, false);
-	if (m_useCoverage)
+
+	if (m_useCoverage) {
 		m_cachedAttribArray->enableVertexAttribArray(triangleAttrib::barycoords, false);
+		m_cachedAttribArray->enableVertexAttribArray(rectAttrib::barycoords, false);
+	}
 
 	m_cachedAttribArray->enableVertexAttribArray(rectAttrib::position, false);
 	m_cachedAttribArray->enableVertexAttribArray(rectAttrib::texcoord0, false);
