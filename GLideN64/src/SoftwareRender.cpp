@@ -12,12 +12,13 @@
 static
 bool calcScreenCoordinates(const SPVertex** _vsrc, vertexclip * _vclip, u32 _numVertex, bool & _clockwise)
 {
+	const f32 ySign = GBI.isNegativeY() ? -1.0f : 1.0f;
 	for (u32 i = 0; i < _numVertex; ++i) {
 		const SPVertex& v = *_vsrc[i];
 
 		if ((v.modify & MODIFY_XY) == 0) {
 			_vclip[i].x = gSP.viewport.vtrans[0] + (v.x / v.w) * gSP.viewport.vscale[0];
-			_vclip[i].y = gSP.viewport.vtrans[1] + (v.y / v.w) * -gSP.viewport.vscale[1];
+			_vclip[i].y = gSP.viewport.vtrans[1] + (v.y / v.w) * gSP.viewport.vscale[1] * ySign;
 		} else {
 			_vclip[i].x = v.x;
 			_vclip[i].y = v.y;
@@ -36,7 +37,7 @@ bool calcScreenCoordinates(const SPVertex** _vsrc, vertexclip * _vclip, u32 _num
 	const float x2 = _vclip[2].x - _vclip[1].x;
 	const float y2 = _vclip[2].y - _vclip[1].y;
 
-	_clockwise = (x1*y2 - y1 * x2) >= 0.0f;
+	_clockwise = (gSP.viewport.vscale[0] > 0.0f) == ((x1 * y2 - y1 * x2) * ySign < 0.0f);
 
 	const u32 cullMode = (gSP.geometryMode & G_CULL_BOTH);
 	if (cullMode == G_CULL_BOTH && GBI.isCullBoth()) {
@@ -69,14 +70,15 @@ void clipTest(vertexclip & _vtx)
 		int t = 0;
 }
 
-bool calcScreenCoordinates(const SPVertex * _vsrc, vertexclip * _vclip, u32 _numVertex, bool _wClipped, bool & _clockwise)
+bool calcScreenCoordinates(const SPVertex * _vsrc, vertexclip * _vclip, size_t _numVertex, bool _cull, bool & _clockwise)
 {
+	const f32 ySign = GBI.isNegativeY() ? -1.0f : 1.0f;
 	for (u32 i = 0; i < _numVertex; ++i) {
 		const SPVertex & v = _vsrc[i];
 
 		if ((v.modify & MODIFY_XY) == 0) {
 			_vclip[i].x = gSP.viewport.vtrans[0] + (v.x / v.w) * gSP.viewport.vscale[0];
-			_vclip[i].y = gSP.viewport.vtrans[1] + (v.y / v.w) * -gSP.viewport.vscale[1];
+			_vclip[i].y = gSP.viewport.vtrans[1] + (v.y / v.w) * gSP.viewport.vscale[1] * ySign;
 		} else {
 			_vclip[i].x = v.x;
 			_vclip[i].y = v.y;
@@ -91,7 +93,7 @@ bool calcScreenCoordinates(const SPVertex * _vsrc, vertexclip * _vclip, u32 _num
 		clipTest(_vclip[i]);
 	}
 
-	if (_wClipped) // Don't cull w-clipped vertices
+	if (!_cull)
 		return true;
 
 	// Check culling
@@ -100,7 +102,7 @@ bool calcScreenCoordinates(const SPVertex * _vsrc, vertexclip * _vclip, u32 _num
 	const float x2 = _vclip[2].x - _vclip[1].x;
 	const float y2 = _vclip[2].y - _vclip[1].y;
 
-	_clockwise = (x1*y2 - y1 * x2) >= 0.0f;
+	_clockwise = (gSP.viewport.vscale[0] > 0.0f) == ((x1 * y2 - y1 * x2) * ySign < 0.0f);
 
 	const u32 cullMode = (gSP.geometryMode & G_CULL_BOTH);
 	if (cullMode == G_CULL_BOTH && GBI.isCullBoth()) {
@@ -285,7 +287,7 @@ f32 renderTriangles(const SPVertex * _pVertices, const u16 * _pElements, u32 _nu
 
 		const bool wClipped = (orbits & CLIP_W) != 0;
 		bool clockwise = true;
-		if (!calcScreenCoordinates(vdata, vclip, numVertex, wClipped, clockwise))
+		if (!calcScreenCoordinates(vdata, vclip, numVertex, !wClipped, clockwise))
 			continue;
 
 		if (orbits == 0) {
@@ -405,19 +407,19 @@ f32 renderAndDrawTriangles(const SPVertex *_pVertices, const u16 *_pElements, u3
 			}
 			auto prevNumVtx = vResult.size();
 			clipInHomogeneousSpace(vCopy, vResult);
-			const u32 numVertex = vResult.size() - prevNumVtx;
+			const size_t numVertex = vResult.size() - prevNumVtx;
 			if (!needResterise || numVertex == 0)
 				continue;
 
 			std::vector<vertexclip> vclip(numVertex);
-			const bool wClipped = (orbits & CLIP_W) != 0;
+			const bool cull = ((orbits & CLIP_W) == 0) && (gSP.viewport.vscale[0] > 0.0f);
 			bool clockwise = true;
-			if (!calcScreenCoordinates(vResult.data() + prevNumVtx, vclip.data(), numVertex, wClipped, clockwise)) {
+			if (!calcScreenCoordinates(vResult.data() + prevNumVtx, vclip.data(), numVertex, cull, clockwise)) {
 				vResult.resize(prevNumVtx);
 				continue;
 			}
 
-			for (u32 l = 0; l < numVertex; l += 3)
+			for (size_t l = 0; l < numVertex; l += 3)
 				rasterise(vclip.data() + l, clockwise);
 		}
 	}
