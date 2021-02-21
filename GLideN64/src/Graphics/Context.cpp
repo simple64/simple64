@@ -40,7 +40,7 @@ void Context::init()
 	ImageTextures = m_impl->isSupported(SpecialFeatures::ImageTextures);
 	IntegerTextures = m_impl->isSupported(SpecialFeatures::IntegerTextures);
 	ClipControl = m_impl->isSupported(SpecialFeatures::ClipControl);
-	FramebufferFetchDepth = m_impl->isSupported(SpecialFeatures::FramebufferFetchDepth);
+	FramebufferFetchDepth = m_impl->isSupported(SpecialFeatures::N64DepthWithFbFetchDepth);
 	FramebufferFetchColor = m_impl->isSupported(SpecialFeatures::FramebufferFetchColor);
 	TextureBarrier = m_impl->isSupported(SpecialFeatures::TextureBarrier);
 	EglImage = m_impl->isSupported(SpecialFeatures::EglImage);

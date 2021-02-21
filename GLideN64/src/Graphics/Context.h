@@ -24,7 +24,7 @@ namespace graphics {
 		ImageTextures,
 		IntegerTextures,
 		ClipControl,
-		FramebufferFetchDepth,
+		N64DepthWithFbFetchDepth,
 		FramebufferFetchColor,
 		TextureBarrier,
 		EglImage,

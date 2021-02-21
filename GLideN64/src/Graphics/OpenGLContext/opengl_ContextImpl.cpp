@@ -513,8 +513,8 @@ bool ContextImpl::isSupported(graphics::SpecialFeatures _feature) const
 		return !m_glInfo.isGLES2;
 	case graphics::SpecialFeatures::ClipControl:
 		return !m_glInfo.isGLESX;
-	case graphics::SpecialFeatures::FramebufferFetchDepth:
-		return m_glInfo.ext_fetch;
+	case graphics::SpecialFeatures::N64DepthWithFbFetchDepth:
+		return m_glInfo.n64DepthWithFbFetch;
 	case graphics::SpecialFeatures::FramebufferFetchColor:
 		return m_glInfo.ext_fetch || m_glInfo.ext_fetch_arm;
 	case graphics::SpecialFeatures::TextureBarrier:
