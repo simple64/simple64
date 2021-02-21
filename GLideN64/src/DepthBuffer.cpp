@@ -320,18 +320,7 @@ void DepthBuffer::activateDepthBufferTexture(FrameBuffer * _pBuffer)
 
 void DepthBuffer::bindDepthImageTexture(ObjectHandle _fbo)
 {
-	if (Context::ImageTextures) {
-		Context::BindImageTextureParameters bindParams;
-		bindParams.imageUnit = textureImageUnits::DepthZ;
-		bindParams.texture = m_pDepthImageZTexture->name;
-		bindParams.accessMode = textureImageAccessMode::READ_WRITE;
-		bindParams.textureFormat = gfxContext.getFramebufferTextureFormats().depthImageInternalFormat;
-		gfxContext.bindImageTexture(bindParams);
-
-		bindParams.imageUnit = textureImageUnits::DepthDeltaZ;
-		bindParams.texture = m_pDepthImageDeltaZTexture->name;
-		gfxContext.bindImageTexture(bindParams);
-	} else if (Context::FramebufferFetchDepth) {
+	if (Context::FramebufferFetchDepth) {
 		Context::FrameBufferRenderTarget targetParams;
 		targetParams.bufferHandle = _fbo;
 		targetParams.bufferTarget = bufferTarget::DRAW_FRAMEBUFFER;
@@ -345,6 +334,17 @@ void DepthBuffer::bindDepthImageTexture(ObjectHandle _fbo)
 		gfxContext.addFrameBufferRenderTarget(targetParams);
 
 		gfxContext.setDrawBuffers(3);
+	} else if (Context::ImageTextures) {
+		Context::BindImageTextureParameters bindParams;
+		bindParams.imageUnit = textureImageUnits::DepthZ;
+		bindParams.texture = m_pDepthImageZTexture->name;
+		bindParams.accessMode = textureImageAccessMode::READ_WRITE;
+		bindParams.textureFormat = gfxContext.getFramebufferTextureFormats().depthImageInternalFormat;
+		gfxContext.bindImageTexture(bindParams);
+
+		bindParams.imageUnit = textureImageUnits::DepthDeltaZ;
+		bindParams.texture = m_pDepthImageDeltaZTexture->name;
+		gfxContext.bindImageTexture(bindParams);
 	}
 }
 

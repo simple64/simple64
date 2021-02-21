@@ -35,6 +35,7 @@ struct GLInfo {
 	bool fragment_ordering = false;
 	bool ext_fetch = false;
 	bool ext_fetch_arm = false;
+	bool n64DepthWithFbFetch = false;
 	bool eglImage = false;
 	bool eglImageFramebuffer = false;
 	bool dual_source_blending = false;
