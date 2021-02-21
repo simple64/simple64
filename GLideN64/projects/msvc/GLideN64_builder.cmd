@@ -10,13 +10,15 @@ if not exist "%~dp0%DPROJ%" goto err
 set ARCH=
 set BOTH=0
 set CONF=Release
-set DLQT=0
+set KAP=7z
+set NO7=0
+set DQTD=1
 set REB=
 set NOQT=0
 set NOWTL=0
 set NOM64=0
 set ESIM=0
-set EBQ=explorer "."
+set EBQ=start "" explorer .
 taskkill /im msbuild.exe /f 2>nul
 taskkill /im vctip.exe /f 2>nul
 taskkill /im mspdbsrv.exe /f 2>nul
@@ -27,11 +29,13 @@ for %%P in (%*) do (
 	if /i "%%P"=="--x64" set ARCH=x64& set BOTH=0
 	if /i "%%P"=="--all" set ARCH=x64& set BOTH=1
 	if /i "%%P"=="--debug" set CONF=Debug
+	if /i "%%P"=="--zip" set KAP=zip
+	if /i "%%P"=="--nopak" set NO7=1
 	if /i "%%P"=="--rebuild" set REB=/t:Rebuild
 	if /i "%%P"=="--noqt" set NOQT=1
 	if /i "%%P"=="--nowtl" set NOWTL=1
 	if /i "%%P"=="--nom64" set NOM64=1
-	if /i "%%P"=="--dlqt" set DLQT=1
+	if /i "%%P"=="--dlqt" set DQTD=0
 	if /i "%%P"=="--sim" set ESIM=1
 	if /i "%%P"=="--q" set EBQ=REM
 )
@@ -41,7 +45,8 @@ set /a MOD=%NOQT%+%NOWTL%+%NOM64%
 set MSG=All compilation tasks were disabled on request
 if %MOD%==3 goto err
 set MSG=7z was not found in the environment
-7z >nul 2>&1
+set /a MOD=%NO7%+%DQTD%
+if %MOD% NEQ 2 7z >nul 2>&1
 %ERR%
 
 set tVSPF=%ProgramFiles(x86)%
@@ -82,7 +87,7 @@ set "QTVER=qt-5_7_1-%ARCH%-msvc2017-static"
 if exist "..\Qt\%QTVER%\include\QtCore" goto nodl
 
 set MSG=Path to Qt %ARCH% was not specified or detected
-if %DLQT%==0 goto err
+if %DQTD%==1 goto err
 set MSG=cURL was not found in the environment
 curl --version >nul 2>&1
 %ERR%
@@ -128,7 +133,7 @@ if %ESIM%==1 (
 	set "MBQT=echo %MBQT%"
 	md "translations\wtl" 2>nul
 	cd.>"translations\wtl\%MOD%.Lang"
-	del /f /q "%BUILDROUTE%\*_%ARCH%.7z" 2>nul
+	del /f /q "%BUILDROUTE%\*_%ARCH%.%KAP%" 2>nul
 	set errorlevel=0
 )
 set "MBWTL=%MBQT%"
@@ -201,13 +206,16 @@ for /f "tokens=1" %%R in ('git describe --always') do set "REV=%%R"
 set MSG=The route could not be accessed:^& echo %BUILDROUTE%
 pushd "%BUILDROUTE%"
 %ERR%
-for /f "tokens=*" %%Z in ('dir /ad /b *_%ARCH%') do 7z a -t7z "GLideN64-%REV%-%%Z.7z" ".\%%Z\*"
+set MOD=the compressed files
+if %NO7%==1 set MOD=the plugins& goto z7
+for /f "tokens=*" %%Z in ('dir /ad /b *_%ARCH%') do 7z a -t%KAP% "GLideN64-%REV%-%%Z.%KAP%" ".\%%Z\*"
+:z7
 
 if "%ARCH%"=="x64" (
 	if %BOTH%==1 set ARCH=x86& goto X86
 )
 
-set MSG=DONE!^& echo Path to the compressed files:^& echo %CD%
+set MSG=DONE!^& echo Path to %MOD%:^& echo %CD%
 %EBQ%
 :err
 set WTF=%errorlevel%
@@ -262,11 +270,14 @@ echo   --noqt      To build without Qt support, it will ignore the
 echo               effects of QTDIR_x* and "--dlqt"
 echo   --nowtl     To skip WTL builds
 echo   --nom64     To skip mupen64plus builds
+echo   --nopak     To skip packing the plugins, "--zip" will be ineffective
+echo               It will disable 7-Zip completely if "--dlqt" isn't used
 echo   --rebuild   To rebuild without cleaning
 echo   --sim       Simulated build, quick environment check without compiling
 echo               It's destructive to the final product by creating
 echo               dummy files, make sure to use "--clean" afterwards
 echo   --q         Don't interact with Windows Explorer at the end
+echo   --zip       Pack to ZIP files instead of 7Z files
 echo.
 echo Usage examples:
 echo.

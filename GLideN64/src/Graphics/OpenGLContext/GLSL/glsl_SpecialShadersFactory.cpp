@@ -68,10 +68,10 @@ namespace glsl {
 				;
 
 			if (config.frameBufferEmulation.N64DepthCompare != Config::dcDisable) {
-				if (_glinfo.imageTextures)
+				if (_glinfo.imageTextures && !_glinfo.n64DepthWithFbFetch)
 					m_part += "layout(binding = 2, r32f) highp uniform restrict readonly image2D uDepthImageZ;		\n";
 
-				if (_glinfo.ext_fetch) {
+				if (_glinfo.n64DepthWithFbFetch) {
 					m_part +=
 						"layout(location = 0) OUT lowp vec4 fragColor;	\n"
 						"layout(location = 1) inout highp vec4 depthZ;	\n"
@@ -100,14 +100,14 @@ namespace glsl {
 			} else {
 				// Either _glinfo.imageTextures or _glinfo.ext_fetch must be enabled when N64DepthCompare != 0
 				// see GLInfo::init()
-				if (_glinfo.imageTextures) {
+				if (_glinfo.n64DepthWithFbFetch) {
+					m_part +=
+						"  highp float bufZ = depthZ.r;	\n"
+						;
+				} else if (_glinfo.imageTextures) {
 					m_part +=
 						"  mediump ivec2 coord = ivec2(gl_FragCoord.xy);	\n"
 						"  highp float bufZ = imageLoad(uDepthImageZ,coord).r;	\n"
-						;
-				} else if (_glinfo.ext_fetch) {
-					m_part +=
-						"  highp float bufZ = depthZ.r;	\n"
 						;
 				}
 			}

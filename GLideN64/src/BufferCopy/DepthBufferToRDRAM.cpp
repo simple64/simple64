@@ -255,7 +255,7 @@ bool DepthBufferToRDRAM::_copy(u32 _startAddress, u32 _endAddress)
 	writeToRdram<f32, u16>(srcBuf.data(),
 						   ptr_dst,
 						   &DepthBufferToRDRAM::_FloatToUInt16,
-						   2.0f,
+						   dummyTester<f32>,
 						   1,
 						   width,
 						   height,
