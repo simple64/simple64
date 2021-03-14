@@ -134,6 +134,7 @@ void _loadSettings(GlSettings & settings)
 	config.onScreenDisplay.percent = settings.value("showPercent", config.onScreenDisplay.percent).toInt();
 	config.onScreenDisplay.internalResolution = settings.value("showInternalResolution", config.onScreenDisplay.internalResolution).toInt();
 	config.onScreenDisplay.renderingResolution = settings.value("showRenderingResolution", config.onScreenDisplay.renderingResolution).toInt();
+	config.onScreenDisplay.statistics = settings.value("showStatistics", config.onScreenDisplay.statistics).toInt();
 	config.onScreenDisplay.pos = settings.value("osdPos", config.onScreenDisplay.pos).toInt();
 	settings.endGroup();
 
@@ -309,6 +310,7 @@ void writeSettings(const char * _strIniFolder)
 		settings.setValue("showInternalResolution", config.onScreenDisplay.internalResolution);
 		settings.setValue("showRenderingResolution", config.onScreenDisplay.renderingResolution);
 		settings.setValue("osdPos", config.onScreenDisplay.pos);
+		settings.setValue("showStatistics", config.onScreenDisplay.statistics);
 		settings.endGroup();
 
 		settings.beginGroup("debug");

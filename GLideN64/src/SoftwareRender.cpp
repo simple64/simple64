@@ -340,7 +340,11 @@ f32 renderTriangles(const SPVertex * _pVertices, const u16 * _pElements, u32 _nu
 	return maxY;
 }
 
-f32 renderAndDrawTriangles(const SPVertex *_pVertices, const u16 *_pElements, u32 _numElements, bool _flatColors)
+f32 renderAndDrawTriangles(const SPVertex *_pVertices,
+	const u16 *_pElements,
+	u32 _numElements,
+	bool _flatColors,
+	GraphicsDrawer::Statistics & _statistics)
 {
 	f32 maxY = 0.0f;
 	std::vector<SPVertex> vResult;
@@ -356,15 +360,19 @@ f32 renderAndDrawTriangles(const SPVertex *_pVertices, const u16 *_pElements, u3
 		int dzdx = calcDzDx(pVtxClip);
 		vertexi vdraw[3];
 		for (u32 k = 0; k < 3; ++k) {
-			for (u32 k = 0; k < 3; ++k) {
-				const u32 idx = clockwise ? k : 3 - k - 1;
-				maxY = std::max(maxY, pVtxClip[idx].y);
-				vdraw[k].x = floatToFixed16(pVtxClip[idx].x);
-				vdraw[k].y = floatToFixed16(pVtxClip[idx].y);
-				vdraw[k].z = floatToFixed16(pVtxClip[idx].z);
-			}
+			const u32 idx = clockwise ? k : 3 - k - 1;
+			maxY = std::max(maxY, pVtxClip[idx].y);
+			vdraw[k].x = floatToFixed16(pVtxClip[idx].x);
+			vdraw[k].y = floatToFixed16(pVtxClip[idx].y);
+			vdraw[k].z = floatToFixed16(pVtxClip[idx].z);
 		}
 		Rasterize(vdraw, 3, dzdx);
+	};
+
+	auto calcMaxY = [&maxY](const vertexclip* pVtxClip)
+	{
+		for (u32 k = 0; k < 3; ++k)
+			maxY = std::max(maxY, pVtxClip[k].y);
 	};
 
 	for (u32 i = 0; i < _numElements; i += 3) {
@@ -381,9 +389,12 @@ f32 renderAndDrawTriangles(const SPVertex *_pVertices, const u16 *_pElements, u3
 			// No clipping is necessary.
 			vertexclip vclip[3];
 			bool clockwise = true;
-			if (!calcScreenCoordinates(vsrc, vclip, 3, clockwise))
+			if (!calcScreenCoordinates(vsrc, vclip, 3, clockwise)) {
 				// Culled
+				_statistics.drawnTris--;
+				_statistics.culledTris++;
 				continue;
+			}
 
 			// Copy vertices to result
 			for (u32 k = 0; k < 3; ++k) {
@@ -395,6 +406,8 @@ f32 renderAndDrawTriangles(const SPVertex *_pVertices, const u16 *_pElements, u3
 
 			if (needResterise)
 				rasterise(vclip, clockwise);
+			else
+				calcMaxY(vclip);
 		} else {
 			assert(modify == 0);
 			// No screen space coordinates, so use clipping in homogeneous space.
@@ -408,14 +421,21 @@ f32 renderAndDrawTriangles(const SPVertex *_pVertices, const u16 *_pElements, u3
 			auto prevNumVtx = vResult.size();
 			clipInHomogeneousSpace(vCopy, vResult);
 			const size_t numVertex = vResult.size() - prevNumVtx;
-			if (!needResterise || numVertex == 0)
+			if (!needResterise)
 				continue;
+			if (numVertex == 0) {
+				_statistics.drawnTris--;
+				_statistics.clippedTris++;
+				continue;
+			}
 
 			std::vector<vertexclip> vclip(numVertex);
 			const bool cull = ((orbits & CLIP_W) == 0) && (gSP.viewport.vscale[0] > 0.0f);
 			bool clockwise = true;
 			if (!calcScreenCoordinates(vResult.data() + prevNumVtx, vclip.data(), numVertex, cull, clockwise)) {
 				vResult.resize(prevNumVtx);
+				_statistics.drawnTris--;
+				_statistics.culledTris++;
 				continue;
 			}
 

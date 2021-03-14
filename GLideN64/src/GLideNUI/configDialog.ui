@@ -2749,6 +2749,13 @@
                </property>
               </widget>
              </item>
+             <item>
+              <widget class="QCheckBox" name="statisticsCheckBox">
+               <property name="text">
+                <string>Display statistics</string>
+               </property>
+              </widget>
+             </item>
             </layout>
            </item>
            <item>

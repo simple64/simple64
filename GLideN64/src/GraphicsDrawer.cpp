@@ -46,6 +46,7 @@ GraphicsDrawer::~GraphicsDrawer()
 
 void GraphicsDrawer::addTriangle(u32 _v0, u32 _v1, u32 _v2)
 {
+	m_statistics.drawnTris++;
 	const u32 firstIndex = triangles.num;
 	triangles.elements[triangles.num++] = static_cast<u16>(_v0);
 	triangles.elements[triangles.num++] = static_cast<u16>(_v1);
@@ -827,7 +828,7 @@ void GraphicsDrawer::drawTriangles()
 	if (config.frameBufferEmulation.enable != 0) {
 		f32 maxY;
 		if (config.generalEmulation.enableClipping != 0) {
-			maxY = renderAndDrawTriangles(triangles.vertices.data(), triangles.elements.data(), triangles.num, m_bFlatColors);
+			maxY = renderAndDrawTriangles(triangles.vertices.data(), triangles.elements.data(), triangles.num, m_bFlatColors, m_statistics);
 		} else {
 			gfxContext.drawTriangles(triParams);
 			maxY = renderTriangles(triangles.vertices.data(), triangles.elements.data(), triangles.num);
@@ -896,6 +897,10 @@ void GraphicsDrawer::drawScreenSpaceTriangle(u32 _numVtx, graphics::DrawModePara
 		}
 	}
 	gSP.changed |= CHANGED_GEOMETRYMODE;
+	if (_mode == graphics::drawmode::TRIANGLES)
+		m_statistics.drawnTris += _numVtx / 3;
+	else if (_mode == graphics::drawmode::TRIANGLE_STRIP)
+		m_statistics.drawnTris += _numVtx - 2;
 }
 
 void GraphicsDrawer::drawDMATriangles(u32 _numVtx)
@@ -903,7 +908,6 @@ void GraphicsDrawer::drawDMATriangles(u32 _numVtx)
 	if (_numVtx == 0 || !_canDraw())
 		return;
 	_prepareDrawTriangle(DrawingState::Triangle);
-
 
 	Context::DrawTriangleParameters triParams;
 	triParams.mode = drawmode::TRIANGLES;
@@ -913,11 +917,12 @@ void GraphicsDrawer::drawDMATriangles(u32 _numVtx)
 	triParams.combiner = currentCombiner();
 	g_debugger.addTriangles(triParams);
 	m_dmaVerticesNum = 0;
+	m_statistics.drawnTris += _numVtx / 3;
 
 	if (config.frameBufferEmulation.enable != 0) {
 		f32 maxY;
 		if (config.generalEmulation.enableClipping != 0) {
-			maxY = renderAndDrawTriangles(m_dmaVertices.data(), nullptr, _numVtx, m_bFlatColors);
+			maxY = renderAndDrawTriangles(m_dmaVertices.data(), nullptr, _numVtx, m_bFlatColors, m_statistics);
 		}
 		else {
 			gfxContext.drawTriangles(triParams);
@@ -1014,6 +1019,7 @@ void GraphicsDrawer::_drawThickLine(u32 _v0, u32 _v1, float _width)
 void GraphicsDrawer::drawLine(u32 _v0, u32 _v1, float _width)
 {
 	m_texrectDrawer.draw();
+	m_statistics.lines++;
 
 	if (!_canDraw())
 		return;
@@ -1046,6 +1052,7 @@ void GraphicsDrawer::drawRect(int _ulx, int _uly, int _lrx, int _lry)
 {
 	ValueKeeper<u32> otherMode(gSP.clipRatio, 1U);
 	m_texrectDrawer.draw();
+	m_statistics.fillRects++;
 
 	if (!_canDraw())
 		return;
@@ -1257,6 +1264,7 @@ void GraphicsDrawer::drawTexturedRect(const TexturedRectParams & _params)
 {
 	gSP.changed &= ~CHANGED_GEOMETRYMODE; // Don't update cull mode
 	m_drawingState = DrawingState::TexRect;
+	m_statistics.texRects++;
 	ValueKeeper<u32> otherMode(gSP.clipRatio, 1U);
 
 	if (m_texrectDrawer.canContinue()) {
@@ -1549,6 +1557,17 @@ void GraphicsDrawer::drawText(const char *_pText, float x, float y)
 	g_textDrawer.drawText(_pText, x, y);
 }
 
+void GraphicsDrawer::Statistics::clear()
+{
+	fillRects = 0;
+	texRects = 0;
+	clippedTris = 0;
+	rejectedTris = 0;
+	culledTris = 0;
+	drawnTris = 0;
+	lines = 0;
+}
+
 void GraphicsDrawer::_drawOSD(const char *_pText, float _x, float & _y)
 {
 	float tW, tH;
@@ -1580,7 +1599,8 @@ void GraphicsDrawer::drawOSD()
 		config.onScreenDisplay.vis |
 		config.onScreenDisplay.percent |
 		config.onScreenDisplay.internalResolution |
-		config.onScreenDisplay.renderingResolution
+		config.onScreenDisplay.renderingResolution |
+		config.onScreenDisplay.statistics
 		) == 0 &&
 		m_osdMessages.empty())
 		return;
@@ -1612,7 +1632,7 @@ void GraphicsDrawer::drawOSD()
 	vShift *= 0.5f;
 	const float x = hp - hShift * hp;
 	float y = vp - vShift * vp;
-	char buf[40];
+	char buf[256];
 
 	if (config.onScreenDisplay.fps) {
 		sprintf(buf, "%d FPS", int(perf.getFps()));
@@ -1648,6 +1668,19 @@ void GraphicsDrawer::drawOSD()
 			_drawOSD(buf, x, y);
 		}
 	}
+
+	if (config.onScreenDisplay.statistics) {
+		if (RSP.LLE)
+			sprintf(buf, "fill rects: %3u | tex rects: %3u | triangles: %5u",
+				m_statistics.fillRects, m_statistics.texRects, m_statistics.drawnTris);
+		else
+			sprintf(buf, "fill rects: %3u | tex rects: %3u | lines: %4u | tris drawn: %4u | clipped: %4u | culled: %4u | total: %5u",
+				m_statistics.fillRects, m_statistics.texRects, m_statistics.lines,
+				m_statistics.drawnTris, m_statistics.clippedTris, m_statistics.culledTris,
+				m_statistics.drawnTris + m_statistics.clippedTris + m_statistics.culledTris);
+		_drawOSD(buf, x, y);
+	}
+
 
 	for (const std::string & m : m_osdMessages) {
 		_drawOSD(m.c_str(), x, y);
@@ -1685,6 +1718,15 @@ void GraphicsDrawer::clearColorBuffer(float *_pColor)
 		gfxContext.clearColorBuffer(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
+bool GraphicsDrawer::isClipped(u32 _v0, u32 _v1, u32 _v2) const
+{
+	if ((triangles.vertices[_v0].clip & triangles.vertices[_v1].clip & triangles.vertices[_v2].clip) != 0) {
+		m_statistics.clippedTris++;
+		return true;
+	}
+	return false;
+}
+
 bool GraphicsDrawer::isRejected(u32 _v0, u32 _v1, u32 _v2) const
 {
 	if (!GBI.isRej() || gSP.clipRatio < 2)
@@ -1707,15 +1749,23 @@ bool GraphicsDrawer::isRejected(u32 _v0, u32 _v1, u32 _v2) const
 		if ((v.modify & MODIFY_XY) != 0)
 			continue;
 		const f32 sx = gSP.viewport.vtrans[0] + (v.x / v.w) * gSP.viewport.vscale[0];
-		if (sx < rejectBox.ulx)
+		if (sx < rejectBox.ulx) {
+			m_statistics.rejectedTris++;
 			return true;
-		if (sx > rejectBox.lrx)
+		}
+		if (sx > rejectBox.lrx) {
+			m_statistics.rejectedTris++;
 			return true;
+		}
 		const f32 sy = gSP.viewport.vtrans[1] + (v.y / v.w) * gSP.viewport.vscale[1] * ySign;
-		if (sy < rejectBox.uly)
+		if (sy < rejectBox.uly) {
+			m_statistics.rejectedTris++;
 			return true;
-		if (sy > rejectBox.lry)
+		}
+		if (sy > rejectBox.lry) {
+			m_statistics.rejectedTris++;
 			return true;
+		}
 	}
 	return false;
 }
