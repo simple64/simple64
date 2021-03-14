@@ -129,10 +129,7 @@ public:
 
 	int getTrianglesCount() const { return triangles.num; }
 
-	bool isClipped(u32 _v0, u32 _v1, u32 _v2) const
-	{
-		return (triangles.vertices[_v0].clip & triangles.vertices[_v1].clip & triangles.vertices[_v2].clip) != 0;
-	}
+	bool isClipped(u32 _v0, u32 _v1, u32 _v2) const;
 
 	bool isRejected(u32 _v0, u32 _v1, u32 _v2) const;
 
@@ -160,6 +157,19 @@ public:
 	void setBackgroundDrawingMode(bool _mode) { m_bBGMode = _mode; }
 
 	void setBlendMode(bool _forceLegacyBlending = false) const;
+
+	void clearStatistics() { m_statistics.clear(); }
+
+	struct Statistics {
+		u32 fillRects = 0;
+		u32 texRects = 0;
+		u32 clippedTris = 0;
+		u32 rejectedTris = 0;
+		u32 culledTris = 0;
+		u32 drawnTris = 0;
+		u32 lines = 0;
+		void clear();
+	};
 
 private:
 	friend class DisplayWindow;
@@ -216,4 +226,5 @@ private:
 	bool m_bBGMode;
 	TexrectDrawer m_texrectDrawer;
 	OSDMessages m_osdMessages;
+	mutable Statistics m_statistics;
 };

@@ -132,6 +132,9 @@ void Config::resetToDefaults()
 	onScreenDisplay.vis = 0;
 	onScreenDisplay.fps = 0;
 	onScreenDisplay.percent = 0;
+	onScreenDisplay.internalResolution = 0;
+	onScreenDisplay.renderingResolution = 0;
+	onScreenDisplay.statistics = 0;
 	onScreenDisplay.pos = posBottomLeft;
 
 	for (u32 idx = 0; idx < HotKey::hkTotal; ++idx)

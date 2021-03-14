@@ -133,6 +133,7 @@ void _loadSettings(QSettings & settings)
 	config.onScreenDisplay.percent = settings.value("showPercent", config.onScreenDisplay.percent).toInt();
 	config.onScreenDisplay.internalResolution = settings.value("showInternalResolution", config.onScreenDisplay.internalResolution).toInt();
 	config.onScreenDisplay.renderingResolution = settings.value("showRenderingResolution", config.onScreenDisplay.renderingResolution).toInt();
+	config.onScreenDisplay.statistics = settings.value("showStatistics", config.onScreenDisplay.statistics).toInt();
 	config.onScreenDisplay.pos = settings.value("osdPos", config.onScreenDisplay.pos).toInt();
 	settings.endGroup();
 
@@ -303,6 +304,7 @@ void writeSettings(const QString & _strIniFolder)
 	settings.setValue("showPercent", config.onScreenDisplay.percent);
 	settings.setValue("showInternalResolution", config.onScreenDisplay.internalResolution);
 	settings.setValue("showRenderingResolution", config.onScreenDisplay.renderingResolution);
+	settings.setValue("showStatistics", config.onScreenDisplay.statistics);
 	settings.setValue("osdPos", config.onScreenDisplay.pos);
 	settings.endGroup();
 

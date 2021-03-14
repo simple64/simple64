@@ -213,6 +213,7 @@ struct Config
 		u32 percent;
 		u32 internalResolution;
 		u32 renderingResolution;
+		u32 statistics;
 		u32 pos;
 	} onScreenDisplay;
 
