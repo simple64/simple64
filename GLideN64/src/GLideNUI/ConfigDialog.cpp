@@ -380,6 +380,7 @@ void ConfigDialog::_init(bool reInit, bool blockCustomSettings)
 	ui->percentCheckBox->setChecked(config.onScreenDisplay.percent != 0);
 	ui->internalResolutionCheckBox->setChecked(config.onScreenDisplay.internalResolution != 0);
 	ui->renderingResolutionCheckBox->setChecked(config.onScreenDisplay.renderingResolution != 0);
+	ui->statisticsCheckBox->setChecked(config.onScreenDisplay.statistics != 0);
 
 	// Buttons
 	ui->buttonBox->button(QDialogButtonBox::Ok)->setText(tr("Save and Close"));
@@ -721,6 +722,7 @@ void ConfigDialog::accept(bool justSave) {
 	config.onScreenDisplay.percent = ui->percentCheckBox->isChecked() ? 1 : 0;
 	config.onScreenDisplay.internalResolution = ui->internalResolutionCheckBox->isChecked() ? 1 : 0;
 	config.onScreenDisplay.renderingResolution = ui->renderingResolutionCheckBox->isChecked() ? 1 : 0;
+	config.onScreenDisplay.statistics = ui->statisticsCheckBox->isChecked() ? 1 : 0;
 
 	for (quint32 idx = 0; idx < Config::HotKey::hkTotal; ++idx) {
 		config.hotkeys.keys[idx] = 0;

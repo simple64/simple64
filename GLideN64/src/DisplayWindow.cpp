@@ -47,6 +47,7 @@ void DisplayWindow::restart()
 void DisplayWindow::swapBuffers()
 {
 	m_drawer.drawOSD();
+	m_drawer.clearStatistics();
 	_swapBuffers();
 	if (!RSP.LLE) {
 		if ((config.generalEmulation.hacks & hack_doNotResetOtherModeL) == 0)
