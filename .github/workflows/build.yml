@@ -73,13 +73,13 @@ jobs:
       - name: brew update
         run: |
           brew update
-          brew install libsamplerate hidapi sdl2_net sdl2 qt
+          brew install libsamplerate hidapi sdl2_net sdl2 qt@5
       - name: Run build script
         run: |
           export qt_version=$(ls /usr/local/Cellar/qt)
           sudo ln -s /usr/local/Cellar/qt/$qt_version/plugins /usr/local/plugins
           sudo ln -s /usr/local/Cellar/qt/$qt_version/mkspecs /usr/local/mkspecs
-          sudo ln -sf /usr/local/Cellar/qt/$qt_version/bin/qmake /usr/local/bin/qmake
+          sudo ln -s /usr/local/Cellar/qt/$qt_version/bin/qmake /usr/local/bin/qmake
           export PATH=$PATH:/usr/local/Cellar/qt/$qt_version/bin
           sudo sh ./build.sh
       - name: Upload dmg
