@@ -43,4 +43,4 @@ git fetch angrylion-rdp-plus
 git merge -s subtree angrylion-rdp-plus/master --allow-unrelated-histories --squash
 git commit -m "update angrylion"
 
-git push origin master
+git push origin main
