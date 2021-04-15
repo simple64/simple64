@@ -559,7 +559,7 @@ public:
 			std::stringstream ss;
 			ss << "#version " << Utils::to_string(_glinfo.majorVersion) << Utils::to_string(_glinfo.minorVersion) << "0 core " << std::endl;
 			if (config.frameBufferEmulation.N64DepthCompare != Config::dcDisable) {
-				if (_glinfo.ext_fetch)
+				if (_glinfo.n64DepthWithFbFetch)
 					ss << "#extension GL_EXT_shader_framebuffer_fetch : enable" << std::endl;
 				else if (_glinfo.imageTextures) {
 					if (_glinfo.majorVersion * 10 + _glinfo.minorVersion < 42) {
