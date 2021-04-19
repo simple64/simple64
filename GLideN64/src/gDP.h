@@ -122,6 +122,13 @@ struct gDPScissor
 	s16 xh, yh, xl, yl;
 };
 
+struct gDPTexrectInfo
+{
+	f32 ulx, lrx, uly, lry;
+	s16 s, t;
+	f32 dsdx, dtdy;
+};
+
 struct gDPInfo
 {
 	struct OtherMode
@@ -255,7 +262,8 @@ struct gDPInfo
 	u64 paletteCRC256;
 	u32 half_1, half_2;
 
-	 gDPLoadTileInfo loadInfo[512];
+	gDPLoadTileInfo loadInfo[512];
+	gDPTexrectInfo lastTexRectInfo;
 };
 
 extern gDPInfo gDP;

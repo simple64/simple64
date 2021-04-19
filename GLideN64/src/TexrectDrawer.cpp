@@ -29,8 +29,6 @@ TexrectDrawer::TexrectDrawer()
 , m_Z(0)
 , m_max_lrx(0)
 , m_max_lry(0)
-, m_stepY(0.0f)
-, m_stepX(0.0f)
 , m_scissor(gDPScissor())
 , m_pTexture(nullptr)
 , m_pBuffer(nullptr)
@@ -54,8 +52,6 @@ void TexrectDrawer::init()
 	m_pTexture->width = 640;
 	m_pTexture->height = 580;
 	m_pTexture->textureBytes = m_pTexture->width * m_pTexture->height * fbTexFormats.colorFormatBytes;
-	m_stepX = 2.0f / 640.0f;
-	m_stepY = 2.0f / 580.0f;
 
 	Context::InitTextureParams initParams;
 	initParams.handle = m_pTexture->name;
@@ -108,8 +104,7 @@ void TexrectDrawer::destroy()
 
 void TexrectDrawer::_setViewport() const
 {
-	const u32 bufferWidth = m_pBuffer == nullptr ? VI.width : m_pBuffer->m_width;
-	gfxContext.setViewport(0, 0, bufferWidth, VI_GetMaxBufferHeight(bufferWidth));
+	dwnd().getDrawer()._updateViewport(nullptr, 1.0f);
 }
 
 void TexrectDrawer::_setDrawBuffer()
@@ -381,13 +376,14 @@ bool TexrectDrawer::draw()
 	scaleX *= 2.0f;
 	scaleY *= 2.0f;
 
-	const float s0 = (m_ulx + 1.0f) / scaleX / (float)m_pTexture->width + 0.5f / (float)m_pTexture->width;
-	const float t0 = (m_lry + 1.0f) / scaleY / (float)m_pTexture->height;// +0.5f / (float)m_pTexture->height;
-	const float s1 = (m_lrx + 1.0f) / scaleX / (float)m_pTexture->width;
-	const float t1 = (m_uly + 1.0f) / scaleY / (float)m_pTexture->height;
-	const float W = 1.0f;
+	const float s0 = m_ulx / (float)m_pTexture->width; // +0.5f / (float)m_pTexture->width;
+	const float t0 = m_lry / (float)m_pTexture->height;// +0.5f / (float)m_pTexture->height;
+	const float s1 = m_lrx / (float)m_pTexture->width;
+	const float t1 = m_uly / (float)m_pTexture->height;
+	const float W = 1024.0f;
+	const float Z = m_Z * 1024.0f;
 
-	drawer._updateScreenCoordsViewport(m_pBuffer);
+	drawer._updateViewport(m_pBuffer);
 
 	textureCache().activateTexture(0, m_pTexture);
 	// Disable filtering to avoid black outlines
@@ -404,25 +400,25 @@ bool TexrectDrawer::draw()
 
 	rect[0].x = m_ulx;
 	rect[0].y = m_lry;
-	rect[0].z = m_Z;
+	rect[0].z = Z;
 	rect[0].w = W;
 	rect[0].s0 = s0;
 	rect[0].t0 = t0;
 	rect[1].x = m_lrx;
 	rect[1].y = m_lry;
-	rect[1].z = m_Z;
+	rect[1].z = Z;
 	rect[1].w = W;
 	rect[1].s0 = s1;
 	rect[1].t0 = t0;
 	rect[2].x = m_ulx;
 	rect[2].y = m_uly;
-	rect[2].z = m_Z;
+	rect[2].z = Z;
 	rect[2].w = W;
 	rect[2].s0 = s0;
 	rect[2].t0 = t1;
 	rect[3].x = m_lrx;
 	rect[3].y = m_uly;
-	rect[3].z = m_Z;
+	rect[3].z = Z;
 	rect[3].w = W;
 	rect[3].s0 = s1;
 	rect[3].t0 = t1;
@@ -440,15 +436,15 @@ bool TexrectDrawer::draw()
 	gfxContext.bindFramebuffer(bufferTarget::DRAW_FRAMEBUFFER, m_FBO);
 	m_programClear->activate();
 
-	const f32 ulx = std::max(-1.0f, m_ulx - m_stepX);
-	const f32 lrx = std::min( 1.0f, m_lrx + m_stepX);
+	const f32 ulx = std::max(0.0f, m_ulx - 1.0f);
+	const f32 lrx = std::min(640.0f, m_lrx + 1.0f);
 	rect[0].x = ulx;
 	rect[1].x = lrx;
 	rect[2].x = ulx;
 	rect[3].x = lrx;
 
-	const f32 uly = std::max(-1.0f, m_uly - m_stepY);
-	const f32 lry = std::min( 1.0f, m_lry + m_stepY);
+	const f32 uly = std::max(0.0f, m_uly - 1.0f);
+	const f32 lry = std::min(580.0f, m_lry + 1.0f);
 	rect[0].y = uly;
 	rect[1].y = uly;
 	rect[2].y = lry;

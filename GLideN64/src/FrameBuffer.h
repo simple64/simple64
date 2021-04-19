@@ -3,6 +3,7 @@
 
 #include <list>
 #include <vector>
+#include <memory>
 
 #include "gDP.h"
 #include "Textures.h"
@@ -12,6 +13,10 @@ struct gDPTile;
 struct DepthBuffer;
 
 const u32 fingerprint[4] = { 2, 6, 4, 3 };
+
+namespace graphics {
+	class ColorBufferReader;
+}
 
 struct FrameBuffer
 {
@@ -28,6 +33,10 @@ struct FrameBuffer
 	void setDirty();
 	bool isValid(bool _forceCheck) const;
 	bool isAuxiliary() const;
+	CachedTexture * getColorFbTexture();
+	graphics::ObjectHandle getColorFbFbo();
+	const u8 * readPixels(s32 _x0, s32 _y0, u32 _width, u32 _height, u32 _size, bool _sync);
+	void cleanUp();
 
 	u32 m_startAddress = 0;
 	u32 m_endAddress = 0;
@@ -62,6 +71,10 @@ struct FrameBuffer
 	graphics::ObjectHandle m_depthFBO;
 	CachedTexture *m_pDepthTexture = nullptr;
 
+	std::unique_ptr<graphics::ColorBufferReader> m_bufferReader;
+	graphics::ObjectHandle m_ColorBufferFBO;
+	CachedTexture *m_pColorBufferTexture = nullptr;
+
 	DepthBuffer *m_pDepthBuffer = nullptr;
 
 	// multisampling
@@ -94,6 +107,8 @@ private:
 	void _initCopyTexture();
 	CachedTexture * _copyFrameBufferTexture();
 	CachedTexture * _getSubTexture(u32 _t);
+	void _initColorFBTexture(int _width);
+	void _destroyColorFBTexure();
 
 	mutable u32 m_validityChecked = false;
 };
