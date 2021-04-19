@@ -63,9 +63,9 @@ protected:
 	u32 m_resizeWidth = 0;
 	u32 m_resizeHeight = 0;
 	u32 m_maxMsaa = 0;
-	f32 m_scaleX = 0;
-	f32 m_scaleY = 0;
-	f32 m_adjustScale = 0;
+	f32 m_scaleX = 0.0f;
+	f32 m_scaleY = 0.0f;
+	f32 m_adjustScale = 1.0f;
 
 	wchar_t m_strScreenDirectory[PLUGIN_PATH_SIZE];
 

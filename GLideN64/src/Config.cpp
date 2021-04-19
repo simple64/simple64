@@ -64,6 +64,7 @@ void Config::resetToDefaults()
 	graphics2D.correctTexrectCoords = tcDisable;
 	graphics2D.enableNativeResTexrects = NativeResTexrectsMode::ntDisable;
 	graphics2D.bgMode = BGMode::bgStripped;
+	graphics2D.enableTexCoordBounds = 0;
 
 	frameBufferEmulation.enable = 1;
 	frameBufferEmulation.copyDepthToRDRAM = cdSoftwareRender;
@@ -173,6 +174,10 @@ const char* Config::hotkeyIniName(u32 _idx)
 		return "hkHdTexReload";
 	case Config::HotKey::hkHdTexToggle:
 		return "hkHdTexToggle";
+	case Config::HotKey::hkTexCoordBounds:
+		return "hkTexCoordBounds";
+	case Config::HotKey::hkNativeResTexrects:
+		return "hkNativeResTexrects";
 	case Config::HotKey::hkVsync:
 		return "hkVsync";
 	case Config::HotKey::hkFBEmulation:

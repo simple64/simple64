@@ -267,7 +267,7 @@ public:
 			ss << "# define IN in" << std::endl << "# define OUT out" << std::endl;
 			m_part = ss.str();
 		}
-		m_part += "uniform lowp float uClipRatio; \n";
+		m_part += "uniform lowp vec2 uVertexOffset; \n";
 	}
 };
 
@@ -296,6 +296,10 @@ public:
 			"uniform mediump vec2 uCacheScale[2];				\n"
 			"uniform mediump vec2 uCacheOffset[2];				\n"
 			"uniform mediump vec2 uCacheShiftScale[2];			\n"
+			"uniform mediump vec2 uVTrans;						\n"
+			"uniform mediump vec2 uVScale;						\n"
+			"uniform mediump vec2 uAdjustTrans;					\n"
+			"uniform mediump vec2 uAdjustScale;					\n"
 			"uniform lowp ivec2 uCacheFrameBuffer;				\n"
 			"OUT highp vec2 vTexCoord0;							\n"
 			"OUT highp vec2 vTexCoord1;							\n"
@@ -314,8 +318,8 @@ public:
 			"    vec2 texCoordOut = texCoord*uCacheShiftScale[idx];			\n"
 			"    texCoordOut -= uTexOffset[idx];							\n"
 			"    texCoordOut += uCacheOffset[idx];							\n"
-			"    if (uTextureFilterMode != 0 && uCacheFrameBuffer[idx] != 0) \n"
-			"      texCoordOut -= vec2(0.5);								\n"
+			"    if (uTextureFilterMode != 0 && uCacheFrameBuffer[idx] != 0) \n"	/* Workaround for framebuffer textures. */
+			"      texCoordOut -= vec2(0.0,1.0);							\n"		/* They contain garbage at the bottom.  */
 			"    return texCoordOut * uCacheScale[idx];						\n"
 			"}																\n"
 			"																\n"
@@ -330,17 +334,18 @@ public:
 			"  vTexCoord1 = calcTexCoord(texCoord, 1);						\n"
 			"  vLodTexCoord = texCoord;										\n"
 			"  vNumLights = aNumLights;										\n"
-			"  if (aModify != vec4(0.0)) {									\n"
-			"    if ((aModify[0]) != 0.0) {									\n"
-			"      gl_Position.xy = gl_Position.xy * uScreenCoordsScale + vec2(-1.0, 1.0);	\n"
-			"      gl_Position.xy *= gl_Position.w;							\n"
-			"    }															\n"
-			"    if ((aModify[1]) != 0.0)									\n"
-			"      gl_Position.z *= gl_Position.w;							\n"
-			"    if ((aModify[3]) != 0.0)									\n"
-			"      vNumLights = 0.0;										\n"
+			"  if ((aModify[0]) != 0.0) {									\n"
+			"    gl_Position.xy *= gl_Position.w;							\n"
 			"  }															\n"
-			"  gl_Position.y = -gl_Position.y;								\n"
+			"  else {														\n"
+			"    gl_Position.xy = gl_Position.xy * uVScale.xy + uVTrans.xy * gl_Position.ww; \n"
+			"    gl_Position.xy = floor(gl_Position.xy * vec2(4.0)) * vec2(0.25); \n"
+			"    gl_Position.xy = gl_Position.xy * uAdjustScale + gl_Position.ww * uAdjustTrans; \n"
+			"  }															\n"
+			"  if ((aModify[1]) != 0.0)										\n"
+			"    gl_Position.z *= gl_Position.w;							\n"
+			"  if ((aModify[3]) != 0.0)										\n"
+			"    vNumLights = 0.0;											\n"
 			"  if (uFogUsage > 0) {											\n"
 			"    lowp float fp;												\n"
 			"    if (aPosition.z < -aPosition.w && aModify[1] == 0.0)		\n"
@@ -374,6 +379,10 @@ public:
 			"uniform lowp int uFogUsage;									\n"
 			"uniform mediump vec2 uFogScale;								\n"
 			"uniform mediump vec2 uScreenCoordsScale;						\n"
+			"uniform mediump vec2 uVTrans;									\n"
+			"uniform mediump vec2 uVScale;									\n"
+			"uniform mediump vec2 uAdjustTrans;								\n"
+			"uniform mediump vec2 uAdjustScale;								\n"
 			"																\n"
 			"OUT lowp float vNumLights;										\n"
 			"OUT lowp vec4 vShadeColor;										\n"
@@ -390,17 +399,18 @@ public:
 			"  gl_Position = aPosition;										\n"
 			"  vShadeColor = aColor;										\n"
 			"  vNumLights = aNumLights;										\n"
-			"  if (aModify != vec4(0.0)) {									\n"
-			"    if ((aModify[0]) != 0.0) {									\n"
-			"      gl_Position.xy = gl_Position.xy * uScreenCoordsScale + vec2(-1.0, 1.0);	\n"
-			"      gl_Position.xy *= gl_Position.w;							\n"
-			"    }															\n"
-			"    if ((aModify[1]) != 0.0) 									\n"
-			"      gl_Position.z *= gl_Position.w;							\n"
-			"    if ((aModify[3]) != 0.0)									\n"
-			"      vNumLights = 0.0;										\n"
+			"  if ((aModify[0]) != 0.0) {									\n"
+			"    gl_Position.xy *= gl_Position.w;							\n"
 			"  }															\n"
-			"  gl_Position.y = -gl_Position.y;								\n"
+			"  else {														\n"
+			"    gl_Position.xy = gl_Position.xy * uVScale.xy + uVTrans.xy * gl_Position.ww; \n"
+			"    gl_Position.xy = floor(gl_Position.xy * vec2(4.0)) * vec2(0.25); \n"
+			"    gl_Position.xy = gl_Position.xy * uAdjustScale + gl_Position.ww * uAdjustTrans; \n"
+			"  }															\n"
+			"  if ((aModify[1]) != 0.0) 									\n"
+			"    gl_Position.z *= gl_Position.w;							\n"
+			"  if ((aModify[3]) != 0.0)										\n"
+			"    vNumLights = 0.0;											\n"
 			"  if (uFogUsage > 0) {											\n"
 			"    lowp float fp;												\n"
 			"    if (aPosition.z < -aPosition.w && aModify[1] == 0.0)		\n"
@@ -503,7 +513,8 @@ public:
 			m_part = "  gl_Position.z /= 8.0;	\n";
 		}
 		m_part +=
-			" gl_Position.zw *= vec2(uClipRatio);	 \n"
+			" gl_Position.xy += uVertexOffset * vec2(gl_Position.w); \n"
+			" gl_Position.zw *= vec2(1024.0f);		 \n"
 			"} \n"
 			;
 	}
@@ -946,6 +957,10 @@ public:
 			"uniform lowp vec2 uTexMirrorEn1;		\n"
 			"uniform lowp vec2 uTexClampEn0;		\n"
 			"uniform lowp vec2 uTexClampEn1;		\n"
+			"uniform highp vec2 uTexCoordOffset[2];	\n"
+			"uniform lowp int uUseTexCoordBounds;	\n"
+			"uniform highp vec4 uTexCoordBounds0;	\n"
+			"uniform highp vec4 uTexCoordBounds1;	\n"
 			"uniform lowp int uScreenSpaceTriangle;	\n"
 			"highp vec2 texCoord0;					\n"
 			"highp vec2 texCoord1;					\n"
@@ -2575,6 +2590,23 @@ public:
 };
 
 
+class ShaderFragmentCorrectTexCoords : public ShaderPart {
+public:
+	ShaderFragmentCorrectTexCoords() {
+		m_part +=
+			" highp vec2 mTexCoord0 = vTexCoord0 + vec2(0.0001);						\n"
+			" highp vec2 mTexCoord1 = vTexCoord1 + vec2(0.0001);						\n"
+			" mTexCoord0 += uTexCoordOffset[0];											\n"
+			" mTexCoord1 += uTexCoordOffset[1];											\n"
+			" if (uUseTexCoordBounds != 0) {											\n"
+			" mTexCoord0 = clamp(mTexCoord0, uTexCoordBounds0.xy, uTexCoordBounds0.zw); \n"
+			" mTexCoord1 = clamp(mTexCoord1, uTexCoordBounds1.xy, uTexCoordBounds1.zw); \n"
+			" }																			\n"
+			;
+	}
+};
+
+
 class ShaderTextureEngine : public ShaderPart
 {
 public:
@@ -2637,7 +2669,7 @@ public:
 	ShaderFragmentTextureEngineTex0(const opengl::GLInfo _glinfo)
 	{
 		m_part =
-			"textureEngine0(vTexCoord0, tcData0); \n"
+			"textureEngine0(mTexCoord0, tcData0); \n"
 			;
 	}
 };
@@ -2647,7 +2679,7 @@ public:
 	ShaderFragmentTextureEngineTex1(const opengl::GLInfo _glinfo)
 	{
 		m_part =
-			"textureEngine1(vTexCoord1, tcData1); \n"
+			"textureEngine1(mTexCoord1, tcData1); \n"
 			;
 	}
 };
@@ -2891,6 +2923,7 @@ graphics::CombinerProgram * CombinerProgramBuilder::buildCombinerProgram(Combine
 
 
 	if (bUseTextures) {
+		m_fragmentCorrectTexCoords->write(ssShader);
 		if (combinerInputs.usesTile(0))
 		{
 			m_fragmentTextureEngineTex0->write(ssShader);
@@ -3060,6 +3093,7 @@ CombinerProgramBuilder::CombinerProgramBuilder(const opengl::GLInfo & _glinfo, o
 , m_fragmentBlendMux(new ShaderFragmentBlendMux(_glinfo))
 , m_fragmentReadTex0(new ShaderFragmentReadTex0(_glinfo))
 , m_fragmentReadTex1(new ShaderFragmentReadTex1(_glinfo))
+, m_fragmentCorrectTexCoords(new ShaderFragmentCorrectTexCoords())
 , m_fragmentTextureEngineTex0(new ShaderFragmentTextureEngineTex0(_glinfo))
 , m_fragmentTextureEngineTex1(new ShaderFragmentTextureEngineTex1(_glinfo))
 , m_fragmentReadTexCopyMode(new ShaderFragmentReadTexCopyMode(_glinfo))

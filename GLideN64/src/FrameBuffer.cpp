@@ -25,6 +25,7 @@
 
 #include <Graphics/Context.h>
 #include <Graphics/Parameters.h>
+#include <Graphics/ColorBufferReader.h>
 #include "DisplayWindow.h"
 
 using namespace std;
@@ -32,6 +33,8 @@ using namespace graphics;
 
 FrameBuffer::FrameBuffer()
 	: m_copyFBO(ObjectHandle::defaultFramebuffer)
+	, m_ColorBufferFBO(0)
+	, m_pColorBufferTexture(nullptr)
 {
 	m_pTexture = textureCache().addFrameBufferTexture(config.video.multisampling != 0 ?
 		textureTarget::TEXTURE_2D_MULTISAMPLE : textureTarget::TEXTURE_2D);
@@ -54,6 +57,8 @@ FrameBuffer::~FrameBuffer()
 	textureCache().removeFrameBufferTexture(m_pResolveTexture);
 	textureCache().removeFrameBufferTexture(m_pSubTexture);
 	textureCache().removeFrameBufferTexture(m_pFrameBufferCopyTexture);
+
+	_destroyColorFBTexure();
 }
 
 static
@@ -527,6 +532,110 @@ CachedTexture * FrameBuffer::getTextureBG()
 	pTexture->offsetS = gSP.bgImage.imageX;
 	pTexture->offsetT = gSP.bgImage.imageY;
 	return pTexture;
+}
+
+CachedTexture * FrameBuffer::getColorFbTexture()
+{
+	if(m_pColorBufferTexture == nullptr ||
+			m_pColorBufferTexture->width != m_width ||
+			m_pColorBufferTexture->height != VI_GetMaxBufferHeight(m_width))
+	{
+		_destroyColorFBTexure();
+		_initColorFBTexture(m_width);
+	}
+
+	return m_pColorBufferTexture;
+}
+
+graphics::ObjectHandle FrameBuffer::getColorFbFbo()
+{
+	return m_ColorBufferFBO;
+}
+
+const u8 * FrameBuffer::readPixels(s32 _x0, s32 _y0, u32 _width, u32 _height, u32 _size, bool _sync)
+{
+	return m_bufferReader->readPixels(_x0, _y0, _width, _height, _size, _sync);
+}
+
+void FrameBuffer::cleanUp()
+{
+	m_bufferReader->cleanUp();
+}
+
+void FrameBuffer::_initColorFBTexture(int _width)
+{
+	m_ColorBufferFBO = gfxContext.createFramebuffer();
+
+	const FramebufferTextureFormats & fbTexFormat = gfxContext.getFramebufferTextureFormats();
+
+	m_pColorBufferTexture = textureCache().addFrameBufferTexture(Context::EglImage ? textureTarget::TEXTURE_EXTERNAL : textureTarget::TEXTURE_2D);
+	m_pColorBufferTexture->format = G_IM_FMT_RGBA;
+	m_pColorBufferTexture->size = 2;
+	m_pColorBufferTexture->clampS = 1;
+	m_pColorBufferTexture->clampT = 1;
+	m_pColorBufferTexture->frameBufferTexture = CachedTexture::fbOneSample;
+	m_pColorBufferTexture->maskS = 0;
+	m_pColorBufferTexture->maskT = 0;
+	m_pColorBufferTexture->mirrorS = 0;
+	m_pColorBufferTexture->mirrorT = 0;
+	m_pColorBufferTexture->width = _width;
+	m_pColorBufferTexture->height = VI_GetMaxBufferHeight(_width);
+	m_pColorBufferTexture->textureBytes = m_pColorBufferTexture->width * m_pColorBufferTexture->height * fbTexFormat.colorFormatBytes;
+
+	m_bufferReader.reset(gfxContext.createColorBufferReader(m_pColorBufferTexture));
+
+	// Skip this since texture is initialized in the EGL color buffer reader
+	if (!Context::EglImage)
+	{
+		Context::InitTextureParams params;
+		params.handle = m_pColorBufferTexture->name;
+		params.target = textureTarget::TEXTURE_2D;
+		params.width = m_pColorBufferTexture->width;
+		params.height = m_pColorBufferTexture->height;
+		params.internalFormat = fbTexFormat.colorInternalFormat;
+		params.format = fbTexFormat.colorFormat;
+		params.dataType = fbTexFormat.colorType;
+		gfxContext.init2DTexture(params);
+	}
+
+	{
+		Context::TexParameters params;
+		params.handle = m_pColorBufferTexture->name;
+		params.target = Context::EglImage ? textureTarget::TEXTURE_EXTERNAL : textureTarget::TEXTURE_2D;
+		params.textureUnitIndex = textureIndices::Tex[0];
+		params.minFilter = textureParameters::FILTER_LINEAR;
+		params.magFilter = textureParameters::FILTER_LINEAR;
+		gfxContext.setTextureParameters(params);
+	}
+	{
+		Context::FrameBufferRenderTarget bufTarget;
+		bufTarget.bufferHandle = ObjectHandle(m_ColorBufferFBO);
+		bufTarget.bufferTarget = bufferTarget::DRAW_FRAMEBUFFER;
+		bufTarget.attachment = bufferAttachment::COLOR_ATTACHMENT0;
+		bufTarget.textureTarget = Context::EglImageFramebuffer ? textureTarget::TEXTURE_EXTERNAL : textureTarget::TEXTURE_2D;
+		bufTarget.textureHandle = m_pColorBufferTexture->name;
+		gfxContext.addFrameBufferRenderTarget(bufTarget);
+	}
+
+	// check if everything is OK
+	assert(!gfxContext.isFramebufferError());
+
+	gfxContext.bindFramebuffer(graphics::bufferTarget::DRAW_FRAMEBUFFER, graphics::ObjectHandle::defaultFramebuffer);
+}
+
+void FrameBuffer::_destroyColorFBTexure()
+{
+	m_bufferReader.reset();
+
+	if (m_pColorBufferTexture != nullptr) {
+		textureCache().removeFrameBufferTexture(m_pColorBufferTexture);
+		m_pColorBufferTexture = nullptr;
+	}
+
+	if (m_ColorBufferFBO.isNotNull()) {
+		gfxContext.deleteFramebuffer(m_ColorBufferFBO);
+		m_ColorBufferFBO.reset();
+	}
 }
 
 FrameBufferList & FrameBufferList::get()

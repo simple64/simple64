@@ -190,8 +190,7 @@ private:
 	void _ordinaryBlending() const;
 	void _dualSourceBlending() const;
 	void _updateCullFace() const;
-	void _updateViewport() const;
-	void _updateScreenCoordsViewport(const FrameBuffer * _pBuffer = nullptr) const;
+	void _updateViewport(const FrameBuffer * _pBuffer = nullptr, const f32 scale = 0.0f) const;
 	void _updateDepthUpdate() const;
 	void _updateDepthCompare() const;
 	void _updateTextures() const;
