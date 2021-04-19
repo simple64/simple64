@@ -130,6 +130,27 @@ static void checkHotkeys()
 			textureCache().toggleDumpTex();
 	}
 
+	if (osal_is_key_pressed(config.hotkeys.keys[Config::hkTexCoordBounds], 0x0001)) {
+		if (config.graphics2D.enableTexCoordBounds == 0)
+			dwnd().getDrawer().showMessage("Bound texrect texture coordinates on\n", Milliseconds(1000));
+		else
+			dwnd().getDrawer().showMessage("Bound texrect texture coordinates off\n", Milliseconds(1000));
+		config.graphics2D.enableTexCoordBounds = !config.graphics2D.enableTexCoordBounds;
+	}
+
+	if (osal_is_key_pressed(config.hotkeys.keys[Config::hkNativeResTexrects], 0x0001)) {
+		static u32 s_nativeResTexrects = Config::NativeResTexrectsMode::ntOptimized;
+		if (config.graphics2D.enableNativeResTexrects != Config::NativeResTexrectsMode::ntDisable) {
+			s_nativeResTexrects = config.graphics2D.enableNativeResTexrects;
+			config.graphics2D.enableNativeResTexrects = Config::NativeResTexrectsMode::ntDisable;
+		}
+		else
+			config.graphics2D.enableNativeResTexrects = s_nativeResTexrects;
+		if (config.graphics2D.enableNativeResTexrects == Config::NativeResTexrectsMode::ntDisable)
+			dwnd().getDrawer().showMessage("Disable 2D texrects in native resolution\n", Milliseconds(1000));
+		else
+			dwnd().getDrawer().showMessage("Enable 2D texrects in native resolution\n", Milliseconds(1000));
+	}
 
 	if (osal_is_key_pressed(config.hotkeys.keys[Config::hkVsync], 0x0001)) {
 		config.video.verticalSync = !config.video.verticalSync;

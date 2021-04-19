@@ -55,7 +55,7 @@ const u8 * ColorBufferReaderWithEGLImage::_readPixels(const ReadColorBufferParam
 		m_hardwareBuffer.lock(AHARDWAREBUFFER_USAGE_CPU_READ_OFTEN, &gpuData);
 		m_bufferLocked = true;
 		_heightOffset = static_cast<u32>(_params.y0);
-		_stride = m_pTexture->width;
+		_stride = m_hardwareBuffer.getStride();
 	} else {
 		gpuData = m_pixelData.data();
 		glReadPixels(_params.x0, _params.y0,  m_pTexture->width, _params.height, format, type, gpuData);

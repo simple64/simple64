@@ -1502,11 +1502,25 @@
                </layout>
               </item>
               <item>
-               <widget class="QCheckBox" name="halosRemovalCheckBox">
-                <property name="text">
-                 <string>Try to remove colored halos around transparent objects</string>
-                </property>
-               </widget>
+               <layout class="QHBoxLayout" name="horizontalLayout_29">
+                <item>
+                 <widget class="QCheckBox" name="halosRemovalCheckBox">
+                  <property name="text">
+                   <string>Remove colored halos around transparent objects</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="texCoordBoundsCheckBox">
+                  <property name="toolTip">
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Bound texture rectangle texture coordinates to the values they take in native resolutions. It prevents garbage due to fetching out of texture bounds, but can result in hard edges.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
+                  <property name="text">
+                   <string>Enable native-res bounds for texture coordinates</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
               </item>
              </layout>
             </item>

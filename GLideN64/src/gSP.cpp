@@ -440,7 +440,7 @@ void gSPLookAt( u32 _l, u32 _n )
 static
 void gSPUpdateLightVectors()
 {
-	InverseTransformVectorNormalizeN(&gSP.lights.xyz[0], &gSP.lights.i_xyz[0], 
+	InverseTransformVectorNormalizeN(&gSP.lights.xyz[0], &gSP.lights.i_xyz[0],
 			gSP.matrix.modelView[gSP.matrix.modelViewi], gSP.numLights);
 	gSP.changed ^= CHANGED_LIGHT;
 	gSP.changed |= CHANGED_HW_LIGHT;
@@ -763,11 +763,13 @@ void gSPBillboardVertex(u32 v, SPVertex * spVtx)
 template <u32 VNUM>
 void gSPClipVertex(u32 v, SPVertex * spVtx)
 {
+	const f32 scale = dwnd().getAdjustScale();
 	for (u32 j = 0; j < VNUM; ++j) {
 		SPVertex & vtx = spVtx[v+j];
 		vtx.clip = 0;
-		if (vtx.x > +vtx.w) vtx.clip |= CLIP_POSX;
-		if (vtx.x < -vtx.w) vtx.clip |= CLIP_NEGX;
+		const f32 scaledX = vtx.x * scale;
+		if (scaledX > +vtx.w) vtx.clip |= CLIP_POSX;
+		if (scaledX < -vtx.w) vtx.clip |= CLIP_NEGX;
 		if (vtx.y > +vtx.w) vtx.clip |= CLIP_POSY;
 		if (vtx.y < -vtx.w) vtx.clip |= CLIP_NEGY;
 		if (vtx.w < 0.01f) vtx.clip |= CLIP_W;
@@ -816,28 +818,6 @@ void gSPProcessVertex(u32 v, SPVertex * spVtx)
 	}
 
 	gSPTransformVertex<VNUM>(v, spVtx, gSP.matrix.combined );
-
-	if (dwnd().isAdjustScreen() && (gDP.colorImage.width > VI.width * 98 / 100)) {
-		const f32 adjustScale = dwnd().getAdjustScale();
-		for(int i = 0; i < VNUM; ++i) {
-			SPVertex & vtx = spVtx[v+i];
-			vtx.x *= adjustScale;
-			if (gSP.matrix.projection[3][2] == -1.f)
-				vtx.w *= adjustScale;
-		}
-	}
-	if (gSP.viewport.vscale[0] < 0) {
-		for(int i = 0; i < VNUM; ++i) {
-			SPVertex & vtx = spVtx[v+i];
-			vtx.x = -vtx.x;
-		}
-	}
-	if (gSP.viewport.vscale[1] < 0) {
-		for(int i = 0; i < VNUM; ++i) {
-			SPVertex & vtx = spVtx[v+i];
-			vtx.y = -vtx.y;
-		}
-	}
 
 	if (gSP.matrix.billboard)
 		gSPBillboardVertex<VNUM>(v, spVtx);
@@ -1670,32 +1650,24 @@ void gSPModifyVertex( u32 _vtx, u32 _where, u32 _val )
 		case G_MWO_POINT_XYSCREEN:
 			vtx0.x = _FIXED2FLOAT((s16)_SHIFTR(_val, 16, 16), 2);
 			vtx0.y = _FIXED2FLOAT((s16)_SHIFTR(_val, 0, 16), 2);
-			DebugMsg(DEBUG_NORMAL, "gSPModifyVertex: XY(%02f, %02f);\n", vtx0.x, vtx0.y);
+			vtx0.modify |= MODIFY_XY;
+			vtx0.clip &= ~(CLIP_POSX | CLIP_NEGX | CLIP_POSY | CLIP_NEGY);
 			if ((config.generalEmulation.hacks & hack_ModifyVertexXyInShader) == 0) {
-				vtx0.x = (vtx0.x - gSP.viewport.vtrans[0]) / gSP.viewport.vscale[0];
-				if (gSP.viewport.vscale[0] < 0)
-					vtx0.x = -vtx0.x;
-				vtx0.x *= vtx0.w;
-
 				if (dwnd().isAdjustScreen()) {
 					const f32 adjustScale = dwnd().getAdjustScale();
+					const f32 adjustOffset = static_cast<f32>(VI.width) * (1.0f - adjustScale) / 2.0f;
 					vtx0.x *= adjustScale;
+					vtx0.x += adjustOffset;
 					if (gSP.matrix.projection[3][2] == -1.f)
 						vtx0.w *= adjustScale;
 				}
-
-				vtx0.y = -(vtx0.y - gSP.viewport.vtrans[1]) / gSP.viewport.vscale[1];
-				if (gSP.viewport.vscale[1] < 0)
-					vtx0.y = -vtx0.y;
-				vtx0.y *= vtx0.w;
 			} else {
-				vtx0.modify |= MODIFY_XY;
 				if (vtx0.w == 0.0f || gDP.otherMode.depthSource == G_ZS_PRIM) {
 					vtx0.w = 1.0f;
 					vtx0.clip &= ~(CLIP_W);
 				}
 			}
-			vtx0.clip &= ~(CLIP_POSX | CLIP_NEGX | CLIP_POSY | CLIP_NEGY);
+			DebugMsg(DEBUG_NORMAL, "gSPModifyVertex: XY(%02f, %02f);\n", vtx0.x, vtx0.y);
 		break;
 		case G_MWO_POINT_ZSCREEN:
 		{

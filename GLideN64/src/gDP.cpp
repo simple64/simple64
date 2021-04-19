@@ -866,6 +866,15 @@ void gDPTextureRectangle(f32 ulx, f32 uly, f32 lrx, f32 lry, s32 tile, s16 s, s1
 
 	gDP.rectColor = gDPInfo::Color();
 
+	gDP.lastTexRectInfo.ulx = ulx;
+	gDP.lastTexRectInfo.lrx = lrx;
+	gDP.lastTexRectInfo.uly = uly;
+	gDP.lastTexRectInfo.lry = lry;
+	gDP.lastTexRectInfo.s = !flip ? s : t;
+	gDP.lastTexRectInfo.t = !flip ? t : s;
+	gDP.lastTexRectInfo.dsdx = !flip ? dsdx : dtdy;
+	gDP.lastTexRectInfo.dtdy = !flip ? dtdy : dsdx;
+
 	GraphicsDrawer & drawer = dwnd().getDrawer();
 	GraphicsDrawer::TexturedRectParams params(ulx, uly, lrx, lry, dsdx, dtdy, s, t,
 		flip, false, true, frameBufferList().getCurrent());

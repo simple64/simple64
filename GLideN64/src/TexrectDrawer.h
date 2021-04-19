@@ -34,8 +34,6 @@ private:
 	f32 m_ulx, m_lrx, m_uly, m_lry, m_Z;
 	s32 m_ulx_i, m_uly_i, m_lry_i;
 	f32 m_max_lrx, m_max_lry;
-	f32 m_stepY;
-	f32 m_stepX;
 	graphics::ObjectHandle m_FBO;
 	gDPScissor m_scissor;
 	CachedTexture * m_pTexture;

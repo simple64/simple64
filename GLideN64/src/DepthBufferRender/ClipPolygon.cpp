@@ -28,6 +28,7 @@
 #include "gSP.h"
 #include "Combiner.h"
 #include "ClipPolygon.h"
+#include "DisplayWindow.h"
 
 /*
  *      vbp is a pointer to a vertex array. The first 3 vertices in that
@@ -289,6 +290,7 @@ void clipInHomogeneousSpace(SPVertex * _pVertices, std::vector<SPVertex> & _vRes
 	const bool usesColor = pCurrCmb->usesShade();
 	const bool usesTexture = pCurrCmb->usesTexture();
 	const float wScale = static_cast<float>(gSP.clipRatio);
+	const float xScale = dwnd().getAdjustScale();
 
 	auto clipVertex = [usesColor, usesTexture](SPVertex const* src, SPVertex * dst, float t)
 	{
@@ -363,10 +365,10 @@ void clipInHomogeneousSpace(SPVertex * _pVertices, std::vector<SPVertex> & _vRes
 
 			switch (_clipPlane) {
 			case 1:
-				visible = -pVertex->w * wScale <= pVertex->x;
+				visible = -pVertex->w * wScale <= pVertex->x * xScale;
 				break;
 			case 2:
-				visible = pVertex->x <= pVertex->w * wScale;
+				visible = pVertex->x * xScale <= pVertex->w * wScale;
 				break;
 			case 3:
 				visible = -pVertex->w * wScale <= pVertex->y;
@@ -402,36 +404,49 @@ void clipInHomogeneousSpace(SPVertex * _pVertices, std::vector<SPVertex> & _vRes
 			SPVertex *Vertex3 = _pVertices + fifocp;
 
 			float t1, t2;
+			const float scaledW1 = Vertex1->w * wScale;
+			const float scaledW2 = Vertex2->w * wScale;
+			const float scaledW3 = Vertex3->w * wScale;
 
 			switch (_clipPlane) {
 			case 1:
-				t1 = (Vertex1->x + Vertex1->w * wScale) / (Vertex1->x - Vertex3->x + Vertex1->w * wScale - Vertex3->w * wScale);
-				t2 = (Vertex2->x + Vertex2->w * wScale) / (Vertex2->x - Vertex3->x + Vertex2->w * wScale - Vertex3->w * wScale);
+			{
+				const float scaledX1 = Vertex1->x * xScale;
+				const float scaledX2 = Vertex2->x * xScale;
+				const float scaledX3 = Vertex3->x * xScale;
+				t1 = (scaledX1 + scaledW1) / (scaledX1 - scaledX3 + scaledW1 - scaledW3);
+				t2 = (scaledX2 + scaledW2) / (scaledX2 - scaledX3 + scaledW2 - scaledW3);
+			}
 				break;
 
 			case 2:
-				t1 = (Vertex1->x - Vertex1->w * wScale) / (Vertex1->x - Vertex3->x - Vertex1->w * wScale + Vertex3->w * wScale);
-				t2 = (Vertex2->x - Vertex2->w * wScale) / (Vertex2->x - Vertex3->x - Vertex2->w * wScale + Vertex3->w * wScale);
+			{
+				const float scaledX1 = Vertex1->x * xScale;
+				const float scaledX2 = Vertex2->x * xScale;
+				const float scaledX3 = Vertex3->x * xScale;
+				t1 = (scaledX1 - scaledW1) / (scaledX1 - scaledX3 - scaledW1 + scaledW3);
+				t2 = (scaledX2 - scaledW2) / (scaledX2 - scaledX3 - scaledW2 + scaledW3);
+			}
 				break;
 
 			case 3:
-				t1 = (Vertex1->y + Vertex1->w * wScale) / (Vertex1->y - Vertex3->y + Vertex1->w * wScale - Vertex3->w * wScale);
-				t2 = (Vertex2->y + Vertex2->w * wScale) / (Vertex2->y - Vertex3->y + Vertex2->w * wScale - Vertex3->w * wScale);
+				t1 = (Vertex1->y + scaledW1) / (Vertex1->y - Vertex3->y + scaledW1 - scaledW3);
+				t2 = (Vertex2->y + scaledW2) / (Vertex2->y - Vertex3->y + scaledW2 - scaledW3);
 				break;
 
 			case 4:
-				t1 = (Vertex1->y - Vertex1->w * wScale) / (Vertex1->y - Vertex3->y - Vertex1->w * wScale + Vertex3->w * wScale);
-				t2 = (Vertex2->y - Vertex2->w * wScale) / (Vertex2->y - Vertex3->y - Vertex2->w * wScale + Vertex3->w * wScale);
+				t1 = (Vertex1->y - scaledW1) / (Vertex1->y - Vertex3->y - scaledW1 + scaledW3);
+				t2 = (Vertex2->y - scaledW2) / (Vertex2->y - Vertex3->y - scaledW2 + scaledW3);
 				break;
 
 			case 5:
-				t1 = (Vertex1->z + Vertex1->w * wScale) / (Vertex1->z - Vertex3->z + Vertex1->w * wScale - Vertex3->w * wScale);
-				t2 = (Vertex2->z + Vertex2->w * wScale) / (Vertex2->z - Vertex3->z + Vertex2->w * wScale - Vertex3->w * wScale);
+				t1 = (Vertex1->z + scaledW1) / (Vertex1->z - Vertex3->z + scaledW1 - scaledW3);
+				t2 = (Vertex2->z + scaledW2) / (Vertex2->z - Vertex3->z + scaledW2 - scaledW3);
 				break;
 
 			case 6:
-				t1 = (Vertex1->z - Vertex1->w * wScale) / (Vertex1->z - Vertex3->z - Vertex1->w * wScale + Vertex3->w * wScale);
-				t2 = (Vertex2->z - Vertex2->w * wScale) / (Vertex2->z - Vertex3->z - Vertex2->w * wScale + Vertex3->w * wScale);
+				t1 = (Vertex1->z - scaledW1) / (Vertex1->z - Vertex3->z - scaledW1 + scaledW3);
+				t2 = (Vertex2->z - scaledW2) / (Vertex2->z - Vertex3->z - scaledW2 + scaledW3);
 				break;
 			}
 
@@ -453,36 +468,49 @@ void clipInHomogeneousSpace(SPVertex * _pVertices, std::vector<SPVertex> & _vRes
 			SPVertex *NewVertex3 = NewVertices + fbcp;
 
 			float t1, t2;
+			const float scaledW1 = Vertex1->w * wScale;
+			const float scaledW2 = Vertex2->w * wScale;
+			const float scaledW3 = Vertex3->w * wScale;
 
 			switch (_clipPlane) {
 			case 1:
-				t1 = (Vertex3->x + Vertex3->w * wScale) / (Vertex3->x - Vertex1->x + Vertex3->w * wScale - Vertex1->w * wScale);
-				t2 = (Vertex3->x + Vertex3->w * wScale) / (Vertex3->x - Vertex2->x + Vertex3->w * wScale - Vertex2->w * wScale);
+			{
+				const float scaledX1 = Vertex1->x * xScale;
+				const float scaledX2 = Vertex2->x * xScale;
+				const float scaledX3 = Vertex3->x * xScale;
+				t1 = (scaledX3 + scaledW3) / (scaledX3 - scaledX1 + scaledW3 - scaledW1);
+				t2 = (scaledX3 + scaledW3) / (scaledX3 - scaledX2 + scaledW3 - scaledW2);
+			}
 				break;
 
 			case 2:
-				t1 = (Vertex3->x - Vertex3->w * wScale) / (Vertex3->x - Vertex1->x - Vertex3->w * wScale + Vertex1->w * wScale);
-				t2 = (Vertex3->x - Vertex3->w * wScale) / (Vertex3->x - Vertex2->x - Vertex3->w * wScale + Vertex2->w * wScale);
+			{
+				const float scaledX1 = Vertex1->x * xScale;
+				const float scaledX2 = Vertex2->x * xScale;
+				const float scaledX3 = Vertex3->x * xScale;
+				t1 = (scaledX3 - scaledW3) / (scaledX3 - scaledX1 - scaledW3 + scaledW1);
+				t2 = (scaledX3 - scaledW3) / (scaledX3 - scaledX2 - scaledW3 + scaledW2);
+			}
 				break;
 
 			case 3:
-				t1 = (Vertex3->y + Vertex3->w * wScale) / (Vertex3->y - Vertex1->y + Vertex3->w * wScale - Vertex1->w * wScale);
-				t2 = (Vertex3->y + Vertex3->w * wScale) / (Vertex3->y - Vertex2->y + Vertex3->w * wScale - Vertex2->w * wScale);
+				t1 = (Vertex3->y + scaledW3) / (Vertex3->y - Vertex1->y + scaledW3 - scaledW1);
+				t2 = (Vertex3->y + scaledW3) / (Vertex3->y - Vertex2->y + scaledW3 - scaledW2);
 				break;
 
 			case 4:
-				t1 = (Vertex3->y - Vertex3->w * wScale) / (Vertex3->y - Vertex1->y - Vertex3->w * wScale + Vertex1->w * wScale);
-				t2 = (Vertex3->y - Vertex3->w * wScale) / (Vertex3->y - Vertex2->y - Vertex3->w * wScale + Vertex2->w * wScale);
+				t1 = (Vertex3->y - scaledW3) / (Vertex3->y - Vertex1->y - scaledW3 + scaledW1);
+				t2 = (Vertex3->y - scaledW3) / (Vertex3->y - Vertex2->y - scaledW3 + scaledW2);
 				break;
 
 			case 5:
-				t1 = (Vertex3->z + Vertex3->w * wScale) / (Vertex3->z - Vertex1->z + Vertex3->w * wScale - Vertex1->w * wScale);
-				t2 = (Vertex3->z + Vertex3->w * wScale) / (Vertex3->z - Vertex2->z + Vertex3->w * wScale - Vertex2->w * wScale);
+				t1 = (Vertex3->z + scaledW3) / (Vertex3->z - Vertex1->z + scaledW3 - scaledW1);
+				t2 = (Vertex3->z + scaledW3) / (Vertex3->z - Vertex2->z + scaledW3 - scaledW2);
 				break;
 
 			case 6:
-				t1 = (Vertex3->z - Vertex3->w * wScale) / (Vertex3->z - Vertex1->z - Vertex3->w * wScale + Vertex1->w * wScale);
-				t2 = (Vertex3->z - Vertex3->w * wScale) / (Vertex3->z - Vertex2->z - Vertex3->w * wScale + Vertex2->w * wScale);
+				t1 = (Vertex3->z - scaledW3) / (Vertex3->z - Vertex1->z - scaledW3 + scaledW1);
+				t2 = (Vertex3->z - scaledW3) / (Vertex3->z - Vertex2->z - scaledW3 + scaledW2);
 				break;
 			}
 

@@ -74,6 +74,7 @@ namespace glsl {
 		ShaderPartPtr m_fragmentBlendMux;
 		ShaderPartPtr m_fragmentReadTex0;
 		ShaderPartPtr m_fragmentReadTex1;
+		ShaderPartPtr m_fragmentCorrectTexCoords;
 		ShaderPartPtr m_fragmentTextureEngineTex0;
 		ShaderPartPtr m_fragmentTextureEngineTex1;
 		ShaderPartPtr m_fragmentReadTexCopyMode;
