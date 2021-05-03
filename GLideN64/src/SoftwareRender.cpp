@@ -37,7 +37,7 @@ bool calcScreenCoordinates(const SPVertex** _vsrc, vertexclip * _vclip, u32 _num
 	const float x2 = _vclip[2].x - _vclip[1].x;
 	const float y2 = _vclip[2].y - _vclip[1].y;
 
-	_clockwise = (gSP.viewport.vscale[0] > 0.0f) == ((x1 * y2 - y1 * x2) * ySign < 0.0f);
+	_clockwise = ((x1 * y2 - y1 * x2) * ySign < 0.0f);
 
 	const u32 cullMode = (gSP.geometryMode & G_CULL_BOTH);
 	if (cullMode == G_CULL_BOTH && GBI.isCullBoth()) {
@@ -102,7 +102,7 @@ bool calcScreenCoordinates(const SPVertex * _vsrc, vertexclip * _vclip, size_t _
 	const float x2 = _vclip[2].x - _vclip[1].x;
 	const float y2 = _vclip[2].y - _vclip[1].y;
 
-	_clockwise = (gSP.viewport.vscale[0] > 0.0f) == ((x1 * y2 - y1 * x2) * ySign < 0.0f);
+	_clockwise = ((x1 * y2 - y1 * x2) * ySign < 0.0f);
 
 	const u32 cullMode = (gSP.geometryMode & G_CULL_BOTH);
 	if (cullMode == G_CULL_BOTH && GBI.isCullBoth()) {
@@ -424,7 +424,7 @@ f32 renderAndDrawTriangles(const SPVertex *_pVertices,
 			}
 
 			std::vector<vertexclip> vclip(numVertex);
-			const bool cull = ((orbits & CLIP_W) == 0) && (gSP.viewport.vscale[0] > 0.0f);
+			const bool cull = ((orbits & CLIP_W) == 0);
 			bool clockwise = true;
 			if (!calcScreenCoordinates(vResult.data() + prevNumVtx, vclip.data(), numVertex, cull, clockwise)) {
 				vResult.resize(prevNumVtx);

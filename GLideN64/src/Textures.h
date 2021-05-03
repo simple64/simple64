@@ -5,6 +5,7 @@
 #include <list>
 #include <map>
 #include <unordered_map>
+#include <stddef.h> // for size_t
 
 #include "CRC.h"
 #include "convert.h"

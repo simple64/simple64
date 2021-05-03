@@ -22,8 +22,6 @@ using namespace graphics;
 
 ColorBufferToRDRAM::ColorBufferToRDRAM()
 	: m_pCurFrameBuffer(nullptr)
-	, m_frameCount(-1)
-	, m_startAddress(-1)
 {
 }
 
@@ -57,9 +55,6 @@ bool ColorBufferToRDRAM::_prepareCopy(u32& _startAddress)
 	if (_startAddress < pBuffer->m_startAddress)
 		_startAddress = pBuffer->m_startAddress;
 
-	if (m_frameCount == curFrame && pBuffer == m_pCurFrameBuffer && m_startAddress != _startAddress)
-		return true;
-
 	const u32 numPixels = pBuffer->m_width * pBuffer->m_height;
 	if (numPixels == 0)
 		return false;
@@ -87,46 +82,48 @@ bool ColorBufferToRDRAM::_prepareCopy(u32& _startAddress)
 		readBuffer = m_pCurFrameBuffer->m_FBO;
 	}
 
-	u32 x0 = 0;
-	u32 width;
-	if (config.frameBufferEmulation.nativeResFactor == 0) {
-		const u32 screenWidth = wnd.getWidth();
-		width = screenWidth;
-		if (wnd.isAdjustScreen()) {
-			width = static_cast<u32>(screenWidth*wnd.getAdjustScale());
-			x0 = (screenWidth - width) / 2;
+	if (!m_pCurFrameBuffer->isAuxiliary()) {
+		u32 x0 = 0;
+		u32 width;
+		if (config.frameBufferEmulation.nativeResFactor == 0 && m_pCurFrameBuffer->m_scale != 1.0f) {
+			const u32 screenWidth = wnd.getWidth();
+			width = screenWidth;
+			if (wnd.isAdjustScreen()) {
+				width = static_cast<u32>(screenWidth*wnd.getAdjustScale());
+				x0 = (screenWidth - width) / 2;
+			}
+		} else {
+			width = m_pCurFrameBuffer->m_pTexture->width;
 		}
+		u32 height = (u32)(bufferHeight * m_pCurFrameBuffer->m_scale);
+
+		CachedTexture * pInputTexture = m_pCurFrameBuffer->m_pTexture;
+		GraphicsDrawer::BlitOrCopyRectParams blitParams;
+		blitParams.srcX0 = x0;
+		blitParams.srcY0 = 0;
+		blitParams.srcX1 = x0 + width;
+		blitParams.srcY1 = height;
+		blitParams.srcWidth = pInputTexture->width;
+		blitParams.srcHeight = pInputTexture->height;
+		blitParams.dstX0 = 0;
+		blitParams.dstY0 = 0;
+		blitParams.dstX1 = m_pCurFrameBuffer->m_width;
+		blitParams.dstY1 = bufferHeight;
+		blitParams.dstWidth = colorBufferTexture->width;
+		blitParams.dstHeight = colorBufferTexture->height;
+		blitParams.filter = m_pCurFrameBuffer->m_scale == 1.0f ? textureParameters::FILTER_NEAREST : textureParameters::FILTER_LINEAR;
+		blitParams.tex[0] = pInputTexture;
+		blitParams.combiner = CombinerInfo::get().getTexrectDownscaleCopyProgram();
+		blitParams.readBuffer = readBuffer;
+		blitParams.drawBuffer = pBuffer->getColorFbFbo();
+		blitParams.mask = blitMask::COLOR_BUFFER;
+		wnd.getDrawer().blitOrCopyTexturedRect(blitParams);
+
+		gfxContext.bindFramebuffer(bufferTarget::READ_FRAMEBUFFER, pBuffer->getColorFbFbo());
 	} else {
-		width = m_pCurFrameBuffer->m_pTexture->width;
+		gfxContext.bindFramebuffer(bufferTarget::READ_FRAMEBUFFER, readBuffer);
 	}
-	u32 height = (u32)(bufferHeight * m_pCurFrameBuffer->m_scale);
 
-	CachedTexture * pInputTexture = m_pCurFrameBuffer->m_pTexture;
-	GraphicsDrawer::BlitOrCopyRectParams blitParams;
-	blitParams.srcX0 = x0;
-	blitParams.srcY0 = 0;
-	blitParams.srcX1 = x0 + width;
-	blitParams.srcY1 = height;
-	blitParams.srcWidth = pInputTexture->width;
-	blitParams.srcHeight = pInputTexture->height;
-	blitParams.dstX0 = 0;
-	blitParams.dstY0 = 0;
-	blitParams.dstX1 = m_pCurFrameBuffer->m_width;
-	blitParams.dstY1 = bufferHeight;
-	blitParams.dstWidth = colorBufferTexture->width;
-	blitParams.dstHeight = colorBufferTexture->height;
-	blitParams.filter = m_pCurFrameBuffer->m_scale == 1.0f ? textureParameters::FILTER_NEAREST : textureParameters::FILTER_LINEAR;
-	blitParams.tex[0] = pInputTexture;
-	blitParams.combiner = CombinerInfo::get().getTexrectDownscaleCopyProgram();
-	blitParams.readBuffer = readBuffer;
-	blitParams.drawBuffer = pBuffer->getColorFbFbo();
-	blitParams.mask = blitMask::COLOR_BUFFER;
-	wnd.getDrawer().blitOrCopyTexturedRect(blitParams);
-
-	gfxContext.bindFramebuffer(bufferTarget::READ_FRAMEBUFFER, pBuffer->getColorFbFbo());
-
-	m_frameCount = curFrame;
-	m_startAddress = _startAddress;
 	return true;
 }
 
