@@ -514,7 +514,7 @@ public:
 		}
 		m_part +=
 			" gl_Position.xy += uVertexOffset * vec2(gl_Position.w); \n"
-			" gl_Position.zw *= vec2(1024.0f);		 \n"
+			" gl_Position.zw *= vec2(1024.0);		 \n"
 			"} \n"
 			;
 	}

@@ -28,8 +28,8 @@ void Config::resetToDefaults()
 	video.maxMultiSampling = 0;
 	video.verticalSync = 0;
 
-#if defined(OS_MAC_OS_X)
-	video.threadedVideo = 0;
+#if defined(OS_ANDROID)
+	video.threadedVideo = 1;
 #else
 	video.threadedVideo = 0;
 #endif

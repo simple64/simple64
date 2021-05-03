@@ -244,18 +244,20 @@ public:
 			float scale[2] = { 0.0f, 0.0f };
 			if (config.graphics2D.enableNativeResTexrects != 0) {
 				scale[0] = scale[1] = 1.0f;
-			} else if (config.frameBufferEmulation.nativeResFactor != 0) {
-				scale[0] = scale[1] = static_cast<float>(config.frameBufferEmulation.nativeResFactor);
 			} else {
-				scale[0] = dwnd().getScaleX();
-				scale[1] = dwnd().getScaleY();
+				scale[0] = scale[1] = static_cast<float>(config.frameBufferEmulation.nativeResFactor);
 			}
 
 			for (int t = 0; t < 2; t++) {
 				const CachedTexture* _pTexture = textureCache().current[t];
 				if (_pTexture != nullptr) {
-					texCoordOffset[t][0] = (gDP.lastTexRectInfo.dsdx >= 0.0f ? -0.5f / scale[0] : -1.0f + 0.5f / scale[0]) * gDP.lastTexRectInfo.dsdx * _pTexture->hdRatioS;
-					texCoordOffset[t][1] = (gDP.lastTexRectInfo.dtdy >= 0.0f ? -0.5f / scale[1] : -1.0f + 0.5f / scale[1]) * gDP.lastTexRectInfo.dtdy * _pTexture->hdRatioT;
+					if (config.frameBufferEmulation.nativeResFactor != 0) {
+						texCoordOffset[t][0] = (gDP.lastTexRectInfo.dsdx >= 0.0f ? -0.5f / scale[0] : -1.0f + 0.5f / scale[0]) * gDP.lastTexRectInfo.dsdx * _pTexture->hdRatioS;
+						texCoordOffset[t][1] = (gDP.lastTexRectInfo.dtdy >= 0.0f ? -0.5f / scale[1] : -1.0f + 0.5f / scale[1]) * gDP.lastTexRectInfo.dtdy * _pTexture->hdRatioT;
+					} else {
+						texCoordOffset[t][0] = (gDP.lastTexRectInfo.dsdx >= 0.0f ? 0.0f : -1.0f) * gDP.lastTexRectInfo.dsdx * _pTexture->hdRatioS;
+						texCoordOffset[t][1] = (gDP.lastTexRectInfo.dtdy >= 0.0f ? 0.0f : -1.0f) * gDP.lastTexRectInfo.dtdy * _pTexture->hdRatioT;
+					}
 				}
 			}
 		}

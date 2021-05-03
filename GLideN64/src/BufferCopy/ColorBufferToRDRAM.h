@@ -46,8 +46,6 @@ private:
 	static u32 _RGBAtoRGBA32(u32 _c, u32 x, u32 y);
 
 	FrameBuffer * m_pCurFrameBuffer;
-	u32 m_frameCount;
-	u32 m_startAddress;
 
 	static u32 m_blueNoiseIdx;
 };
