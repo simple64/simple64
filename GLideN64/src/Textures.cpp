@@ -544,8 +544,11 @@ void TextureCache::removeFrameBufferTexture(CachedTexture * _pTexture)
 		return;
 	FBTextures::const_iterator iter = m_fbTextures.find(u32(_pTexture->name));
 	assert(iter != m_fbTextures.cend());
-	gfxContext.deleteTexture(ObjectHandle(iter->second.name));
-	m_fbTextures.erase(iter);
+
+	if (iter != m_fbTextures.cend()) {
+		gfxContext.deleteTexture(ObjectHandle(iter->second.name));
+		m_fbTextures.erase(iter);
+	}
 }
 
 CachedTexture * TextureCache::addFrameBufferTexture(graphics::Parameter _target)

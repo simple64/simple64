@@ -20,6 +20,10 @@ ColorBufferReaderWithEGLImage::ColorBufferReaderWithEGLImage(CachedTexture *_pTe
 ColorBufferReaderWithEGLImage::~ColorBufferReaderWithEGLImage()
 {
 	m_hardwareBuffer.release();
+
+	if (m_image != nullptr) {
+		eglDestroyImageKHR(eglGetDisplay(EGL_DEFAULT_DISPLAY), m_image);
+	}
 }
 
 void ColorBufferReaderWithEGLImage::_initBuffers()
@@ -36,9 +40,11 @@ void ColorBufferReaderWithEGLImage::_initBuffers()
 		m_image = eglCreateImageKHR(eglGetDisplay(EGL_DEFAULT_DISPLAY), EGL_NO_CONTEXT,
 			EGL_NATIVE_BUFFER_ANDROID, m_hardwareBuffer.getClientBuffer(), eglImgAttrs);
 
-		m_bindTexture->bind(graphics::Parameter(0), textureTarget::TEXTURE_EXTERNAL, m_pTexture->name);
-		glEGLImageTargetTexture2DOES(GLenum(textureTarget::TEXTURE_EXTERNAL), m_image);
-		m_bindTexture->bind(graphics::Parameter(0), textureTarget::TEXTURE_EXTERNAL, ObjectHandle());
+		if (m_image != nullptr) {
+			m_bindTexture->bind(graphics::Parameter(0), textureTarget::TEXTURE_EXTERNAL, m_pTexture->name);
+			glEGLImageTargetTexture2DOES(GLenum(textureTarget::TEXTURE_EXTERNAL), m_image);
+			m_bindTexture->bind(graphics::Parameter(0), textureTarget::TEXTURE_EXTERNAL, ObjectHandle());
+		}
 	}
 }
 
