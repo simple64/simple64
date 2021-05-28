@@ -144,7 +144,7 @@ void MainWindow::updateDD(Ui::MainWindow *ui)
     DD->addAction(fileSelect);
     connect(fileSelect, &QAction::triggered, [=](){
         QString filename = QFileDialog::getOpenFileName(this,
-            tr("64DD IPL ROM"), NULL, tr("64DD ROM File (*.n64)"));
+            tr("64DD IPL ROM"), NULL, tr("64DD IPL ROM File (*.zip, *.7z, *.?64, *.rom, *.usa, *.jap, *.pal, *.bin)"));
         if (!filename.isNull()) {
             settings->setValue("DD_ROM", filename);
             QString current = filename;
@@ -158,7 +158,7 @@ void MainWindow::updateDD(Ui::MainWindow *ui)
     DD->addAction(fileSelect2);
     connect(fileSelect2, &QAction::triggered,[=](){
         QString filename = QFileDialog::getOpenFileName(this,
-            tr("64DD Disk File"), NULL, tr("64DD Disk File (*.ndd)"));
+            tr("64DD Disk File"), NULL, tr("64DD Disk File (*.ndd, *.d64)"));
         if (!filename.isNull()) {
             settings->setValue("DD_DISK", filename);
             QString current = filename;
@@ -871,7 +871,7 @@ void MainWindow::openROM(QString filename, QString netplay_ip, int netplay_port,
 void MainWindow::on_actionOpen_ROM_triggered()
 {
     QString filename = QFileDialog::getOpenFileName(this,
-        tr("Open ROM"), settings->value("ROMdir").toString(), tr("ROM Files (*.n64 *.N64 *.z64 *.Z64 *.v64 *.V64 *.zip *.ZIP *.7z)"));
+        tr("Open ROM"), settings->value("ROMdir").toString(), tr("N64 ROM Files (*.zip, *.7z, *.?64, *.rom, *.usa, *.jap, *.pal, *.bin)"));
     if (!filename.isNull()) {
         QFileInfo info(filename);
         settings->setValue("ROMdir", info.absoluteDir().absolutePath());
