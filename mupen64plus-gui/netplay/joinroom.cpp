@@ -160,7 +160,7 @@ void JoinRoom::joinGame()
     }
 
     filename = QFileDialog::getOpenFileName(this,
-    tr("Open ROM"), w->getSettings()->value("ROMdir").toString(), tr("ROM Files (*.n64 *.N64 *.z64 *.Z64 *.v64 *.V64 *.zip *.ZIP *.7z)"));
+    tr("Open ROM"), w->getSettings()->value("ROMdir").toString(), tr("N64 ROM Files (*.zip, *.7z, *.?64, *.rom, *.usa, *.jap, *.pal, *.bin)"));
     if (!filename.isNull())
     {
         if (loadROM(filename.toStdString()) == M64ERR_SUCCESS)
