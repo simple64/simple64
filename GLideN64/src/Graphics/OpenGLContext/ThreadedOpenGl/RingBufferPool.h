@@ -55,7 +55,7 @@ private:
 	std::atomic<bool> m_full;
 	std::condition_variable_any m_condition;
 	size_t m_maxBufferPoolSize;
-	static const size_t m_startBufferPoolSize = 1024 * 100;
+	static const size_t m_startBufferPoolSize = 1024 * 1024 * 10;
 };
 
 }

@@ -20,6 +20,8 @@ struct FrameBuffer;
 #define VERTBUFF_SIZE 256U
 #define ELEMBUFF_SIZE 1024U
 
+constexpr f32 SCREEN_SIZE_DIM = 640.0f;
+
 enum class DrawingState
 {
 	Non,
