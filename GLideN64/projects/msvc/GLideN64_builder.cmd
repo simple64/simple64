@@ -171,7 +171,7 @@ call :mbcl "%MBM64%" "%DPROJ%" "_mupenplus"
 
 goto pjqt
 :cini
-	set MSG=Failed to copy some project files to:^&echo %~1
+	set MSG=Failed to copy some project files to:^& echo %~1
 	if %ESIM%==1 md "%~1" 2>nul
 	set errorlevel=0
 	copy /y ini\GLideN64.custom.ini "%~1\"
@@ -202,14 +202,15 @@ call :cini "%M64CL%"
 %DMN%
 
 :pkg
-for /f "tokens=1" %%R in ('git describe --always') do set "REV=%%R"
+for /f "tokens=1" %%R in ('git rev-parse --short HEAD') do set "REV=%%R"
 set MSG=The route could not be accessed:^& echo %BUILDROUTE%
 pushd "%BUILDROUTE%"
 %ERR%
-set MOD=the compressed files
-if %NO7%==1 set MOD=the plugins& goto z7
-for /f "tokens=*" %%Z in ('dir /ad /b *_%ARCH%') do 7z a -t%KAP% "GLideN64-%REV%-%%Z.%KAP%" ".\%%Z\*"
-:z7
+set MOD=the plugins
+if %NO7%==0 (
+	set MOD=the compressed files
+	for /f "tokens=*" %%Z in ('dir /ad /b *_%ARCH%') do 7z a -t%KAP% "GLideN64-%REV%-%%Z.%KAP%" ".\%%Z\*"
+)
 
 if "%ARCH%"=="x64" (
 	if %BOTH%==1 set ARCH=x86& goto X86

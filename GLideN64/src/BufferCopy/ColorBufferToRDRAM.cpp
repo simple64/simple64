@@ -224,7 +224,6 @@ void ColorBufferToRDRAM::_copy(u32 _startAddress, u32 _endAddress, bool _sync)
 
 	m_pCurFrameBuffer->m_copiedToRdram = true;
 	m_pCurFrameBuffer->copyRdram();
-	m_pCurFrameBuffer->m_cleared = false;
 
 	m_pCurFrameBuffer->cleanUp();
 
@@ -282,6 +281,4 @@ void copyWhiteToRDRAM(FrameBuffer * _pBuffer)
 	}
 	_pBuffer->m_copiedToRdram = true;
 	_pBuffer->copyRdram();
-
-	_pBuffer->m_cleared = false;
 }

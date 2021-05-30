@@ -218,6 +218,9 @@ void FrameBuffer::copyRdram()
 	const u32 height = _cutHeight(m_startAddress, m_height, stride);
 	if (height == 0)
 		return;
+
+	m_cleared = false;
+
 	const u32 dataSize = stride * height;
 
 	// Auxiliary frame buffer
@@ -235,7 +238,6 @@ void FrameBuffer::copyRdram()
 			else
 				pData[start++] = 0;
 		}
-		m_cleared = false;
 		m_fingerprint = true;
 		return;
 	}

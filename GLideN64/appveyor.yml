@@ -67,7 +67,7 @@ after_build:
   - del /Q %Mupen64PluginsDir_x64%\*.lib %Mupen64PluginsDir_x64%\*.exp
   - del /Q %Mupen64PluginsDir%\*.lib %Mupen64PluginsDir%\*.exp
   - cd %BUILD_PATH%
-  - ps: $env:revision = git describe --always
+  - ps: $env:revision = git rev-parse --short HEAD
   - set archive_name=GLideN64-%revision%-@fname.7z
   - forfiles /p %BUILD_PATH% /c "cmd /c 7z a %archive_name% @path\*"
 
