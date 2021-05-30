@@ -141,7 +141,6 @@ private:
     void loadPlugins();
     void closeCoreLib();
     void closePlugins();
-    void findRecursion(const QString &path, const QString &pattern, QStringList *result);
     Ui::MainWindow *ui;
     QMenu * OpenRecent;
     int verbose;

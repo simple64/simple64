@@ -96,7 +96,7 @@ static char* media_loader_get_gb_cart_rom(void*, int control_id)
     if (pathname.isEmpty())
         return NULL;
     else {
-        char *path = strdup(pathname.toLatin1().data());
+        char *path = strdup(pathname.toLocal8Bit().constData());
         return path;
     }
 }
@@ -116,7 +116,7 @@ static char* media_loader_get_gb_cart_ram(void*, int control_id)
     if (pathname.isEmpty())
         return NULL;
     else {
-        char *path = strdup(pathname.toLatin1().data());
+        char *path = strdup(pathname.toLocal8Bit().constData());
         return path;
     }
 }
@@ -128,7 +128,7 @@ static char* media_loader_get_dd_rom(void*)
     if (pathname.isEmpty())
         return NULL;
     else {
-        char *path = strdup(pathname.toLatin1().data());
+        char *path = strdup(pathname.toLocal8Bit().constData());
         return path;
     }
 }
@@ -140,7 +140,7 @@ static char* media_loader_get_dd_disk(void*)
     if (pathname.isEmpty())
         return NULL;
     else {
-        char *path = strdup(pathname.toLatin1().data());
+        char *path = strdup(pathname.toLocal8Bit().constData());
         return path;
     }
 
@@ -155,16 +155,16 @@ static m64p_media_loader media_loader =
     media_loader_get_dd_disk
 };
 
-m64p_error loadROM(std::string filename)
+m64p_error loadROM(QString filename)
 {
     char *ROM_buffer = NULL;
     size_t romlength = 0;
 
-    if (filename.find(".7z") != std::string::npos || (filename.find(".zip") != std::string::npos) || (filename.find(".ZIP") != std::string::npos))
+    if (filename.endsWith(".7z") || filename.endsWith(".zip") || filename.endsWith(".ZIP"))
     {
         QProcess process;
         QString command = "7za e -so \"";
-        command += QString::fromStdString(filename);
+        command += filename;
         command += "\" *64";
         process.start(command);
         process.waitForFinished(-1);
@@ -172,7 +172,7 @@ m64p_error loadROM(std::string filename)
         romlength = data.size();
         if (romlength == 0)
         {
-            DebugMessage(M64MSG_ERROR, "couldn't open file '%s' for reading.", filename.c_str());
+            DebugMessage(M64MSG_ERROR, "couldn't open file '%s' for reading.", filename.toLocal8Bit().constData());
             return M64ERR_INVALID_STATE;
         }
         ROM_buffer = (char *) malloc(romlength);
@@ -181,10 +181,10 @@ m64p_error loadROM(std::string filename)
     else
     {
         /* load ROM image */
-        QFile file(filename.c_str());
+        QFile file(filename);
         if (!file.open(QIODevice::ReadOnly))
         {
-            DebugMessage(M64MSG_ERROR, "couldn't open ROM file '%s' for reading.", filename.c_str());
+            DebugMessage(M64MSG_ERROR, "couldn't open ROM file '%s' for reading.", filename.toLocal8Bit().constData());
             return M64ERR_INVALID_STATE;
         }
 
@@ -193,7 +193,7 @@ m64p_error loadROM(std::string filename)
         ROM_buffer = (char *) malloc(romlength);
         if (in.readRawData(ROM_buffer, romlength) == -1)
         {
-            DebugMessage(M64MSG_ERROR, "couldn't read %li bytes from ROM image file '%s'.", romlength, filename.c_str());
+            DebugMessage(M64MSG_ERROR, "couldn't read %li bytes from ROM image file '%s'.", romlength, filename.toLocal8Bit().constData());
             free(ROM_buffer);
             file.close();
             return M64ERR_INVALID_STATE;
@@ -204,7 +204,7 @@ m64p_error loadROM(std::string filename)
     /* Try to load the ROM image into the core */
     if ((*CoreDoCommand)(M64CMD_ROM_OPEN, (int) romlength, ROM_buffer) != M64ERR_SUCCESS)
     {
-        DebugMessage(M64MSG_ERROR, "core failed to open ROM image file '%s'.", filename.c_str());
+        DebugMessage(M64MSG_ERROR, "core failed to open ROM image file '%s'.", filename.toLocal8Bit().constData());
         free(ROM_buffer);
         return M64ERR_INVALID_STATE;
     }

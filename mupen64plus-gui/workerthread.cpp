@@ -52,7 +52,7 @@ void WorkerThread::run()
     }
 #endif
 
-    m64p_error res = loadROM(m_fileName.toStdString());
+    m64p_error res = loadROM(m_fileName);
     if (res == M64ERR_SUCCESS)
     {
         m64p_rom_settings rom_settings;

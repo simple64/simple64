@@ -25,7 +25,7 @@ public:
 
 private:
     m64p_type m_ParamType;
-    std::string m_ParamName;
+    QString m_ParamName;
     m64p_handle m_CurrentHandle;
 };
 
@@ -45,7 +45,7 @@ public:
 
 private:
     m64p_type m_ParamType;
-    std::string m_ParamName;
+    QString m_ParamName;
     m64p_handle m_CurrentHandle;
 };
 
