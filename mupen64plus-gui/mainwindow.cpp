@@ -693,16 +693,6 @@ void MainWindow::toggleFS(int force)
     }
 }
 
-void MainWindow::findRecursion(const QString &path, const QString &pattern, QStringList *result)
-{
-    QDir currentDir(path);
-    const QString prefix = path + QLatin1Char('/');
-    foreach (const QString &match, currentDir.entryList(QStringList(pattern), QDir::Files))
-        result->append(prefix + match);
-    foreach (const QString &dir, currentDir.entryList(QDir::Dirs | QDir::NoSymLinks | QDir::NoDotAndDotDot))
-        findRecursion(prefix + dir, pattern, result);
-}
-
 void MainWindow::closeEvent (QCloseEvent *event)
 {
 #ifdef SINGLE_THREAD
@@ -979,7 +969,7 @@ void MainWindow::on_actionSave_State_To_triggered()
     if (!filename.isNull()) {
         if (!filename.contains(".st"))
             filename.append(".state");
-        (*CoreDoCommand)(M64CMD_STATE_SAVE, 1, filename.toLatin1().data());
+        (*CoreDoCommand)(M64CMD_STATE_SAVE, 1, filename.toLocal8Bit().data());
     }
 }
 
@@ -988,7 +978,7 @@ void MainWindow::on_actionLoad_State_From_triggered()
     QString filename = QFileDialog::getOpenFileName(this,
         tr("Open Save State"), NULL, tr("State Files (*.st* *.pj*)"));
     if (!filename.isNull()) {
-        (*CoreDoCommand)(M64CMD_STATE_LOAD, 1, filename.toLatin1().data());
+        (*CoreDoCommand)(M64CMD_STATE_LOAD, 1, filename.toLocal8Bit().data());
     }
 }
 
@@ -1106,7 +1096,7 @@ void MainWindow::loadCoreLib()
     QString corePath = settings->value("coreLibPath").toString();
     corePath.replace("$APP_PATH$", QCoreApplication::applicationDirPath());
 
-    m64p_error res = osal_dynlib_open(&coreLib, QDir(corePath).filePath(OSAL_DEFAULT_DYNLIB_FILENAME).toLatin1().data());
+    m64p_error res = osal_dynlib_open(&coreLib, QDir(corePath).filePath(OSAL_DEFAULT_DYNLIB_FILENAME).toLocal8Bit().constData());
 
     if (res != M64ERR_SUCCESS)
     {
@@ -1141,9 +1131,9 @@ void MainWindow::loadCoreLib()
     qtConfigDir.replace("$CONFIG_PATH$", ConfigGetUserConfigPath());
 
     if (!qtConfigDir.isEmpty())
-        (*CoreStartup)(CORE_API_VERSION, qtConfigDir.toLatin1().data() /*Config dir*/, QCoreApplication::applicationDirPath().toLatin1().data(), (char*)"Core", DebugCallback, NULL, NULL);
+        (*CoreStartup)(CORE_API_VERSION, qtConfigDir.toLocal8Bit().constData() /*Config dir*/, QCoreApplication::applicationDirPath().toLocal8Bit().constData(), (char*)"Core", DebugCallback, NULL, NULL);
     else
-        (*CoreStartup)(CORE_API_VERSION, NULL /*Config dir*/, QCoreApplication::applicationDirPath().toLatin1().data(), (char*)"Core", DebugCallback, NULL, NULL);
+        (*CoreStartup)(CORE_API_VERSION, NULL /*Config dir*/, QCoreApplication::applicationDirPath().toLocal8Bit().constData(), (char*)"Core", DebugCallback, NULL, NULL);
 
     CoreOverrideVidExt(&vidExtFunctions);
 }
@@ -1204,7 +1194,7 @@ void MainWindow::loadPlugins()
     }
     else
         plugin_path = QDir(pluginPath).filePath(settings->value("videoPlugin").toString());
-    res = osal_dynlib_open(&gfxPlugin, plugin_path.toLatin1().data());
+    res = osal_dynlib_open(&gfxPlugin, plugin_path.toLocal8Bit().constData());
     if (res != M64ERR_SUCCESS)
     {
         msgBox.setText("Failed to load video plugin");
@@ -1213,7 +1203,7 @@ void MainWindow::loadPlugins()
     }
     PluginStartup = (ptr_PluginStartup) osal_dynlib_getproc(gfxPlugin, "PluginStartup");
     (*PluginStartup)(coreLib, (char*)"Video", DebugCallback);
-    res = osal_dynlib_open(&audioPlugin, QDir(pluginPath).filePath(settings->value("audioPlugin").toString()).toLatin1().data());
+    res = osal_dynlib_open(&audioPlugin, QDir(pluginPath).filePath(settings->value("audioPlugin").toString()).toLocal8Bit().constData());
     if (res != M64ERR_SUCCESS)
     {
         msgBox.setText("Failed to load audio plugin");
@@ -1222,7 +1212,7 @@ void MainWindow::loadPlugins()
     }
     PluginStartup = (ptr_PluginStartup) osal_dynlib_getproc(audioPlugin, "PluginStartup");
     (*PluginStartup)(coreLib, (char*)"Audio", DebugCallback);
-    res = osal_dynlib_open(&inputPlugin, QDir(pluginPath).filePath(settings->value("inputPlugin").toString()).toLatin1().data());
+    res = osal_dynlib_open(&inputPlugin, QDir(pluginPath).filePath(settings->value("inputPlugin").toString()).toLocal8Bit().constData());
     if (res != M64ERR_SUCCESS)
     {
         msgBox.setText("Failed to load input plugin");
@@ -1243,7 +1233,7 @@ void MainWindow::loadPlugins()
     }
     else
         plugin_path = QDir(pluginPath).filePath(settings->value("rspPlugin").toString());
-    res = osal_dynlib_open(&rspPlugin, plugin_path.toLatin1().data());
+    res = osal_dynlib_open(&rspPlugin, plugin_path.toLocal8Bit().constData());
     if (res != M64ERR_SUCCESS)
     {
         msgBox.setText("Failed to load rsp plugin");

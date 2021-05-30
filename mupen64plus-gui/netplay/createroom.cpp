@@ -152,7 +152,7 @@ void CreateRoom::handleCreateButton()
         msgBox.exec();
         return;
     }
-    if (loadROM(romButton->text().toStdString()) == M64ERR_SUCCESS)
+    if (loadROM(romButton->text()) == M64ERR_SUCCESS)
     {
         createButton->setEnabled(false);
         (*CoreDoCommand)(M64CMD_ROM_GET_SETTINGS, sizeof(rom_settings), &rom_settings);
