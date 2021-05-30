@@ -163,7 +163,7 @@ void JoinRoom::joinGame()
     tr("Open ROM"), w->getSettings()->value("ROMdir").toString(), tr("ROM Files (*.n64 *.N64 *.z64 *.Z64 *.v64 *.V64 *.zip *.ZIP *.7z)"));
     if (!filename.isNull())
     {
-        if (loadROM(filename.toStdString()) == M64ERR_SUCCESS)
+        if (loadROM(filename) == M64ERR_SUCCESS)
         {
             QJsonObject json = rooms.at(listWidget->currentRow());
             m64p_rom_settings rom_settings;
