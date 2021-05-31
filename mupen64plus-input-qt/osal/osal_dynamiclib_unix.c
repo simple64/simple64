@@ -27,23 +27,6 @@
 #include "m64p_types.h"
 #include "osal_dynamiclib.h"
 
-m64p_error osal_dynlib_open(m64p_dynlib_handle *pLibHandle, const char *pccLibraryPath)
-{
-    if (pLibHandle == NULL || pccLibraryPath == NULL)
-        return M64ERR_INPUT_ASSERT;
-
-    *pLibHandle = dlopen(pccLibraryPath, RTLD_NOW);
-
-    if (*pLibHandle == NULL)
-    {
-        /* only print an error message if there is a directory separator (/) in the pathname */
-        /* this prevents us from throwing an error for the use case where Mupen64Plus is not installed */
-        return M64ERR_INPUT_NOT_FOUND;
-    }
-
-    return M64ERR_SUCCESS;
-}
-
 void * osal_dynlib_getproc(m64p_dynlib_handle LibHandle, const char *pccProcedureName)
 {
     if (pccProcedureName == NULL)
@@ -51,17 +34,3 @@ void * osal_dynlib_getproc(m64p_dynlib_handle LibHandle, const char *pccProcedur
 
     return dlsym(LibHandle, pccProcedureName);
 }
-
-m64p_error osal_dynlib_close(m64p_dynlib_handle LibHandle)
-{
-    int rval = dlclose(LibHandle);
-
-    if (rval != 0)
-    {
-        return M64ERR_INTERNAL;
-    }
-
-    return M64ERR_SUCCESS;
-}
-
-

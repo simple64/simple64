@@ -26,49 +26,10 @@
 #include "m64p_types.h"
 #include "osal_dynamiclib.h"
 
-m64p_error osal_dynlib_open(m64p_dynlib_handle *pLibHandle, const char *pccLibraryPath)
-{
-    if (pLibHandle == NULL || pccLibraryPath == NULL)
-        return M64ERR_INPUT_ASSERT;
-
-    wchar_t wstr[256];
-    mbstowcs(wstr, pccLibraryPath, 256);
-    *pLibHandle = LoadLibrary(wstr);
-
-    if (*pLibHandle == NULL)
-    {
-        char *pchErrMsg;
-        DWORD dwErr = GetLastError(); 
-        FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, dwErr,
-                      MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR) &pchErrMsg, 0, NULL);
-        LocalFree(pchErrMsg);
-        return M64ERR_INPUT_NOT_FOUND;
-    }
-
-    return M64ERR_SUCCESS;
-}
-
 void * osal_dynlib_getproc(m64p_dynlib_handle LibHandle, const char *pccProcedureName)
 {
     if (pccProcedureName == NULL)
         return NULL;
 
     return GetProcAddress(LibHandle, pccProcedureName);
-}
-
-m64p_error osal_dynlib_close(m64p_dynlib_handle LibHandle)
-{
-    int rval = FreeLibrary(LibHandle);
-
-    if (rval == 0)
-    {
-        char *pchErrMsg;
-        DWORD dwErr = GetLastError(); 
-        FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, dwErr,
-                      MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR) &pchErrMsg, 0, NULL);
-        LocalFree(pchErrMsg);
-        return M64ERR_INTERNAL;
-    }
-
-    return M64ERR_SUCCESS;
 }
