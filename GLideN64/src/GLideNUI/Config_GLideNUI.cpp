@@ -6,6 +6,7 @@
 #include "../mupenplus/GLideN64_mupenplus.h"
 #include <DisplayWindow.h>
 #include <cstring>
+#include <QString>
 
 Config config;
 
@@ -15,7 +16,8 @@ void Config_DoConfig(/*HWND hParent*/)
 		return;
 
 	wchar_t strIniFolderPath[PLUGIN_PATH_SIZE];
-	mbstowcs(&strIniFolderPath[0], ConfigGetUserConfigPath(), PLUGIN_PATH_SIZE);
+	QString configPath = QString::fromUtf8(ConfigGetUserConfigPath());
+	configPath.toWCharArray(&strIniFolderPath[0]);
 	wchar_t strCustomFolderPath[PLUGIN_PATH_SIZE];
 	api().FindPluginPath(strCustomFolderPath);
 
@@ -35,7 +37,8 @@ void Config_LoadConfig()
 	config.netplay = 0;
 
 	wchar_t strIniFolderPath[PLUGIN_PATH_SIZE];
-	mbstowcs(&strIniFolderPath[0], ConfigGetUserConfigPath(), PLUGIN_PATH_SIZE);
+	QString configPath = QString::fromUtf8(ConfigGetUserConfigPath());
+	configPath.toWCharArray(&strIniFolderPath[0]);
 	wchar_t strCustomFolderPath[PLUGIN_PATH_SIZE];
 	api().FindPluginPath(strCustomFolderPath);
 	LoadConfig(strIniFolderPath);
