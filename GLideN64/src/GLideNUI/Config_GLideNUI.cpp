@@ -17,7 +17,8 @@ void Config_DoConfig(/*HWND hParent*/)
 
 	wchar_t strIniFolderPath[PLUGIN_PATH_SIZE];
 	QString configPath = QString::fromUtf8(ConfigGetUserConfigPath());
-	configPath.toWCharArray(&strIniFolderPath[0]);
+	int length = configPath.toWCharArray(&strIniFolderPath[0]);
+	strIniFolderPath[length] = 0;
 	wchar_t strCustomFolderPath[PLUGIN_PATH_SIZE];
 	api().FindPluginPath(strCustomFolderPath);
 
@@ -38,7 +39,8 @@ void Config_LoadConfig()
 
 	wchar_t strIniFolderPath[PLUGIN_PATH_SIZE];
 	QString configPath = QString::fromUtf8(ConfigGetUserConfigPath());
-	configPath.toWCharArray(&strIniFolderPath[0]);
+	int length = configPath.toWCharArray(&strIniFolderPath[0]);
+	strIniFolderPath[length] = 0;
 	wchar_t strCustomFolderPath[PLUGIN_PATH_SIZE];
 	api().FindPluginPath(strCustomFolderPath);
 	LoadConfig(strIniFolderPath);
