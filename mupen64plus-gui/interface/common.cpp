@@ -96,7 +96,7 @@ static char* media_loader_get_gb_cart_rom(void*, int control_id)
     if (pathname.isEmpty())
         return NULL;
     else {
-        char *path = strdup(pathname.toLocal8Bit().constData());
+        char *path = strdup(pathname.toUtf8().constData());
         return path;
     }
 }
@@ -116,7 +116,7 @@ static char* media_loader_get_gb_cart_ram(void*, int control_id)
     if (pathname.isEmpty())
         return NULL;
     else {
-        char *path = strdup(pathname.toLocal8Bit().constData());
+        char *path = strdup(pathname.toUtf8().constData());
         return path;
     }
 }
@@ -128,7 +128,7 @@ static char* media_loader_get_dd_rom(void*)
     if (pathname.isEmpty())
         return NULL;
     else {
-        char *path = strdup(pathname.toLocal8Bit().constData());
+        char *path = strdup(pathname.toUtf8().constData());
         return path;
     }
 }
@@ -140,7 +140,7 @@ static char* media_loader_get_dd_disk(void*)
     if (pathname.isEmpty())
         return NULL;
     else {
-        char *path = strdup(pathname.toLocal8Bit().constData());
+        char *path = strdup(pathname.toUtf8().constData());
         return path;
     }
 
@@ -172,7 +172,7 @@ m64p_error loadROM(QString filename)
         romlength = data.size();
         if (romlength == 0)
         {
-            DebugMessage(M64MSG_ERROR, "couldn't open file '%s' for reading.", filename.toLocal8Bit().constData());
+            DebugMessage(M64MSG_ERROR, "couldn't open file '%s' for reading.", filename.toUtf8().constData());
             return M64ERR_INVALID_STATE;
         }
         ROM_buffer = (char *) malloc(romlength);
@@ -184,7 +184,7 @@ m64p_error loadROM(QString filename)
         QFile file(filename);
         if (!file.open(QIODevice::ReadOnly))
         {
-            DebugMessage(M64MSG_ERROR, "couldn't open ROM file '%s' for reading.", filename.toLocal8Bit().constData());
+            DebugMessage(M64MSG_ERROR, "couldn't open ROM file '%s' for reading.", filename.toUtf8().constData());
             return M64ERR_INVALID_STATE;
         }
 
@@ -193,7 +193,7 @@ m64p_error loadROM(QString filename)
         ROM_buffer = (char *) malloc(romlength);
         if (in.readRawData(ROM_buffer, romlength) == -1)
         {
-            DebugMessage(M64MSG_ERROR, "couldn't read %li bytes from ROM image file '%s'.", romlength, filename.toLocal8Bit().constData());
+            DebugMessage(M64MSG_ERROR, "couldn't read %li bytes from ROM image file '%s'.", romlength, filename.toUtf8().constData());
             free(ROM_buffer);
             file.close();
             return M64ERR_INVALID_STATE;
@@ -204,7 +204,7 @@ m64p_error loadROM(QString filename)
     /* Try to load the ROM image into the core */
     if ((*CoreDoCommand)(M64CMD_ROM_OPEN, (int) romlength, ROM_buffer) != M64ERR_SUCCESS)
     {
-        DebugMessage(M64MSG_ERROR, "core failed to open ROM image file '%s'.", filename.toLocal8Bit().constData());
+        DebugMessage(M64MSG_ERROR, "core failed to open ROM image file '%s'.", filename.toUtf8().constData());
         free(ROM_buffer);
         return M64ERR_INVALID_STATE;
     }
@@ -274,7 +274,7 @@ m64p_error launchGame(QString netplay_ip, int netplay_port, int netplay_player)
         {
             DebugMessage(M64MSG_INFO, "Netplay: using core version %u", version);
 
-            if ((*CoreDoCommand)(M64CMD_NETPLAY_INIT, netplay_port, netplay_ip.toLocal8Bit().data()) == M64ERR_SUCCESS)
+            if ((*CoreDoCommand)(M64CMD_NETPLAY_INIT, netplay_port, netplay_ip.toUtf8().data()) == M64ERR_SUCCESS)
                 DebugMessage(M64MSG_INFO, "Netplay: init success");
 
             uint32_t reg_id = 0;

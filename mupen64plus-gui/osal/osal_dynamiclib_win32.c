@@ -32,7 +32,9 @@ m64p_error osal_dynlib_open(m64p_dynlib_handle *pLibHandle, const char *pccLibra
     if (pLibHandle == NULL || pccLibraryPath == NULL)
         return M64ERR_INPUT_ASSERT;
 
-    *pLibHandle = LoadLibrary(pccLibraryPath);
+    wchar_t wstr[256];
+    mbstowcs(wstr, pccLibraryPath, 256);
+    *pLibHandle = LoadLibrary(wstr);
 
     if (*pLibHandle == NULL)
     {
