@@ -105,7 +105,7 @@ WaitRoom::WaitRoom(QString filename, QJsonObject room, QWebSocket *socket, QWidg
     strcpy(assets.large_image, "6205049");
     strcpy(assets.large_text, "https://m64p.github.io");
     activity.assets = assets;
-    strncpy(activity.details, room.value("game_name").toString().toLocal8Bit().constData(), 128);
+    strncpy(activity.details, room.value("game_name").toString().toUtf8().constData(), 128);
     strcpy(activity.state, "Netplay waiting room");
     w->updateDiscordActivity(activity);
 }
@@ -128,7 +128,7 @@ void WaitRoom::discordCheck(int state)
         return;
 
     if (state == Qt::Checked)
-        w->getDiscordApp()->lobbies->connect_lobby(w->getDiscordApp()->lobbies, discord_id.toLongLong(), discord_secret.toLocal8Bit().data(), w->getDiscordApp(), discordConnectCallback);
+        w->getDiscordApp()->lobbies->connect_lobby(w->getDiscordApp()->lobbies, discord_id.toLongLong(), discord_secret.toUtf8().data(), w->getDiscordApp(), discordConnectCallback);
     else if (state == Qt::Unchecked)
         w->getDiscordApp()->lobbies->disconnect_voice(w->getDiscordApp()->lobbies, discord_id.toLongLong(), &discord_id, discordDisconnectCallback);
 }
