@@ -47,7 +47,6 @@ SOURCES += osal/osal_dynamiclib_win32.c
         }
         INCLUDEPATH += ../mupen64plus-win32-deps/SDL2-2.0.6/include
     } else {
-        DEFINES -= UNICODE
         LIBS += -Wl,-Bdynamic -lSDL2
         INCLUDEPATH += /mingw64/include/SDL2 /mingw32/include/SDL2
     }
