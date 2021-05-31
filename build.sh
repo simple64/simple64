@@ -108,7 +108,7 @@ if [[ $UNAME == *"MINGW"* ]]; then
   cd $base_dir/angrylion-rdp-plus/
   python3 ./make_version.py
   cd $base_dir/angrylion-rdp-plus/msvc
-  "${MSBUILD_PATH}MSBuild.exe" angrylion-plus.sln -t:plugin-mupen64plus -p:Configuration=Release -p:Platform=x64
+  "${MSBUILD_PATH}MSBuild.exe" angrylion-plus.sln -p:Configuration=Release -p:Platform=x64
   cp build/Release/mupen64plus-video-angrylion-plus.dll $install_dir
 else
   mkdir -p $base_dir/angrylion-rdp-plus/build
