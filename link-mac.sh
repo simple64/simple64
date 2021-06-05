@@ -5,13 +5,9 @@ contents=mupen64plus/mupen64plus-gui.app/Contents
 # Get files in correct directories
 mv mupen64plus/font.ttf $contents/MacOS
 mv mupen64plus/libmupen64plus.dylib $contents/MacOS
-mv mupen64plus/GLideN64.custom.ini $contents/MacOS
 mv mupen64plus/mupen64plus-audio-sdl2.dylib $contents/MacOS
 mv mupen64plus/mupen64plus-input-qt.dylib $contents/MacOS
 mv mupen64plus/mupen64plus-input-raphnetraw.dylib $contents/MacOS
-mv mupen64plus/mupen64plus-rsp-hle.dylib $contents/MacOS
-mv mupen64plus/mupen64plus-video-GLideN64.dylib $contents/MacOS
-mv mupen64plus/mupen64plus-video-angrylion-plus.dylib $contents/MacOS
 mv mupen64plus/mupen64plus-rsp-parallel.dylib $contents/MacOS
 mv mupen64plus/mupen64plus.ini $contents/MacOS
 mv mupen64plus/mupencheat.txt $contents/MacOS
@@ -77,22 +73,6 @@ otool -L $contents/MacOS/mupen64plus-input-qt.dylib
 install_name_tool -change /usr/local/opt/hidapi/lib/libhidapi.0.dylib @executable_path/../Frameworks/libhidapi.0.dylib $contents/MacOS/mupen64plus-input-raphnetraw.dylib
 
 otool -L $contents/MacOS/mupen64plus-input-raphnetraw.dylib
-
-# mupen64plus-rsp-hle.dylib
-# nothing to link
-otool -L $contents/MacOS/mupen64plus-rsp-hle.dylib
-
-# mupen64plus-video-GLideN64.dylib
-install_name_tool -change /usr/local/opt/qt/lib/QtWidgets.framework/Versions/5/QtWidgets @executable_path/../Frameworks/QtWidgets.framework/Versions/5/QtWidgets $contents/MacOS/mupen64plus-video-GLideN64.dylib
-install_name_tool -change /usr/local/opt/qt/lib/QtGui.framework/Versions/5/QtGui @executable_path/../Frameworks/QtGui.framework/Versions/5/QtGui $contents/MacOS/mupen64plus-video-GLideN64.dylib
-install_name_tool -change /usr/local/opt/qt/lib/QtCore.framework/Versions/5/QtCore @executable_path/../Frameworks/QtCore.framework/Versions/5/QtCore $contents/MacOS/mupen64plus-video-GLideN64.dylib
-install_name_tool -change /usr/local/opt/freetype/lib/libfreetype.6.dylib @executable_path/../Frameworks/libfreetype.6.dylib $contents/MacOS/mupen64plus-video-GLideN64.dylib
-
-otool -L $contents/MacOS/mupen64plus-video-GLideN64.dylib
-
-# mupen64plus-video-angrylion-plus.dylib
-
-otool -L $contents/MacOS/mupen64plus-video-angrylion-plus.dylib
 
 # mupen64plus-rsp-parallel.dylib
 
