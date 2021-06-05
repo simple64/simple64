@@ -9,6 +9,7 @@ mv mupen64plus/mupen64plus-audio-sdl2.dylib $contents/MacOS
 mv mupen64plus/mupen64plus-input-qt.dylib $contents/MacOS
 mv mupen64plus/mupen64plus-input-raphnetraw.dylib $contents/MacOS
 mv mupen64plus/mupen64plus-rsp-parallel.dylib $contents/MacOS
+mv mupen64plus/mupen64plus-video-parallel.dylib $contents/MacOS
 mv mupen64plus/mupen64plus.ini $contents/MacOS
 mv mupen64plus/mupencheat.txt $contents/MacOS
 mv mupen64plus/discord_game_sdk.dylib $contents/MacOS
@@ -77,6 +78,10 @@ otool -L $contents/MacOS/mupen64plus-input-raphnetraw.dylib
 # mupen64plus-rsp-parallel.dylib
 
 otool -L $contents/MacOS/mupen64plus-rsp-parallel.dylib
+
+# mupen64plus-video-parallel.dylib
+
+otool -L $contents/MacOS/mupen64plus-video-parallel.dylib
 
 # Time to create the DMG
 
