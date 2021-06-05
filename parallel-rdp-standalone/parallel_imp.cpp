@@ -189,7 +189,7 @@ void vk_process_commands()
 			if (RDP::Op(command) == RDP::Op::SyncFull)
 			{
 				// For synchronous RDP:
-				if (frontend)
+				if (vk_synchronous && frontend)
 					frontend->wait_for_timeline(frontend->signal_timeline());
 				*gfx.MI_INTR_REG |= DP_INTERRUPT;
 				gfx.CheckInterrupts();
@@ -244,7 +244,7 @@ bool vk_init()
 	}
 
 	device->set_context(*context);
-	device->init_frame_contexts(1);
+	device->init_frame_contexts(2);
 	::RDP::CommandProcessorFlags flags = 0;
 
 	switch (vk_rescaling)
