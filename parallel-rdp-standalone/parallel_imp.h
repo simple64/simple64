@@ -19,6 +19,7 @@ extern "C"
     extern bool vk_divot_filter, vk_gamma_dither;
     extern bool vk_vi_aa, vk_vi_scale, vk_dither_filter;
     extern bool vk_interlacing;
+    extern bool vk_synchronous;
 
     void vk_rasterize();
     void vk_process_commands();
