@@ -244,7 +244,7 @@ bool vk_init()
 	}
 
 	device->set_context(*context);
-	device->init_frame_contexts(2);
+	device->init_frame_contexts(3);
 	::RDP::CommandProcessorFlags flags = 0;
 
 	switch (vk_rescaling)
