@@ -40,6 +40,7 @@
 #define KEY_NATIVETEXTLOD "NativeTextLOD"
 #define KEY_DEINTERLACE "DeinterlaceMode"
 #define KEY_INTEGER "IntegerScale"
+#define KEY_SYNCHRONOUS "SynchronousRDP"
 
 #include <stdlib.h>
 #include <string.h>
@@ -130,6 +131,7 @@ EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle _CoreLibHandle, void *Co
     ConfigSetDefaultInt(configVideoParallel, KEY_SCREEN_HEIGHT, 480, "Screen height");
     ConfigSetDefaultBool(configVideoParallel, KEY_SSREADBACKS, 0, "Enable superscaling of readbacks when upsampling");
     ConfigSetDefaultBool(configVideoParallel, KEY_SSDITHER, 1, "Enable superscaling of dithering when upsampling");
+    ConfigSetDefaultBool(configVideoParallel, KEY_SYNCHRONOUS, 0, "Enable synchronizing RDP and CPU");
 
     ConfigSetDefaultBool(configVideoParallel, KEY_DEINTERLACE, 0, "Deinterlacing method. Weave should only be used with 1x scaling factor. False=Bob, True=Weave");
     ConfigSetDefaultBool(configVideoParallel, KEY_INTEGER, 0, "Enable integer scaling");
@@ -236,6 +238,8 @@ EXPORT int CALL RomOpen(void)
     vk_interlacing = ConfigGetParamBool(configVideoParallel, KEY_DEINTERLACE);
     vk_downscaling_steps = ConfigGetParamInt(configVideoParallel, KEY_DOWNSCALE);
     vk_overscan = ConfigGetParamInt(configVideoParallel, KEY_OVERSCANCROP);
+    
+    vk_synchronous = ConfigGetParamBool(configVideoParallel, KEY_SYNCHRONOUS);
 
     plugin_init();
     vk_init();
