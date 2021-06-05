@@ -61,11 +61,6 @@ int32_t tex_height;
 int display_width;
 int display_height;
 
-void *IntGetProcAddress(const char *name)
-{
-    return CoreVideo_GL_GetProcAddress(name);
-}
-
 #ifdef _DEBUG
 static void gl_check_errors(void)
 {
