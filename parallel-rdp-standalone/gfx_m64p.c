@@ -129,7 +129,7 @@ EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle _CoreLibHandle, void *Co
     ConfigSetDefaultInt(configVideoParallel, KEY_SCREEN_WIDTH, 640, "Screen width");
     ConfigSetDefaultInt(configVideoParallel, KEY_SCREEN_HEIGHT, 480, "Screen height");
     ConfigSetDefaultBool(configVideoParallel, KEY_SSREADBACKS, 0, "Enable superscaling of readbacks when upsampling");
-    ConfigSetDefaultBool(configVideoParallel, KEY_SSDITHER, 0, "Enable superscaling of dithering when upsampling");
+    ConfigSetDefaultBool(configVideoParallel, KEY_SSDITHER, 1, "Enable superscaling of dithering when upsampling");
 
     ConfigSetDefaultBool(configVideoParallel, KEY_DEINTERLACE, 0, "Deinterlacing method. Weave should only be used with 1x scaling factor. False=Bob, True=Weave");
     ConfigSetDefaultBool(configVideoParallel, KEY_INTEGER, 0, "Enable integer scaling");
