@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <GL/gl.h>
+#include <GL/glext.h>
 #include <math.h>
 
 /* definitions of pointers to Core video extension functions */
