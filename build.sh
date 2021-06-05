@@ -28,10 +28,6 @@ make NETPLAY=1 OSD=0 NO_ASM=1 -j4 all
 cp -P $base_dir/mupen64plus-core/projects/unix/*$suffix* $install_dir
 cp $base_dir/mupen64plus-core/data/* $install_dir
 
-cd $base_dir/mupen64plus-rsp-hle/projects/unix
-make -j4 all
-cp $base_dir/mupen64plus-rsp-hle/projects/unix/*$suffix $install_dir
-
 cd $base_dir/mupen64plus-input-raphnetraw/projects/unix
 make -j4 all
 cp $base_dir/mupen64plus-input-raphnetraw/projects/unix/*$suffix $install_dir
@@ -76,24 +72,6 @@ else
   cp $base_dir/mupen64plus-gui/build/mupen64plus-gui $install_dir
 fi
 
-cd $base_dir/GLideN64/src
-./getRevision.sh
-
-cd $base_dir/GLideN64/projects/cmake
-if [[ $UNAME == *"MINGW"* ]]; then
-  cmake -G "MSYS Makefiles" -DMUPENPLUSAPI_GLIDENUI=On -DNOHQ=On -DVEC4_OPT=On -DCRC_OPT=On -DMUPENPLUSAPI=On ../../src/
-else
-  cmake -DMUPENPLUSAPI_GLIDENUI=On -DNOHQ=On -DVEC4_OPT=On -DCRC_OPT=On -DMUPENPLUSAPI=On ../../src/
-fi
-cmake --build .
-
-if [[ $UNAME == *"MINGW"* ]]; then
-  cp mupen64plus-video-GLideN64$suffix $install_dir
-else
-  cp plugin/Release/mupen64plus-video-GLideN64$suffix $install_dir
-fi
-cp $base_dir/GLideN64/ini/GLideN64.custom.ini $install_dir
-
 mkdir -p $base_dir/parallel-rsp/build
 cd $base_dir/parallel-rsp/build
 if [[ $UNAME == *"MINGW"* ]]; then
@@ -104,19 +82,15 @@ fi
 cmake --build .
 cp mupen64plus-rsp-parallel.* $install_dir
 
+mkdir -p $base_dir/parallel-rdp-standalone/build
+cd $base_dir/parallel-rdp-standalone/build
 if [[ $UNAME == *"MINGW"* ]]; then
-  cd $base_dir/angrylion-rdp-plus/
-  python3 ./make_version.py
-  cd $base_dir/angrylion-rdp-plus/msvc
-  "${MSBUILD_PATH}MSBuild.exe" angrylion-plus.sln -p:Configuration=Release -p:Platform=x64
-  cp build/Release/mupen64plus-video-angrylion-plus.dll $install_dir
+  cmake -G "MSYS Makefiles" -DCMAKE_BUILD_TYPE=Release ..
 else
-  mkdir -p $base_dir/angrylion-rdp-plus/build
-  cd $base_dir/angrylion-rdp-plus/build
   cmake -DCMAKE_BUILD_TYPE=Release ..
-  cmake --build .
-  cp mupen64plus-video-angrylion-plus.* $install_dir
 fi
+cmake --build .
+cp mupen64plus-video-parallel.* $install_dir
 
 if [[ $UNAME == *"MINGW"* ]]; then
   cd $install_dir
