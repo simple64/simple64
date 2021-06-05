@@ -17,9 +17,7 @@ elseif (MSVC)
 endif()
 
 add_library(${NAME_PLUGIN_M64P} SHARED
-#		main.cpp
 		parallel.cpp
-#		debug_rsp.cpp
 		rsp/vfunctions.cpp
 		rsp_jit.cpp rsp_jit.hpp
 		jit_allocator.cpp jit_allocator.hpp
@@ -58,17 +56,6 @@ add_library(${NAME_PLUGIN_M64P} SHARED
 		arch/simd/rsp/vsubc.h
 		arch/simd/rsp/vxor.h
 		arch/simd/rsp/vmulm.h)
-
-option(PARALLEL_RSP_DEBUG_JIT "Enable the debug JIT." OFF)
-
-if (PARALLEL_RSP_DEBUG_JIT)
-	if (ANDROID)
-		message("Android does not support debug JIT. Disabling it.")
-	elseif (NOT WIN32)
-		target_sources(${NAME_PLUGIN_M64P} PRIVATE debug_rsp.cpp debug_rsp.hpp debug_jit.cpp debug_jit.hpp)
-		target_compile_definitions(${NAME_PLUGIN_M64P} PUBLIC PARALLEL_RSP_DEBUG_JIT)
-	endif()
-endif()
 
 set_target_properties(${NAME_PLUGIN_M64P} PROPERTIES PREFIX "")
 target_include_directories(${NAME_PLUGIN_M64P} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
