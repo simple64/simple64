@@ -9,6 +9,7 @@ add_definitions(-DM64P_PLUGIN_API -DGRANITE_VULKAN_MT)
 
 if(WIN32)
     find_package(OpenGL REQUIRED)
+    add_definitions(-DVK_USE_PLATFORM_WIN32_KHR)
 endif()
 
 FILE(GLOB RDPSources parallel-rdp/*.cpp)
