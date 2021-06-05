@@ -7,6 +7,10 @@ set(NAME_PLUGIN_M64P "mupen64plus-video-parallel")
 include_directories(../mupen64plus-core/src/api)
 add_definitions(-DM64P_PLUGIN_API -DGRANITE_VULKAN_MT)
 
+if(WIN32)
+    find_package(OpenGL REQUIRED)
+endif()
+
 FILE(GLOB RDPSources parallel-rdp/*.cpp)
 
 add_library(${NAME_PLUGIN_M64P} SHARED
@@ -49,5 +53,9 @@ target_include_directories(${NAME_PLUGIN_M64P} PUBLIC
     vulkan
     vulkan-headers/include
     util)
+
+if(WIN32)
+    target_link_libraries(${NAME_PLUGIN_M64P} ${OPENGL_LIBRARIES})
+endif()
 
 set_target_properties(${NAME_PLUGIN_M64P} PROPERTIES PREFIX "")
