@@ -7,6 +7,21 @@ set(NAME_PLUGIN_M64P "mupen64plus-video-parallel")
 include_directories(../mupen64plus-core/src/api)
 add_definitions(-DM64P_PLUGIN_API -DGRANITE_VULKAN_MT)
 
+# check for INTERPROCEDURAL_OPTIMIZATION support
+if((${CMAKE_VERSION} VERSION_EQUAL 3.9) OR (${CMAKE_VERSION} VERSION_GREATER 3.9))
+    cmake_policy(SET CMP0069 NEW)
+
+    include(CheckIPOSupported)
+    check_ipo_supported(RESULT ENABLE_IPO)
+    if(ENABLE_IPO)
+        message("Interprocedural optimizations enabled")
+    endif(ENABLE_IPO)
+endif()
+
+if(ENABLE_IPO AND (CMAKE_BUILD_TYPE STREQUAL "Release"))
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
+endif()
+
 if(WIN32)
     find_package(OpenGL REQUIRED)
     add_definitions(-DVK_USE_PLATFORM_WIN32_KHR)
