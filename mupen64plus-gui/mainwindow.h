@@ -119,8 +119,6 @@ private slots:
 
     void on_actionView_Log_triggered();
 
-    void on_actionVideo_Settings_triggered();
-
     void on_actionCreate_Room_triggered();
 
     void on_actionJoin_Room_triggered();
@@ -130,7 +128,6 @@ private slots:
     void on_actionOpen_Discord_Channel_triggered();
 
 private:
-    void setupLLE();
     void setupDiscord();
     void stopGame();
     void updateOpenRecent();

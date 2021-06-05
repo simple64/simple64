@@ -20,7 +20,7 @@
      <x>0</x>
      <y>0</y>
      <width>640</width>
-     <height>32</height>
+     <height>22</height>
     </rect>
    </property>
    <property name="nativeMenuBar">
@@ -47,10 +47,6 @@
     <addaction name="actionPlugin_Paths"/>
     <addaction name="actionPlugin_Settings"/>
     <addaction name="actionController_Configuration"/>
-    <addaction name="actionVideo_Settings"/>
-    <addaction name="separator"/>
-    <addaction name="actionLLE_Graphics"/>
-    <addaction name="actionVI_Filter"/>
    </widget>
    <widget class="QMenu" name="menuEmulation">
     <property name="title">
@@ -105,7 +101,7 @@
   </action>
   <action name="actionPlugin_Settings">
    <property name="text">
-    <string>Advanced Settings</string>
+    <string>Core and Video Settings</string>
    </property>
   </action>
   <action name="actionOpen_Recent">
@@ -183,11 +179,6 @@
     <string>View Log</string>
    </property>
   </action>
-  <action name="actionVideo_Settings">
-   <property name="text">
-    <string>Video Settings</string>
-   </property>
-  </action>
   <action name="actionCreate_Room">
    <property name="text">
     <string>Create Room</string>
@@ -206,22 +197,6 @@
   <action name="actionOpen_Discord_Channel">
    <property name="text">
     <string>Join Discord Channel</string>
-   </property>
-  </action>
-  <action name="actionLLE_Graphics">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>LLE Graphics</string>
-   </property>
-  </action>
-  <action name="actionVI_Filter">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>VI Filter</string>
    </property>
   </action>
  </widget>

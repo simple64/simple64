@@ -12,8 +12,11 @@
 #include "settingclasses.h"
 
 m64p_handle coreConfigHandle;
+m64p_handle videoConfigHandle;
 QGridLayout *coreLayout;
 int coreLayoutRow;
+QGridLayout *videoLayout;
+int videoRow;
 
 static void paramListCallback(void * context, const char *ParamName, m64p_type ParamType)
 {
@@ -24,6 +27,10 @@ static void paramListCallback(void * context, const char *ParamName, m64p_type P
         my_layout = coreLayout;
         my_row = &coreLayoutRow;
         current_handle = coreConfigHandle;
+    } else if (strcmp((char*)context, "Video") == 0) {
+        my_layout = videoLayout;
+        my_row = &videoRow;
+        current_handle = videoConfigHandle;
     }
     int l_ParamInt;
     bool l_ParamBool;
@@ -90,7 +97,7 @@ void PluginDialog::handleResetButton()
     (*CoreDoCommand)(M64CMD_CORE_STATE_QUERY, M64CORE_EMU_STATE, &value);
     if (value == M64EMU_STOPPED) {
         (*ConfigDeleteSection)("Core");
-        (*ConfigDeleteSection)("Video-General");
+        (*ConfigDeleteSection)("Video-Parallel");
         (*ConfigSaveFile)();
         w->resetCore();
         this->close();
@@ -115,7 +122,7 @@ PluginDialog::PluginDialog(QWidget *parent)
     tabWidget->setUsesScrollButtons(false);
 
     QWidget *coreSettings = new QWidget(this);
-    coreLayout = new QGridLayout(this);
+    coreLayout = new QGridLayout(coreSettings);
     coreSettings->setLayout(coreLayout);
     res = (*ConfigOpenSection)("Core", &coreConfigHandle);
     if (res == M64ERR_SUCCESS)
@@ -125,6 +132,18 @@ PluginDialog::PluginDialog(QWidget *parent)
     coreScroll->setMinimumWidth(coreSettings->sizeHint().width() + 20);
     coreScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     tabWidget->addTab(coreScroll, tr("Core"));
+
+    QWidget *videoSettings = new QWidget(this);
+    videoLayout = new QGridLayout(videoSettings);
+    videoSettings->setLayout(videoLayout);
+    res = (*ConfigOpenSection)("Video-Parallel", &videoConfigHandle);
+    if (res == M64ERR_SUCCESS)
+        (*ConfigListParameters)(videoConfigHandle, (char*)"Video", paramListCallback);
+    QScrollArea *videoScroll = new QScrollArea(this);
+    videoScroll->setWidget(videoSettings);
+    videoScroll->setMinimumWidth(videoSettings->sizeHint().width() + 20);
+    videoScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    tabWidget->addTab(videoScroll, tr("ParaLLEl Video"));
 
     QLabel *myLabel = new QLabel("Hover your mouse over the configuration item name for a description.\n", this);
     myLabel->setStyleSheet("font-weight: bold");

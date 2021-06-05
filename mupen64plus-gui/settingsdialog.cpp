@@ -28,9 +28,6 @@ void SettingsDialog::handlePluginButton()
         w->getSettings()->setValue("pluginDirPath", fileName);
 
         w->getSettings()->remove("inputPlugin");
-        w->getSettings()->remove("videoPlugin");
-        w->getSettings()->remove("audioPlugin");
-        w->getSettings()->remove("rspPlugin");
         w->updatePlugins();
     }
 }
@@ -63,9 +60,6 @@ void SettingsDialog::handlePluginEdit()
     w->getSettings()->setValue("pluginDirPath", pluginPath->text());
 
     w->getSettings()->remove("inputPlugin");
-    w->getSettings()->remove("videoPlugin");
-    w->getSettings()->remove("audioPlugin");
-    w->getSettings()->remove("rspPlugin");
     w->updatePlugins();
 }
 

@@ -175,18 +175,6 @@ void JoinRoom::joinGame()
                 msgBox.setText("ROM does not match room ROM");
                 msgBox.exec();
             }
-            else if (json.value("lle").toString() == "Yes" && w->getSettings()->value("LLE").toInt() != 1)
-            {
-                (*CoreDoCommand)(M64CMD_ROM_CLOSE, 0, NULL);
-                msgBox.setText("You must enable LLE graphics");
-                msgBox.exec();
-            }
-            else if (json.value("lle").toString() == "No" && w->getSettings()->value("LLE").toInt() != 0)
-            {
-                (*CoreDoCommand)(M64CMD_ROM_CLOSE, 0, NULL);
-                msgBox.setText("You must disable LLE graphics");
-                msgBox.exec();
-            }
             else if (roomRequiresInputDelay && inputDelay->text().isEmpty())
             {
                 (*CoreDoCommand)(M64CMD_ROM_CLOSE, 0, NULL);
