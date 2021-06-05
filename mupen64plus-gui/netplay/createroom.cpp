@@ -195,7 +195,7 @@ void CreateRoom::createRoom()
     json.insert("game_name", QString(rom_settings.goodname));
     json.insert("client_sha", QStringLiteral(GUI_VERSION));
     json.insert("netplay_version", NETPLAY_VER);
-    json.insert("lle", w->getSettings()->value("LLE").toInt() ? "Yes" : "No");
+    json.insert("lle", "Yes");
     json.insert("use_input_delay", useInputDelay->isChecked());
     if (useInputDelay->isChecked())
         json.insert("input_delay", inputDelay->text().toInt());
