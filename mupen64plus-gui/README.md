@@ -7,7 +7,7 @@ It supports everything you'd expect from a mupen64plus frontend
 (plugin selection, configuration editing, save state management, screenshots, pausing, etc).
 
 You can try this out by downloading [**m64p**](https://m64p.github.io/).
-**m64p** is mupen64plus + GLideN64 + this GUI
+**m64p** is mupen64plus + ParaLLEl + this GUI
 
 It is [free/libre software](https://www.fsf.org/blogs/rms/20140407-geneva-tedx-talk-free-software-free-society)
 under [license GPL](https://www.gnu.org/licenses/gpl)v3.0.
@@ -15,7 +15,7 @@ Enjoy and happy hacking!
 
 ## Dependencies
 
-- [Qt](https://www.qt.io/) 5.4
+- [Qt](https://www.qt.io/) 5.10
   (this comes statically linked with the Windows binary build in m64p, so you don't need to worry about this on Windows)
 - [SDL2](https://www.libsdl.org/) ***Your copy of mupen64plus-core (libmupen64plus.so.2) also needs to be linked against SDL2***
 - 7za binary must be installed on your system for 7z/zip support
