@@ -39,7 +39,6 @@
 #define KEY_NATIVETEXTRECT "NativeTextRECT"
 #define KEY_NATIVETEXTLOD "NativeTextLOD"
 #define KEY_DEINTERLACE "DeinterlaceMode"
-#define KEY_INTEGER "IntegerScale"
 #define KEY_SYNCHRONOUS "SynchronousRDP"
 
 #include <stdlib.h>
@@ -63,6 +62,7 @@ static ptr_ConfigSetDefaultInt ConfigSetDefaultInt = NULL;
 static ptr_ConfigSetDefaultBool ConfigSetDefaultBool = NULL;
 static ptr_ConfigGetParamInt ConfigGetParamInt = NULL;
 static ptr_ConfigGetParamBool ConfigGetParamBool = NULL;
+static ptr_ConfigSetParameter ConfigSetParameter = NULL;
 
 static bool warn_hle;
 static bool plugin_initialized;
@@ -123,6 +123,7 @@ EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle _CoreLibHandle, void *Co
     ConfigSetDefaultBool = (ptr_ConfigSetDefaultBool)DLSYM(CoreLibHandle, "ConfigSetDefaultBool");
     ConfigGetParamInt = (ptr_ConfigGetParamInt)DLSYM(CoreLibHandle, "ConfigGetParamInt");
     ConfigGetParamBool = (ptr_ConfigGetParamBool)DLSYM(CoreLibHandle, "ConfigGetParamBool");
+    ConfigSetParameter = (ptr_ConfigSetParameter)DLSYM(CoreLibHandle, "ConfigSetParameter");
 
     ConfigOpenSection("Video-Parallel", &configVideoParallel);
     ConfigSetDefaultBool(configVideoParallel, KEY_FULLSCREEN, 0, "Use fullscreen mode if True, or windowed mode if False");
@@ -131,10 +132,9 @@ EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle _CoreLibHandle, void *Co
     ConfigSetDefaultInt(configVideoParallel, KEY_SCREEN_HEIGHT, 480, "Screen height");
     ConfigSetDefaultBool(configVideoParallel, KEY_SSREADBACKS, 0, "Enable superscaling of readbacks when upsampling");
     ConfigSetDefaultBool(configVideoParallel, KEY_SSDITHER, 1, "Enable superscaling of dithering when upsampling");
-    ConfigSetDefaultBool(configVideoParallel, KEY_SYNCHRONOUS, 0, "Enable synchronizing RDP and CPU");
+    ConfigSetDefaultBool(configVideoParallel, KEY_SYNCHRONOUS, 1, "Enable synchronizing RDP and CPU");
 
     ConfigSetDefaultBool(configVideoParallel, KEY_DEINTERLACE, 0, "Deinterlacing method. Weave should only be used with 1x scaling factor. False=Bob, True=Weave");
-    ConfigSetDefaultBool(configVideoParallel, KEY_INTEGER, 0, "Enable integer scaling");
     ConfigSetDefaultInt(configVideoParallel, KEY_OVERSCANCROP, 0, "Amount of overscan pixels to crop");
     ConfigSetDefaultBool(configVideoParallel, KEY_AA, 1, "VI anti-aliasing, smooths polygon edges.");
     ConfigSetDefaultBool(configVideoParallel, KEY_DIVOT, 1, "Allow VI divot filter, cleans up stray black pixels.");
@@ -225,7 +225,6 @@ EXPORT int CALL RomOpen(void)
     window_height = ConfigGetParamInt(configVideoParallel, KEY_SCREEN_HEIGHT);
     vk_rescaling = ConfigGetParamInt(configVideoParallel, KEY_UPSCALING);
     vk_ssreadbacks = ConfigGetParamBool(configVideoParallel, KEY_SSREADBACKS);
-    window_integerscale = ConfigGetParamBool(configVideoParallel, KEY_INTEGER);
     vk_ssdither = ConfigGetParamBool(configVideoParallel, KEY_SSDITHER);
 
     vk_divot_filter = ConfigGetParamBool(configVideoParallel, KEY_DIVOT);
@@ -238,7 +237,7 @@ EXPORT int CALL RomOpen(void)
     vk_interlacing = ConfigGetParamBool(configVideoParallel, KEY_DEINTERLACE);
     vk_downscaling_steps = ConfigGetParamInt(configVideoParallel, KEY_DOWNSCALE);
     vk_overscan = ConfigGetParamInt(configVideoParallel, KEY_OVERSCANCROP);
-    
+
     vk_synchronous = ConfigGetParamBool(configVideoParallel, KEY_SYNCHRONOUS);
 
     plugin_init();
@@ -249,6 +248,10 @@ EXPORT int CALL RomOpen(void)
 
 EXPORT void CALL RomClosed(void)
 {
+    ConfigSetParameter(configVideoParallel, KEY_SCREEN_WIDTH, M64TYPE_INT, &window_width);
+    ConfigSetParameter(configVideoParallel, KEY_SCREEN_HEIGHT, M64TYPE_INT, &window_height);
+    ConfigSaveSection("Video-Parallel");
+
     vk_destroy();
 }
 

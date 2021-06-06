@@ -45,8 +45,6 @@ static bool toggle_fs;
 int32_t window_width;
 int32_t window_height;
 int32_t window_fullscreen;
-bool window_integerscale;
-bool window_vsync;
 
 #define SHADER_HEADER "#version 330 core\n"
 #define TEX_FORMAT GL_RGBA
@@ -199,45 +197,27 @@ void gl_screen_render()
     display_width = 640 * vk_rescaling;
     display_height = 480 * vk_rescaling;
 
-    if(window_integerscale)
-    {
-        float aspect =  display_width /  display_height;
-        int width = window_width;
-        int height = (int)roundf(width / aspect);
-        if (height > window_height)
-        {
-            height = window_height;
-            width = (int)roundf(height * aspect);
-        }
-        int vp_x = (window_width / 2) - (width / 2);
-        int vp_y = (window_height / 2) - (height / 2);
-        glViewport(vp_x, window_height-(vp_y+height), width, height);
-    }
-    else
-    {
-        int win_width = window_width;
-        int win_height = window_height;
-        int win_x = 0;
-        int win_y=0;
-        int32_t hw =   display_height * win_width;
-        int32_t wh =  display_width * win_height;
+    int win_width = window_width;
+    int win_height = window_height;
+    int win_x = 0;
+    int win_y = 0;
+    int32_t hw = display_height * win_width;
+    int32_t wh = display_width * win_height;
 
-        // add letterboxes or pillarboxes if the window has a different aspect ratio
-        // than the current display mode
-        if (hw > wh) {
-            int32_t w_max = wh /  display_height;
-            win_x += (win_width - w_max) / 2;
-            win_width = w_max;
-        } else if (hw < wh) {
-            int32_t h_max = hw /  display_width;
-            win_y += (win_height - h_max) / 2;
-            win_height = h_max;
-        }
-        // configure viewport
-        glViewport(win_x, win_y, win_width, win_height);
+    // add letterboxes or pillarboxes if the window has a different aspect ratio
+    // than the current display mode
+    if (hw > wh) {
+        int32_t w_max = wh / display_height;
+        win_x += (win_width - w_max) / 2;
+        win_width = w_max;
+    } else if (hw < wh) {
+        int32_t h_max = hw / display_width;
+        win_y += (win_height - h_max) / 2;
+        win_height = h_max;
     }
+    // configure viewport
+    glViewport(win_x, win_y, win_width, win_height);
 
-    
     // draw fullscreen triangle
     glDrawArrays(GL_TRIANGLES, 0, 3);
 }
