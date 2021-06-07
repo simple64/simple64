@@ -87,7 +87,7 @@ void InitAudio()
     desired->freq = 48000;
     desired->format=AUDIO_F32;
     desired->channels=2;
-    desired->samples = 1024;
+    desired->samples = 256;
     desired->callback = NULL;
     desired->userdata = NULL;
 
@@ -171,33 +171,27 @@ EXPORT void CALL AiLenChanged( void )
 
         src_process(src_state, &data);
         
-        unsigned int audio_queue = SDL_GetQueuedAudioSize(dev);
-        unsigned int acceptable_latency = (hardware_spec->freq * 0.200) * 8;
-        unsigned int min_latency = (hardware_spec->freq * 0.020) * 8;
-        unsigned int diff = 0;
-        if (audio_queue > acceptable_latency)
-        {
-            diff = audio_queue - acceptable_latency;
-            diff &= ~7;
-        }
-        else if (!paused && audio_queue < min_latency)
+        unsigned int audio_queued = SDL_GetQueuedAudioSize(dev);
+        unsigned int acceptable_latency = (hardware_spec->freq * 0.2) * 8;
+        unsigned int min_latency = (hardware_spec->freq * 0.05) * 8;
+
+        if (!paused && audio_queued < min_latency)
         {
             SDL_PauseAudioDevice(dev, 1);
             paused = 1;
         }
-        else if (paused && audio_queue >= min_latency)
+        else if (paused && audio_queued >= min_latency)
         {
             SDL_PauseAudioDevice(dev, 0);
             paused = 0;
         }
 
         unsigned int output_length = data.output_frames_gen * 8;
-        if (output_length > diff)
+        if (audio_queued < acceptable_latency)
         {
-            int len = output_length - diff;
-            SDL_memset(mix_buffer, 0, len);
-            SDL_MixAudioFormat((Uint8*)mix_buffer, (Uint8*)output_buffer, AUDIO_F32, len, VolSDL);
-            SDL_QueueAudio(dev, mix_buffer, len);
+            SDL_memset(mix_buffer, 0, output_length);
+            SDL_MixAudioFormat((Uint8*)mix_buffer, (Uint8*)output_buffer, AUDIO_F32, output_length, VolSDL);
+            SDL_QueueAudio(dev, mix_buffer, output_length);
         }
     }
 }
