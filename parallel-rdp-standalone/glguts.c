@@ -38,8 +38,15 @@ static PFNGLDELETEPROGRAMPROC glDeleteProgram;
 static PFNGLUSEPROGRAMPROC glUseProgram;
 static PFNGLGENVERTEXARRAYSPROC glGenVertexArrays;
 static PFNGLBINDVERTEXARRAYPROC glBindVertexArray;
+static PFNGLBINDBUFFERPROC glBindBuffer;
+static PFNGLGENBUFFERSPROC glGenBuffers;
+static PFNGLDELETEBUFFERSPROC glDeleteBuffers;
+static PFNGLBUFFERSTORAGEPROC glBufferStorage;
+static PFNGLMAPBUFFERRANGEPROC glMapBufferRange;
+static PFNGLUNMAPBUFFERPROC glUnmapBuffer;
 
 static bool toggle_fs;
+bool window_changed;
 
 // framebuffer texture states
 int32_t window_width;
@@ -52,7 +59,9 @@ int32_t window_fullscreen;
 
 static GLuint program;
 static GLuint vao;
+static GLuint buffer;
 static GLuint texture;
+static uint8_t *buffer_data;
 
 int32_t tex_width;
 int32_t tex_height;
@@ -165,13 +174,13 @@ bool screen_write(struct frame_buffer *fb)
         glPixelStorei(GL_UNPACK_ROW_LENGTH, fb->pitch);
         // reallocate texture buffer on GPU
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, tex_width,
-                     tex_height, 0, TEX_FORMAT, TEX_TYPE, fb->pixels);
+                     tex_height, 0, TEX_FORMAT, TEX_TYPE, 0);
     }
     else
     {
         // copy local buffer to GPU texture buffer
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, tex_width, tex_height,
-                        TEX_FORMAT, TEX_TYPE, fb->pixels);
+                        TEX_FORMAT, TEX_TYPE, 0);
     }
 
     return buffer_size_changed;
@@ -232,13 +241,22 @@ void gl_screen_close(void)
     tex_width = 0;
     tex_height = 0;
 
+    glUnmapBuffer(buffer);
     glDeleteTextures(1, &texture);
     glDeleteVertexArrays(1, &vao);
+    glDeleteBuffers(1, &buffer);
     glDeleteProgram(program);
+}
+
+uint8_t* screen_get_texture_data()
+{
+    return buffer_data;
 }
 
 void screen_init()
 {
+    toggle_fs = false;
+    window_changed = false;
     /* Get the core Video Extension function pointers from the library handle */
     CoreVideo_Init = (ptr_VidExt_Init)DLSYM(CoreLibHandle, "VidExt_Init");
     CoreVideo_Quit = (ptr_VidExt_Quit)DLSYM(CoreLibHandle, "VidExt_Quit");
@@ -278,6 +296,12 @@ void screen_init()
     glUseProgram = (PFNGLUSEPROGRAMPROC) CoreVideo_GL_GetProcAddress("glUseProgram");
     glGenVertexArrays = (PFNGLGENVERTEXARRAYSPROC) CoreVideo_GL_GetProcAddress("glGenVertexArrays");
     glBindVertexArray = (PFNGLBINDVERTEXARRAYPROC) CoreVideo_GL_GetProcAddress("glBindVertexArray");
+    glBindBuffer = (PFNGLBINDBUFFERPROC) CoreVideo_GL_GetProcAddress("glBindBuffer");
+    glGenBuffers = (PFNGLGENBUFFERSPROC) CoreVideo_GL_GetProcAddress("glGenBuffers");
+    glDeleteBuffers = (PFNGLDELETEBUFFERSPROC) CoreVideo_GL_GetProcAddress("glDeleteBuffers");
+    glBufferStorage = (PFNGLBUFFERSTORAGEPROC) CoreVideo_GL_GetProcAddress("glBufferStorage");
+    glMapBufferRange = (PFNGLMAPBUFFERRANGEPROC) CoreVideo_GL_GetProcAddress("glMapBufferRange");
+    glUnmapBuffer = (PFNGLUNMAPBUFFERPROC) CoreVideo_GL_GetProcAddress("glUnmapBuffer");
 
     // shader sources for drawing a clipped full-screen triangle. the geometry
     // is defined by the vertex ID, so a VBO is not required.
@@ -314,6 +338,11 @@ void screen_init()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
+    glGenBuffers(1, &buffer);
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, buffer);
+    glBufferStorage(GL_PIXEL_UNPACK_BUFFER, 640 * 640 * sizeof(uint32_t), 0, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
+    buffer_data = glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, 640 * 640 * sizeof(uint32_t), GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
+
     // check if there was an error when using any of the commands above
     gl_check_errors();
 }
@@ -326,8 +355,11 @@ void screen_swap(bool blank)
         toggle_fs = false;
     }
 
-    // clear current buffer, indicating the start of a new frame
-    gl_screen_clear();
+    if (window_changed || blank)
+    {
+        gl_screen_clear();
+        window_changed = false;
+    }
 
     if (!blank)
     {

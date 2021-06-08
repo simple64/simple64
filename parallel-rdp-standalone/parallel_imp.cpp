@@ -36,7 +36,7 @@ static const unsigned cmd_len_lut[64] = {
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,  1,  1,  1,  1,  1,
 };
 
-void vk_blit(std::vector<RDP::RGBA> &colors, unsigned &width, unsigned &height)
+void vk_blit(unsigned &width, unsigned &height)
 {
 	if (running)
 	{
@@ -56,20 +56,20 @@ void vk_blit(std::vector<RDP::RGBA> &colors, unsigned &width, unsigned &height)
 		RDP::VIScanoutBuffer scanout;
 		frontend->scanout_async_buffer(scanout, opts);
 
+		uint8_t* color_data = screen_get_texture_data();
 		if (!scanout.width || !scanout.height)
 		{
 			width = 0;
 			height = 0;
-			colors.clear();
+			memset(color_data, 0, width * height * sizeof(uint32_t));
 			return;
 		}
 
 		width = scanout.width;
 		height = scanout.height;
-		colors.resize(width * height);
 
 		scanout.fence->wait();
-		memcpy(colors.data(), device->map_host_buffer(*scanout.buffer, Vulkan::MEMORY_ACCESS_READ_BIT),
+		memcpy(color_data, device->map_host_buffer(*scanout.buffer, Vulkan::MEMORY_ACCESS_READ_BIT),
 			   width * height * sizeof(uint32_t));
 		device->unmap_host_buffer(*scanout.buffer, Vulkan::MEMORY_ACCESS_READ_BIT);
 	}
@@ -104,8 +104,7 @@ void vk_rasterize()
 
 		unsigned width = 0;
 		unsigned height = 0;
-		std::vector<RDP::RGBA> cols;
-		vk_blit(cols, width, height);
+		vk_blit(width, height);
 
 		if (width == 0 || height == 0)
 		{
@@ -114,7 +113,6 @@ void vk_rasterize()
 		}
 
 		struct frame_buffer buf = {0};
-		buf.pixels = (video_pixel *)cols.data();
 		buf.valid = true;
 		buf.height = height;
 		buf.width = width;
