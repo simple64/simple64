@@ -38,7 +38,6 @@ extern "C"
     extern int32_t window_width;
     extern int32_t window_height;
     extern int32_t window_fullscreen;
-    extern bool window_changed;
 
 #ifdef __cplusplus
 }

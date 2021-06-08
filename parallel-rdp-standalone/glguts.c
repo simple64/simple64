@@ -46,7 +46,6 @@ static PFNGLMAPBUFFERRANGEPROC glMapBufferRange;
 static PFNGLUNMAPBUFFERPROC glUnmapBuffer;
 
 static bool toggle_fs;
-bool window_changed;
 
 // framebuffer texture states
 int32_t window_width;
@@ -256,7 +255,6 @@ uint8_t* screen_get_texture_data()
 void screen_init()
 {
     toggle_fs = false;
-    window_changed = false;
     /* Get the core Video Extension function pointers from the library handle */
     CoreVideo_Init = (ptr_VidExt_Init)DLSYM(CoreLibHandle, "VidExt_Init");
     CoreVideo_Quit = (ptr_VidExt_Quit)DLSYM(CoreLibHandle, "VidExt_Quit");
@@ -356,11 +354,7 @@ void screen_swap(bool blank)
         toggle_fs = false;
     }
 
-    if (window_changed || blank)
-    {
-        gl_screen_clear();
-        window_changed = false;
-    }
+    gl_screen_clear();
 
     if (!blank)
     {
