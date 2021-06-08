@@ -302,6 +302,7 @@ EXPORT void CALL ResizeVideoOutput(int width, int height)
 {
     window_width = width;
     window_height = height;
+    window_changed = true;
 }
 
 EXPORT void CALL FBWrite(unsigned int addr, unsigned int size)
