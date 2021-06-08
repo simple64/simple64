@@ -26,7 +26,7 @@ extern "C"
         bool valid;
     };
 
-    bool screen_write(struct frame_buffer *fb);
+    void screen_write(struct frame_buffer *fb);
     void screen_read(struct frame_buffer *fb, bool alpha);
     void screen_init();
     void screen_update(void);
