@@ -145,9 +145,11 @@ else
   cp $base_dir/mupen64plus-gui/discord/libdiscord_game_sdk.so $install_dir
 fi
 
-if [[ $UNAME != *"Darwin"* ]]; then
-  cd $base_dir
-  rm -f $base_dir/*.zip
-  HASH=$(git rev-parse --short HEAD)
-  zip -r m64p-$my_os-$HASH.zip mupen64plus
+if [[ "$1" != "nozip" ]]; then
+  if [[ $UNAME != *"Darwin"* ]]; then
+    cd $base_dir
+    rm -f $base_dir/*.zip
+    HASH=$(git rev-parse --short HEAD)
+    zip -r m64p-$my_os-$HASH.zip mupen64plus
+  fi
 fi
