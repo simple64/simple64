@@ -340,8 +340,9 @@ void screen_init()
 
     glGenBuffers(1, &buffer);
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, buffer);
-    glBufferStorage(GL_PIXEL_UNPACK_BUFFER, 640 * 640 * sizeof(uint32_t), 0, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
-    buffer_data = glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, 640 * 640 * sizeof(uint32_t), GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
+    uint32_t buffer_size = 640 * 640 * sizeof(uint32_t) * 8;
+    glBufferStorage(GL_PIXEL_UNPACK_BUFFER, buffer_size, 0, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
+    buffer_data = glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, buffer_size, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
 
     // check if there was an error when using any of the commands above
     gl_check_errors();

@@ -56,12 +56,10 @@ void vk_blit(unsigned &width, unsigned &height)
 		RDP::VIScanoutBuffer scanout;
 		frontend->scanout_async_buffer(scanout, opts);
 
-		uint8_t* color_data = screen_get_texture_data();
 		if (!scanout.width || !scanout.height)
 		{
 			width = 0;
 			height = 0;
-			memset(color_data, 0, width * height * sizeof(uint32_t));
 			return;
 		}
 
@@ -69,6 +67,7 @@ void vk_blit(unsigned &width, unsigned &height)
 		height = scanout.height;
 
 		scanout.fence->wait();
+		uint8_t* color_data = screen_get_texture_data();
 		memcpy(color_data, device->map_host_buffer(*scanout.buffer, Vulkan::MEMORY_ACCESS_READ_BIT),
 			   width * height * sizeof(uint32_t));
 		device->unmap_host_buffer(*scanout.buffer, Vulkan::MEMORY_ACCESS_READ_BIT);
