@@ -46,6 +46,7 @@ static PFNGLMAPBUFFERRANGEPROC glMapBufferRange;
 static PFNGLUNMAPBUFFERPROC glUnmapBuffer;
 
 static bool toggle_fs;
+static int toggle_buffer;
 
 // framebuffer texture states
 int32_t window_width;
@@ -61,6 +62,7 @@ static GLuint vao;
 static GLuint buffer;
 static GLuint texture;
 static uint8_t *buffer_data;
+static uint32_t buffer_size = 640 * 640 * sizeof(uint32_t) * 8;
 
 int32_t tex_width;
 int32_t tex_height;
@@ -163,6 +165,8 @@ static GLuint gl_shader_link(GLuint vert, GLuint frag)
 bool screen_write(struct frame_buffer *fb)
 {
     bool buffer_size_changed = tex_width != fb->width || tex_height != fb->height;
+    char* offset = NULL;
+    offset += toggle_buffer * buffer_size;
 
     // check if the framebuffer size has changed
     if (buffer_size_changed)
@@ -173,15 +177,16 @@ bool screen_write(struct frame_buffer *fb)
         glPixelStorei(GL_UNPACK_ROW_LENGTH, fb->pitch);
         // reallocate texture buffer on GPU
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, tex_width,
-                     tex_height, 0, TEX_FORMAT, TEX_TYPE, 0);
+                     tex_height, 0, TEX_FORMAT, TEX_TYPE, offset);
     }
     else
     {
         // copy local buffer to GPU texture buffer
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, tex_width, tex_height,
-                        TEX_FORMAT, TEX_TYPE, 0);
+                        TEX_FORMAT, TEX_TYPE, offset);
     }
 
+    toggle_buffer = !toggle_buffer;
     return buffer_size_changed;
 }
 
@@ -249,12 +254,13 @@ void gl_screen_close(void)
 
 uint8_t* screen_get_texture_data()
 {
-    return buffer_data;
+    return buffer_data + (toggle_buffer * buffer_size);
 }
 
 void screen_init()
 {
     toggle_fs = false;
+    toggle_buffer = 0;
     /* Get the core Video Extension function pointers from the library handle */
     CoreVideo_Init = (ptr_VidExt_Init)DLSYM(CoreLibHandle, "VidExt_Init");
     CoreVideo_Quit = (ptr_VidExt_Quit)DLSYM(CoreLibHandle, "VidExt_Quit");
@@ -338,9 +344,8 @@ void screen_init()
 
     glGenBuffers(1, &buffer);
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, buffer);
-    uint32_t buffer_size = 640 * 640 * sizeof(uint32_t) * 8;
-    glBufferStorage(GL_PIXEL_UNPACK_BUFFER, buffer_size, 0, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
-    buffer_data = glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, buffer_size, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
+    glBufferStorage(GL_PIXEL_UNPACK_BUFFER, buffer_size * 2, 0, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
+    buffer_data = glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, buffer_size * 2, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
 
     // check if there was an error when using any of the commands above
     gl_check_errors();
