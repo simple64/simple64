@@ -62,7 +62,7 @@ static GLuint vao;
 static GLuint buffer;
 static GLuint texture[2];
 static uint8_t *buffer_data;
-static uint32_t buffer_size = 640 * 640 * sizeof(uint32_t) * 8;
+static uint32_t buffer_size = (640*8) * (480*8) * sizeof(uint32_t);
 
 int32_t tex_width[2];
 int32_t tex_height[2];
