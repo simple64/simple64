@@ -175,7 +175,7 @@ void screen_write(struct frame_buffer *fb)
     offset += toggle_buffer * buffer_size;
 
     bool serrate = (*GET_GFX_INFO(VI_STATUS_REG) & VI_CONTROL_SERRATE_BIT);
-    if (serrate && vk_interlacing && (current_program != program_bob))
+    if (serrate && !vk_interlacing && (current_program != program_bob))
     {
         glUseProgram(program_bob);
         current_program = program_bob;
