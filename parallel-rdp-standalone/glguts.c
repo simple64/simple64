@@ -60,15 +60,11 @@ int32_t window_fullscreen;
 #define TEX_TYPE GL_UNSIGNED_BYTE
 
 static GLuint program;
-static GLuint program_bob;
-static GLuint current_program;
-static GLint texture_height;
 static GLuint vao;
 static GLuint buffer;
 static GLuint texture[2];
 static uint8_t *buffer_data;
 static uint32_t buffer_size = (640*8) * (480*8) * sizeof(uint32_t);
-static const int VI_CONTROL_SERRATE_BIT = 1 << 6;
 
 int32_t tex_width[2];
 int32_t tex_height[2];
@@ -174,26 +170,12 @@ void screen_write(struct frame_buffer *fb)
     char* offset = NULL;
     offset += toggle_buffer * buffer_size;
 
-    bool serrate = (*GET_GFX_INFO(VI_STATUS_REG) & VI_CONTROL_SERRATE_BIT);
-    if (serrate && !vk_interlacing && (current_program != program_bob))
-    {
-        glUseProgram(program_bob);
-        current_program = program_bob;
-    }
-    else if (!serrate && (current_program == program_bob))
-    {
-        glUseProgram(program);
-        current_program = program;
-    }
-
     glBindTexture(GL_TEXTURE_2D, texture[toggle_buffer]);
     // check if the framebuffer size has changed
     if (buffer_size_changed)
     {
         tex_width[toggle_buffer] = fb->width;
         tex_height[toggle_buffer] = fb->height;
-        if (current_program == program_bob)
-            glUniform1i(texture_height, fb->height);
         // set pitch for all unpacking operations
         glPixelStorei(GL_UNPACK_ROW_LENGTH, fb->pitch);
         // reallocate texture buffer on GPU
@@ -267,7 +249,6 @@ void gl_screen_close(void)
     glDeleteVertexArrays(1, &vao);
     glDeleteBuffers(1, &buffer);
     glDeleteProgram(program);
-    glDeleteProgram(program_bob);
 }
 
 uint8_t* screen_get_texture_data()
@@ -350,39 +331,11 @@ void screen_init()
         "color = texture(tex0, uv);\n"
         "}\n";
 
-    // adapted from https://github.com/libretro/glsl-shaders/blob/master/misc/bob-deinterlacing.glsl
-    const GLchar *frag_shader_bob =
-        SHADER_HEADER
-        "in vec2 uv;\n"
-        "layout(location = 0) out vec4 color;\n"
-        "uniform sampler2D tex0;\n"
-        "uniform int TextureHeight;\n"
-        "vec4 bob(float texture_height, vec2 texCoord, sampler2D tex)\n"
-        "{\n"
-        "    float y = texture_height * texCoord.y;\n"
-        "    if (mod(y, 2.0) > 0.99999)\n"
-        "    {\n"
-        "        return texture(tex, texCoord + vec2(0.0, 1.0 / texture_height));\n"
-        "    }\n"
-        "    else\n"
-        "    {\n"
-        "        return texture(tex, texCoord);\n"
-        "    }\n"
-        "}\n"
-        "void main()\n"
-        "{\n"
-        "    color = bob(float(TextureHeight), uv, tex0);\n"
-        "}\n";
-
     // compile and link OpenGL program
     GLuint vert = gl_shader_compile(GL_VERTEX_SHADER, vert_shader);
     GLuint frag = gl_shader_compile(GL_FRAGMENT_SHADER, frag_shader);
-    GLuint frag_bob = gl_shader_compile(GL_FRAGMENT_SHADER, frag_shader_bob);
     program = gl_shader_link(vert, frag);
-    program_bob = gl_shader_link(vert, frag_bob);
     glUseProgram(program);
-    current_program = program;
-    texture_height = glGetUniformLocation(program_bob, "TextureHeight");
 
     // prepare dummy VAO
     glGenVertexArrays(1, &vao);
