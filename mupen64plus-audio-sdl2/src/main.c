@@ -1,6 +1,5 @@
 #include <SDL.h>
 #include <SDL_audio.h>
-#include <samplerate.h>
 #define M64P_PLUGIN_PROTOTYPES 1
 #include "m64p_common.h"
 #include "m64p_types.h"
@@ -16,14 +15,13 @@ static int l_PluginInit = 0;
 static int GameFreq = 0;
 static AUDIO_INFO AudioInfo;
 static unsigned char primaryBuffer[0x40000];
-static float output_buffer[0x20000];
-static float mix_buffer[0x20000];
-static float convert_buffer[0x20000];
+static uint8_t output_buffer[0x40000];
+static uint8_t mix_buffer[0x40000];
 static int VolIsMuted = 0;
 static unsigned int paused = 0;
 static int ff = 0;
-static SRC_STATE *src_state;
 static int VolSDL = SDL_MIX_MAXVOLUME;
+static SDL_AudioStream* audio_stream;
 
 EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle CoreLibHandle, void *Context, void (*DebugCallback)(void *, int, const char *))
 {
@@ -45,9 +43,6 @@ EXPORT m64p_error CALL PluginShutdown(void)
 
     if(hardware_spec != NULL) free(hardware_spec);
     hardware_spec = NULL;
-
-    if (src_state) src_state = src_delete(src_state);
-    src_state = NULL;
 
     SDL_QuitSubSystem(SDL_INIT_AUDIO);
     l_PluginInit = 0;
@@ -84,10 +79,10 @@ void InitAudio()
     if(hardware_spec != NULL) free(hardware_spec);
     desired = malloc(sizeof(SDL_AudioSpec));
     obtained = malloc(sizeof(SDL_AudioSpec));
-    desired->freq = 48000;
-    desired->format=AUDIO_F32;
-    desired->channels=2;
-    desired->samples = 512;
+    desired->freq = 44100;
+    desired->format = AUDIO_S16SYS;
+    desired->channels = 2;
+    desired->samples = 1024;
     desired->callback = NULL;
     desired->userdata = NULL;
 
@@ -97,10 +92,7 @@ void InitAudio()
     hardware_spec=obtained;
     SDL_PauseAudioDevice(dev, 0);
     paused = 0;
-
-    if (src_state) src_state = src_delete(src_state);
-    int error;
-    src_state = src_new (SRC_SINC_MEDIUM_QUALITY, 2, &error);
+    audio_stream = SDL_NewAudioStream(AUDIO_S16SYS, 2, GameFreq, hardware_spec->format, 2, hardware_spec->freq);
 }
 
 void CloseAudio()
@@ -111,8 +103,8 @@ void CloseAudio()
     if(hardware_spec != NULL) free(hardware_spec);
     hardware_spec = NULL;
 
-    if (src_state) src_state = src_delete(src_state);
-    src_state = NULL;
+    SDL_FreeAudioStream(audio_stream);
+    audio_stream = NULL;
 }
 
 EXPORT void CALL AiDacrateChanged( int SystemType )
@@ -132,9 +124,8 @@ EXPORT void CALL AiDacrateChanged( int SystemType )
             GameFreq = 48628316 / (*AudioInfo.AI_DACRATE_REG + 1);
             break;
     }
-    if (src_state) src_state = src_delete(src_state);
-    int error;
-    src_state = src_new (SRC_SINC_MEDIUM_QUALITY, 2, &error);
+    SDL_FreeAudioStream(audio_stream);
+    audio_stream = SDL_NewAudioStream(AUDIO_S16SYS, 2, GameFreq, hardware_spec->format, 2, hardware_spec->freq);
 }
 
 EXPORT void CALL AiLenChanged( void )
@@ -160,37 +151,29 @@ EXPORT void CALL AiLenChanged( void )
 
     if (!VolIsMuted && !ff)
     {
-        src_short_to_float_array ((short*)primaryBuffer, convert_buffer, LenReg / 2) ;
-        SRC_DATA data;
-        data.data_in = convert_buffer;
-        data.input_frames = LenReg / 4;
-        data.data_out = output_buffer;
-        data.output_frames = sizeof(output_buffer) / 8;
-        data.src_ratio = (float)hardware_spec->freq / GameFreq;
-        data.end_of_input = 0;
-
-        src_process(src_state, &data);
-        
         unsigned int audio_queued = SDL_GetQueuedAudioSize(dev);
-        unsigned int acceptable_latency = (hardware_spec->freq * 0.2) * 8;
-        unsigned int min_latency = (hardware_spec->freq * 0.05) * 8;
+        unsigned int acceptable_latency = (hardware_spec->freq * 0.2) * 4;
+        unsigned int min_latency = (hardware_spec->freq * 0.02) * 4;
 
         if (!paused && audio_queued < min_latency)
         {
             SDL_PauseAudioDevice(dev, 1);
             paused = 1;
         }
-        else if (paused && audio_queued >= min_latency)
+        else if (paused && audio_queued >= (min_latency * 2))
         {
             SDL_PauseAudioDevice(dev, 0);
             paused = 0;
         }
 
-        unsigned int output_length = data.output_frames_gen * 8;
         if (audio_queued < acceptable_latency)
+            SDL_AudioStreamPut(audio_stream, primaryBuffer, LenReg);
+
+        int output_length = SDL_AudioStreamGet(audio_stream, output_buffer, sizeof(output_buffer));
+        if (output_length > 0)
         {
             SDL_memset(mix_buffer, 0, output_length);
-            SDL_MixAudioFormat((Uint8*)mix_buffer, (Uint8*)output_buffer, AUDIO_F32, output_length, VolSDL);
+            SDL_MixAudioFormat(mix_buffer, output_buffer, hardware_spec->format, output_length, VolSDL);
             SDL_QueueAudio(dev, mix_buffer, output_length);
         }
     }

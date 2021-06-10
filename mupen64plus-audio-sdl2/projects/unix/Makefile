@@ -158,14 +158,6 @@ ifeq ($(origin PKG_CONFIG), undefined)
   endif
 endif
 
-ifneq ($(strip $(shell $(PKG_CONFIG) samplerate --modversion 2> /dev/null)),)
-  # set libsamplerate flags and libraries
-  SRC_CFLAGS += $(shell $(PKG_CONFIG) samplerate --cflags)
-  SRC_LDLIBS += $(shell $(PKG_CONFIG) samplerate --libs)
-else
-  $(error No libsamplerate development libraries found.)
-endif
-
 CFLAGS += $(SRC_CFLAGS)
 LDLIBS += $(SRC_LDLIBS)
 
