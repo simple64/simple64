@@ -48,10 +48,8 @@ void vk_blit(unsigned &width, unsigned &height)
 		opts.vi.dither_filter = vk_dither_filter;
 		opts.vi.divot_filter = vk_divot_filter;
 		opts.vi.gamma_dither = vk_gamma_dither;
-		//opts.blend_previous_frame = vk_interlacing;
-		//opts.upscale_deinterlacing = !vk_interlacing;
-		opts.blend_previous_frame = 1;
-		opts.upscale_deinterlacing = 0;
+		opts.blend_previous_frame = vk_interlacing;
+		opts.upscale_deinterlacing = !vk_interlacing;
 		opts.downscale_steps = vk_downscaling_steps;
 		opts.crop_overscan_pixels = vk_overscan;
 
