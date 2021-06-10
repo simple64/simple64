@@ -134,7 +134,7 @@ EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle _CoreLibHandle, void *Co
     ConfigSetDefaultBool(configVideoParallel, KEY_SSDITHER, 1, "Enable superscaling of dithering when upsampling");
     ConfigSetDefaultBool(configVideoParallel, KEY_SYNCHRONOUS, 1, "Enable synchronizing RDP and CPU");
 
-    ConfigSetDefaultBool(configVideoParallel, KEY_DEINTERLACE, 1, "Deinterlacing method. Weave should only be used with 1x scaling factor. False=Bob, True=Weave");
+    //ConfigSetDefaultBool(configVideoParallel, KEY_DEINTERLACE, 1, "Deinterlacing method. Weave should only be used with 1x scaling factor. False=Bob, True=Weave");
     ConfigSetDefaultInt(configVideoParallel, KEY_OVERSCANCROP, 0, "Amount of overscan pixels to crop");
     ConfigSetDefaultBool(configVideoParallel, KEY_AA, 1, "VI anti-aliasing, smooths polygon edges.");
     ConfigSetDefaultBool(configVideoParallel, KEY_DIVOT, 1, "Allow VI divot filter, cleans up stray black pixels.");
@@ -234,7 +234,8 @@ EXPORT int CALL RomOpen(void)
     vk_dither_filter = ConfigGetParamBool(configVideoParallel, KEY_VIDITHER);
     vk_native_texture_lod = ConfigGetParamBool(configVideoParallel, KEY_NATIVETEXTLOD);
     vk_native_tex_rect = ConfigGetParamBool(configVideoParallel, KEY_NATIVETEXTRECT);
-    vk_interlacing = ConfigGetParamBool(configVideoParallel, KEY_DEINTERLACE);
+    //vk_interlacing = ConfigGetParamBool(configVideoParallel, KEY_DEINTERLACE);
+    vk_interlacing = 1;
     vk_downscaling_steps = ConfigGetParamInt(configVideoParallel, KEY_DOWNSCALE);
     vk_overscan = ConfigGetParamInt(configVideoParallel, KEY_OVERSCANCROP);
 
