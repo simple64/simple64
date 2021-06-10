@@ -28,11 +28,6 @@ cp /usr/local/opt/libpng/lib/libpng16.16.dylib $contents/Frameworks
 
 otool -L $contents/Frameworks/libpng16.16.dylib
 
-# libsamplerate
-cp /usr/local/opt/libsamplerate/lib/libsamplerate.0.dylib $contents/Frameworks
-
-otool -L $contents/Frameworks/libsamplerate.0.dylib
-
 # hidapi
 cp /usr/local/opt/hidapi/lib/libhidapi.0.dylib $contents/Frameworks
 
@@ -58,7 +53,6 @@ otool -L $contents/MacOS/libmupen64plus.dylib
 
 # mupen64plus-audio-sdl2.dylib
 install_name_tool -change /usr/local/opt/sdl2/lib/libSDL2-2.0.0.dylib @executable_path/../Frameworks/libSDL2-2.0.0.dylib $contents/MacOS/mupen64plus-audio-sdl2.dylib
-install_name_tool -change /usr/local/opt/libsamplerate/lib/libsamplerate.0.dylib @executable_path/../Frameworks/libsamplerate.0.dylib $contents/MacOS/mupen64plus-audio-sdl2.dylib
 
 otool -L $contents/MacOS/mupen64plus-audio-sdl2.dylib
 
