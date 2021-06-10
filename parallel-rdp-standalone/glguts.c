@@ -262,7 +262,7 @@ void gl_screen_clear(void)
 
 void gl_screen_close(void)
 {
-    glUnmapBuffer(buffer);
+    glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
     glDeleteTextures(2, &texture[0]);
     glDeleteVertexArrays(1, &vao);
     glDeleteBuffers(1, &buffer);
