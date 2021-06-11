@@ -78,7 +78,6 @@ static void dma_pi_read(struct pi_controller* pi)
     /* Mark DMA as busy */
     pi->regs[PI_STATUS_REG] |= PI_STATUS_DMA_BUSY;
     /* Update PI_DRAM_ADDR_REG and PI_CART_ADDR_REG */
-    length = (pi->regs[PI_RD_LEN_REG] & UINT32_C(0x00ffffff)) + 1;
     pi->regs[PI_DRAM_ADDR_REG] = (pi->regs[PI_DRAM_ADDR_REG] + length + 7) & ~7;
     pi->regs[PI_CART_ADDR_REG] = (pi->regs[PI_CART_ADDR_REG] + length + 1) & ~1;
 
@@ -117,7 +116,6 @@ static void dma_pi_write(struct pi_controller* pi)
     /* Mark DMA as busy */
     pi->regs[PI_STATUS_REG] |= PI_STATUS_DMA_BUSY;
     /* Update PI_DRAM_ADDR_REG and PI_CART_ADDR_REG */
-    length = (pi->regs[PI_WR_LEN_REG] & UINT32_C(0x00ffffff)) + 1;
     pi->regs[PI_DRAM_ADDR_REG] = (pi->regs[PI_DRAM_ADDR_REG] + length + 7) & ~7;
     pi->regs[PI_CART_ADDR_REG] = (pi->regs[PI_CART_ADDR_REG] + length + 1) & ~1;
 
