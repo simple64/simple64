@@ -44,6 +44,8 @@ static PFNGLDELETEBUFFERSPROC glDeleteBuffers;
 static PFNGLBUFFERSTORAGEPROC glBufferStorage;
 static PFNGLMAPBUFFERRANGEPROC glMapBufferRange;
 static PFNGLUNMAPBUFFERPROC glUnmapBuffer;
+static PFNGLGETUNIFORMLOCATIONPROC glGetUniformLocation;
+static PFNGLUNIFORM1IPROC glUniform1i;
 
 static bool toggle_fs;
 static int toggle_buffer;
@@ -69,7 +71,7 @@ int32_t tex_height[2];
 int display_width;
 int display_height;
 
-#ifdef _DEBUG
+#ifdef GL_DEBUG
 static void gl_check_errors(void)
 {
     GLenum err;
@@ -242,7 +244,7 @@ void gl_screen_clear(void)
 
 void gl_screen_close(void)
 {
-    glUnmapBuffer(buffer);
+    glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
     glDeleteTextures(2, &texture[0]);
     glDeleteVertexArrays(1, &vao);
     glDeleteBuffers(1, &buffer);
@@ -307,6 +309,8 @@ void screen_init()
     glBufferStorage = (PFNGLBUFFERSTORAGEPROC) CoreVideo_GL_GetProcAddress("glBufferStorage");
     glMapBufferRange = (PFNGLMAPBUFFERRANGEPROC) CoreVideo_GL_GetProcAddress("glMapBufferRange");
     glUnmapBuffer = (PFNGLUNMAPBUFFERPROC) CoreVideo_GL_GetProcAddress("glUnmapBuffer");
+    glGetUniformLocation = (PFNGLGETUNIFORMLOCATIONPROC) CoreVideo_GL_GetProcAddress("glGetUniformLocation");
+    glUniform1i = (PFNGLUNIFORM1IPROC) CoreVideo_GL_GetProcAddress("glUniform1i");
 
     // shader sources for drawing a clipped full-screen triangle. the geometry
     // is defined by the vertex ID, so a VBO is not required.

@@ -64,8 +64,10 @@ static int search_dir_file(char *destpath, const char *path, const char *filenam
         strcat(destpath, "\\");
     strcat(destpath, filename);
 
+    wchar_t w_destpath[PATH_MAX];
+    MultiByteToWideChar(CP_UTF8, 0, destpath, -1, w_destpath, PATH_MAX);
     /* test for a valid file */
-    if (_stat(destpath, &fileinfo) != 0)
+    if (_wstat(w_destpath, &fileinfo) != 0)
         return 2;
     if ((fileinfo.st_mode & _S_IFREG) == 0)
         return 3;
@@ -91,8 +93,10 @@ int osal_mkdirp(const char *dirpath, int mode)
     if (strchr(OSAL_DIR_SEPARATORS, *lastchar) != NULL)
         *lastchar = 0;
 
+    wchar_t w_mypath[PATH_MAX];
+    MultiByteToWideChar(CP_UTF8, 0, mypath, -1, w_mypath, PATH_MAX);
     // Terminate quickly if the path already exists
-    if (_stat(mypath, &fileinfo) == 0 && (fileinfo.st_mode & _S_IFDIR))
+    if (_wstat(w_mypath, &fileinfo) == 0 && (fileinfo.st_mode & _S_IFDIR))
         goto goodexit;
 
     while ((currpath = strpbrk(currpath + 1, OSAL_DIR_SEPARATORS)) != NULL)
@@ -102,9 +106,9 @@ int osal_mkdirp(const char *dirpath, int mode)
         if (currpath > mypath && currpath[-1] == ':')
             continue;
         *currpath = '\0';
-        if (_stat(mypath, &fileinfo) != 0)
+        if (_wstat(w_mypath, &fileinfo) != 0)
         {
-            if (_mkdir(mypath) != 0)
+            if (_wmkdir(w_mypath) != 0)
                 goto errorexit;
         }
         else if (!(fileinfo.st_mode & _S_IFDIR))
@@ -115,7 +119,7 @@ int osal_mkdirp(const char *dirpath, int mode)
     }
 
     // Create full path
-    if  (_mkdir(mypath) != 0)
+    if  (_wmkdir(w_mypath) != 0)
         goto errorexit;
 
 goodexit:
@@ -152,7 +156,8 @@ const char * osal_get_shared_filepath(const char *filename, const char *firstsea
 
 const char * osal_get_user_configpath(void)
 {
-    static char chHomePath[MAX_PATH];
+    static wchar_t chHomePath[MAX_PATH];
+    static char outString[MAX_PATH];
     LPITEMIDLIST pidl;
     LPMALLOC pMalloc;
     struct _stat fileinfo;
@@ -160,35 +165,37 @@ const char * osal_get_user_configpath(void)
     // Get item ID list for the path of user's personal directory
     SHGetSpecialFolderLocation(NULL, CSIDL_APPDATA, &pidl);
     // get the path in a char string
-    SHGetPathFromIDList(pidl, chHomePath);
+    SHGetPathFromIDListW(pidl, chHomePath);
     // do a bunch of crap just to free some memory
     SHGetMalloc(&pMalloc);
     pMalloc->lpVtbl->Free(pMalloc, pidl);
     pMalloc->lpVtbl->Release(pMalloc);
 
     // tack on 'mupen64plus'
-    if (chHomePath[strlen(chHomePath)-1] != '\\')
-        strcat(chHomePath, "\\");
-    strcat(chHomePath, "Mupen64Plus");
+    if (chHomePath[wcslen(chHomePath)-1] != L'\\')
+        wcscat(chHomePath, L"\\");
+    wcscat(chHomePath, L"Mupen64Plus");
 
     // if this directory doesn't exist, then make it
-    if (_stat(chHomePath, &fileinfo) == 0)
+    if (_wstat(chHomePath, &fileinfo) == 0)
     {
-        strcat(chHomePath, "\\");
-        return chHomePath;
+        wcscat(chHomePath, L"\\");
+        WideCharToMultiByte(CP_UTF8, 0, chHomePath, -1, outString, MAX_PATH, NULL, NULL);
+        return outString;
     }
     else
     {
-        osal_mkdirp(chHomePath, 0);
-        if (_stat(chHomePath, &fileinfo) == 0)
+        _wmkdir(chHomePath);
+        if (_wstat(chHomePath, &fileinfo) == 0)
         {
-            strcat(chHomePath, "\\");
-            return chHomePath;
+            wcscat(chHomePath, L"\\");
+            WideCharToMultiByte(CP_UTF8, 0, chHomePath, -1, outString, MAX_PATH, NULL, NULL);
+            return outString;
         }
     }
 
     /* otherwise we are in trouble */
-    DebugMessage(M64MSG_ERROR, "Failed to open configuration directory '%s'.", chHomePath);
+    DebugMessage(M64MSG_ERROR, "Failed to open configuration directory '%ls'.", chHomePath);
     return NULL;
 }
 
@@ -204,4 +211,18 @@ const char * osal_get_user_cachepath(void)
     return osal_get_user_configpath();
 }
 
+FILE * osal_file_open ( const char * filename, const char * mode )
+{
+    wchar_t wstr_filename[PATH_MAX];
+    wchar_t wstr_mode[64];
+    MultiByteToWideChar(CP_UTF8, 0, filename, -1, wstr_filename, PATH_MAX);
+    MultiByteToWideChar(CP_UTF8, 0, mode, -1, wstr_mode, 64);
+    return _wfopen (wstr_filename, wstr_mode);
+}
 
+gzFile osal_gzopen(const char *filename, const char *mode)
+{
+    wchar_t wstr_filename[PATH_MAX];
+    MultiByteToWideChar(CP_UTF8, 0, filename, -1, wstr_filename, PATH_MAX);
+    return gzopen_w(wstr_filename, mode);
+}
