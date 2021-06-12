@@ -42,17 +42,12 @@ static void do_sp_dma(struct rsp_core* sp, const struct sp_dma* dma)
 
     unsigned int l = dma->length;
 
-    unsigned int length = (l & 0xfff) + 1;
+    unsigned int length = ((l & 0xfff) | 7) + 1;
     unsigned int count = ((l >> 12) & 0xff) + 1;
     unsigned int skip = ((l >> 20) & 0xfff);
-    length = (length + 0x7) & ~0x7;
 
     unsigned int memaddr = dma->memaddr & 0xff8;
     unsigned int dramaddr = dma->dramaddr & 0xfffff8;
-
-    // Check length.
-    if ((memaddr + length) > 0x1000)
-        length = 0x1000 - memaddr;
 
     unsigned char *spmem = (unsigned char*)sp->mem + (dma->memaddr & 0x1000);
     unsigned char *dram = (unsigned char*)sp->ri->rdram->dram;
