@@ -27,6 +27,7 @@
 #define KEY_SCREEN_WIDTH "ScreenWidth"
 #define KEY_SCREEN_HEIGHT "ScreenHeight"
 #define KEY_UPSCALING "Upscaling"
+#define KEY_WIDESCREEN "WidescreenStretch"
 #define KEY_SSDITHER "SuperscaledDither"
 #define KEY_SSREADBACKS "SuperscaledReads"
 #define KEY_OVERSCANCROP "CropOverscan"
@@ -130,11 +131,11 @@ EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle _CoreLibHandle, void *Co
     ConfigSetDefaultInt(configVideoParallel, KEY_UPSCALING, 1, "Amount of rescaling: 1=None, 2=2x, 4=4x, 8=8x");
     ConfigSetDefaultInt(configVideoParallel, KEY_SCREEN_WIDTH, 640, "Screen width");
     ConfigSetDefaultInt(configVideoParallel, KEY_SCREEN_HEIGHT, 480, "Screen height");
+    ConfigSetDefaultBool(configVideoParallel, KEY_WIDESCREEN, 0, "Widescreen (stretch)");
+    ConfigSetDefaultBool(configVideoParallel, KEY_DEINTERLACE, 0, "Deinterlacing method. False=Bob, True=Weave");
     ConfigSetDefaultBool(configVideoParallel, KEY_SSREADBACKS, 0, "Enable superscaling of readbacks when upsampling");
     ConfigSetDefaultBool(configVideoParallel, KEY_SSDITHER, 1, "Enable superscaling of dithering when upsampling");
     ConfigSetDefaultBool(configVideoParallel, KEY_SYNCHRONOUS, 1, "Enable synchronizing RDP and CPU");
-
-    ConfigSetDefaultBool(configVideoParallel, KEY_DEINTERLACE, 0, "Deinterlacing method. False=Bob, True=Weave");
     ConfigSetDefaultInt(configVideoParallel, KEY_OVERSCANCROP, 0, "Amount of overscan pixels to crop");
     ConfigSetDefaultBool(configVideoParallel, KEY_AA, 1, "VI anti-aliasing, smooths polygon edges.");
     ConfigSetDefaultBool(configVideoParallel, KEY_DIVOT, 1, "Allow VI divot filter, cleans up stray black pixels.");
@@ -223,6 +224,7 @@ EXPORT int CALL RomOpen(void)
     window_fullscreen = ConfigGetParamBool(configVideoParallel, KEY_FULLSCREEN);
     window_width = ConfigGetParamInt(configVideoParallel, KEY_SCREEN_WIDTH);
     window_height = ConfigGetParamInt(configVideoParallel, KEY_SCREEN_HEIGHT);
+    window_widescreen = ConfigGetParamBool(configVideoParallel, KEY_WIDESCREEN);
     vk_rescaling = ConfigGetParamInt(configVideoParallel, KEY_UPSCALING);
     vk_ssreadbacks = ConfigGetParamBool(configVideoParallel, KEY_SSREADBACKS);
     vk_ssdither = ConfigGetParamBool(configVideoParallel, KEY_SSDITHER);
