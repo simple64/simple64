@@ -54,6 +54,7 @@ static int toggle_buffer;
 int32_t window_width;
 int32_t window_height;
 int32_t window_fullscreen;
+int32_t window_widescreen;
 
 #define SHADER_HEADER "#version 330 core\n"
 #define TEX_FORMAT GL_RGBA
@@ -209,7 +210,7 @@ void screen_read(struct frame_buffer *fb, bool alpha)
 
 void gl_screen_render()
 {
-    display_width = 640 * vk_rescaling;
+    display_width = (window_widescreen ? 854 : 640) * vk_rescaling;
     display_height = 480 * vk_rescaling;
 
     int win_width = window_width;
