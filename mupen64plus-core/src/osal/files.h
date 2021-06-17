@@ -35,12 +35,14 @@
   #define unlink _unlink
 
   #define OSAL_DIR_SEPARATORS           "\\/"
+  #define WIDE_OSAL_DIR_SEPARATORS     L"\\/"
   #define PATH_MAX _MAX_PATH
 #else  /* Not WIN32 */
   #include <limits.h>  // for PATH_MAX
   #include <unistd.h>  // for unlink()
 
   #define OSAL_DIR_SEPARATORS           "/"
+  #define WIDE_OSAL_DIR_SEPARATORS     L"/"
 
   /* PATH_MAX only may be defined by limits.h */
   #ifndef PATH_MAX
