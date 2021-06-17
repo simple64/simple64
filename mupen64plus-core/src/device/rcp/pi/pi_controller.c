@@ -70,7 +70,7 @@ static void dma_pi_read(struct pi_controller* pi)
 
     pre_framebuffer_read(&pi->dp->fb, dram_addr);
 
-    // PI seems to treat the first 128 bytes differently, see https://n64brew.dev/wiki/Peripheral_Interface#Unaligned_DMA_transfer
+    /* PI seems to treat the first 128 bytes differently, see https://n64brew.dev/wiki/Peripheral_Interface#Unaligned_DMA_transfer */
     if (length >= 0x7f && (length & 1))
         length += 1;
     unsigned int cycles = handler->dma_read(opaque, dram, dram_addr, cart_addr, length);
@@ -106,7 +106,7 @@ static void dma_pi_write(struct pi_controller* pi)
         return;
     }
 
-    // PI seems to treat the first 128 bytes differently, see https://n64brew.dev/wiki/Peripheral_Interface#Unaligned_DMA_transfer
+    /* PI seems to treat the first 128 bytes differently, see https://n64brew.dev/wiki/Peripheral_Interface#Unaligned_DMA_transfer */
     if (length >= 0x7f && (length & 1))
         length += 1;
     if (length <= 0x80)
@@ -220,8 +220,8 @@ void pi_end_of_dma_event(void* opaque)
     pi->regs[PI_STATUS_REG] |= PI_STATUS_INTERRUPT;
 
     if (pi->dd != NULL) {
-        if ((pi->regs[PI_CART_ADDR_REG] == MM_DD_C2S_BUFFER) ||
-            (pi->regs[PI_CART_ADDR_REG] == MM_DD_DS_BUFFER)) {
+        if ((pi->regs[PI_CART_ADDR_REG] == (MM_DD_C2S_BUFFER + pi->regs[PI_WR_LEN_REG] + 1)) ||
+            (pi->regs[PI_CART_ADDR_REG] == (MM_DD_DS_BUFFER + pi->regs[PI_WR_LEN_REG] + 1))) {
             dd_update_bm(pi->dd);
         }
     }

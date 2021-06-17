@@ -80,54 +80,48 @@ static int search_dir_file(char *destpath, const char *path, const char *filenam
 
 int osal_mkdirp(const char *dirpath, int mode)
 {
-    char *mypath, *currpath, *lastchar;
+    wchar_t mypath[MAX_PATH];
+    wchar_t *currpath, *lastchar;
     struct _stat fileinfo;
 
     // Create a copy of the path, so we can modify it
-    mypath = currpath = _strdup(dirpath);
-    if (mypath == NULL)
+    if (MultiByteToWideChar(CP_UTF8, 0, dirpath, -1, mypath, MAX_PATH) == 0)
         return 1;
+    currpath = &mypath[0];
 
     // if the directory path ends with a separator, remove it
-    lastchar = mypath + strlen(mypath) - 1;
-    if (strchr(OSAL_DIR_SEPARATORS, *lastchar) != NULL)
+    lastchar = mypath + wcslen(mypath) - 1;
+    if (wcschr(WIDE_OSAL_DIR_SEPARATORS, *lastchar) != NULL)
         *lastchar = 0;
 
-    wchar_t w_mypath[PATH_MAX];
-    MultiByteToWideChar(CP_UTF8, 0, mypath, -1, w_mypath, PATH_MAX);
     // Terminate quickly if the path already exists
-    if (_wstat(w_mypath, &fileinfo) == 0 && (fileinfo.st_mode & _S_IFDIR))
-        goto goodexit;
+    if (_wstat(mypath, &fileinfo) == 0 && (fileinfo.st_mode & _S_IFDIR))
+        return 0;
 
-    while ((currpath = strpbrk(currpath + 1, OSAL_DIR_SEPARATORS)) != NULL)
+    while ((currpath = wcspbrk(currpath + 1, WIDE_OSAL_DIR_SEPARATORS)) != NULL)
     {
         // if slash is right after colon, then we are looking at drive name prefix (C:\) and should
         // just skip it, because _stat and _mkdir will both fail for "C:"
-        if (currpath > mypath && currpath[-1] == ':')
+        if (currpath > mypath && currpath[-1] == L':')
             continue;
-        *currpath = '\0';
-        if (_wstat(w_mypath, &fileinfo) != 0)
+        *currpath = L'\0';
+        if (_wstat(mypath, &fileinfo) != 0)
         {
-            if (_wmkdir(w_mypath) != 0)
-                goto errorexit;
+            if (_wmkdir(mypath) != 0)
+                return 1;
         }
         else if (!(fileinfo.st_mode & _S_IFDIR))
         {
-            goto errorexit;
+            return 1;
         }
-        *currpath = OSAL_DIR_SEPARATORS[0];
+        *currpath = WIDE_OSAL_DIR_SEPARATORS[0];
     }
 
     // Create full path
-    if  (_wmkdir(w_mypath) != 0)
-        goto errorexit;
+    if  (_wmkdir(mypath) != 0)
+       return 1;
 
-goodexit:
-    free(mypath);
     return 0;
-errorexit:
-    free(mypath);
-    return 1;
 }
 
 const char * osal_get_shared_filepath(const char *filename, const char *firstsearch, const char *secondsearch)
@@ -185,11 +179,11 @@ const char * osal_get_user_configpath(void)
     }
     else
     {
-        _wmkdir(chHomePath);
+        WideCharToMultiByte(CP_UTF8, 0, chHomePath, -1, outString, MAX_PATH, NULL, NULL);
+        osal_mkdirp(outString, 0);
         if (_wstat(chHomePath, &fileinfo) == 0)
         {
-            wcscat(chHomePath, L"\\");
-            WideCharToMultiByte(CP_UTF8, 0, chHomePath, -1, outString, MAX_PATH, NULL, NULL);
+            strcat(outString, "\\");
             return outString;
         }
     }
