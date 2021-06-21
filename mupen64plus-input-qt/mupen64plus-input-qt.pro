@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += widgets
+QT       += widgets network
 
 TARGET = mupen64plus-input-qt
 TEMPLATE = lib

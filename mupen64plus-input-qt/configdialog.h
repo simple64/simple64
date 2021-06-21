@@ -9,6 +9,8 @@
 #include <QSettings>
 #include <QPushButton>
 #include <QComboBox>
+#include <QNetworkAccessManager>
+#include <QProgressDialog>
 #include <SDL2/SDL.h>
 
 class ControllerTab : public QWidget
@@ -18,9 +20,13 @@ class ControllerTab : public QWidget
 public:
     ControllerTab(unsigned int controller, QSettings* settings, QSettings* controllerSettings, QWidget *parent);
     QComboBox *profileSelect;
+private slots:
+    void fileDownloaded(QNetworkReply* pReply);
 private:
     QComboBox *gamepadSelect;
     QComboBox *pakSelect;
+    QNetworkAccessManager modelDownloader;
+    QProgressDialog *progress;
 };
 
 class ConfigDialog : public QDialog

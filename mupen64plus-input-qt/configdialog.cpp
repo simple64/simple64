@@ -7,10 +7,37 @@
 #include <QLineEdit>
 #include <QMessageBox>
 #include <QKeyEvent>
+#include <QNetworkReply>
+#include <QProcess>
+#include <QCoreApplication>
+#include <QDir>
+
+void ControllerTab::fileDownloaded(QNetworkReply* pReply) {
+    if (pReply->error())
+    {
+        pReply->deleteLater();
+        return;
+    }
+    QFile file("vosk-model.zip");
+    if (!file.open(QIODevice::WriteOnly))
+    {
+        pReply->deleteLater();
+        return;
+    }
+    file.write(pReply->readAll());
+    file.flush();
+    QProcess process;
+    QString command = "7za x vosk-model.zip";
+    process.start(command);
+    process.waitForFinished(-1);
+    file.remove();
+    pReply->deleteLater();
+}
 
 ControllerTab::ControllerTab(unsigned int controller, QSettings* settings, QSettings* controllerSettings, QWidget *parent)
     : QWidget(parent)
 {
+    connect(&modelDownloader, SIGNAL (finished(QNetworkReply*)), this, SLOT (fileDownloaded(QNetworkReply*)));
     QGridLayout *layout = new QGridLayout(this);
     QLabel *profileLabel = new QLabel("Profile", this);
     layout->addWidget(profileLabel, 0, 0);
@@ -35,10 +62,27 @@ ControllerTab::ControllerTab(unsigned int controller, QSettings* settings, QSett
 
     gamepadSelect->insertItem(0, "Auto");
     gamepadSelect->addItem("Keyboard");
+    gamepadSelect->addItem("Emulate VRU");
     gamepadSelect->addItem("None");
     gamepadSelect->setCurrentText(controllerSettings->value("Controller" + QString::number(controller) + "/Gamepad").toString());
     connect(gamepadSelect, &QComboBox::currentTextChanged, [=](QString text) {
         controllerSettings->setValue("Controller" + QString::number(controller) + "/Gamepad", text);
+        if (text == "Emulate VRU")
+        {
+            if (!QFile::exists(QDir(QCoreApplication::applicationDirPath()).filePath("vosk-model-small-en-us-0.15/conf/mfcc.conf")))
+            {
+                QNetworkRequest request(QUrl("http://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip"));
+                request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
+                progress = new QProgressDialog("Downloading voice model...", "Abort", 0, 100, this);
+                progress->show();
+                QNetworkReply *reply = modelDownloader.get(request);
+                connect(progress, &QProgressDialog::canceled, reply, &QNetworkReply::abort);
+                connect(reply, &QNetworkReply::downloadProgress, [=](qint64 bytesReceived, qint64 bytesTotal) {
+                    int total = ((double)bytesReceived / (double)bytesTotal) * 100.0;
+                    progress->setValue(total);
+                });
+            }
+        }
     });
     layout->addWidget(gamepadSelect, 1, 1);
 

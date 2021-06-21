@@ -27,9 +27,17 @@
 #include "m64p_plugin.h"
 #include "main.h"
 #include "configdialog.h"
+#include "vosk/vosk_api.h"
 #include "osal/osal_dynamiclib.h"
+#include "vruwords.h"
 
 #include <QDir>
+#include <QCoreApplication>
+#include <QLibrary>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QTextCodec>
 
 #define SETTINGS_VER 2
 #define AXIS_PEAK 32768
@@ -37,8 +45,9 @@
 #define DEADZONE_DEFAULT 5.0
 
 #define QT_INPUT_PLUGIN_VERSION 0x020500
-#define INPUT_PLUGIN_API_VERSION 0x020100
+#define INPUT_PLUGIN_API_VERSION 0x020101
 static int l_PluginInit = 0;
+static int l_TalkingState = 0;
 static unsigned char myKeyState[SDL_NUM_SCANCODES];
 static QSettings* settings;
 static QSettings* controllerSettings;
@@ -46,13 +55,59 @@ static QSettings* gameSettings;
 static QSettings* gameControllerSettings;
 static SController controller[4];   // 4 controllers
 static m64p_dynlib_handle coreHandle;
+static VoskModel *model;
+static VoskRecognizer *recognizer;
+static QStringList words;
+static QList<int> word_indexes;
+static QJsonObject vruwordsobject;
+static int word_list_length;
+static int word_list_count;
+static QLibrary *voskLib;
+static SDL_AudioDeviceID audio_dev;
+static SDL_AudioSpec *hardware_spec;
+static SDL_TimerID timer_id;
 
-EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle CoreHandle, void * object, void (*)(void *, int, const char *))
+typedef VoskModel* (*ptr_vosk_model_new)(const char *model_path);
+typedef void (*ptr_vosk_model_free)(VoskModel *model);
+typedef VoskRecognizer* (*ptr_vosk_recognizer_new_grm)(VoskModel *model, float sample_rate, const char *grammar);
+typedef void (*ptr_vosk_recognizer_free)(VoskRecognizer *recognizer);
+typedef int (*ptr_vosk_recognizer_accept_waveform)(VoskRecognizer *recognizer, const char *data, int length);
+typedef const char *(*ptr_vosk_recognizer_final_result)(VoskRecognizer *recognizer);
+typedef void (*ptr_vosk_set_log_level)(int log_level);
+
+ptr_vosk_recognizer_accept_waveform VoskAcceptWaveform;
+ptr_vosk_recognizer_final_result VoskFinalResult;
+ptr_vosk_model_new VoskNewModel;
+ptr_vosk_recognizer_new_grm VoskNewRecognizer;
+ptr_vosk_model_free VoskFreeModel;
+ptr_vosk_recognizer_free VoskFreeRecognizer;
+ptr_vosk_set_log_level VoskSetLogLevel;
+
+static void (*l_DebugCallback)(void *, int, const char *) = NULL;
+
+void DebugMessage(int level, const char *message, ...)
+{
+  char msgbuf[1024];
+  va_list args;
+
+  if (l_DebugCallback == NULL)
+      return;
+
+  va_start(args, message);
+  vsprintf(msgbuf, message, args);
+
+  (*l_DebugCallback)((char*)"Input", level, msgbuf);
+
+  va_end(args);
+}
+
+EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle CoreHandle, void * object, void (*DebugCallback)(void *, int, const char *))
 {
     if (l_PluginInit)
         return M64ERR_ALREADY_INIT;
 
     coreHandle = CoreHandle;
+    l_DebugCallback = DebugCallback;
 
     ptr_ConfigGetUserConfigPath ConfigGetUserConfigPath = (ptr_ConfigGetUserConfigPath) osal_dynlib_getproc(CoreHandle, "ConfigGetUserConfigPath");
 
@@ -190,6 +245,12 @@ EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle CoreHandle, void * objec
     if (!SDL_WasInit(SDL_INIT_HAPTIC))
         SDL_InitSubSystem(SDL_INIT_HAPTIC);
 
+    if (!SDL_WasInit(SDL_INIT_AUDIO))
+        SDL_InitSubSystem(SDL_INIT_AUDIO);
+
+    if (!SDL_WasInit(SDL_INIT_TIMER))
+        SDL_InitSubSystem(SDL_INIT_TIMER);
+
     l_PluginInit = 1;
 
     return M64ERR_SUCCESS;
@@ -219,6 +280,8 @@ EXPORT m64p_error CALL PluginShutdown(void)
 
     SDL_QuitSubSystem(SDL_INIT_GAMECONTROLLER);
     SDL_QuitSubSystem(SDL_INIT_HAPTIC);
+    SDL_QuitSubSystem(SDL_INIT_AUDIO);
+    SDL_QuitSubSystem(SDL_INIT_TIMER);
 
     settings->sync();
     controllerSettings->sync();
@@ -273,6 +336,146 @@ static unsigned char DataCRC( unsigned char *Data, int iLenght )
     }
 
     return Remainder;
+}
+
+EXPORT void CALL SendVRUWord(uint16_t length, uint16_t *word, uint8_t lang)
+{
+    QByteArray word_array;
+    uint8_t *bytes = (uint8_t*)word;
+    for (int i = 0; i < (length*2); i+=2)
+    {
+        word_array.append(bytes[i+1]);
+        word_array.append(bytes[i]);
+    }
+
+    QString hex = word_array.toHex();
+    QJsonValue value = vruwordsobject.value(hex.toUpper());
+    if (value == QJsonValue::Undefined)
+    {
+        if (lang == 0)
+            DebugMessage(M64MSG_ERROR, "Unknown word: %s", hex.toUpper().toUtf8().constData());
+        else
+        {
+            QTextCodec::ConverterState state;
+            QTextCodec *en_codec = QTextCodec::codecForName("UTF-8");
+            QTextCodec *jp_codec = QTextCodec::codecForName("Shift-JIS");
+            QString jp_string = en_codec->toUnicode(word_array.constData(), word_array.size(), &state);
+            if (state.invalidChars > 0)
+            {
+                jp_string = jp_codec->toUnicode(word_array);
+                DebugMessage(M64MSG_ERROR, "Unknown Japanese word: %s %s", hex.toUpper().toUtf8().constData(), jp_string.toUtf8().constData());
+            }
+            else
+            {
+                words.append(jp_string.toLower().toUtf8().constData());
+                word_indexes.append(word_list_count);
+            }
+        }
+    }
+    else
+    {
+        QJsonArray value_list = value.toArray();
+        for (int i = 0; i < value_list.size(); ++i)
+        {
+            words.append(value_list.at(i).toString().toLower());
+            word_indexes.append(word_list_count);
+        }
+    }
+
+    ++word_list_count;
+    if (word_list_count == word_list_length)
+    {
+        words.append("[unk]");
+        word_indexes.append(word_list_count);
+        QJsonArray array = QJsonArray::fromStringList(words);
+        QJsonDocument doc;
+        doc.setArray(array);
+        if (recognizer)
+            VoskFreeRecognizer(recognizer);
+        recognizer = VoskNewRecognizer(model, (float)hardware_spec->freq, doc.toJson());
+    }
+}
+
+Uint32 StopTalking(Uint32, void *)
+{
+    l_TalkingState = 0;
+    timer_id = 0;
+    return(0);
+}
+
+EXPORT void CALL SetMicState(int state)
+{
+    if (timer_id)
+    {
+        SDL_RemoveTimer(timer_id);
+        timer_id = 0;
+    }
+    l_TalkingState = state;
+
+    if (state)
+    {
+        timer_id = SDL_AddTimer(2000, StopTalking, NULL);
+        SDL_ClearQueuedAudio(audio_dev);
+        SDL_PauseAudioDevice(audio_dev, 0);
+    }
+    else
+        SDL_PauseAudioDevice(audio_dev, 1);
+}
+
+EXPORT void CALL ClearVRUWords(uint8_t length)
+{
+    word_list_count = 0;
+    word_list_length = length;
+    words.clear();
+    word_indexes.clear();
+    if (recognizer)
+        VoskFreeRecognizer(recognizer);
+    recognizer = nullptr;
+}
+
+EXPORT void CALL SetVRUWordMask(uint8_t, uint8_t *)
+{
+}
+
+EXPORT void CALL ReadVRUResults(uint16_t *error_flags, uint16_t *num_results, uint16_t *mic_level, uint16_t *voice_level, uint16_t *voice_length, uint16_t *matches)
+{
+    SDL_PauseAudioDevice(audio_dev, 1);
+    uint16_t match = 0x7FFF;
+    *error_flags = 0;
+    QByteArray data(SDL_GetQueuedAudioSize(audio_dev), 0);
+    uint32_t audio_length = SDL_DequeueAudio(audio_dev, data.data(), SDL_GetQueuedAudioSize(audio_dev));
+    VoskAcceptWaveform(recognizer, data.constData(), audio_length);
+    QJsonDocument doc = QJsonDocument::fromJson(VoskFinalResult(recognizer));
+    QJsonObject object = doc.object();
+    int match_index = words.indexOf(object.value("text").toString());
+    if (match_index > -1 && word_indexes.at(match_index) < word_list_length)
+    {
+        /* found a match */
+        DebugMessage(M64MSG_INFO, "match: %s", object.value("text").toString().toUtf8().constData());
+        match = word_indexes.at(match_index);
+    }
+    else if (!object.value("text").toString().isEmpty())
+    {
+        /* heard something but it didn't match anything */
+        *error_flags = 0x4000;
+        match = 0; // we match index 0, but mark the error flag saying we are really not sure
+    }
+
+    *num_results = (match == 0x7FFF) ? 0 : 1;
+    /* The N64 programming manual states what range these values should be within */
+    *mic_level = 0xBB8;
+    *voice_level = 0xBB8;
+    *voice_length = 0x8004;
+    matches[0] = match;
+    matches[1] = *error_flags ? 0x700 : 0;
+    matches[2] = 0x7FFF;
+    matches[3] = 0;
+    matches[4] = 0x7FFF;
+    matches[5] = 0;
+    matches[6] = 0x7FFF;
+    matches[7] = 0;
+    matches[8] = 0x7FFF;
+    matches[9] = 0;
 }
 
 EXPORT void CALL ControllerCommand(int Control, unsigned char *Command)
@@ -436,7 +639,9 @@ void setKey(int Control, uint32_t key, BUTTONS *Keys, QString button)
 void setPak(int Control)
 {
     QString pak = gameControllerSettings->value("Controller" + QString::number(Control + 1) + "/Pak").toString();
-    if (pak == "Transfer")
+    if (controller[Control].control->Type == CONT_TYPE_VRU)
+        controller[Control].control->Plugin = PLUGIN_NONE;
+    else if (pak == "Transfer")
         controller[Control].control->Plugin = PLUGIN_TRANSFER_PAK;
     else if (pak == "Rumble") {
         controller[Control].control->Plugin = PLUGIN_RAW;
@@ -464,6 +669,20 @@ EXPORT void CALL GetKeys( int Control, BUTTONS *Keys )
         return;
 
     setPak(Control);
+    if (controller[Control].control->Type == CONT_TYPE_VRU)
+    {
+        if (l_TalkingState == 0)
+        {
+            Keys->Value = 0;
+            return;
+        }
+        else
+        {
+            // In the future it would be better to only set this when the player is talking
+            Keys->Value = 0x0020;
+            return;
+        }
+    }
 
     Keys->Value = 0;
     setKey(Control, 0x0001/*R_DPAD*/, Keys, "DPadR");
@@ -487,8 +706,56 @@ EXPORT void CALL GetKeys( int Control, BUTTONS *Keys )
     setAxis(Control, 1/*Y_AXIS*/, Keys, "AxisDown", -1);
 }
 
+static int setupVosk()
+{
+    if (voskLib)
+        return 0;
+    voskLib = new QLibrary((QDir(QCoreApplication::applicationDirPath()).filePath("vosk")));
+    VoskAcceptWaveform = (ptr_vosk_recognizer_accept_waveform) voskLib->resolve("vosk_recognizer_accept_waveform");
+    VoskFinalResult = (ptr_vosk_recognizer_final_result) voskLib->resolve("vosk_recognizer_final_result");
+    VoskNewModel = (ptr_vosk_model_new) voskLib->resolve("vosk_model_new");
+    VoskNewRecognizer = (ptr_vosk_recognizer_new_grm) voskLib->resolve("vosk_recognizer_new_grm");
+    VoskFreeModel = (ptr_vosk_model_free) voskLib->resolve("vosk_model_free");
+    VoskFreeRecognizer = (ptr_vosk_recognizer_free) voskLib->resolve("vosk_recognizer_free");
+    VoskSetLogLevel = (ptr_vosk_set_log_level) voskLib->resolve("vosk_set_log_level");
+
+    VoskSetLogLevel(-1);
+
+    QByteArray vruword_array(vruwords);
+    QJsonDocument vruwordjson = QJsonDocument::fromJson(vruword_array);
+    vruwordsobject = vruwordjson.object();
+
+    l_TalkingState = 0;
+    SDL_AudioSpec *desired, *obtained;
+    if(hardware_spec != NULL) free(hardware_spec);
+    desired = (SDL_AudioSpec*)malloc(sizeof(SDL_AudioSpec));
+    obtained = (SDL_AudioSpec*)malloc(sizeof(SDL_AudioSpec));
+    desired->freq = 44100;
+    desired->format = AUDIO_S16SYS;
+    desired->channels = 1;
+    desired->samples = 1024;
+    desired->callback = NULL;
+    desired->userdata = NULL;
+    audio_dev = SDL_OpenAudioDevice(NULL, 1, desired, obtained, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE);
+    free(desired);
+    hardware_spec = obtained;
+    recognizer = nullptr;
+    model = nullptr;
+    timer_id = 0;
+    if (QFile::exists(QDir(QCoreApplication::applicationDirPath()).filePath("vosk-model-small-en-us-0.15/conf/mfcc.conf")))
+    {
+        model = VoskNewModel(QDir(QCoreApplication::applicationDirPath()).filePath("vosk-model-small-en-us-0.15").toUtf8().constData());
+        return 1;
+    }
+    delete voskLib;
+    voskLib = NULL;
+    return 0;
+}
+
 EXPORT void CALL InitiateControllers(CONTROL_INFO ControlInfo)
 {
+    model = nullptr;
+    recognizer = nullptr;
     gameSettings = new QSettings(settings->fileName(), QSettings::IniFormat);
     gameControllerSettings = new QSettings(controllerSettings->fileName(), QSettings::IniFormat);
 
@@ -508,6 +775,7 @@ EXPORT void CALL InitiateControllers(CONTROL_INFO ControlInfo)
         controller[i].control = ControlInfo.Controls + i;
         controller[i].control->RawData = 0;
         controller[i].control->Present = 0;
+        controller[i].control->Type = CONT_TYPE_STANDARD;
         controller[i].gamepad = NULL;
         controller[i].haptic = NULL;
         controller[i].joystick = NULL;
@@ -542,6 +810,18 @@ EXPORT void CALL InitiateControllers(CONTROL_INFO ControlInfo)
                 }
             }
             if (i == 0) controller[i].control->Present = 1; //Player 1
+        }
+        else if (gamepad == "Emulate VRU") {
+            controller[i].control->Type = CONT_TYPE_VRU;
+            controller[i].control->Plugin = PLUGIN_NONE;
+            if (!setupVosk())
+            {
+                controller[i].control->Present = 0;
+                gameControllerSettings->setValue("Controller" + QString::number(i + 1) + "/Pak", "None");
+                DebugMessage(M64MSG_ERROR, "Could not set up Vosk library, disabling VRU");
+            }
+            else
+                controller[i].control->Present = 1;
         }
         else /*specific gamepad selected*/ {
             controller_index = gamepad.split(":")[0].toInt();
@@ -611,6 +891,16 @@ EXPORT void CALL RomClosed(void)
 
     gameSettings->sync();
     gameControllerSettings->sync();
+    if (model)
+        VoskFreeModel(model);
+    if (recognizer)
+        VoskFreeRecognizer(recognizer);
+    if (voskLib)
+        delete voskLib;
+    voskLib = NULL;
+    SDL_CloseAudioDevice(audio_dev);
+    if(hardware_spec != NULL) free(hardware_spec);
+    hardware_spec = NULL;
     delete gameSettings;
     delete gameControllerSettings;
 }
