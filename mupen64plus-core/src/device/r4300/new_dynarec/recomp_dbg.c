@@ -60,8 +60,12 @@
 #define new_dynarec_cleanup                     recomp_dbg_new_dynarec_cleanup
 #define new_dynarec_init                        recomp_dbg_new_dynarec_init
 #define new_recompile_block                     recomp_dbg_new_recompile_block
-#define new_dynarec_check_interrupt             recomp_dbg_new_dynarec_check_interrupt
+#define ERET_new                                recomp_dbg_ERET_new
 #define dynarec_gen_interrupt                   recomp_dbg_dynarec_gen_interrupt
+#define SYSCALL_new                             recomp_dbg_SYSCALL_new
+#define cop1_unusable                           recomp_dbg_cop1_unusable
+#define dynamic_linker                          recomp_dbg_dynamic_linker
+#define dynamic_linker_ds                       recomp_dbg_dynamic_linker_ds
 
 #if RECOMPILER_DEBUG == 3 //ARM
 static void jump_vaddr_r0(void){}
@@ -114,9 +118,7 @@ void jump_vaddr_x14(void){}
 void jump_vaddr_x15(void){}
 void jump_vaddr_x16(void){}
 void jump_vaddr_x17(void){}
-void jump_vaddr_x18(void){}
 void jump_vaddr_x19(void){}
-void jump_vaddr_x20(void){}
 void jump_vaddr_x21(void){}
 void jump_vaddr_x22(void){}
 void jump_vaddr_x23(void){}
@@ -178,7 +180,6 @@ static Variable_t var[] = {
   {(intptr_t)NULL /*RDRAM*/, 0, "rdram - 0x80000000"},
   {(intptr_t)g_dev.r4300.cached_interp.invalid_code, sizeof(g_dev.r4300.cached_interp.invalid_code), "invalid_code"},
   {(intptr_t)&g_dev.r4300.new_dynarec_hot_state.dynarec_local, sizeof(g_dev.r4300.new_dynarec_hot_state.dynarec_local), "dynarec_local"},
-  {(intptr_t)&g_dev.r4300.new_dynarec_hot_state.next_interrupt, sizeof(g_dev.r4300.new_dynarec_hot_state.next_interrupt), "next_interrupt"},
   {(intptr_t)&g_dev.r4300.new_dynarec_hot_state.cycle_count, sizeof(g_dev.r4300.new_dynarec_hot_state.cycle_count), "cycle_count"},
   {(intptr_t)&g_dev.r4300.new_dynarec_hot_state.pending_exception, sizeof(g_dev.r4300.new_dynarec_hot_state.pending_exception), "pending_exception"},
   {(intptr_t)&g_dev.r4300.new_dynarec_hot_state.pcaddr, sizeof(g_dev.r4300.new_dynarec_hot_state.pcaddr), "pcaddr"},
@@ -341,7 +342,6 @@ static Variable_t var[] = {
   {(intptr_t)&g_dev.r4300.new_dynarec_hot_state.rd, sizeof(g_dev.r4300.new_dynarec_hot_state.rd), "rd"},
   {(intptr_t)&g_dev.r4300.new_dynarec_hot_state.ram_offset, sizeof(g_dev.r4300.new_dynarec_hot_state.ram_offset), "ram_offset"},
   {(intptr_t)&g_dev.r4300.new_dynarec_hot_state.mini_ht, sizeof(g_dev.r4300.new_dynarec_hot_state.mini_ht), "mini_ht"},
-  {(intptr_t)&g_dev.r4300.new_dynarec_hot_state.restore_candidate, sizeof(g_dev.r4300.new_dynarec_hot_state.restore_candidate), "restore_candidate"},
   {(intptr_t)&g_dev.r4300.new_dynarec_hot_state.memory_map, sizeof(g_dev.r4300.new_dynarec_hot_state.memory_map), "memory_map"},
   {-1, -1, NULL}
 };
@@ -356,6 +356,10 @@ static Function_t func[] = {
   {(intptr_t)MTC0_new, "MTC0"},
   {(intptr_t)cached_interp_TLBR, "TLBR"},
   {(intptr_t)cached_interp_TLBP, "TLBP"},
+  {(intptr_t)cached_interp_MULT, "MULT"},
+  {(intptr_t)cached_interp_MULTU, "MULTU"},
+  {(intptr_t)cached_interp_DIV, "DIV"},
+  {(intptr_t)cached_interp_DIVU, "DIVU"},
   {(intptr_t)cached_interp_DMULT, "DMULT"},
   {(intptr_t)cached_interp_DMULTU, "DMULTU"},
   {(intptr_t)cached_interp_DDIV, "DDIV"},
@@ -420,9 +424,7 @@ static Function_t func[] = {
   {(intptr_t)jump_vaddr_x15, "jump_vaddr_x15"},
   {(intptr_t)jump_vaddr_x16, "jump_vaddr_x16"},
   {(intptr_t)jump_vaddr_x17, "jump_vaddr_x17"},
-  {(intptr_t)jump_vaddr_x18, "jump_vaddr_x18"},
   {(intptr_t)jump_vaddr_x19, "jump_vaddr_x19"},
-  {(intptr_t)jump_vaddr_x20, "jump_vaddr_x20"},
   {(intptr_t)jump_vaddr_x21, "jump_vaddr_x21"},
   {(intptr_t)jump_vaddr_x22, "jump_vaddr_x22"},
   {(intptr_t)jump_vaddr_x23, "jump_vaddr_x23"},
@@ -439,7 +441,6 @@ static Function_t func[] = {
   {(intptr_t)verify_code, "verify_code"},
   {(intptr_t)cc_interrupt, "cc_interrupt"},
   {(intptr_t)fp_exception, "fp_exception"},
-  {(intptr_t)fp_exception_ds, "fp_exception_ds"},
   {(intptr_t)jump_syscall, "jump_syscall"},
   {(intptr_t)jump_eret, "jump_eret"},
   {(intptr_t)do_interrupt, "do_interrupt"},
@@ -451,6 +452,14 @@ static Function_t func[] = {
   {(intptr_t)write_hword_new, "write_hword_new"},
   {(intptr_t)write_word_new, "write_word_new"},
   {(intptr_t)write_dword_new, "write_dword_new"},
+  {(intptr_t)LWL_new, "LWL_new"},
+  {(intptr_t)LWR_new, "LWR_new"},
+  {(intptr_t)LDL_new, "LDL_new"},
+  {(intptr_t)LDR_new, "LDR_new"},
+  {(intptr_t)SWL_new, "SWL_new"},
+  {(intptr_t)SWR_new, "SWR_new"},
+  {(intptr_t)SDL_new, "SDL_new"},
+  {(intptr_t)SDR_new, "SDR_new"},
   {(intptr_t)cvt_s_w, "cvt_s_w"},
   {(intptr_t)cvt_d_w, "cvt_d_w"},
   {(intptr_t)cvt_s_l, "cvt_s_l"},
@@ -588,7 +597,7 @@ static void disassemble(int i, FILE * pFile)
           fprintf (pFile, " %x: %s r%d,cpr0[%d]\n",start+i*4,insn[i],rt1[i],(source[i]>>11)&0x1f); // MFC0
         else if(opcode2[i]==4)
           fprintf (pFile, " %x: %s r%d,cpr0[%d]\n",start+i*4,insn[i],rs1[i],(source[i]>>11)&0x1f); // MTC0
-        else fprintf (pFile, " %x: %s",start+i*4,insn[i]);
+        else fprintf (pFile, " %x: %s\n",start+i*4,insn[i]);
         break;
       case COP1:
         if(opcode2[i]<3)
