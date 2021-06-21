@@ -1132,7 +1132,7 @@ void MainWindow::loadPlugins()
     }
     PluginStartup = (ptr_PluginStartup) osal_dynlib_getproc(inputPlugin, "PluginStartup");
     if (settings->value("inputPlugin").toString().contains("-qt"))
-        (*PluginStartup)(coreLib, this, nullptr);
+        (*PluginStartup)(coreLib, this, DebugCallback);
     else
         (*PluginStartup)(coreLib, (char*)"Input", DebugCallback);
 
