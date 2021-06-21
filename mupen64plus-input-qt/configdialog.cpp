@@ -13,6 +13,9 @@
 #include <QDir>
 
 void ControllerTab::fileDownloaded(QNetworkReply* pReply) {
+    if (progress)
+        progress->hide();
+
     if (pReply->error())
     {
         pReply->deleteLater();
