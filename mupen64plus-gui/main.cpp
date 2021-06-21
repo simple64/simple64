@@ -23,7 +23,8 @@ int main(int argc, char *argv[])
     parser.process(a);
     const QStringList args = parser.positionalArguments();
 
-    w = new MainWindow();
+    MainWindow mainWin;
+    w = &mainWin;
     w->show();
     if (parser.isSet(verboseOption))
         w->setVerbose();
