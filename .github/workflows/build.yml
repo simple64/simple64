@@ -47,6 +47,7 @@ jobs:
             mingw-w64-x86_64-qt5
             mingw-w64-x86_64-python3-pip
             mingw-w64-x86_64-python3-pyopenssl
+            mingw-w64-x86_64-nasm
             git
             zip
       - name: Run build script
