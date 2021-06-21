@@ -19,6 +19,8 @@ else
   suffix=".so"
 fi
 
+export NEW_DYNAREC=1
+
 install_dir=$PWD/mupen64plus
 mkdir -p $install_dir
 base_dir=$PWD
