@@ -10,31 +10,37 @@
 #include <QNetworkReply>
 #include <QProcess>
 #include <QCoreApplication>
+#include <QTemporaryDir>
 #include <QDir>
+#include <QThread>
 
 void ControllerTab::fileDownloaded(QNetworkReply* pReply) {
-    if (progress)
-        progress->hide();
-
     if (pReply->error())
     {
+        progress->hide();
         pReply->deleteLater();
         gamepadSelect->setCurrentText("Auto");
         return;
     }
-    QFile file("vosk-model.zip");
+    QTemporaryDir dir;
+    QFile file(dir.filePath("vosk-model.zip"));
     if (!file.open(QIODevice::WriteOnly))
     {
+        progress->hide();
         pReply->deleteLater();
         gamepadSelect->setCurrentText("Auto");
         return;
     }
     file.write(pReply->readAll());
-    file.flush();
+    file.close();
+    QThread::sleep(3);
+
     QProcess process;
-    QString command = "7za x vosk-model.zip";
+    QString command = "7za x \"" + dir.filePath("vosk-model.zip") + "\" -o\"" + QCoreApplication::applicationDirPath() + "\"";
     process.start(command);
     bool success = process.waitForFinished(-1);
+
+    progress->setValue(100);
     QMessageBox msgBox;
     if (success)
         msgBox.setText("Successfully extracted voice model");
@@ -44,7 +50,6 @@ void ControllerTab::fileDownloaded(QNetworkReply* pReply) {
        gamepadSelect->setCurrentText("Auto");
     }
     msgBox.exec();
-    file.remove();
     pReply->deleteLater();
 }
 
@@ -92,7 +97,7 @@ ControllerTab::ControllerTab(unsigned int controller, QSettings* settings, QSett
                 QNetworkReply *reply = modelDownloader.get(request);
                 connect(progress, &QProgressDialog::canceled, reply, &QNetworkReply::abort);
                 connect(reply, &QNetworkReply::downloadProgress, [=](qint64 bytesReceived, qint64 bytesTotal) {
-                    int total = ((double)bytesReceived / (double)bytesTotal) * 100.0;
+                    int total = ((double)bytesReceived / (double)bytesTotal) * 90.0;
                     progress->setValue(total);
                 });
             }
