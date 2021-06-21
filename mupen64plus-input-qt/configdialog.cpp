@@ -16,12 +16,14 @@ void ControllerTab::fileDownloaded(QNetworkReply* pReply) {
     if (pReply->error())
     {
         pReply->deleteLater();
+        gamepadSelect->setCurrentText("Auto");
         return;
     }
     QFile file("vosk-model.zip");
     if (!file.open(QIODevice::WriteOnly))
     {
         pReply->deleteLater();
+        gamepadSelect->setCurrentText("Auto");
         return;
     }
     file.write(pReply->readAll());
@@ -29,7 +31,16 @@ void ControllerTab::fileDownloaded(QNetworkReply* pReply) {
     QProcess process;
     QString command = "7za x vosk-model.zip";
     process.start(command);
-    process.waitForFinished(-1);
+    bool success = process.waitForFinished(-1);
+    QMessageBox msgBox;
+    if (success)
+        msgBox.setText("Successfully extracted voice model");
+    else
+    {
+       msgBox.setText("Failed to extract voice model");
+       gamepadSelect->setCurrentText("Auto");
+    }
+    msgBox.exec();
     file.remove();
     pReply->deleteLater();
 }
