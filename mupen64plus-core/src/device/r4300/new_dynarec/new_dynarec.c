@@ -6200,6 +6200,16 @@ static void ujump_assemble(int i,struct regstat *i_regs)
   #endif
   if(i==(ba[i]-start)>>2) assem_debug("idle loop");
   address_generation(i+1,i_regs,regs[i].regmap_entry);
+
+  //Deal with ROM Hacks
+  if(rt1[i+1]==31)
+  {
+    assert(rs1[i+1]==31);
+    signed char rt=get_reg(branch_regs[i].regmap,31);
+    assert(get_reg(i_regs->regmap,31)==rt);
+    emit_movimm(start+i*4+8,rt); // PC into link register
+  }
+
   #ifdef REG_PREFETCH
   int temp=get_reg(branch_regs[i].regmap,PTEMP);
   if(rt1[i]==31&&temp>=0) 
@@ -6217,10 +6227,9 @@ static void ujump_assemble(int i,struct regstat *i_regs)
   wb_invalidate(regs[i].regmap,branch_regs[i].regmap,regs[i].dirty,regs[i].is32,
                 bc_unneeded,bc_unneeded_upper);
   load_regs(regs[i].regmap,branch_regs[i].regmap,regs[i].was32,CCREG,CCREG);
-  if(rt1[i]==31) {
+  if(rt1[i]==31&&rt1[i+1]!=31) {
     int rt;
     unsigned int return_address;
-    assert(rt1[i+1]!=31);
     assert(rt2[i+1]!=31);
     rt=get_reg(branch_regs[i].regmap,31);
     assem_debug("branch(%d): eax=%d ecx=%d edx=%d ebx=%d ebp=%d esi=%d edi=%d",i,branch_regs[i].regmap[0],branch_regs[i].regmap[1],branch_regs[i].regmap[2],branch_regs[i].regmap[3],branch_regs[i].regmap[5],branch_regs[i].regmap[6],branch_regs[i].regmap[7]);
@@ -7507,9 +7516,17 @@ static void pagespan_assemble(int i,struct regstat *i_regs)
   }
   assert(opcode[i]!=1); // BLTZ/BGEZ
 
-  //FIXME: Check CSREG
   if(opcode[i]==0x11 && opcode2[i]==0x08 ) {
-    assert(0);
+    // Check cop1 unusable
+    if(!cop1_usable) {
+      signed char cs=get_reg(i_regs->regmap,CSREG);
+      assert(cs>=0);
+      emit_testimm(cs,CP0_STATUS_CU1);
+      intptr_t jaddr=(intptr_t)out;
+      emit_jeq(0);
+      add_stub(FP_STUB,jaddr,(intptr_t)out,i,cs,(intptr_t)i_regs,0,0);
+      cop1_usable=1;
+    }
     if((source[i]&0x30000)==0) // BC1F
     {
       emit_mov2imm_compact(ba[i],addr,start+i*4+8,alt);
@@ -9233,7 +9250,7 @@ int new_recompile_block(int addr)
           if (rt1[i]==31) {
             alloc_reg(&current,i,31);
             dirty_reg(&current,31);
-            assert(rs1[i+1]!=31&&rs2[i+1]!=31);
+            assert(rs2[i+1]!=31);
             #ifdef REG_PREFETCH
             alloc_reg(&current,i,PTEMP);
             #endif
