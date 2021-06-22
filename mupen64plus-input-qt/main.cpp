@@ -470,7 +470,6 @@ EXPORT void CALL ReadVRUResults(uint16_t *error_flags, uint16_t *num_results, ui
         if (!found.contains(words.at(i)) && alternatives.filter(words.at(i)).size() > 0)
         {
             /* found a match */
-            DebugMessage(M64MSG_INFO, "match: %s", words.at(i).toUtf8().constData());
             found.append(words.at(i));
             if (found.size() == 5)
                 break;
@@ -481,6 +480,7 @@ EXPORT void CALL ReadVRUResults(uint16_t *error_flags, uint16_t *num_results, ui
     for (int i = 0; i < found.size(); ++i)
     {
         match[i] = word_indexes.at(words.indexOf(found.at(i)));
+        DebugMessage(M64MSG_INFO, "match %d: %s (%u)", i, found.at(i).toUtf8().constData(), match[i]);
     }
     if (found.size() == 0 && alternatives.size() > 0)
     {
