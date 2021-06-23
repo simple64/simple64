@@ -29,11 +29,11 @@
 #include <inttypes.h>
 #include <string.h>
 
-#define IS_ADDR_MASK UINT32_C(0x0000ffff)
+#define IS_ADDR_MASK UINT32_C(0x00000fff)
 
 void poweron_is_viewer(struct is_viewer* is_viewer)
 {
-    memset(is_viewer->buffer, 0, 0x200);
+    memset(is_viewer->data, 0, 0x1000);
     memset(is_viewer->output_buffer, 0, 0x200);
     is_viewer->buffer_pos = 0;
 }
@@ -42,7 +42,7 @@ void read_is_viewer(void* opaque, uint32_t address, uint32_t* value)
 {
     struct is_viewer* is_viewer = (struct is_viewer*)opaque;
     address &= IS_ADDR_MASK;
-    memcpy(value, &is_viewer->buffer[address], 4);
+    memcpy(value, &is_viewer->data[address], 4);
     *value = m64p_swap32(*value);
 }
 
@@ -55,21 +55,21 @@ void write_is_viewer(void* opaque, uint32_t address, uint32_t value, uint32_t ma
     {
         if (word > 0)
         {
-            memcpy(is_viewer->output_buffer + is_viewer->buffer_pos, is_viewer->buffer + 0x20, word);
+            memcpy(&is_viewer->output_buffer[is_viewer->buffer_pos], &is_viewer->data[0x20], word);
             is_viewer->buffer_pos += word;
-            if (memchr(is_viewer->output_buffer, '\n', is_viewer->buffer_pos))
+            char* newline = memchr(is_viewer->output_buffer, '\n', is_viewer->buffer_pos);
+            if (newline)
             {
-                is_viewer->output_buffer[is_viewer->buffer_pos - 1] = '\0';
+                *newline = '\0';
                 DebugMessage(M64MSG_INFO, "IS64: %s", is_viewer->output_buffer);
                 memset(is_viewer->output_buffer, 0, is_viewer->buffer_pos);
                 is_viewer->buffer_pos = 0;
             }
         }
-        memset(is_viewer->buffer + 0x20, 0, word);
     }
     else
     {
         word = m64p_swap32(word);
-        memcpy(is_viewer->buffer + address, &word, sizeof(word));
+        memcpy(&is_viewer->data[address], &word, sizeof(word));
     }
 }
