@@ -89,18 +89,18 @@ static void (*l_DebugCallback)(void *, int, const char *) = NULL;
 
 void DebugMessage(int level, const char *message, ...)
 {
-  char msgbuf[1024];
-  va_list args;
+    char msgbuf[1024];
+    va_list args;
 
-  if (l_DebugCallback == NULL)
-      return;
+    if (l_DebugCallback == NULL)
+        return;
 
-  va_start(args, message);
-  vsprintf(msgbuf, message, args);
+    va_start(args, message);
+    vsprintf(msgbuf, message, args);
 
-  (*l_DebugCallback)((char*)"Input", level, msgbuf);
+    (*l_DebugCallback)((char*)"Input", level, msgbuf);
 
-  va_end(args);
+    va_end(args);
 }
 
 EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle CoreHandle, void * object, void (*DebugCallback)(void *, int, const char *))
@@ -357,29 +357,21 @@ EXPORT void CALL SendVRUWord(uint16_t length, uint16_t *word, uint8_t lang)
         QTextCodec *en_codec = QTextCodec::codecForName("UTF-8");
         QTextCodec::ConverterState state;
         QString encoded_string = en_codec->toUnicode(word_array.constData(), word_array.size(), &state);
-        if (lang == 0 /* English */)
+        if (state.invalidChars > 0)
         {
-            if (state.invalidChars > 0)
+            if (lang == 0 /* English */)
                 DebugMessage(M64MSG_ERROR, "Unknown word: %s", hex.toUpper().toUtf8().constData());
-            else
-            {
-                words.append(encoded_string.toLower().toUtf8().constData());
-                word_indexes.append(word_list_count);
-            }
-        }
-        else /* Japanese or demo */
-        {
-            if (state.invalidChars > 0)
+            else /* Japanese or demo */
             {
                 QTextCodec *jp_codec = QTextCodec::codecForName("Shift-JIS");
                 encoded_string = jp_codec->toUnicode(word_array);
                 DebugMessage(M64MSG_ERROR, "Unknown Japanese word: %s %s", hex.toUpper().toUtf8().constData(), encoded_string.toUtf8().constData());
             }
-            else
-            {
-                words.append(encoded_string.toLower().toUtf8().constData());
-                word_indexes.append(word_list_count);
-            }
+        }
+        else
+        {
+            words.append(encoded_string.toLower().toUtf8().constData());
+            word_indexes.append(word_list_count);
         }
     }
     else
