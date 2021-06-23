@@ -28,6 +28,7 @@ bool vk_native_tex_rect;
 bool vk_synchronous, vk_divot_filter, vk_gamma_dither;
 bool vk_vi_aa, vk_vi_scale, vk_dither_filter;
 bool vk_interlacing;
+bool skip_swap_clear;
 
 static const unsigned cmd_len_lut[64] = {
 	1, 1, 1, 1, 1, 1, 1, 1, 4, 6, 12, 14, 12, 14, 20, 22,
@@ -107,7 +108,8 @@ void vk_rasterize()
 
 		if (width == 0 || height == 0)
 		{
-			screen_swap(true);
+			if (!skip_swap_clear)
+				screen_swap(true);
 			return;
 		}
 
