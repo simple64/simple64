@@ -354,22 +354,30 @@ EXPORT void CALL SendVRUWord(uint16_t length, uint16_t *word, uint8_t lang)
     QJsonValue value = vruwordsobject.value(hex.toUpper());
     if (value == QJsonValue::Undefined)
     {
-        if (lang == 0)
-            DebugMessage(M64MSG_ERROR, "Unknown word: %s", hex.toUpper().toUtf8().constData());
-        else
+        QTextCodec *en_codec = QTextCodec::codecForName("UTF-8");
+        QTextCodec::ConverterState state;
+        QString encoded_string = en_codec->toUnicode(word_array.constData(), word_array.size(), &state);
+        if (lang == 0 /* English */)
         {
-            QTextCodec::ConverterState state;
-            QTextCodec *en_codec = QTextCodec::codecForName("UTF-8");
-            QTextCodec *jp_codec = QTextCodec::codecForName("Shift-JIS");
-            QString jp_string = en_codec->toUnicode(word_array.constData(), word_array.size(), &state);
+            if (state.invalidChars > 0)
+                DebugMessage(M64MSG_ERROR, "Unknown word: %s", hex.toUpper().toUtf8().constData());
+            else
+            {
+                words.append(encoded_string.toLower().toUtf8().constData());
+                word_indexes.append(word_list_count);
+            }
+        }
+        else /* Japanese or demo */
+        {
             if (state.invalidChars > 0)
             {
-                jp_string = jp_codec->toUnicode(word_array);
-                DebugMessage(M64MSG_ERROR, "Unknown Japanese word: %s %s", hex.toUpper().toUtf8().constData(), jp_string.toUtf8().constData());
+                QTextCodec *jp_codec = QTextCodec::codecForName("Shift-JIS");
+                encoded_string = jp_codec->toUnicode(word_array);
+                DebugMessage(M64MSG_ERROR, "Unknown Japanese word: %s %s", hex.toUpper().toUtf8().constData(), encoded_string.toUtf8().constData());
             }
             else
             {
-                words.append(jp_string.toLower().toUtf8().constData());
+                words.append(encoded_string.toLower().toUtf8().constData());
                 word_indexes.append(word_list_count);
             }
         }
