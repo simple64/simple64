@@ -27,7 +27,7 @@
 
 struct is_viewer
 {
-    char buffer[0x200];
+    char data[0x1000];
     char output_buffer[0x200];
     uint32_t buffer_pos;
 };
