@@ -162,7 +162,7 @@ void MainWindow::updateGB(Ui::MainWindow *ui)
     GB->addAction(fileSelect);
     connect(fileSelect, &QAction::triggered,[=](){
         QString filename = QFileDialog::getOpenFileName(this,
-            tr("GB ROM File"), NULL, tr("GB ROM Files (*.gb)"));
+            tr("GB ROM File"), NULL, tr("GB ROM Files (*.gb *.gbc)"));
         if (!filename.isNull()) {
             settings->setValue("Player1GBROM", filename);
             QString current = filename;
@@ -201,7 +201,7 @@ void MainWindow::updateGB(Ui::MainWindow *ui)
     GB->addAction(fileSelect);
     connect(fileSelect, &QAction::triggered,[=](){
         QString filename = QFileDialog::getOpenFileName(this,
-            tr("GB ROM File"), NULL, tr("GB ROM Files (*.gb)"));
+            tr("GB ROM File"), NULL, tr("GB ROM Files (*.gb *.gbc)"));
         if (!filename.isNull()) {
             settings->setValue("Player2GBROM", filename);
             QString current = filename;
@@ -240,7 +240,7 @@ void MainWindow::updateGB(Ui::MainWindow *ui)
     GB->addAction(fileSelect);
     connect(fileSelect, &QAction::triggered,[=](){
         QString filename = QFileDialog::getOpenFileName(this,
-            tr("GB ROM File"), NULL, tr("GB ROM Files (*.gb)"));
+            tr("GB ROM File"), NULL, tr("GB ROM Files (*.gb *.gbc)"));
         if (!filename.isNull()) {
             settings->setValue("Player3GBROM", filename);
             QString current = filename;
@@ -279,7 +279,7 @@ void MainWindow::updateGB(Ui::MainWindow *ui)
     GB->addAction(fileSelect);
     connect(fileSelect, &QAction::triggered,[=](){
         QString filename = QFileDialog::getOpenFileName(this,
-            tr("GB ROM File"), NULL, tr("GB ROM Files (*.gb)"));
+            tr("GB ROM File"), NULL, tr("GB ROM Files (*.gb *.gbc)"));
         if (!filename.isNull()) {
             settings->setValue("Player4GBROM", filename);
             QString current = filename;
