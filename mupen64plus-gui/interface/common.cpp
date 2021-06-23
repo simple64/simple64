@@ -59,26 +59,31 @@ void DebugCallback(void *Context, int level, const char *message)
 
     if (level == M64MSG_ERROR)
     {
-        output = QString("%1 Error: %2\n").arg((const char *) Context, message);
+        output = QString("%1 Error: %2").arg((const char *) Context, message);
         QString netplay = QString::fromUtf8(message);
         if (netplay.contains("Netplay"))
             w->getWorkerThread()->showMessage(netplay);
     }
     else if (level == M64MSG_WARNING)
-        output = QString("%1 Warning: %2\n").arg((const char *) Context, message);
+        output = QString("%1 Warning: %2").arg((const char *) Context, message);
     else if (level == M64MSG_INFO)
-            output = QString("%1: %2\n").arg((const char *) Context, message);
+            output = QString("%1: %2").arg((const char *) Context, message);
     else if (level == M64MSG_STATUS)
-            output = QString("%1 Status: %2\n").arg((const char *) Context, message);
+            output = QString("%1 Status: %2").arg((const char *) Context, message);
     else if (level == M64MSG_VERBOSE)
     {
         if (w->getVerbose())
-            output = QString("%1: %2\n").arg((const char *) Context, message);
+            output = QString("%1: %2").arg((const char *) Context, message);
     }
     else
-        output = QString("%1 Unknown: %2\n").arg((const char *) Context, message);
+        output = QString("%1 Unknown: %2").arg((const char *) Context, message);
     if (w != nullptr && !output.isEmpty())
-        w->getLogViewer()->addLog(output);
+    {
+        if (QThread::currentThread() == w->getWorkerThread())
+            w->getWorkerThread()->addLog(output);
+        else
+            w->getLogViewer()->addLog(output);
+    }
 }
 
 static char* media_loader_get_gb_cart_rom(void*, int control_id)

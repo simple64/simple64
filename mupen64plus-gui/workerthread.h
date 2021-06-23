@@ -33,6 +33,7 @@ signals:
     void showMessage(QString message);
     void updateDiscordActivity(struct DiscordActivity activity);
     void clearDiscordActivity();
+    void addLog(QString text);
 
 private:
     QString m_fileName;
