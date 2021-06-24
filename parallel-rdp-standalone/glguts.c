@@ -48,7 +48,7 @@ static PFNGLGETUNIFORMLOCATIONPROC glGetUniformLocation;
 static PFNGLUNIFORM1IPROC glUniform1i;
 
 static bool toggle_fs;
-static int toggle_buffer;
+static int rotate_buffer;
 
 // framebuffer texture states
 int32_t window_width;
@@ -59,16 +59,17 @@ int32_t window_widescreen;
 #define SHADER_HEADER "#version 330 core\n"
 #define TEX_FORMAT GL_RGBA
 #define TEX_TYPE GL_UNSIGNED_BYTE
+#define TEX_NUM 3
 
 static GLuint program;
 static GLuint vao;
 static GLuint buffer;
-static GLuint texture[2];
+static GLuint texture[TEX_NUM];
 static uint8_t *buffer_data;
 static uint32_t buffer_size = (640*8) * (480*8) * sizeof(uint32_t);
 
-int32_t tex_width[2];
-int32_t tex_height[2];
+int32_t tex_width[TEX_NUM];
+int32_t tex_height[TEX_NUM];
 int display_width;
 int display_height;
 
@@ -167,30 +168,30 @@ static GLuint gl_shader_link(GLuint vert, GLuint frag)
 
 void screen_write(struct frame_buffer *fb)
 {
-    bool buffer_size_changed = tex_width[toggle_buffer] != fb->width || tex_height[toggle_buffer] != fb->height;
+    bool buffer_size_changed = tex_width[rotate_buffer] != fb->width || tex_height[rotate_buffer] != fb->height;
     char* offset = NULL;
-    offset += toggle_buffer * buffer_size;
+    offset += rotate_buffer * buffer_size;
 
-    glBindTexture(GL_TEXTURE_2D, texture[toggle_buffer]);
+    glBindTexture(GL_TEXTURE_2D, texture[rotate_buffer]);
     // check if the framebuffer size has changed
     if (buffer_size_changed)
     {
-        tex_width[toggle_buffer] = fb->width;
-        tex_height[toggle_buffer] = fb->height;
+        tex_width[rotate_buffer] = fb->width;
+        tex_height[rotate_buffer] = fb->height;
         // set pitch for all unpacking operations
         glPixelStorei(GL_UNPACK_ROW_LENGTH, fb->pitch);
         // reallocate texture buffer on GPU
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, tex_width[toggle_buffer],
-                     tex_height[toggle_buffer], 0, TEX_FORMAT, TEX_TYPE, offset);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, tex_width[rotate_buffer],
+                     tex_height[rotate_buffer], 0, TEX_FORMAT, TEX_TYPE, offset);
     }
     else
     {
         // copy local buffer to GPU texture buffer
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, tex_width[toggle_buffer], tex_height[toggle_buffer],
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, tex_width[rotate_buffer], tex_height[rotate_buffer],
                         TEX_FORMAT, TEX_TYPE, offset);
     }
 
-    toggle_buffer = !toggle_buffer;
+    rotate_buffer = (rotate_buffer + 1) % 3;
 }
 
 void screen_read(struct frame_buffer *fb, bool alpha)
@@ -246,7 +247,7 @@ void gl_screen_clear(void)
 void gl_screen_close(void)
 {
     glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
-    glDeleteTextures(2, &texture[0]);
+    glDeleteTextures(TEX_NUM, &texture[0]);
     glDeleteVertexArrays(1, &vao);
     glDeleteBuffers(1, &buffer);
     glDeleteProgram(program);
@@ -254,7 +255,7 @@ void gl_screen_close(void)
 
 uint8_t* screen_get_texture_data()
 {
-    return buffer_data + (toggle_buffer * buffer_size);
+    return buffer_data + (rotate_buffer * buffer_size);
 }
 
 void screen_init()
@@ -264,7 +265,7 @@ void screen_init()
     tex_width[1] = 0;
     tex_height[1] = 0;
     toggle_fs = false;
-    toggle_buffer = 0;
+    rotate_buffer = 0;
     /* Get the core Video Extension function pointers from the library handle */
     CoreVideo_Init = (ptr_VidExt_Init)DLSYM(CoreLibHandle, "VidExt_Init");
     CoreVideo_Quit = (ptr_VidExt_Quit)DLSYM(CoreLibHandle, "VidExt_Quit");
@@ -343,18 +344,18 @@ void screen_init()
     glBindVertexArray(vao);
 
     // prepare texture
-    glGenTextures(2, &texture[0]);
-    glBindTexture(GL_TEXTURE_2D, texture[0]);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glBindTexture(GL_TEXTURE_2D, texture[1]);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glGenTextures(TEX_NUM, &texture[0]);
+    for (int i = 0; i < TEX_NUM; ++i)
+    {
+        glBindTexture(GL_TEXTURE_2D, texture[i]);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    }
 
     glGenBuffers(1, &buffer);
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, buffer);
-    glBufferStorage(GL_PIXEL_UNPACK_BUFFER, buffer_size * 2, 0, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
-    buffer_data = glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, buffer_size * 2, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
+    glBufferStorage(GL_PIXEL_UNPACK_BUFFER, buffer_size * TEX_NUM, 0, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
+    buffer_data = glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, buffer_size * TEX_NUM, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT);
 
     // check if there was an error when using any of the commands above
     gl_check_errors();
