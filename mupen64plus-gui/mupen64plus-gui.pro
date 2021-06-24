@@ -24,8 +24,7 @@ DEFINES += _AUTOUPDATE
 }
 
 INCLUDEPATH += \
-        "../../mupen64plus-core/src/api" \
-        "../core/src/api"
+        "../mupen64plus-core/src/api"
 
 SOURCES += main.cpp \
     mainwindow.cpp \
