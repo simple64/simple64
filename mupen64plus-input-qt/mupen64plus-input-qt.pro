@@ -26,7 +26,7 @@ SOURCES += \
         main.cpp
 
 INCLUDEPATH += \
-        "../../mupen64plus-core/src/api"
+        "../mupen64plus-core/src/api"
 
 HEADERS += \
         osal/osal_dynamiclib.h \
