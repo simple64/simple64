@@ -191,7 +191,7 @@ void screen_write(struct frame_buffer *fb)
                         TEX_FORMAT, TEX_TYPE, offset);
     }
 
-    rotate_buffer = (rotate_buffer + 1) % 3;
+    rotate_buffer = (rotate_buffer + 1) % TEX_NUM;
 }
 
 void screen_read(struct frame_buffer *fb, bool alpha)
