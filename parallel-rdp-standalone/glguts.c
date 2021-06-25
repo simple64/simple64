@@ -260,10 +260,8 @@ uint8_t* screen_get_texture_data()
 
 void screen_init()
 {
-    tex_width[0] = 0;
-    tex_height[0] = 0;
-    tex_width[1] = 0;
-    tex_height[1] = 0;
+    memset(tex_width, 0, sizeof(int32_t) * TEX_NUM);
+    memset(tex_height, 0, sizeof(int32_t) * TEX_NUM);
     toggle_fs = false;
     rotate_buffer = 0;
     /* Get the core Video Extension function pointers from the library handle */
