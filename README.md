@@ -3,7 +3,7 @@
 **Downloads found here: https://github.com/loganmc10/m64p/releases**
 ___
 
-Linux Dependencies (Ubuntu 18.04)
+Linux Dependencies (Ubuntu 20.04)
 ```
 sudo apt install qt5-default libqt5websockets5 libsdl2-2.0-0 libsdl2-net-2.0-0 libhidapi-hidraw0 libminizip1 p7zip-full
 ```
