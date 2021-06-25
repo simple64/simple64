@@ -220,7 +220,7 @@ void JoinRoom::serverChanged(int index)
 
         if (!ok || customServerAddress.isEmpty())
         {
-            customServerAddress = QString::null;
+            customServerAddress.clear();
             resetList();
             return;
         }
@@ -231,7 +231,7 @@ void JoinRoom::serverChanged(int index)
     }
     else
     {
-        customServerAddress = QString::null;
+        customServerAddress.clear();
     }
 
     pingLabel->setText("Ping: (Calculating)");
@@ -253,9 +253,9 @@ void JoinRoom::serverChanged(int index)
     pingTimer->start(2500);
     webSocket->ping();
 
-    QString serverUrlStr = customServerAddress.isNull() ? serverChooser->currentData().toString() : customServerAddress;
+    QString serverUrlStr = customServerAddress.isEmpty() ? serverChooser->currentData().toString() : customServerAddress;
     QUrl serverUrl = QUrl(serverUrlStr);
-    if (!customServerAddress.isNull() && serverUrl.port() < 0)
+    if (!customServerAddress.isEmpty() && serverUrl.port() < 0)
         // Be forgiving of custom server addresses that forget the port
         serverUrl.setPort(45000);
 

@@ -15,8 +15,7 @@ Enjoy and happy hacking!
 
 ## Dependencies
 
-- [Qt](https://www.qt.io/) 5.10
-  (this comes statically linked with the Windows binary build in m64p, so you don't need to worry about this on Windows)
+- [Qt](https://www.qt.io/) 5.12
 - [SDL2](https://www.libsdl.org/) ***Your copy of mupen64plus-core (libmupen64plus.so.2) also needs to be linked against SDL2***
 - 7za binary must be installed on your system for 7z/zip support
 
