@@ -11,7 +11,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: mupen64plus/mupen64plus-core
-          path: core
+          path: mupen64plus-core
       - name: Update and install packages
         run: |
           sudo apt-get -qq update
@@ -31,7 +31,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: mupen64plus/mupen64plus-core
-          path: core
+          path: mupen64plus-core
       - uses: msys2/setup-msys2@v2
         with:
           update: true
