@@ -8,6 +8,7 @@ int main(int argc, char *argv[])
     srand (time(NULL));
 
     QApplication a(argc, argv);
+    a.setWindowIcon(QIcon(":/mupen64plus.svg"));
 
     QCoreApplication::setApplicationName("mupen64plus-gui");
 

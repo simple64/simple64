@@ -377,6 +377,16 @@ MainWindow::MainWindow(QWidget *parent) :
     if (!settings->contains("configDirPath"))
         settings->setValue("configDirPath", "$CONFIG_PATH$");
 
+#ifdef CORE_LIBRARY_PATH
+    settings->setValue("coreLibPath", CORE_LIBRARY_PATH);
+#endif
+#ifdef PLUGIN_DIR_PATH
+    settings->setValue("pluginDirPath", PLUGIN_DIR_PATH);
+#endif
+#ifdef CONFIG_DIR_PATH
+    settings->setValue("configDirPath", CONFIG_DIR_PATH);
+#endif
+
     updatePlugins();
 
     if (!settings->contains("volume"))
