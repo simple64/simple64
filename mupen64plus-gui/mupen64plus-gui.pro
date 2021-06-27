@@ -11,6 +11,7 @@ TEMPLATE = app
 
 RC_ICONS = mupen64plus.ico
 ICON = mupen64plus.icns
+RESOURCES = mupen64plus-gui.qrc
 
 DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x050C00
 
