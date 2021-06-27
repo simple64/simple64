@@ -83,6 +83,11 @@ void SettingsDialog::initStuff()
     layout->addWidget(corePath,0,1);
     layout->addWidget(coreButton,0,2);
 
+#ifdef CORE_LIBRARY_PATH
+    corePath->setEnabled(false);
+    coreButton->setEnabled(false);
+#endif
+
     QLabel *pluginLabel = new QLabel("Plugin Dir Path", this);
     pluginPath = new QLineEdit(this);
     pluginPath->setText(w->getSettings()->value("pluginDirPath").toString());
@@ -93,6 +98,11 @@ void SettingsDialog::initStuff()
     layout->addWidget(pluginLabel,1,0);
     layout->addWidget(pluginPath,1,1);
     layout->addWidget(pluginButton,1,2);
+
+#ifdef PLUGIN_DIR_PATH
+    pluginPath->setEnabled(false);
+    pluginButton->setEnabled(false);
+#endif
 
     QLabel *note = new QLabel("Note: If you change the Config Path, you need to close and re-open mupen64plus-gui before it will take effect.", this);
     QLabel *configLabel = new QLabel("Config Dir Path", this);
@@ -109,6 +119,12 @@ void SettingsDialog::initStuff()
     layout->addWidget(configPath,3,1);
     layout->addWidget(configButton,3,2);
     layout->addWidget(clearConfigButton,3,3);
+
+#ifdef CONFIG_DIR_PATH
+    configPath->setEnabled(false);
+    configButton->setEnabled(false);
+    clearConfigButton->setEnabled(false);
+#endif
 
     QString pluginPath = w->getSettings()->value("pluginDirPath").toString();
     pluginPath.replace("$APP_PATH$", QCoreApplication::applicationDirPath());
