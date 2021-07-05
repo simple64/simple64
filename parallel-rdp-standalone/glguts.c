@@ -199,13 +199,13 @@ void screen_read(struct frame_buffer *fb, bool alpha)
     GLint vp[4];
     glGetIntegerv(GL_VIEWPORT, vp);
 
-    fb->width = vp[2];
-    fb->height = vp[3];
+    fb->width = vp[2] & ~3;
+    fb->height = vp[3] & ~3;
     fb->pitch = fb->width;
 
     if (fb->pixels)
     {
-        glReadPixels(vp[0], vp[1], vp[2], vp[3], alpha ? GL_RGBA : GL_RGB, TEX_TYPE, fb->pixels);
+        glReadPixels(vp[0], vp[1], fb->width, fb->height, alpha ? GL_RGBA : GL_RGB, TEX_TYPE, fb->pixels);
     }
 }
 
