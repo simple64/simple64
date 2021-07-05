@@ -200,7 +200,7 @@ void screen_read(struct frame_buffer *fb, bool alpha)
     glGetIntegerv(GL_VIEWPORT, vp);
 
     fb->width = vp[2] & ~3;
-    fb->height = vp[3] & ~3;
+    fb->height = vp[3];
     fb->pitch = fb->width;
 
     if (fb->pixels)
