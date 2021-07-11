@@ -1096,6 +1096,7 @@ void MainWindow::loadPlugins()
         return;
 
     ptr_PluginStartup PluginStartup;
+    ptr_PluginGetVersion PluginGetVersion;
     m64p_error res;
     QMessageBox msgBox;
 
@@ -1116,6 +1117,17 @@ void MainWindow::loadPlugins()
         msgBox.exec();
         return;
     }
+
+    PluginGetVersion = (ptr_PluginGetVersion) osal_dynlib_getproc(gfxPlugin, "PluginGetVersion");
+    const char* pluginName;
+    (*PluginGetVersion)(NULL, NULL, NULL, &pluginName, NULL);
+    if (strcmp("parallel", pluginName))
+    {
+        msgBox.setText("Incorrect GFX plugin");
+        msgBox.exec();
+        return;
+    }
+
     PluginStartup = (ptr_PluginStartup) osal_dynlib_getproc(gfxPlugin, "PluginStartup");
     (*PluginStartup)(coreLib, (char*)"Video", DebugCallback);
 
