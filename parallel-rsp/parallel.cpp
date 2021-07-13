@@ -132,6 +132,9 @@ extern "C"
 		if (APIVersion != NULL)
 			*APIVersion = RSP_PLUGIN_API_VERSION;
 
+		if (PluginNamePtr != NULL)
+			*PluginNamePtr = "ParaLLEl RSP";
+
 		if (Capabilities != NULL)
 			*Capabilities = 0;
 
