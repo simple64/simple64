@@ -1123,6 +1123,8 @@ void MainWindow::loadPlugins()
     (*PluginGetVersion)(NULL, NULL, NULL, &pluginName, NULL);
     if (strcmp("parallel", pluginName))
     {
+        osal_dynlib_close(gfxPlugin);
+        gfxPlugin = nullptr;
         msgBox.setText("Incorrect GFX plugin");
         msgBox.exec();
         return;
@@ -1147,6 +1149,8 @@ void MainWindow::loadPlugins()
     (*PluginGetVersion)(NULL, NULL, NULL, &pluginName, NULL);
     if (strcmp("Mupen64Plus SDL2 Audio Plugin", pluginName))
     {
+        osal_dynlib_close(audioPlugin);
+        audioPlugin = nullptr;
         msgBox.setText("Incorrect Audio plugin");
         msgBox.exec();
         return;
@@ -1185,6 +1189,8 @@ void MainWindow::loadPlugins()
     (*PluginGetVersion)(NULL, NULL, NULL, &pluginName, NULL);
     if (strcmp("ParaLLEl RSP", pluginName))
     {
+        osal_dynlib_close(rspPlugin);
+        rspPlugin = nullptr;
         msgBox.setText("Incorrect RSP plugin");
         msgBox.exec();
         return;
