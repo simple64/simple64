@@ -1142,6 +1142,16 @@ void MainWindow::loadPlugins()
         msgBox.exec();
         return;
     }
+
+    PluginGetVersion = (ptr_PluginGetVersion) osal_dynlib_getproc(audioPlugin, "PluginGetVersion");
+    (*PluginGetVersion)(NULL, NULL, NULL, &pluginName, NULL);
+    if (strcmp("Mupen64Plus SDL2 Audio Plugin", pluginName))
+    {
+        msgBox.setText("Incorrect Audio plugin");
+        msgBox.exec();
+        return;
+    }
+
     PluginStartup = (ptr_PluginStartup) osal_dynlib_getproc(audioPlugin, "PluginStartup");
     (*PluginStartup)(coreLib, (char*)"Audio", DebugCallback);
 
@@ -1170,6 +1180,16 @@ void MainWindow::loadPlugins()
         msgBox.exec();
         return;
     }
+
+    PluginGetVersion = (ptr_PluginGetVersion) osal_dynlib_getproc(rspPlugin, "PluginGetVersion");
+    (*PluginGetVersion)(NULL, NULL, NULL, &pluginName, NULL);
+    if (strcmp("ParaLLEl RSP", pluginName))
+    {
+        msgBox.setText("Incorrect RSP plugin");
+        msgBox.exec();
+        return;
+    }
+
     PluginStartup = (ptr_PluginStartup) osal_dynlib_getproc(rspPlugin, "PluginStartup");
     (*PluginStartup)(coreLib, (char*)"RSP", DebugCallback);
 }
