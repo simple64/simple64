@@ -71,7 +71,7 @@ target_include_directories(${NAME_PLUGIN_M64P} PUBLIC
     util)
 
 if(WIN32)
-    target_link_libraries(${NAME_PLUGIN_M64P} ${OPENGL_LIBRARIES})
+    target_link_libraries(${NAME_PLUGIN_M64P} ${OPENGL_LIBRARIES} -lwinmm)
 endif()
 
 set_target_properties(${NAME_PLUGIN_M64P} PROPERTIES PREFIX "")
