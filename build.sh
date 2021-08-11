@@ -10,6 +10,11 @@ if [[ $UNAME == *"MINGW"* ]]; then
   else
     mingw_prefix="mingw32"
   fi
+  if [[ $UNAME == *"CLANG64"* ]]; then
+    mingw_prefix="clang64"
+  else
+    mingw_prefix="clang32"
+  fi
 elif [[ $UNAME == *"Darwin"* ]]; then
   suffix=".dylib"
   qt_version=$(ls /usr/local/Cellar/qt@5)
@@ -101,6 +106,15 @@ if [[ $UNAME == *"MINGW"* ]]; then
   if [[ $UNAME == *"MINGW64"* ]]; then
     my_os=win64
     cp /$mingw_prefix/bin/libgcc_s_seh-1.dll $install_dir
+    cp /$mingw_prefix/bin/libstdc++-6.dll $install_dir
+  else
+    my_os=win32
+    cp /$mingw_prefix/bin/libgcc_s_dw2-1.dll $install_dir
+    cp /$mingw_prefix/bin/libstdc++-6.dll $install_dir
+  fi
+  if [[ $UNAME == *"CLANG64"* ]]; then
+    my_os=win64
+    cp /$mingw_prefix/bin/libc++.dll $install_dir
   else
     my_os=win32
     cp /$mingw_prefix/bin/libgcc_s_dw2-1.dll $install_dir
@@ -110,7 +124,6 @@ if [[ $UNAME == *"MINGW"* ]]; then
   cp /$mingw_prefix/bin/SDL2_net.dll $install_dir
   cp /$mingw_prefix/bin/libpng16-16.dll $install_dir
   cp /$mingw_prefix/bin/libglib-2.0-0.dll $install_dir
-  cp /$mingw_prefix/bin/libstdc++-6.dll $install_dir
   cp /$mingw_prefix/bin/zlib1.dll $install_dir
   cp /$mingw_prefix/bin/libintl-8.dll $install_dir
   cp /$mingw_prefix/bin/libpcre-1.dll $install_dir
