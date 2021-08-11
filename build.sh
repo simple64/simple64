@@ -117,7 +117,7 @@ if [[ $UNAME == *"MINGW"* ]]; then
     cp /$mingw_prefix/bin/libc++.dll $install_dir
   else
     my_os=win32
-    cp /$mingw_prefix/bin/libgcc_s_dw2-1.dll $install_dir
+    cp /$mingw_prefix/bin/libc++.dll $install_dir
   fi
   cp /$mingw_prefix/bin/libwinpthread-1.dll $install_dir
   cp /$mingw_prefix/bin/SDL2.dll $install_dir
