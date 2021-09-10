@@ -955,7 +955,7 @@ void MainWindow::on_actionSupport_on_Patreon_triggered()
 
 void MainWindow::on_actionOpen_Discord_Channel_triggered()
 {
-    QDesktopServices::openUrl(QUrl("https://discord.gg/B5svWhR"));
+    QDesktopServices::openUrl(QUrl("https://discord.gg/tsR3RtYynZ"));
 }
 
 WorkerThread* MainWindow::getWorkerThread()
