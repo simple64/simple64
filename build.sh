@@ -131,6 +131,7 @@ if [[ $UNAME == *"MINGW"* ]]; then
   cp /$mingw_prefix/bin/libbrotlicommon.dll $install_dir
   cp /$mingw_prefix/bin/libssl-1_1-x64.dll $install_dir
   cp /$mingw_prefix/bin/libcrypto-1_1-x64.dll $install_dir
+  cp /$mingw_prefix/bin/libmd4c.dll $install_dir
   cp $base_dir/7za.exe $install_dir
   cp $base_dir/mupen64plus-gui/discord/discord_game_sdk.dll $install_dir
   cp $base_dir/mupen64plus-input-qt/vosk/vosk.dll $install_dir
