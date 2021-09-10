@@ -122,9 +122,9 @@ if [[ $UNAME == *"MINGW"* ]]; then
   cp /$mingw_prefix/bin/libminizip-1.dll $install_dir
   cp /$mingw_prefix/bin/libpcre2-16-0.dll $install_dir
   cp /$mingw_prefix/bin/libdouble-conversion.dll $install_dir
-  cp /$mingw_prefix/bin/libicuin68.dll $install_dir
-  cp /$mingw_prefix/bin/libicuuc68.dll $install_dir
-  cp /$mingw_prefix/bin/libicudt68.dll $install_dir
+  cp /$mingw_prefix/bin/libicuin69.dll $install_dir
+  cp /$mingw_prefix/bin/libicuuc69.dll $install_dir
+  cp /$mingw_prefix/bin/libicudt69.dll $install_dir
   cp /$mingw_prefix/bin/libzstd.dll $install_dir
   cp /$mingw_prefix/bin/libhidapi-0.dll $install_dir
   cp /$mingw_prefix/bin/libbrotlidec.dll $install_dir
