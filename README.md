@@ -15,10 +15,4 @@ Linux Dependencies (Fedora)
 ```
 sudo dnf install minizip-compat mesa-libGLU hidapi p7zip qt5-qtwebsockets
 ```
-___
-Building:
-```
-git clone https://github.com/loganmc10/m64p.git
-cd m64p
-./build.sh
-```
+
