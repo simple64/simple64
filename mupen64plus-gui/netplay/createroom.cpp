@@ -42,6 +42,7 @@ CreateRoom::CreateRoom(QWidget *parent)
         playerNameEdit->setText(w->getSettings()->value("netplay_name").toString());
     layout->addWidget(playerNameEdit, 3, 1);
 
+/*
     QLabel *useInputDelayLabel = new QLabel("Use Fixed Input Delay?", this);
     layout->addWidget(useInputDelayLabel, 4, 0);
     useInputDelay = new QCheckBox(this);
@@ -54,6 +55,7 @@ CreateRoom::CreateRoom(QWidget *parent)
     inputDelay->setEnabled(false);
     inputDelay->setValidator(new QIntValidator(0, 100, this));
     layout->addWidget(inputDelay, 5, 1);
+*/
 
     QLabel *serverLabel = new QLabel("Server", this);
     layout->addWidget(serverLabel, 6, 0);
@@ -196,9 +198,11 @@ void CreateRoom::createRoom()
     json.insert("client_sha", QStringLiteral(GUI_VERSION));
     json.insert("netplay_version", NETPLAY_VER);
     json.insert("lle", "Yes");
+/*
     json.insert("use_input_delay", useInputDelay->isChecked());
     if (useInputDelay->isChecked())
         json.insert("input_delay", inputDelay->text().toInt());
+*/
 
     QJsonDocument json_doc(json);
     webSocket->sendBinaryMessage(json_doc.toJson());
@@ -241,10 +245,12 @@ void CreateRoom::downloadFinished(QNetworkReply *reply)
     reply->deleteLater();
 }
 
+/*
 void CreateRoom::handleUseInputDelay(bool useInputDelay)
 {
     inputDelay->setEnabled(useInputDelay);
 }
+*/
 
 void CreateRoom::handleServerChanged(int index)
 {
