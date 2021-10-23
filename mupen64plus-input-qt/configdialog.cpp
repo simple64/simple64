@@ -141,10 +141,10 @@ void ProfileTab::setComboBox(QComboBox* box, ControllerTab **_controllerTabs, QS
 
 int ProfileTab::checkNotRunning(m64p_dynlib_handle coreHandle)
 {
-    int value;
+    int value = M64EMU_STOPPED;
     ptr_CoreDoCommand CoreDoCommand = (ptr_CoreDoCommand) osal_dynlib_getproc(coreHandle, "CoreDoCommand");
     (*CoreDoCommand)(M64CMD_CORE_STATE_QUERY, M64CORE_EMU_STATE, &value);
-    if (value == M64EMU_RUNNING) {
+    if (value != M64EMU_STOPPED) {
         QMessageBox msgBox;
         msgBox.setText("Stop game before editing profiles.");
         msgBox.exec();
