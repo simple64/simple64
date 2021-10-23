@@ -23,7 +23,7 @@ private slots:
     void processBinaryMessage(QByteArray message);
     void onFinished(int result);
     void processBroadcast();
-    void handleUseInputDelay(bool useInputDelay);
+    //void handleUseInputDelay(bool useInputDelay);
     void handleServerChanged(int index);
     void connectionFailed();
     void sendPing();
@@ -38,8 +38,8 @@ private:
     QLineEdit *nameEdit;
     QLineEdit *passwordEdit;
     QLineEdit *playerNameEdit;
-    QCheckBox *useInputDelay;
-    QLineEdit *inputDelay;
+    //QCheckBox *useInputDelay;
+    //QLineEdit *inputDelay;
     QLabel *pingLabel;
     QLabel *pingValue;
     int launched;

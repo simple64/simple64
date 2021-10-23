@@ -27,11 +27,13 @@ JoinRoom::JoinRoom(QWidget *parent)
     playerName->setPlaceholderText("Player Name");
     layout->addWidget(playerName, 0, 0);
 
+/*
     inputDelay = new QLineEdit(this);
     inputDelay->setPlaceholderText("Input Delay");
     inputDelay->setValidator(new QIntValidator(0, 100, this));
     inputDelay->setMaximumWidth(80);
     layout->addWidget(inputDelay, 0, 1);
+*/
 
     pingLabel = new QLabel("Ping: (Calculating)", this);
     layout->addWidget(pingLabel, 0, 2);
@@ -110,15 +112,15 @@ void JoinRoom::resetList()
     row = 0;
     rooms.clear();
     listWidget->clear();
-    listWidget->setColumnCount(6);
+    listWidget->setColumnCount(4);
     listWidget->setRowCount(row);
     QStringList headers;
     headers.append("Room Name");
     headers.append("Game Name");
     headers.append("Game MD5");
     headers.append("Password Protected");
-    headers.append("LLE");
-    headers.append("Fixed Input Delay");
+    //headers.append("LLE");
+    //headers.append("Fixed Input Delay");
     listWidget->setHorizontalHeaderLabels(headers);
     listWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 }
@@ -168,29 +170,33 @@ void JoinRoom::joinGame()
             QJsonObject json = rooms.at(listWidget->currentRow());
             m64p_rom_settings rom_settings;
             (*CoreDoCommand)(M64CMD_ROM_GET_SETTINGS, sizeof(rom_settings), &rom_settings);
-            bool roomRequiresInputDelay = json.contains("use_input_delay") && json.value("use_input_delay").toBool();
+            //bool roomRequiresInputDelay = json.contains("use_input_delay") && json.value("use_input_delay").toBool();
             if (QString(rom_settings.MD5) != json.value("MD5").toString())
             {
                 (*CoreDoCommand)(M64CMD_ROM_CLOSE, 0, NULL);
                 msgBox.setText("ROM does not match room ROM");
                 msgBox.exec();
             }
+/*
             else if (roomRequiresInputDelay && inputDelay->text().isEmpty())
             {
                 (*CoreDoCommand)(M64CMD_ROM_CLOSE, 0, NULL);
                 msgBox.setText("You must specify input delay to join this room");
                 msgBox.exec();
             }
+*/
             else
             {
                 json.insert("type", "join_room");
                 json.insert("player_name", playerName->text());
                 json.insert("password", passwordEdit->text());
                 json.insert("client_sha", QStringLiteral(GUI_VERSION));
+/*
                 if (roomRequiresInputDelay)
                     json.insert("input_delay", inputDelay->text().toInt());
                 else
                     json.remove("input_delay");
+*/
                 QJsonDocument json_doc(json);
                 webSocket->sendBinaryMessage(json_doc.toJson());
             }
@@ -307,6 +313,7 @@ void JoinRoom::processBinaryMessage(QByteArray message)
         newItem = new QTableWidgetItem(json.value("protected").toString());
         newItem->setFlags(newItem->flags() & ~Qt::ItemIsEditable);
         listWidget->setItem(row, 3, newItem);
+/*
         newItem = new QTableWidgetItem(json.value("lle").toString());
         newItem->setFlags(newItem->flags() & ~Qt::ItemIsEditable);
         listWidget->setItem(row, 4, newItem);
@@ -314,6 +321,7 @@ void JoinRoom::processBinaryMessage(QByteArray message)
         newItem = new QTableWidgetItem(usesInputDelay ? "Yes" : "No");
         newItem->setFlags(newItem->flags() & ~Qt::ItemIsEditable);
         listWidget->setItem(row, 5, newItem);
+*/
 
         ++row;
     }
