@@ -43,7 +43,7 @@ typedef struct VoskRecognizer VoskRecognizer;
 /** Loads model data from the file and returns the model object
  *
  * @param model_path: the path of the model on the filesystem
- @ @returns model object */
+ * @returns model object or NULL if problem occured */
 VoskModel *vosk_model_new(const char *model_path);
 
 
@@ -66,7 +66,7 @@ int vosk_model_find_word(VoskModel *model, const char *word);
 /** Loads speaker model data from the file and returns the model object
  *
  * @param model_path: the path of the model on the filesystem
- * @returns model object */
+ * @returns model object or NULL if problem occured */
 VoskSpkModel *vosk_spk_model_new(const char *model_path);
 
 
@@ -79,9 +79,13 @@ void vosk_spk_model_free(VoskSpkModel *model);
 
 /** Creates the recognizer object
  *
- *  The recognizers process the speech and return text using shared model data 
- *  @param sample_rate The sample rate of the audio you going to feed into the recognizer
- *  @returns recognizer object */
+ *  The recognizers process the speech and return text using shared model data
+ *  @param model       VoskModel containing static data for recognizer. Model can be
+ *                     shared across recognizers, even running in different threads.
+ *  @param sample_rate The sample rate of the audio you going to feed into the recognizer.
+ *                     Make sure this rate matches the audio content, it is a common
+ *                     issue causing accuracy problems.
+ *  @returns recognizer object or NULL if problem occured */
 VoskRecognizer *vosk_recognizer_new(VoskModel *model, float sample_rate);
 
 
@@ -90,9 +94,13 @@ VoskRecognizer *vosk_recognizer_new(VoskModel *model, float sample_rate);
  *  With the speaker recognition mode the recognizer not just recognize
  *  text but also return speaker vectors one can use for speaker identification
  *
- *  @param sample_rate The sample rate of the audio you going to feed into the recognizer
+ *  @param model       VoskModel containing static data for recognizer. Model can be
+ *                     shared across recognizers, even running in different threads.
+ *  @param sample_rate The sample rate of the audio you going to feed into the recognizer.
+ *                     Make sure this rate matches the audio content, it is a common
+ *                     issue causing accuracy problems.
  *  @param spk_model speaker model for speaker identification
- *  @returns recognizer object */
+ *  @returns recognizer object or NULL if problem occured */
 VoskRecognizer *vosk_recognizer_new_spk(VoskModel *model, float sample_rate, VoskSpkModel *spk_model);
 
 
@@ -106,11 +114,15 @@ VoskRecognizer *vosk_recognizer_new_spk(VoskModel *model, float sample_rate, Vos
  *  Only recognizers with lookahead models support this type of quick configuration.
  *  Precompiled HCLG graph models are not supported.
  *
- *  @param sample_rate The sample rate of the audio you going to feed into the recognizer
+ *  @param model       VoskModel containing static data for recognizer. Model can be
+ *                     shared across recognizers, even running in different threads.
+ *  @param sample_rate The sample rate of the audio you going to feed into the recognizer.
+ *                     Make sure this rate matches the audio content, it is a common
+ *                     issue causing accuracy problems.
  *  @param grammar The string with the list of phrases to recognize as JSON array of strings,
  *                 for example "["one two three four five", "[unk]"]".
  *
- *  @returns recognizer object */
+ *  @returns recognizer object or NULL if problem occured */
 VoskRecognizer *vosk_recognizer_new_grm(VoskModel *model, float sample_rate, const char *grammar);
 
 
@@ -181,7 +193,9 @@ void vosk_recognizer_set_words(VoskRecognizer *recognizer, int words);
  *
  *  @param data - audio data in PCM 16-bit mono format
  *  @param length - length of the audio data
- *  @returns true if silence is occured and you can retrieve a new utterance with result method */
+ *  @returns 1 if silence is occured and you can retrieve a new utterance with result method 
+ *           0 if decoding continues
+ *           -1 if exception occured */
 int vosk_recognizer_accept_waveform(VoskRecognizer *recognizer, const char *data, int length);
 
 
