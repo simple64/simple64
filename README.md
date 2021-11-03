@@ -5,7 +5,7 @@ ___
 
 Linux Dependencies (Ubuntu 20.04)
 ```
-sudo apt install qt5-default libqt5websockets5 libsdl2-2.0-0 libsdl2-net-2.0-0 libhidapi-hidraw0 libminizip1 p7zip-full
+sudo apt install qt5-default libqt5websockets5-dev libsdl2-2.0-0 libsdl2-net-2.0-0 libhidapi-hidraw0 libminizip1 p7zip-full
 ```
 Linux Dependencies (Manjaro/Arch)
 ```
