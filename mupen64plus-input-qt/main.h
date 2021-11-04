@@ -13,7 +13,6 @@ typedef struct
     int deadzone;
     int range;
     float sensitivity;
-    SDL_Haptic* haptic;
 } SController;
 
 extern "C"

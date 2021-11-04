@@ -244,9 +244,6 @@ EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle CoreHandle, void * objec
     if (!SDL_WasInit(SDL_INIT_GAMECONTROLLER))
         SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER);
 
-    if (!SDL_WasInit(SDL_INIT_HAPTIC))
-        SDL_InitSubSystem(SDL_INIT_HAPTIC);
-
     if (!SDL_WasInit(SDL_INIT_AUDIO))
         SDL_InitSubSystem(SDL_INIT_AUDIO);
 
@@ -261,13 +258,10 @@ EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle CoreHandle, void * objec
 void closeControllers()
 {
     for (int i = 0; i < 4; ++i) {
-        if (controller[i].haptic != NULL)
-            SDL_HapticClose(controller[i].haptic);
         if (controller[i].gamepad != NULL)
             SDL_GameControllerClose(controller[i].gamepad);
         else if (controller[i].joystick != NULL)
             SDL_JoystickClose(controller[i].joystick);
-        controller[i].haptic = NULL;
         controller[i].gamepad = NULL;
         controller[i].joystick = NULL;
     }
@@ -281,7 +275,6 @@ EXPORT m64p_error CALL PluginShutdown(void)
     closeControllers();
 
     SDL_QuitSubSystem(SDL_INIT_GAMECONTROLLER);
-    SDL_QuitSubSystem(SDL_INIT_HAPTIC);
     SDL_QuitSubSystem(SDL_INIT_AUDIO);
     SDL_QuitSubSystem(SDL_INIT_TIMER);
 
@@ -678,20 +671,8 @@ void setPak(int Control)
         controller[Control].control->Plugin = PLUGIN_NONE;
     else if (pak == "Transfer")
         controller[Control].control->Plugin = PLUGIN_TRANSFER_PAK;
-    else if (pak == "Rumble") {
+    else if (pak == "Rumble")
         controller[Control].control->Plugin = PLUGIN_RAW;
-        if (controller[Control].haptic)
-            return;
-
-        if (controller[Control].joystick)
-            controller[Control].haptic = SDL_HapticOpenFromJoystick(controller[Control].joystick);
-        if (controller[Control].haptic) {
-            if (SDL_HapticRumbleInit(controller[Control].haptic) != 0) {
-                SDL_HapticClose(controller[Control].haptic);
-                controller[Control].haptic = NULL;
-            }
-        }
-    }
     else if (pak == "None")
         controller[Control].control->Plugin = PLUGIN_NONE;
     else
@@ -813,7 +794,6 @@ EXPORT void CALL InitiateControllers(CONTROL_INFO ControlInfo)
         controller[i].control->Present = 0;
         controller[i].control->Type = CONT_TYPE_STANDARD;
         controller[i].gamepad = NULL;
-        controller[i].haptic = NULL;
         controller[i].joystick = NULL;
         gamepad = gameControllerSettings->value("Controller" + QString::number(i + 1) + "/Gamepad").toString();
         if (gamepad == "Keyboard")
