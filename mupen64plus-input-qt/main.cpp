@@ -536,17 +536,17 @@ EXPORT void CALL ControllerCommand(int Control, unsigned char *Command)
             if (controller[Control].control->Plugin == PLUGIN_RAW)
             {
                 unsigned int dwAddress = (Command[3] << 8) + (Command[4] & 0xE0);
-                if(dwAddress == PAK_IO_RUMBLE && controller[Control].haptic) {
+                if(dwAddress == PAK_IO_RUMBLE) {
                     if (*Data) {
                         if (controller[Control].gamepad)
                             SDL_GameControllerRumble(controller[Control].gamepad, 0xFFFF, 0xFFFF, SDL_HAPTIC_INFINITY);
                         else
-                            SDL_HapticRumblePlay(controller[Control].haptic, 1, SDL_HAPTIC_INFINITY);
+                            SDL_JoystickRumble(controller[Control].joystick, 0xFFFF, 0xFFFF, SDL_HAPTIC_INFINITY);
                     } else {
                         if (controller[Control].gamepad)
                             SDL_GameControllerRumble(controller[Control].gamepad, 0, 0, 0);
                         else
-                            SDL_HapticRumbleStop(controller[Control].haptic);
+                            SDL_JoystickRumble(controller[Control].joystick, 0, 0, 0);
                     }
                 }
                 Data[32] = DataCRC( Data, 32 );
