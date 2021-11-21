@@ -19,6 +19,7 @@ jobs:
       - name: Install snapcraft and login
         run: |
           sudo snap install snapcraft --classic
+          sudo snap install multipass
           snapcraft login --with $GITHUB_WORKSPACE/SNAPCRAFT_LOGIN.txt
 
       - name: Run snapcraft
