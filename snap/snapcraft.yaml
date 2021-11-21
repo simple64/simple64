@@ -47,6 +47,7 @@ parts:
       - libvulkan1
       - mesa-vulkan-drivers
       - libvulkan-dev
+      - libnvidia-gl-495
     source: https://github.com/loganmc10/m64p/releases/download/v2021.11.4/m64p-linux64-5abda88.zip
     plugin: dump
 
