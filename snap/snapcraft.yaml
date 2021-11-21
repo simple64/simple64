@@ -33,6 +33,7 @@ apps:
       - audio-record
       - screen-inhibit-control
       - joystick
+      - hidraw
     environment:
       DISABLE_WAYLAND: 1
       M64P_DISABLE_UPDATER: 1
