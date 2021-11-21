@@ -41,8 +41,11 @@ m64p_video_extension_functions vidExtFunctions = {14,
 
 void MainWindow::updatePlugins()
 {
-    QString pluginPath = settings->value("pluginDirPath").toString();
-    pluginPath.replace("$APP_PATH$", QCoreApplication::applicationDirPath());
+#ifdef PLUGIN_DIR_PATH
+    QString pluginPath = PLUGIN_DIR_PATH;
+#else
+    QString pluginPath = QCoreApplication::applicationDirPath();
+#endif
     QDir PluginDir(pluginPath);
     PluginDir.setFilter(QDir::Files);
     QStringList Filter;
@@ -366,19 +369,9 @@ MainWindow::MainWindow(QWidget *parent) :
     updateDD(ui);
     updatePIF(ui);
 
-    if (!settings->contains("coreLibPath"))
-        settings->setValue("coreLibPath", "$APP_PATH$");
-    if (!settings->contains("pluginDirPath"))
-        settings->setValue("pluginDirPath", "$APP_PATH$");
     if (!settings->contains("configDirPath"))
         settings->setValue("configDirPath", "$CONFIG_PATH$");
 
-#ifdef CORE_LIBRARY_PATH
-    settings->setValue("coreLibPath", CORE_LIBRARY_PATH);
-#endif
-#ifdef PLUGIN_DIR_PATH
-    settings->setValue("pluginDirPath", PLUGIN_DIR_PATH);
-#endif
 #ifdef CONFIG_DIR_PATH
     settings->setValue("configDirPath", CONFIG_DIR_PATH);
 #endif
@@ -1010,9 +1003,11 @@ void MainWindow::closeCoreLib()
 
 void MainWindow::loadCoreLib()
 {
-    QString corePath = settings->value("coreLibPath").toString();
-    corePath.replace("$APP_PATH$", QCoreApplication::applicationDirPath());
-
+#ifdef CORE_LIBRARY_PATH
+    QString corePath = CORE_LIBRARY_PATH;
+#else
+    QString corePath = QCoreApplication::applicationDirPath();
+#endif
     m64p_error res = osal_dynlib_open(&coreLib, QDir(corePath).filePath(OSAL_DEFAULT_DYNLIB_FILENAME).toUtf8().constData());
 
     if (res != M64ERR_SUCCESS)
@@ -1098,10 +1093,11 @@ void MainWindow::loadPlugins()
     ptr_PluginGetVersion PluginGetVersion;
     m64p_error res;
     QMessageBox msgBox;
-
-    QString pluginPath = settings->value("pluginDirPath").toString();
-    pluginPath.replace("$APP_PATH$", QCoreApplication::applicationDirPath());
-
+#ifdef PLUGIN_DIR_PATH
+    QString pluginPath = PLUGIN_DIR_PATH;
+#else
+    QString pluginPath = QCoreApplication::applicationDirPath();
+#endif
     QString file_path;
     QString plugin_path;
 
