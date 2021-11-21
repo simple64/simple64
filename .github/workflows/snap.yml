@@ -5,6 +5,9 @@ on:
   release:
     types: [published]
 
+env:
+  SNAPCRAFT_BUILD_ENVIRONMENT: host
+
 jobs:
   build-snap:
     runs-on: ubuntu-20.04
@@ -19,7 +22,6 @@ jobs:
       - name: Install snapcraft and login
         run: |
           sudo snap install snapcraft --classic
-          sudo snap install multipass
           snapcraft login --with $GITHUB_WORKSPACE/SNAPCRAFT_LOGIN.txt
 
       - name: Run snapcraft
