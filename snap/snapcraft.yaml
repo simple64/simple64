@@ -1,6 +1,6 @@
 name: m64p
 base: core20
-version: "v2021.11.4"
+version: "v2021.11.21"
 summary: An easy to use N64 emulator. Available for Windows and Linux
 description: |
   m64p uses mupen64plus-gui, a brand new mupen64plus frontend written in Qt5. It supports all of the things you’d expect from a frontend (savestate management, pausing, screenshots, etc.).
@@ -16,6 +16,8 @@ layout:
     symlink: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libvulkan_intel.so
   /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libvulkan_radeon.so:
     symlink: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libvulkan_radeon.so
+  /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libGLX_nvidia.so.0:
+    symlink: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libGLX_nvidia.so.0
 
 apps:
   m64p:
@@ -33,6 +35,8 @@ apps:
       - raw-input
     environment:
       DISABLE_WAYLAND: 1
+      M64P_DISABLE_UPDATER: 1
+      VK_ICD_FILENAMES: "/var/lib/snapd/lib/vulkan/icd.d/nvidia_icd.json:$SNAP/usr/share/vulkan/icd.d/radeon.x86_64.json:$SNAP/usr/share/vulkan/icd.d/intel_icd.x86_64.json"
 
 parts:
   m64p:
@@ -47,14 +51,5 @@ parts:
       - libvulkan1
       - mesa-vulkan-drivers
       - libvulkan-dev
-      - libnvidia-gl-495
-    source: https://github.com/loganmc10/m64p/releases/download/v2021.11.4/m64p-linux64-5abda88.zip
+    source: https://github.com/loganmc10/m64p/releases/download/v2021.11.21/m64p-linux64-latest.zip
     plugin: dump
-
-  fixup-vulkan-icd-paths:
-    plugin: nil
-    after:
-      - m64p
-    override-prime: |
-      snapcraftctl prime
-      sed -i -E 's,(^.+"library_path": ")/.*/,\1,' $SNAPCRAFT_STAGE/usr/share/vulkan/icd.d/*.json
