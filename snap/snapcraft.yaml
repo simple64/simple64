@@ -32,7 +32,6 @@ apps:
       - audio-playback
       - screen-inhibit-control
       - joystick
-      - raw-input
     environment:
       DISABLE_WAYLAND: 1
       M64P_DISABLE_UPDATER: 1
