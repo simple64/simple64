@@ -6,7 +6,7 @@ on:
     types: [published]
 
 jobs:
-  check-script:
+  build-snap:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
@@ -24,3 +24,4 @@ jobs:
       - name: Run snapcraft
         run: |
           snapcraft --enable-experimental-extensions
+          snapcraft upload --release=stable *.snap
