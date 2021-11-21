@@ -1,4 +1,5 @@
 #include "configdialog.h"
+#include "funcs.h"
 #include "qt2sdl2.h"
 
 #include <QVBoxLayout>
@@ -36,7 +37,7 @@ void ControllerTab::fileDownloaded(QNetworkReply* pReply) {
     QThread::sleep(3);
 
     QProcess process;
-    QString command = "7za x \"" + dir.filePath("vosk-model.zip") + "\" -o\"" + QCoreApplication::applicationDirPath() + "\"";
+    QString command = "7za x \"" + dir.filePath("vosk-model.zip") + "\" -o\"" + ConfigGetUserDataPath() + "\"";
     process.start(command);
     bool success = process.waitForFinished(-1);
 
@@ -88,7 +89,7 @@ ControllerTab::ControllerTab(unsigned int controller, QSettings* settings, QSett
         controllerSettings->setValue("Controller" + QString::number(controller) + "/Gamepad", text);
         if (text == "Emulate VRU")
         {
-            if (!QFile::exists(QDir(QCoreApplication::applicationDirPath()).filePath("vosk-model-small-en-us-0.15/conf/mfcc.conf")))
+            if (!QFile::exists(QDir(ConfigGetUserDataPath()).filePath("vosk-model-small-en-us-0.15/conf/mfcc.conf")))
             {
                 QNetworkRequest request(QUrl("http://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip"));
                 request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
