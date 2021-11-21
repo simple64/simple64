@@ -23,7 +23,8 @@ HEADERS += \
         osal/osal_dynamiclib.h \
         configdialog.h \
         qt2sdl2.h \
-        main.h
+        main.h \
+        funcs.h
 
 win32 {
 SOURCES += osal/osal_dynamiclib_win32.c
