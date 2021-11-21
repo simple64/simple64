@@ -30,6 +30,7 @@ apps:
       - network
       - network-bind
       - audio-playback
+      - audio-record
       - screen-inhibit-control
       - joystick
     environment:
