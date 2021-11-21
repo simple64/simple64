@@ -2,8 +2,6 @@ name: Upload snap
 
 on:
   workflow_dispatch:
-  release:
-    types: [published]
 
 env:
   SNAPCRAFT_BUILD_ENVIRONMENT: host
