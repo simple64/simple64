@@ -1,0 +1,26 @@
+name: Upload snap
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+jobs:
+  check-script:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Get snapcraft login
+        run: echo "$SNAPCRAFT_LOGIN" > $GITHUB_WORKSPACE/SNAPCRAFT_LOGIN.txt
+        env:
+          SNAPCRAFT_LOGIN: ${{ secrets.SNAPCRAFT_LOGIN }}
+
+      - name: Install snapcraft and login
+        run: |
+          sudo snap install snapcraft --classic
+          snapcraft login --with $GITHUB_WORKSPACE/SNAPCRAFT_LOGIN.txt
+
+      - name: Run snapcraft
+        run: |
+          snapcraft --enable-experimental-extensions
