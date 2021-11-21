@@ -426,6 +426,9 @@ MainWindow::~MainWindow()
 void MainWindow::updateApp()
 {
 #ifdef _AUTOUPDATE
+    QString disable_update = qEnvironmentVariable("M64P_DISABLE_UPDATER");
+    if (!disable_update.isEmpty())
+        return;
 #ifndef __APPLE__
     QNetworkAccessManager *updateManager = new QNetworkAccessManager(this);
     connect(updateManager, &QNetworkAccessManager::finished,
