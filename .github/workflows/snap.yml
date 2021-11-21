@@ -2,6 +2,8 @@ name: Upload snap
 
 on:
   push:
+    branches:
+      - main
     paths:
       - 'snap/**'
   workflow_dispatch:
