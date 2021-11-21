@@ -1,6 +1,9 @@
 name: Upload snap
 
 on:
+  push:
+    paths:
+      - 'snap/**'
   workflow_dispatch:
 
 env:
