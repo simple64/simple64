@@ -16,17 +16,11 @@ public:
 protected:
     void closeEvent(QCloseEvent *event);
 private slots:
-    void handleCoreButton();
-    void handlePluginButton();
     void handleConfigButton();
     void handleClearConfigButton();
-    void handleCoreEdit();
-    void handlePluginEdit();
     void handleConfigEdit();
 private:
     void initStuff();
-    QLineEdit *corePath;
-    QLineEdit *pluginPath;
     QLineEdit *configPath;
     QGridLayout *layout = nullptr;
 };
