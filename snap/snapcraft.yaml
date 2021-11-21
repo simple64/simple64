@@ -30,7 +30,7 @@ apps:
       - audio-playback
       - screen-inhibit-control
       - joystick
-      - raw-usb
+      - raw-input
     environment:
       DISABLE_WAYLAND: 1
 
