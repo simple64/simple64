@@ -1,6 +1,6 @@
 name: m64p
 base: core20
-version: "v2021.11.21.2"
+version: "v2021.11.22"
 summary: An easy to use N64 emulator. Available for Windows and Linux
 description: |
   m64p uses mupen64plus-gui, a brand new mupen64plus frontend written in Qt5. It supports all of the things you’d expect from a frontend (savestate management, pausing, screenshots, etc.).
@@ -55,5 +55,5 @@ parts:
     override-prime: |
       snapcraftctl prime
       cp -f $SNAPCRAFT_STAGE/usr/lib/p7zip/7za $SNAPCRAFT_STAGE/usr/bin/7za
-    source: https://github.com/loganmc10/m64p/releases/download/v2021.11.21.2/m64p-linux64-0081aad.zip
+    source: https://github.com/loganmc10/m64p/releases/download/v2021.11.22/m64p-linux64-80738a0.zip
     plugin: dump
