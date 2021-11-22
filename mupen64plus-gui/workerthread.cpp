@@ -41,6 +41,7 @@ void WorkerThread::run()
     connect(this, SIGNAL(updateDiscordActivity(struct DiscordActivity)), w, SLOT(updateDiscordActivity(struct DiscordActivity)), CONNECTION_TYPE);
     connect(this, SIGNAL(clearDiscordActivity()), w, SLOT(clearDiscordActivity()), CONNECTION_TYPE);
     connect(this, SIGNAL(addLog(QString)), w->getLogViewer(), SLOT(addLog(QString)), CONNECTION_TYPE);
+    connect(this, SIGNAL(setVolume()), w, SLOT(setVolume()), CONNECTION_TYPE);
 #ifdef _WIN32
     SetThreadExecutionState(ES_CONTINUOUS | ES_DISPLAY_REQUIRED);
 #else
