@@ -611,6 +611,15 @@ void MainWindow::toggleFS(int force)
     }
 }
 
+void MainWindow::setVolume()
+{
+    if (settings->contains("volume"))
+    {
+        int volume = settings->value("volume").toInt();
+        (*CoreDoCommand)(M64CMD_CORE_STATE_SET, M64CORE_AUDIO_VOLUME, &volume);
+    }
+}
+
 void MainWindow::closeEvent (QCloseEvent *event)
 {
 #ifdef SINGLE_THREAD
