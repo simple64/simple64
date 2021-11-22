@@ -34,6 +34,7 @@ signals:
     void updateDiscordActivity(struct DiscordActivity activity);
     void clearDiscordActivity();
     void addLog(QString text);
+    void setVolume();
 
 private:
     QString m_fileName;

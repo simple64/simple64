@@ -211,9 +211,7 @@ m64p_error qtVidExtFuncGLSwapBuf(void)
         int value;
         (*CoreDoCommand)(M64CMD_CORE_STATE_QUERY, M64CORE_EMU_STATE, &value);
         if (value == M64EMU_RUNNING) {
-            QSettings settings(w->getSettings()->fileName(), QSettings::IniFormat);
-            int volume = settings.value("volume").toInt();
-            (*CoreDoCommand)(M64CMD_CORE_STATE_SET, M64CORE_AUDIO_VOLUME, &volume);
+            w->getWorkerThread()->setVolume();
             set_volume = 0;
         }
     }

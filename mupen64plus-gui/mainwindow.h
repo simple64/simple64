@@ -73,6 +73,7 @@ public slots:
     void showMessage(QString message);
     void updateDiscordActivity(struct DiscordActivity activity);
     void clearDiscordActivity();
+    void setVolume();
 
 private slots:
     void discordCallback();
