@@ -3,6 +3,8 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - 'snap/**'
   pull_request:
 
 jobs:
