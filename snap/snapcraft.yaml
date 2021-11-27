@@ -12,8 +12,8 @@ confinement: strict
 layout:
   /usr/share/vulkan:
     symlink: $SNAP/usr/share/vulkan
-  /etc/vulkan:
-    symlink: $SNAP/etc/vulkan
+  /etc/vulkan/icd.d/nvidia_icd.json:
+    symlink: $SNAP/etc/vulkan/icd.d/nvidia_icd.json
   /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libvulkan_intel.so:
     symlink: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libvulkan_intel.so
   /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libvulkan_radeon.so:
