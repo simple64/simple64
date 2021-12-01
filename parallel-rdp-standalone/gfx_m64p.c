@@ -45,6 +45,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdarg.h>
 
 #include "gfx_m64p.h"
 #include "glguts.h"
@@ -102,6 +103,22 @@ void plugin_init(void)
 
 void plugin_close(void)
 {
+}
+
+void DebugMessage(int level, const char *message, ...)
+{
+    char msgbuf[1024];
+    va_list args;
+
+    if (debug_callback == NULL)
+        return;
+
+    va_start(args, message);
+    vsprintf(msgbuf, message, args);
+
+    (*debug_callback)(debug_call_context, level, msgbuf);
+
+    va_end(args);
 }
 
 EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle _CoreLibHandle, void *Context,
@@ -252,9 +269,12 @@ EXPORT int CALL RomOpen(void)
         skip_swap_clear = false;
 
     plugin_init();
-    vk_init();
-
-    return 1;
+    if (vk_init())
+        return 1;
+    else {
+        DebugMessage(M64MSG_ERROR, "Could not start GFX plugin");
+        return 0;
+    }
 }
 
 EXPORT void CALL RomClosed(void)
