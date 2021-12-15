@@ -160,6 +160,12 @@ void JoinRoom::joinGame()
         msgBox.exec();
         return;
     }
+    if (listWidget->currentRow() < 0)
+    {
+        msgBox.setText("You haven't selected a game to join");
+        msgBox.exec();
+        return;
+    }
 
     filename = QFileDialog::getOpenFileName(this,
     tr("Open ROM"), w->getSettings()->value("ROMdir").toString(), tr("ROM Files (*.n64 *.N64 *.z64 *.Z64 *.v64 *.V64 *.zip *.ZIP *.7z)"));
