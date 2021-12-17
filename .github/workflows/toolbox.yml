@@ -1,0 +1,38 @@
+name: Upload toolbox container
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "toolbox/**"
+  workflow_dispatch:
+
+env:
+  REGISTRY_USER: logancm10
+  IMAGE_REGISTRY: quay.io
+  REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+
+jobs:
+  build-toolbox:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install podman
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install podman
+
+      - name: Log in to Quay.io
+        uses: redhat-actions/podman-login@v1
+        with:
+          username: ${{ env.REGISTRY_USER }}
+          password: ${{ env.REGISTRY_PASSWORD }}
+          registry: ${{ env.IMAGE_REGISTRY }}
+
+      - name: Run podman
+        run: |
+          podman build . --tag m64p:latest
+          podman push quay.io/loganmc10/m64p
+        working-directory: toolbox
