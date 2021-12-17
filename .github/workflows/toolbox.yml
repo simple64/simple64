@@ -19,11 +19,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Install podman
-        run: |
-          sudo apt-get update
-          sudo apt-get -y install podman
-
       - name: Log in to Quay.io
         uses: redhat-actions/podman-login@v1
         with:
@@ -34,5 +29,5 @@ jobs:
       - name: Run podman
         run: |
           podman build . --tag m64p:latest
-          podman push quay.io/loganmc10/m64p
+          podman push localhost/m64p:latest quay.io/loganmc10/m64p:latest
         working-directory: toolbox
