@@ -1,7 +1,7 @@
 FROM registry.fedoraproject.org/fedora-toolbox:35
 
-ADD https://github.com/loganmc10/m64p/releases/download/v2021.12.3/m64p-linux64-2ae80db.zip /
-RUN unzip /m64p*.zip
-RUN rm /m64p*.zip
+#ADD https://github.com/loganmc10/m64p/releases/download/v2021.12.3/m64p-linux64-2ae80db.zip /
+#RUN unzip /m64p*.zip
+#RUN rm /m64p*.zip
 RUN dnf -y install qt5-qtbase-gui qt5-qtwebsockets SDL2_net minizip-compat hidapi libatomic pipewire
-RUN ln -s /mupen64plus/mupen64plus-gui /usr/bin/m64p
+#RUN ln -s /mupen64plus/mupen64plus-gui /usr/bin/m64p
