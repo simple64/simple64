@@ -19,9 +19,14 @@ CreateRoom::CreateRoom(QWidget *parent)
 {
     QGridLayout *layout = new QGridLayout(this);
 
+    QRegExp rx("[a-zA-Z0-9]+");
+    QValidator *validator = new QRegExpValidator(rx, this);
+
     QLabel *nameLabel = new QLabel("Room Name", this);
     layout->addWidget(nameLabel, 0, 0);
     nameEdit = new QLineEdit(this);
+    nameEdit->setValidator(validator);
+    nameEdit->setMaxLength(30);
     layout->addWidget(nameEdit, 0, 1);
 
     QLabel *passwordLabel = new QLabel("Password (Optional)", this);
@@ -38,6 +43,8 @@ CreateRoom::CreateRoom(QWidget *parent)
     QLabel *playerNameLabel = new QLabel("Player Name", this);
     layout->addWidget(playerNameLabel, 3, 0);
     playerNameEdit = new QLineEdit(this);
+    playerNameEdit->setValidator(validator);
+    playerNameEdit->setMaxLength(30);
     if (w->getSettings()->contains("netplay_name"))
         playerNameEdit->setText(w->getSettings()->value("netplay_name").toString());
     layout->addWidget(playerNameEdit, 3, 1);
