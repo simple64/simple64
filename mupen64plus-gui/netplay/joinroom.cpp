@@ -21,7 +21,12 @@ JoinRoom::JoinRoom(QWidget *parent)
     QGridLayout *layout = new QGridLayout(this);
     layout->setColumnMinimumWidth(1, 500);
 
+    QRegExp rx("[a-zA-Z0-9]+");
+    QValidator *validator = new QRegExpValidator(rx, this);
+
     playerName = new QLineEdit(this);
+    playerName->setValidator(validator);
+    playerName->setMaxLength(30);
     if (w->getSettings()->contains("netplay_name"))
         playerName->setText(w->getSettings()->value("netplay_name").toString());
     playerName->setPlaceholderText("Player Name");
