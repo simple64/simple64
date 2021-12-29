@@ -1,6 +1,6 @@
 name: m64p
 base: core20
-version: "v2021.12.3"
+version: "v2021.12.29"
 compression: lzo
 summary: An easy to use N64 emulator. Available for Windows and Linux
 description: |
@@ -56,5 +56,5 @@ parts:
     override-prime: |
       snapcraftctl prime
       cp -f $SNAPCRAFT_STAGE/usr/lib/p7zip/7za $SNAPCRAFT_STAGE/usr/bin/7za
-    source: https://github.com/loganmc10/m64p/releases/download/v2021.12.3/m64p-linux64-2ae80db.zip
+    source: https://github.com/loganmc10/m64p/releases/download/v2021.12.29/m64p-linux64-7045d7a.zip
     plugin: dump
