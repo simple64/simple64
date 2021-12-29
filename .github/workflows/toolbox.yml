@@ -12,6 +12,7 @@ env:
   REGISTRY_USER: loganmc10
   IMAGE_REGISTRY: quay.io
   REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+  VERSION: "v2021.12.29"
 
 jobs:
   build-toolbox:
@@ -28,6 +29,7 @@ jobs:
 
       - name: Run podman
         run: |
-          podman build . --tag m64p:latest
-          podman push localhost/m64p:latest quay.io/loganmc10/m64p:latest
+          podman build . --tag quay.io/loganmc10/m64p:latest --tag quay.io/loganmc10/m64p:${{ env.VERSION }}
+          podman push quay.io/loganmc10/m64p:latest
+          podman push quay.io/loganmc10/m64p:${{ env.VERSION }}
         working-directory: toolbox
