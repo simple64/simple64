@@ -139,6 +139,11 @@ if [[ $UNAME == *"MINGW"* ]]; then
   cp -v /$mingw_prefix/bin/libwebp-7.dll $install_dir
   cp -v /$mingw_prefix/bin/libwebpdemux-2.dll $install_dir
   cp -v /$mingw_prefix/bin/libwebpmux-3.dll $install_dir
+  cp -v /$mingw_prefix/bin/liblcms2-2.dll $install_dir
+  cp -v /$mingw_prefix/bin/libdeflate.dll $install_dir
+  cp -v /$mingw_prefix/bin/libjbig-0.dll $install_dir
+  cp -v /$mingw_prefix/bin/libLerc.dll $install_dir
+  cp -v /$mingw_prefix/bin/liblzma-5.dll $install_dir
   cp -v $base_dir/7za.exe $install_dir
   cp -v $base_dir/mupen64plus-gui/discord/discord_game_sdk.dll $install_dir
   cp -v $base_dir/mupen64plus-input-qt/vosk/vosk.dll $install_dir
