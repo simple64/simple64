@@ -106,6 +106,7 @@ if [[ $UNAME == *"MINGW"* ]]; then
     cp /$mingw_prefix/bin/libgcc_s_dw2-1.dll $install_dir
   fi
 # WINEDEBUG=+loaddll wine ./mupen64plus-gui.exe 2> out.txt
+# cat out.txt | grep found
   cp -v /$mingw_prefix/bin/libwinpthread-1.dll $install_dir
   cp -v /$mingw_prefix/bin/SDL2.dll $install_dir
   cp -v /$mingw_prefix/bin/SDL2_net.dll $install_dir
