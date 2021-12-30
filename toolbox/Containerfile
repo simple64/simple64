@@ -3,7 +3,6 @@ FROM registry.fedoraproject.org/fedora-toolbox:35
 ADD https://github.com/loganmc10/m64p/releases/download/v2021.12.29/m64p-linux64-7045d7a.zip /
 RUN unzip /m64p*.zip
 RUN rm /m64p*.zip
-RUN dnf -y update
-RUN dnf -y install qt5-qtbase-gui qt5-qtwebsockets SDL2_net minizip-compat hidapi libatomic pipewire
+RUN dnf -y update && dnf -y install qt5-qtbase-gui qt5-qtwebsockets SDL2_net minizip-compat hidapi libatomic pipewire && dnf clean all -y
 RUN ln -s /mupen64plus/mupen64plus-gui /usr/bin/start
 ENV M64P_DISABLE_UPDATER=1
