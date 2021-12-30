@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Name=m64p
+GenericName=m64p
+Type=Application
+Comment=N64 Emulator
+Icon=m64p.png
+Terminal=false
+StartupNotify=false
+Keywords=n64;emulator;
+Categories=Game;Emulator;
+Exec=toolbox run -c m64p start

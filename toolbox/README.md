@@ -1,8 +1,15 @@
 On systems without Snap (like Fedora) you can use [toolbox](https://github.com/containers/toolbox) to easily resolve dependencies.
 
+## Installation
 ```
 sudo dnf -y install toolbox
-toolbox create --image quay.io/loganmc10/m64p m64p -y
+curl -sfL https://raw.githubusercontent.com/loganmc10/m64p/main/toolbox/install.sh | sh -
+```
 
-toolbox run -c m64p start
+## Updating
+To update, simply re-run the installation script
+
+## Removal
+```
+curl -sfL https://raw.githubusercontent.com/loganmc10/m64p/main/toolbox/remove.sh | sh -
 ```
