@@ -1,4 +1,4 @@
-On systems without Snap (like Fedora) you can use [toolbox](https://github.com/containers/toolbox) to easily install m64p.
+On systems without Snap (like Fedora) you can use [toolbox](https://containertoolbx.org/) to easily install m64p.
 
 ## Prep
 ```
