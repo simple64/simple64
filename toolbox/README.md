@@ -1,8 +1,12 @@
 On systems without Snap (like Fedora) you can use [toolbox](https://github.com/containers/toolbox) to easily resolve dependencies.
 
-## Installation
+## Prep
 ```
 sudo dnf -y install toolbox
+```
+
+## Installation
+```
 curl -sfL https://raw.githubusercontent.com/loganmc10/m64p/main/toolbox/install.sh | sh -
 ```
 
