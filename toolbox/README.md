@@ -6,13 +6,13 @@ sudo dnf -y install toolbox wget
 ```
 ## Installation
 ```
-wget -qO- https://raw.githubusercontent.com/loganmc10/m64p/main/toolbox/install.sh | sh -
+bash -x <(wget -qO- https://raw.githubusercontent.com/loganmc10/m64p/main/toolbox/install.sh)
 ```
 ## Updating
 To update, simply re-run the installation script
 ## Removal
 ```
-wget -qO- https://raw.githubusercontent.com/loganmc10/m64p/main/toolbox/remove.sh | sh -
+bash -x <(wget -qO- https://raw.githubusercontent.com/loganmc10/m64p/main/toolbox/remove.sh)
 ```
 ## Launching
 Search for "m64p" in your application menu and launch from there.
