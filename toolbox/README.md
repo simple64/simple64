@@ -1,8 +1,13 @@
 On systems without Snap (like Fedora) you can use [toolbox](https://containertoolbx.org/) to easily install m64p.
 
 ## Prep
+### Fedora
 ```
 sudo dnf -y install toolbox wget
+```
+### Arch/Manjaro
+```
+sudo pacman -S toolbox wget
 ```
 ## Installation
 ```
