@@ -2,6 +2,5 @@ FROM registry.fedoraproject.org/fedora-toolbox:35
 
 RUN wget -q https://github.com/loganmc10/m64p/releases/download/v2021.12.29/m64p-linux64-7045d7a.zip -O /m64p.zip && unzip /m64p.zip && rm /m64p.zip && \
     ln -s /mupen64plus/mupen64plus-gui /usr/bin/start
-RUN dnf -y install https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm && \
-    dnf -y update && dnf -y install xorg-x11-drv-nvidia-libs qt5-qtbase-gui qt5-qtwebsockets SDL2_net minizip-compat hidapi libatomic pipewire-libs p7zip && dnf clean all -y
+RUN dnf -y update && dnf -y install qt5-qtbase-gui qt5-qtwebsockets SDL2_net minizip-compat hidapi libatomic pipewire-libs p7zip && dnf clean all -y
 ENV M64P_DISABLE_UPDATER=1
