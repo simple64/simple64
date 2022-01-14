@@ -1,6 +1,4 @@
 On systems without Snap (like Fedora) you can use [toolbox](https://containertoolbx.org/) to easily install m64p.
-## Nvidia
-The instructions on this page don't currently work with Nvidia proprietary graphics drivers. For these cases, you should use the [Flatpak on Flathub](https://flathub.org/apps/details/io.github.m64p.m64p) (I don't maintain this flatpak).
 ## Prep
 ### Fedora
 ```
