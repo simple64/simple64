@@ -328,7 +328,11 @@ MainWindow::MainWindow(QWidget *parent) :
     m_title += __DATE__;
     this->setWindowTitle(m_title);
 
-    settings = new QSettings("mupen64plus", "gui", this);
+    QString ini_path = QDir(QCoreApplication::applicationDirPath()).filePath("mupen64plus-gui.ini");
+    settings = new QSettings(ini_path, QSettings::IniFormat, this);
+
+    if (!settings->isWritable())
+        settings = new QSettings("mupen64plus", "gui", this);
 
     if (!settings->contains("version") || settings->value("version").toInt() != SETTINGS_VER)
     {
