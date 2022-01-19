@@ -352,7 +352,7 @@ ProfileEditor::ProfileEditor(QString profile, QSettings *settings, QWidget *pare
 
     activeButton = nullptr;
     QString section = profile;
-    QRegExp rx("[a-zA-Z0-9]+");
+    QRegExp rx("[a-zA-Z0-9\-]+");
     QValidator *validator = new QRegExpValidator(rx, this);
     QLineEdit *profileName = new QLineEdit(this);
     profileName->setValidator(validator);
