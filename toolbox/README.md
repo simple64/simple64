@@ -10,13 +10,13 @@ sudo pacman -S toolbox wget
 ```
 ## Installation
 ```
-bash -x <(wget -qO- https://raw.githubusercontent.com/loganmc10/m64p/main/toolbox/install.sh)
+bash -x <(wget -qO- https://raw.githubusercontent.com/m64p/m64p/main/toolbox/install.sh)
 ```
 ## Updating
 To update, simply re-run the installation script
 ## Removal
 ```
-bash -x <(wget -qO- https://raw.githubusercontent.com/loganmc10/m64p/main/toolbox/remove.sh)
+bash -x <(wget -qO- https://raw.githubusercontent.com/m64p/m64p/main/toolbox/remove.sh)
 ```
 ## Launching
 Search for "m64p" in your application menu and launch from there.
