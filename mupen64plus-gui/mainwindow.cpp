@@ -427,7 +427,7 @@ void MainWindow::updateApp()
     connect(updateManager, &QNetworkAccessManager::finished,
         this, &MainWindow::updateReplyFinished);
 
-    updateManager->get(QNetworkRequest(QUrl("https://api.github.com/repos/loganmc10/m64p/releases/latest")));
+    updateManager->get(QNetworkRequest(QUrl("https://api.github.com/repos/m64p/m64p/releases/latest")));
 #endif
 #endif
 }
