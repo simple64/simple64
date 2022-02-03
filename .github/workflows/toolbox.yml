@@ -12,7 +12,7 @@ env:
   REGISTRY_USER: loganmc10
   IMAGE_REGISTRY: quay.io
   REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
-  VERSION: "v2021.12.29"
+  VERSION: "v2022.2.3"
 
 jobs:
   build-toolbox:
