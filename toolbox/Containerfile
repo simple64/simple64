@@ -1,6 +1,6 @@
 FROM registry.fedoraproject.org/fedora-toolbox:35
 
-RUN wget -q ${M64P_LINUX_URL} -O /m64p.zip && unzip /m64p.zip && rm /m64p.zip && \
+RUN wget -q M64PURL -O /m64p.zip && unzip /m64p.zip && rm /m64p.zip && \
     ln -s /mupen64plus/mupen64plus-gui /usr/bin/start
 RUN dnf -y update && dnf -y install qt5-qtbase-gui qt5-qtwebsockets SDL2_net minizip-compat hidapi libatomic pipewire-libs p7zip && dnf clean all -y
 RUN ln -s /run/host/usr/share/vulkan/icd.d/nvidia_icd.json /usr/share/vulkan/icd.d/nvidia_icd.json && \
