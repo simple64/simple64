@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'snap/**'
+      - "snap/**"
   workflow_dispatch:
 
 env:
@@ -38,5 +38,7 @@ jobs:
         run: |
           pip install requests
           export M64P_LINUX_URL=$(python3 ../scripts/get_linux_asset.py ${{ env.VERSION }})
+          sed -i 's/M64PVERSION/${{ env.VERSION }}/g' snap/snapcraft.yaml
+          sed -i 's/M64PURL/$M64P_LINUX_URL/g' snap/snapcraft.yaml
           snapcraft --enable-experimental-extensions
           snapcraft upload --release=stable *.snap
