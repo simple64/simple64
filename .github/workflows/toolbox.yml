@@ -1,11 +1,7 @@
 name: Upload toolbox container
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - "toolbox/**"
+  release:
   workflow_dispatch:
 
 env:
@@ -13,7 +9,6 @@ env:
   IMAGE_REGISTRY: quay.io
   REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
   PYTHON_VERSION: "3.9"
-  VERSION: "v2022.2.3"
 
 jobs:
   build-toolbox:
@@ -36,9 +31,10 @@ jobs:
       - name: Run podman
         run: |
           pip install requests
-          export M64P_LINUX_URL=$(python3 ../scripts/get_linux_asset.py ${{ env.VERSION }})
+          export M64P_VERSION=$(python3 ../scripts/get_release_version.py)
+          export M64P_LINUX_URL=$(python3 ../scripts/get_linux_asset.py $M64P_VERSION)
           sed -i "s~M64PURL~$M64P_LINUX_URL~g" Containerfile
-          podman build . --tag quay.io/loganmc10/m64p:latest --tag quay.io/loganmc10/m64p:${{ env.VERSION }}
+          podman build . --tag quay.io/loganmc10/m64p:latest --tag quay.io/loganmc10/m64p:$M64P_VERSION
           podman push quay.io/loganmc10/m64p:latest
-          podman push quay.io/loganmc10/m64p:${{ env.VERSION }}
+          podman push quay.io/loganmc10/m64p:$M64P_VERSION
         working-directory: toolbox
