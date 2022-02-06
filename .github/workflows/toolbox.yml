@@ -12,6 +12,7 @@ env:
   REGISTRY_USER: loganmc10
   IMAGE_REGISTRY: quay.io
   REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+  PYTHON_VERSION: "3.9"
   VERSION: "v2022.2.3"
 
 jobs:
@@ -19,6 +20,11 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Log in to Quay.io
         uses: redhat-actions/podman-login@v1
@@ -29,6 +35,8 @@ jobs:
 
       - name: Run podman
         run: |
+          pip install requests
+          export M64P_LINUX_URL=$(python3 ../scripts/get_linux_asset.py ${{ env.VERSION }})
           podman build . --tag quay.io/loganmc10/m64p:latest --tag quay.io/loganmc10/m64p:${{ env.VERSION }}
           podman push quay.io/loganmc10/m64p:latest
           podman push quay.io/loganmc10/m64p:${{ env.VERSION }}
