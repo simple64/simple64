@@ -10,12 +10,19 @@ on:
 
 env:
   SNAPCRAFT_BUILD_ENVIRONMENT: host
+  PYTHON_VERSION: "3.9"
+  VERSION: "v2022.2.3"
 
 jobs:
   build-snap:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Get snapcraft login
         run: echo "$SNAPCRAFT_LOGIN" > $GITHUB_WORKSPACE/SNAPCRAFT_LOGIN.txt
@@ -29,5 +36,7 @@ jobs:
 
       - name: Run snapcraft
         run: |
+          pip install requests
+          export M64P_LINUX_URL=$(python3 ../scripts/get_linux_asset.py ${{ env.VERSION }})
           snapcraft --enable-experimental-extensions
           snapcraft upload --release=stable *.snap
