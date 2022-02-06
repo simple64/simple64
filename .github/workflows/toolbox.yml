@@ -37,7 +37,7 @@ jobs:
         run: |
           pip install requests
           export M64P_LINUX_URL=$(python3 ../scripts/get_linux_asset.py ${{ env.VERSION }})
-          sed -i "s/M64PURL/$M64P_LINUX_URL/g" Containerfile
+          sed -i "s~M64PURL~$M64P_LINUX_URL~g" Containerfile
           podman build . --tag quay.io/loganmc10/m64p:latest --tag quay.io/loganmc10/m64p:${{ env.VERSION }}
           podman push quay.io/loganmc10/m64p:latest
           podman push quay.io/loganmc10/m64p:${{ env.VERSION }}
