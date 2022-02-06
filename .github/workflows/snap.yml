@@ -26,7 +26,7 @@ jobs:
 
       - name: Install snapcraft and login
         run: |
-          sudo snap install snapcraft --channel=5.x/stable --classic
+          sudo snap install snapcraft --classic
           snapcraft login --with $GITHUB_WORKSPACE/SNAPCRAFT_LOGIN.txt
 
       - name: Run snapcraft
