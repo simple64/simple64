@@ -5,7 +5,6 @@ on:
       - main
     paths-ignore:
       - "snap/**"
-      - "toolbox/**"
   pull_request:
 
 jobs:
