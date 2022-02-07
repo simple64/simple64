@@ -46,7 +46,6 @@ parts:
       - libsdl2-2.0-0
       - libsdl2-net-2.0-0
       - libhidapi-hidraw0
-      - libminizip1
       - p7zip-full
       - libatomic1
       - libglu1-mesa
