@@ -2,6 +2,7 @@ name: Upload snap
 
 on:
   release:
+    types: [published]
   workflow_dispatch:
 
 env:
