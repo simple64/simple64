@@ -30,7 +30,7 @@ jobs:
           name: m64p-linux64-${{ steps.slug.outputs.sha7 }}.zip
           path: m64p-*.zip
   build-windows:
-    runs-on: windows-latest
+    runs-on: windows-2022
     steps:
       - uses: actions/checkout@v2
       - name: Get short SHA
