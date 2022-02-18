@@ -57,7 +57,7 @@ int32_t window_width;
 int32_t window_height;
 int32_t window_fullscreen;
 int32_t window_widescreen;
-bool window_vsync;
+int32_t window_vsync;
 
 #define SHADER_HEADER "#version 330 core\n"
 #define TEX_FORMAT GL_RGBA
