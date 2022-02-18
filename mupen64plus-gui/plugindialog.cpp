@@ -18,8 +18,17 @@ int coreLayoutRow;
 QGridLayout *videoLayout;
 int videoRow;
 
-static void paramListCallback(void * context, const char *ParamName, m64p_type ParamType)
+static void paramListCallback(void *context, const char *ParamName, m64p_type ParamType)
 {
+    if (strcmp((char*)context, "Core") == 0) {
+        if (strcmp((char*)ParamName, "Version") == 0) return;
+        else if (strcmp((char*)ParamName, "OnScreenDisplay") == 0) return;
+        else if (strcmp((char*)ParamName, "NoCompiledJump") == 0) return;
+        else if (strcmp((char*)ParamName, "EnableDebugger") == 0) return;
+        else if (strcmp((char*)ParamName, "GbCameraVideoCaptureBackend1") == 0) return;
+        else if (strcmp((char*)ParamName, "SaveDiskFormat") == 0) return;
+    }
+
     QGridLayout *my_layout = nullptr;
     int * my_row = nullptr;
     m64p_handle current_handle = nullptr;
