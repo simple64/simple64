@@ -22,7 +22,7 @@ bool vk_ssdither;
 bool running = false;
 unsigned width, height;
 unsigned vk_overscan;
-unsigned vk_pal_fix;
+unsigned vk_vertical_stretch;
 unsigned vk_downscaling_steps;
 bool vk_native_texture_lod;
 bool vk_native_tex_rect;
@@ -54,9 +54,9 @@ void vk_blit(unsigned &width, unsigned &height)
 		opts.upscale_deinterlacing = !vk_interlacing;
 		opts.downscale_steps = vk_downscaling_steps;
 		opts.crop_overscan_pixels = vk_overscan;
-		if (vk_pal_fix) {
-			opts.crop_rect.top = vk_pal_fix;
-			opts.crop_rect.bottom = vk_pal_fix;
+		if (vk_vertical_stretch) {
+			opts.crop_rect.top = vk_vertical_stretch;
+			opts.crop_rect.bottom = vk_vertical_stretch;
 			opts.crop_rect.enable = true;
 		}
 
