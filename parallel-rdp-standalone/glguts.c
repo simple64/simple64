@@ -1,6 +1,7 @@
 #include "glguts.h"
 #include "gfx_m64p.h"
 #include "parallel_imp.h"
+#include "m64p_config.h"
 
 #include <string.h>
 #include <stdint.h>
@@ -21,6 +22,7 @@ static ptr_VidExt_GL_GetProcAddress CoreVideo_GL_GetProcAddress = NULL;
 static ptr_VidExt_GL_SetAttribute CoreVideo_GL_SetAttribute = NULL;
 static ptr_VidExt_GL_GetAttribute CoreVideo_GL_GetAttribute = NULL;
 static ptr_VidExt_GL_SwapBuffers CoreVideo_GL_SwapBuffers = NULL;
+static ptr_ConfigReceiveNetplayConfig ConfigReceiveNetplayConfig = NULL;
 
 static PFNGLCREATESHADERPROC glCreateShader;
 static PFNGLSHADERSOURCEPROC glShaderSource;
@@ -55,6 +57,7 @@ int32_t window_width;
 int32_t window_height;
 int32_t window_fullscreen;
 int32_t window_widescreen;
+bool window_vsync;
 
 #define SHADER_HEADER "#version 330 core\n"
 #define TEX_FORMAT GL_RGBA
@@ -276,12 +279,17 @@ void screen_init()
     CoreVideo_GL_SetAttribute = (ptr_VidExt_GL_SetAttribute)DLSYM(CoreLibHandle, "VidExt_GL_SetAttribute");
     CoreVideo_GL_GetAttribute = (ptr_VidExt_GL_GetAttribute)DLSYM(CoreLibHandle, "VidExt_GL_GetAttribute");
     CoreVideo_GL_SwapBuffers = (ptr_VidExt_GL_SwapBuffers)DLSYM(CoreLibHandle, "VidExt_GL_SwapBuffers");
+    ConfigReceiveNetplayConfig = (ptr_ConfigReceiveNetplayConfig)DLSYM(CoreLibHandle, "ConfigReceiveNetplayConfig");
 
     CoreVideo_Init();
 
     CoreVideo_GL_SetAttribute(M64P_GL_CONTEXT_PROFILE_MASK, M64P_GL_CONTEXT_PROFILE_CORE);
     CoreVideo_GL_SetAttribute(M64P_GL_CONTEXT_MAJOR_VERSION, 3);
     CoreVideo_GL_SetAttribute(M64P_GL_CONTEXT_MINOR_VERSION, 3);
+
+    m64p_error netplay_init = ConfigReceiveNetplayConfig(NULL, 0); // A bit of a hack to determine if netplay is enabled
+    if (netplay_init == M64ERR_NOT_INIT)
+        CoreVideo_GL_SetAttribute(M64P_GL_SWAP_CONTROL, window_vsync);
 
     CoreVideo_SetVideoMode(window_width, window_height, 0, window_fullscreen ? M64VIDEO_FULLSCREEN : M64VIDEO_WINDOWED, M64VIDEOFLAG_SUPPORT_RESIZING);
 

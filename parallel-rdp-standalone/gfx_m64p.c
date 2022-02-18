@@ -42,6 +42,7 @@
 #define KEY_NATIVETEXTLOD "NativeTextLOD"
 #define KEY_DEINTERLACE "DeinterlaceMode"
 #define KEY_SYNCHRONOUS "SynchronousRDP"
+#define KEY_VSYNC "VSync"
 
 #include <stdlib.h>
 #include <string.h>
@@ -148,6 +149,7 @@ EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle _CoreLibHandle, void *Co
     ConfigOpenSection("Video-Parallel", &configVideoParallel);
     ConfigSetDefaultBool(configVideoParallel, KEY_FULLSCREEN, 0, "Use fullscreen mode if True, or windowed mode if False");
     ConfigSetDefaultInt(configVideoParallel, KEY_UPSCALING, 1, "Amount of rescaling: 1=None, 2=2x, 4=4x, 8=8x");
+    ConfigSetDefaultBool(configVideoParallel, KEY_VSYNC, 0, "Enable VSync");
     ConfigSetDefaultInt(configVideoParallel, KEY_SCREEN_WIDTH, 640, "Screen width");
     ConfigSetDefaultInt(configVideoParallel, KEY_SCREEN_HEIGHT, 480, "Screen height");
     ConfigSetDefaultBool(configVideoParallel, KEY_WIDESCREEN, 0, "Widescreen mode (stretched)");
@@ -246,6 +248,7 @@ EXPORT int CALL RomOpen(void)
     window_width = ConfigGetParamInt(configVideoParallel, KEY_SCREEN_WIDTH);
     window_height = ConfigGetParamInt(configVideoParallel, KEY_SCREEN_HEIGHT);
     window_widescreen = ConfigGetParamBool(configVideoParallel, KEY_WIDESCREEN);
+    window_vsync = ConfigGetParamBool(configVideoParallel, KEY_VSYNC);
     vk_rescaling = ConfigGetParamInt(configVideoParallel, KEY_UPSCALING);
     vk_ssreadbacks = ConfigGetParamBool(configVideoParallel, KEY_SSREADBACKS);
     vk_ssdither = ConfigGetParamBool(configVideoParallel, KEY_SSDITHER);
