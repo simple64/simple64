@@ -39,7 +39,7 @@ extern "C"
     extern int32_t window_height;
     extern int32_t window_fullscreen;
     extern int32_t window_widescreen;
-    extern bool window_vsync;
+    extern int32_t window_vsync;
 
 #ifdef __cplusplus
 }
