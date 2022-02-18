@@ -13,7 +13,7 @@ extern "C"
     extern bool vk_ssdither;
 
     extern unsigned vk_overscan;
-    extern unsigned vk_pal_fix;
+    extern unsigned vk_vertical_stretch;
     extern unsigned vk_downscaling_steps;
     extern bool vk_native_texture_lod;
     extern bool vk_native_tex_rect;

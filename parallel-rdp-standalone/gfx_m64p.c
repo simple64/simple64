@@ -31,7 +31,7 @@
 #define KEY_SSDITHER "SuperscaledDither"
 #define KEY_SSREADBACKS "SuperscaledReads"
 #define KEY_OVERSCANCROP "CropOverscan"
-#define KEY_PAL_STRETCH "PALStretch"
+#define KEY_VERTICAL_STRETCH "VerticalStretch"
 #define KEY_DIVOT "Divot"
 #define KEY_GAMMADITHER "GammaDither"
 #define KEY_AA "VIAA"
@@ -156,7 +156,7 @@ EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle _CoreLibHandle, void *Co
     ConfigSetDefaultBool(configVideoParallel, KEY_SSDITHER, 1, "Enable superscaling of dithering when upsampling");
     ConfigSetDefaultBool(configVideoParallel, KEY_SYNCHRONOUS, 1, "Enable synchronizing RDP and CPU");
     ConfigSetDefaultInt(configVideoParallel, KEY_OVERSCANCROP, 0, "Amount of overscan pixels to crop on all sides");
-    ConfigSetDefaultInt(configVideoParallel, KEY_PAL_STRETCH, 0, "Amount of pixels to stretch by vertically. Meant to fix bad PAL ports that didn't bother with filling the PAL resolution of 288p (use value of 24 in that case).");
+    ConfigSetDefaultInt(configVideoParallel, KEY_VERTICAL_STRETCH, 0, "Amount of pixels to stretch by vertically. Can fix PAL ports that didn't fill the PAL resolution of 288p (use value of 24 in that case).");
     ConfigSetDefaultBool(configVideoParallel, KEY_AA, 1, "VI anti-aliasing, smooths polygon edges.");
     ConfigSetDefaultBool(configVideoParallel, KEY_DIVOT, 1, "Allow VI divot filter, cleans up stray black pixels.");
     ConfigSetDefaultBool(configVideoParallel, KEY_GAMMADITHER, 1, "Allow VI gamma dither");
@@ -260,7 +260,7 @@ EXPORT int CALL RomOpen(void)
     vk_interlacing = ConfigGetParamBool(configVideoParallel, KEY_DEINTERLACE);
     vk_downscaling_steps = ConfigGetParamInt(configVideoParallel, KEY_DOWNSCALE);
     vk_overscan = ConfigGetParamInt(configVideoParallel, KEY_OVERSCANCROP);
-    vk_pal_fix = ConfigGetParamInt(configVideoParallel, KEY_PAL_STRETCH);
+    vk_vertical_stretch = ConfigGetParamInt(configVideoParallel, KEY_VERTICAL_STRETCH);
 
     vk_synchronous = ConfigGetParamBool(configVideoParallel, KEY_SYNCHRONOUS);
 
