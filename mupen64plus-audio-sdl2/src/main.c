@@ -154,7 +154,7 @@ EXPORT void CALL AiLenChanged( void )
     {
         unsigned int audio_queued = SDL_GetQueuedAudioSize(dev);
         unsigned int acceptable_latency = (hardware_spec->freq * 0.2) * 4;
-        unsigned int min_latency = (hardware_spec->freq * 0.02) * 4;
+        unsigned int min_latency = (hardware_spec->freq * 0.06) * 4;
 
         if (!paused && audio_queued < min_latency)
         {
