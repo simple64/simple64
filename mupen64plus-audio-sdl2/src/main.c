@@ -87,7 +87,7 @@ void InitAudio()
     desired->userdata = NULL;
 
     const char *dev_name = SDL_GetAudioDeviceName(-1, 0);
-    dev = SDL_OpenAudioDevice(dev_name, 0, desired, obtained, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE);
+    dev = SDL_OpenAudioDevice(dev_name, 0, desired, obtained, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE | SDL_AUDIO_ALLOW_SAMPLES_CHANGE);
     free(desired);
     hardware_spec = obtained;
     VolSDL = SDL_MIX_MAXVOLUME;
