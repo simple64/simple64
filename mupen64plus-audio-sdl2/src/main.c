@@ -82,7 +82,7 @@ void InitAudio()
     desired->freq = 44100;
     desired->format = AUDIO_S16SYS;
     desired->channels = 2;
-    desired->samples = 1024;
+    desired->samples = 16;
     desired->callback = NULL;
     desired->userdata = NULL;
 
@@ -154,7 +154,7 @@ EXPORT void CALL AiLenChanged( void )
     {
         unsigned int audio_queued = SDL_GetQueuedAudioSize(dev);
         unsigned int acceptable_latency = (hardware_spec->freq * 0.2) * 4;
-        unsigned int min_latency = (hardware_spec->freq * 0.06) * 4;
+        unsigned int min_latency = (hardware_spec->freq * 0.04) * 4;
 
         if (!paused && audio_queued < min_latency)
         {
