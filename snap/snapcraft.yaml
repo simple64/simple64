@@ -54,6 +54,10 @@ parts:
       - libvulkan1
       - mesa-vulkan-drivers
       - libvulkan-dev
+    override-pull: |
+      snapcraftctl pull
+      cd $SNAPCRAFT_PART_SRC/mupen64plus
+      ln -sf libmupen64plus.so.2.0.0 libmupen64plus.so.2
     override-prime: |
       snapcraftctl prime
       cp -f $SNAPCRAFT_STAGE/usr/lib/p7zip/7za $SNAPCRAFT_STAGE/usr/bin/7za
