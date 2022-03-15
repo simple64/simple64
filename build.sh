@@ -96,7 +96,7 @@ cp mupen64plus-video-parallel.* $install_dir
 
 if [[ $UNAME == *"MINGW"* ]]; then
   cd $install_dir
-  windeployqt.exe mupen64plus-gui.exe
+  windeployqt.exe --no-translations mupen64plus-gui.exe
 
   if [[ $UNAME == *"MINGW64"* ]]; then
     my_os=win64
