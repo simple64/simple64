@@ -662,8 +662,8 @@ void MainWindow::updateOpenRecent()
 {
     OpenRecent->clear();
     QAction *recent[RECENT_SIZE];
-    QStringList list = settings->value("RecentROMs").toString().split(";");
-    if (list.first() == "") {
+    QStringList list = settings->value("RecentROMs2").toStringList();
+    if (list.isEmpty()) {
         OpenRecent->setEnabled(false);
         return;
     }
@@ -688,7 +688,7 @@ void MainWindow::updateOpenRecent()
     clearRecent->setText("Clear List");
     OpenRecent->addAction(clearRecent);
     connect(clearRecent, &QAction::triggered,[=](){
-        settings->remove("RecentROMs");
+        settings->remove("RecentROMs2");
         updateOpenRecent();
     });
 }
@@ -777,16 +777,16 @@ void MainWindow::openROM(QString filename, QString netplay_ip, int netplay_port,
     workerThread->setFileName(filename);
 
     QStringList list;
-    if (settings->contains("RecentROMs"))
-        list = settings->value("RecentROMs").toString().split(";");
+    if (settings->contains("RecentROMs2"))
+        list = settings->value("RecentROMs2").toStringList();
     list.removeAll(filename);
     list.prepend(filename);
     if (list.size() > RECENT_SIZE)
         list.removeLast();
-    settings->setValue("RecentROMs",list.join(";"));
+    settings->setValue("RecentROMs2",list);
     updateOpenRecent();
 
-    workerThread->start();
+    workerThread->start(QThread::HighPriority);
 }
 
 void MainWindow::on_actionOpen_ROM_triggered()
