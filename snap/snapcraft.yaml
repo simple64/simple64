@@ -38,7 +38,6 @@ apps:
       - joystick
       - hidraw
     environment:
-      DISABLE_WAYLAND: 1
       M64P_DISABLE_UPDATER: 1
       VK_ICD_FILENAMES: "/var/lib/snapd/lib/vulkan/icd.d/nvidia_icd.json:/etc/vulkan/icd.d/nvidia_icd.json:$SNAP/usr/share/vulkan/icd.d/radeon_icd.x86_64.json:$SNAP/usr/share/vulkan/icd.d/intel_icd.x86_64.json:$SNAP/usr/share/vulkan/icd.d/lvp_icd.x86_64.json"
 
