@@ -4,7 +4,8 @@ on: [push, pull_request]
 
 jobs:
   build-linux:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
+    container: quay.io/centos/centos:stream8
     steps:
       - uses: actions/checkout@v2
       - name: Checkout core repo
@@ -14,14 +15,14 @@ jobs:
           path: mupen64plus-core
       - name: Update and install packages
         run: |
-          sudo apt-get -qq update
-          sudo apt-get -y install build-essential qt5-default libqt5websockets5-dev libsdl2-dev
+          dnf -y update
+          dnf -y install qt5-qtwebsockets-devel
       - name: Run build script
         run: |
           echo "#define GUI_VERSION \"a12345\"" > version.h
           mkdir build
           cd build
-          qmake ..
+          qmake-qt5 ..
           make
   build-windows:
     runs-on: windows-2022
