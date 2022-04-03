@@ -168,10 +168,10 @@ m64p_error loadROM(QString filename)
     if (filename.endsWith(".7z") || filename.endsWith(".zip") || filename.endsWith(".ZIP"))
     {
         QProcess process;
-        QString command = "7za e -so \"";
-        command += filename;
-        command += "\" *64";
-        process.start(command);
+        process.setProgram("7za");
+        QStringList arguments = { "e", "-so", filename, "*64"  };
+        process.setArguments(arguments);
+        process.start();
         process.waitForFinished(-1);
         QByteArray data = process.readAllStandardOutput();
         romlength = data.size();
