@@ -12,10 +12,6 @@ jobs:
     runs-on: ubuntu-20.04
     container: quay.io/centos/centos:stream8
     steps:
-      - uses: actions/checkout@v2
-      - name: Get short SHA
-        id: slug
-        run: echo "::set-output name=sha7::$(git rev-parse --short HEAD)"
       - name: Update and install packages
         run: |
           dnf -y config-manager --set-enabled powertools
@@ -32,6 +28,10 @@ jobs:
           make -j4
           make install
           cd ..
+      - uses: actions/checkout@v2
+      - name: Get short SHA
+        id: slug
+        run: echo "::set-output name=sha7::$(git rev-parse --short HEAD)"
       - name: Run build script
         run: |
           export M64P_AUTOUPDATE=1
