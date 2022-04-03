@@ -78,9 +78,9 @@ void SettingsDialog::initStuff()
         my_index = inputChoice->findText(qtInputPlugin);
     }
     inputChoice->setCurrentIndex(my_index);
-    connect(inputChoice, static_cast<void(QComboBox::*)(const QString &)>(&QComboBox::activated),
-        [=](const QString &text) {
-            w->getSettings()->setValue("inputPlugin", text);
+    connect(inputChoice, QOverload<int>::of(&QComboBox::activated),
+        [=](int index){
+            w->getSettings()->setValue("inputPlugin", inputChoice->itemText(index));
             w->updatePlugins();
     });
     layout->addWidget(inputChoice,5,1);

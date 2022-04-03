@@ -499,10 +499,10 @@ void MainWindow::updateDownloadFinished(QNetworkReply *reply)
             file.setPermissions(QFileDevice::ReadOwner | QFileDevice::WriteOwner | QFileDevice::ExeOwner);
             file.close();
             QProcess process;
-            QString command = fullpath + " \"";
-            command += QCoreApplication::applicationDirPath();
-            command += "\"";
-            process.startDetached(command);
+            process.setProgram(fullpath);
+            QStringList arguments = { QCoreApplication::applicationDirPath() };
+            process.setArguments(arguments);
+            process.startDetached();
             reply->deleteLater();
             QCoreApplication::quit();
         }
@@ -533,7 +533,7 @@ void MainWindow::updateReplyFinished(QNetworkReply *reply)
                 req.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
                 updateManager->get(req);
                 QMessageBox *message = new QMessageBox(this);
-                message->setStandardButtons(0);
+                message->setStandardButtons(QMessageBox::NoButton);
                 message->setText("Downloading updater");
                 message->show();
             }
