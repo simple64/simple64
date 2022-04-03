@@ -9,7 +9,7 @@ QT       += widgets network
 TARGET = mupen64plus-input-qt
 TEMPLATE = lib
 
-DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x050C00
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x050F00
 
 SOURCES += \
         configdialog.cpp \
