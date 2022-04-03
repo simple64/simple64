@@ -18,6 +18,8 @@ jobs:
         run: echo "::set-output name=sha7::$(git rev-parse --short HEAD)"
       - name: Update and install packages
         run: |
+          dnf -y config-manager --set-enabled powertools
+          dnf -y install epel-release epel-next-release
           dnf -y update
           dnf -y install cmake make nasm qt5-qtwebsockets-devel hidapi-devel
           ln -s /usr/bin/qmake-qt5 /usr/bin/qmake
