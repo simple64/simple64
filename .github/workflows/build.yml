@@ -21,7 +21,7 @@ jobs:
           dnf -y config-manager --set-enabled powertools
           dnf -y install epel-release epel-next-release
           dnf -y update
-          dnf -y install cmake make nasm qt5-qtwebsockets-devel hidapi-devel zlib-devel
+          dnf -y install cmake make nasm qt5-qtwebsockets-devel hidapi-devel zlib-devel libpng-devel
           ln -s /usr/bin/qmake-qt5 /usr/bin/qmake
       - name: Run build script
         run: |
