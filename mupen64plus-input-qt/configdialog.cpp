@@ -38,7 +38,8 @@ void ControllerTab::fileDownloaded(QNetworkReply* pReply) {
 
     QProcess process;
     process.setProgram("7za");
-    QStringList arguments = { "x", dir.filePath("vosk-model.zip"), "-o", ConfigGetUserDataPath() };
+    QString output_path = "-o" + QString(ConfigGetUserDataPath());
+    QStringList arguments = { "x", dir.filePath("vosk-model.zip"), output_path };
     process.setArguments(arguments);
     process.start();
     bool success = process.waitForFinished(-1);
@@ -391,7 +392,7 @@ ProfileEditor::ProfileEditor(QString profile, QSettings *settings, QWidget *pare
     layout->addWidget(buttonLabelB, 3, 0);
     layout->addWidget(buttonPushB, 3, 1);
 
-    QLabel *buttonLabelZ = new QLabel("Z", this);
+    QLabel *buttonLabelZ = new QLabel("Z Trigger", this);
     buttonLabelZ->setAlignment(Qt::AlignCenter);
     CustomButton *buttonPushZ = new CustomButton(section, "Z", settings, this);
     buttonList.append(buttonPushZ);
@@ -405,14 +406,14 @@ ProfileEditor::ProfileEditor(QString profile, QSettings *settings, QWidget *pare
     layout->addWidget(buttonLabelStart, 5, 0);
     layout->addWidget(buttonPushStart, 5, 1);
 
-    QLabel *buttonLabelLTrigger = new QLabel("Left Trigger", this);
+    QLabel *buttonLabelLTrigger = new QLabel("L Button", this);
     buttonLabelLTrigger->setAlignment(Qt::AlignCenter);
     CustomButton *buttonPushLTrigger = new CustomButton(section, "L", settings, this);
     buttonList.append(buttonPushLTrigger);
     layout->addWidget(buttonLabelLTrigger, 6, 0);
     layout->addWidget(buttonPushLTrigger, 6, 1);
 
-    QLabel *buttonLabelRTrigger = new QLabel("Right Trigger", this);
+    QLabel *buttonLabelRTrigger = new QLabel("R Button", this);
     buttonLabelRTrigger->setAlignment(Qt::AlignCenter);
     CustomButton *buttonPushRTrigger = new CustomButton(section, "R", settings, this);
     buttonList.append(buttonPushRTrigger);
