@@ -37,5 +37,5 @@ jobs:
           export M64P_LINUX_URL=$(python3 scripts/get_linux_asset.py $M64P_VERSION)
           sed -i "s~M64PVERSION~$M64P_VERSION~g" snap/snapcraft.yaml
           sed -i "s~M64PURL~$M64P_LINUX_URL~g" snap/snapcraft.yaml
-          snapcraft --enable-experimental-extensions
+          snapcraft
           snapcraft upload --release=stable *.snap
