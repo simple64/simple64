@@ -5,7 +5,7 @@ on: [push, pull_request]
 jobs:
   build-linux:
     runs-on: ubuntu-20.04
-    container: quay.io/centos/centos:stream8
+    container: quay.io/centos/centos:stream9
     steps:
       - uses: actions/checkout@v2
       - name: Checkout core repo
@@ -15,8 +15,6 @@ jobs:
           path: mupen64plus-core
       - name: Update and install packages
         run: |
-          dnf -y config-manager --set-enabled powertools
-          dnf -y install epel-release epel-next-release
           dnf -y update
           dnf -y install qt5-qtwebsockets-devel SDL2-devel zlib-devel
       - name: Run build script
