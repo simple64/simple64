@@ -1,4 +1,4 @@
-/* Copyright (c) 2017-2020 Hans-Kristian Arntzen
+/* Copyright (c) 2017-2022 Hans-Kristian Arntzen
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -116,6 +116,8 @@ public:
 	virtual void set_window_title(const std::string &title);
 
 	virtual uintptr_t get_fullscreen_monitor();
+
+	virtual const VkApplicationInfo *get_application_info();
 
 protected:
 	unsigned current_swapchain_width = 0;

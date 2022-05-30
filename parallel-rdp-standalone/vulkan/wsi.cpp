@@ -1,4 +1,4 @@
-/* Copyright (c) 2017-2020 Hans-Kristian Arntzen
+/* Copyright (c) 2017-2022 Hans-Kristian Arntzen
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -49,6 +49,11 @@ void WSIPlatform::set_window_title(const std::string &)
 uintptr_t WSIPlatform::get_fullscreen_monitor()
 {
 	return 0;
+}
+
+const VkApplicationInfo *WSIPlatform::get_application_info()
+{
+	return nullptr;
 }
 
 void WSI::set_window_title(const std::string &title)
@@ -150,10 +155,15 @@ bool WSI::init(unsigned num_thread_indices, const Context::SystemHandles &system
 	auto instance_ext = platform->get_instance_extensions();
 	auto device_ext = platform->get_device_extensions();
 	context.reset(new Context);
+
+	context->set_application_info(platform->get_application_info());
 	context->set_num_thread_indices(num_thread_indices);
 	context->set_system_handles(system_handles);
 	if (!context->init_instance_and_device(instance_ext.data(), instance_ext.size(), device_ext.data(), device_ext.size()))
+	{
+		LOGE("Failed to create Vulkan device.\n");
 		return false;
+	}
 
 	device.reset(new Device);
 	device->set_context(*context);
@@ -163,7 +173,10 @@ bool WSI::init(unsigned num_thread_indices, const Context::SystemHandles &system
 
 	surface = platform->create_surface(context->get_instance(), context->get_gpu());
 	if (surface == VK_NULL_HANDLE)
+	{
+		LOGE("Failed to create VkSurfaceKHR.\n");
 		return false;
+	}
 
 	unsigned width = platform->get_surface_width();
 	unsigned height = platform->get_surface_height();
@@ -185,12 +198,18 @@ bool WSI::init(unsigned num_thread_indices, const Context::SystemHandles &system
 	}
 
 	if ((queue_present_support & (1u << context->get_queue_info().family_indices[QUEUE_INDEX_GRAPHICS])) == 0)
+	{
+		LOGE("No presentation queue found for GPU. Is it connected to a display?\n");
 		return false;
+	}
 
 	device->set_swapchain_queue_family_support(queue_present_support);
 
 	if (!blocking_init_swapchain(width, height))
+	{
+		LOGE("Failed to create swapchain.\n");
 		return false;
+	}
 
 	device->init_swapchain(swapchain_images, swapchain_width, swapchain_height, swapchain_format,
 	                       swapchain_current_prerotate,
@@ -227,7 +246,7 @@ void WSI::tear_down_swapchain()
 
 	if (swapchain != VK_NULL_HANDLE)
 	{
-		if (device->get_device_features().present_wait_features.presentWait)
+		if (device->get_device_features().present_wait_features.presentWait && present_last_id)
 			table->vkWaitForPresentKHR(context->get_device(), swapchain, present_last_id, UINT64_MAX);
 		table->vkDestroySwapchainKHR(context->get_device(), swapchain, nullptr);
 	}
@@ -1057,8 +1076,11 @@ WSI::SwapchainError WSI::init_swapchain(unsigned width, unsigned height)
 	info.clipped = VK_TRUE;
 	info.oldSwapchain = old_swapchain;
 
-	if (device->get_device_features().present_wait_features.presentWait && old_swapchain != VK_NULL_HANDLE)
+	if (device->get_device_features().present_wait_features.presentWait &&
+	    old_swapchain != VK_NULL_HANDLE && present_last_id)
+	{
 		table->vkWaitForPresentKHR(context->get_device(), old_swapchain, present_last_id, UINT64_MAX);
+	}
 
 #ifdef _WIN32
 	if (device->get_device_features().supports_full_screen_exclusive)
