@@ -30,7 +30,7 @@ git commit -m "update parallel rsp"
 
 git remote add parallel-rdp-standalone https://github.com/loganmc10/parallel-rdp-standalone.git
 git fetch parallel-rdp-standalone
-git merge -s subtree parallel-rdp-standalone/master --allow-unrelated-histories --squash
+git merge -s subtree parallel-rdp-standalone/m64p --allow-unrelated-histories --squash
 git commit -m "update parallel rdp"
 
 git push origin main
