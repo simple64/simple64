@@ -25,7 +25,7 @@ git commit -m "update raphnet"
 
 git remote add parallel-rsp https://github.com/loganmc10/parallel-rsp.git
 git fetch parallel-rsp
-git merge -s subtree parallel-rsp/master --allow-unrelated-histories --squash
+git merge -s subtree parallel-rsp/m64p --allow-unrelated-histories --squash
 git commit -m "update parallel rsp"
 
 git remote add parallel-rdp-standalone https://github.com/loganmc10/parallel-rdp-standalone.git
