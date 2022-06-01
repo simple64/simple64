@@ -95,7 +95,7 @@ ControllerTab::ControllerTab(unsigned int controller, QSettings* settings, QSett
             if (!QFile::exists(QDir(ConfigGetUserDataPath()).filePath("vosk-model-small-en-us-0.15/conf/mfcc.conf")))
             {
                 QNetworkRequest request(QUrl("http://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip"));
-                request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
+                request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
                 progress = new QProgressDialog("Downloading voice model...", "Abort", 0, 100, this);
                 progress->show();
                 QNetworkReply *reply = modelDownloader.get(request);
@@ -355,8 +355,8 @@ ProfileEditor::ProfileEditor(QString profile, QSettings *settings, QWidget *pare
 
     activeButton = nullptr;
     QString section = profile;
-    QRegExp rx("[a-zA-Z0-9\-]+");
-    QValidator *validator = new QRegExpValidator(rx, this);
+    QRegularExpression rx("[a-zA-Z0-9\\-]+");
+    QValidator *validator = new QRegularExpressionValidator(rx, this);
     QLineEdit *profileName = new QLineEdit(this);
     profileName->setValidator(validator);
     profileName->setMaxLength(30);
