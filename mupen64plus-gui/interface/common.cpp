@@ -31,6 +31,7 @@
 #include "common.h"
 #include <SDL_keycode.h>
 #include <QProcess>
+#include <QFile>
 #include "version.h"
 #include "mainwindow.h"
 #include "logviewer.h"

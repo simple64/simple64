@@ -530,7 +530,7 @@ void MainWindow::updateReplyFinished(QNetworkReply *reply)
 #else
                 QNetworkRequest req(QUrl("https://github.com/m64p/m64p-updater/releases/latest/download/m64p-updater"));
 #endif
-                req.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
+                req.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
                 updateManager->get(req);
                 QMessageBox *message = new QMessageBox(this);
                 message->setStandardButtons(QMessageBox::NoButton);

@@ -21,8 +21,8 @@ JoinRoom::JoinRoom(QWidget *parent)
     QGridLayout *layout = new QGridLayout(this);
     layout->setColumnMinimumWidth(1, 500);
 
-    QRegExp rx("[a-zA-Z0-9]+");
-    QValidator *validator = new QRegExpValidator(rx, this);
+    QRegularExpression rx("[a-zA-Z0-9]+");
+    QValidator *validator = new QRegularExpressionValidator(rx, this);
 
     playerName = new QLineEdit(this);
     playerName->setValidator(validator);
