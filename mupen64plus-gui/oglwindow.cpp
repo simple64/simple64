@@ -3,15 +3,33 @@
 #include "mainwindow.h"
 #include "interface/core_commands.h"
 
-void OGLWindow::initializeGL() {
-    doneCurrent();
-#ifndef SINGLE_THREAD
-    context()->moveToThread(w->getRenderingThread());
-#endif
+OGLWindow::OGLWindow(QSurfaceFormat _format, QWindow *parent)
+    : QWindow(parent)
+{
+    ogl_init = 0;
+    setSurfaceType(QWindow::OpenGLSurface);
+    m_context.setFormat(_format);
+    m_context.create();
+}
+
+void OGLWindow::exposeEvent(QExposeEvent *event)
+{
+    Q_UNUSED(event);
+    if (ogl_init == 0)
+    {
+        m_context.doneCurrent();
+        m_context.moveToThread(w->getRenderingThread());
+        ogl_init = 1;
+    }
+}
+
+QOpenGLContext* OGLWindow::context()
+{
+    return &m_context;
 }
 
 void OGLWindow::resizeEvent(QResizeEvent *event) {
-    QOpenGLWindow::resizeEvent(event);
+    QWindow::resizeEvent(event);
     if (timerId) {
         killTimer(timerId);
         timerId = 0;

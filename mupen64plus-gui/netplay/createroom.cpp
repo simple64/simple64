@@ -17,6 +17,7 @@
 CreateRoom::CreateRoom(QWidget *parent)
     : QDialog(parent)
 {
+    getIP();
     QGridLayout *layout = new QGridLayout(this);
 
     QRegularExpression rx("[a-zA-Z0-9]+");
@@ -189,6 +190,26 @@ void CreateRoom::handleCreateButton()
     }
 }
 
+void CreateRoom::getIP()
+{
+    QNetworkAccessManager *ipManager = new QNetworkAccessManager(this);
+    connect(ipManager, &QNetworkAccessManager::finished,
+        this, &CreateRoom::ipReplyFinished);
+
+    ipManager->get(QNetworkRequest(QUrl("https://api.ipify.org?format=json")));
+}
+
+void CreateRoom::ipReplyFinished(QNetworkReply *reply)
+{
+    if (!reply->error())
+    {
+        QJsonDocument json_doc = QJsonDocument::fromJson(reply->readAll());
+        QJsonObject json = json_doc.object();
+        clientIP = json.value("ip").toString();
+    }
+    reply->deleteLater();
+}
+
 void CreateRoom::createRoom()
 {
     connect(webSocket, &QWebSocket::binaryMessageReceived,
@@ -205,6 +226,7 @@ void CreateRoom::createRoom()
     json.insert("client_sha", QStringLiteral(GUI_VERSION));
     json.insert("netplay_version", NETPLAY_VER);
     json.insert("lle", "Yes");
+    json.insert("IP", clientIP);
 /*
     json.insert("use_input_delay", useInputDelay->isChecked());
     if (useInputDelay->isChecked())

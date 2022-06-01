@@ -33,7 +33,7 @@ m64p_error qtVidExtFuncQuit(void)
 {
     init = 0;
     w->getWorkerThread()->toggleFS(M64VIDEO_WINDOWED);
-    w->getOGLWindow()->doneCurrent();
+    w->getOGLWindow()->context()->doneCurrent();
 #ifndef SINGLE_THREAD
     w->getOGLWindow()->context()->moveToThread(QApplication::instance()->thread());
 #endif
@@ -63,11 +63,11 @@ m64p_error qtVidExtFuncSetMode(int Width, int Height, int, int ScreenMode, int)
 #ifdef SINGLE_THREAD
         QCoreApplication::processEvents();
 #else
-        while (!w->getOGLWindow()->isValid()) {}
+        while (!w->getOGLWindow()->isVisible()) {}
         while (w->getOGLWindow()->context()->thread() != w->getRenderingThread()) {}
 #endif
         w->getWorkerThread()->resizeMainWindow(Width, Height);
-        w->getOGLWindow()->makeCurrent();
+        w->getOGLWindow()->context()->makeCurrent(w->getOGLWindow());
         init = 1;
         needs_toggle = ScreenMode;
     }

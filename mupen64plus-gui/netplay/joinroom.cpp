@@ -16,6 +16,7 @@
 JoinRoom::JoinRoom(QWidget *parent)
     : QDialog(parent)
 {
+    getIP();
     setMinimumWidth(1000);
     setMinimumHeight(500);
     QGridLayout *layout = new QGridLayout(this);
@@ -112,6 +113,7 @@ void JoinRoom::onFinished(int)
         webSocket->deleteLater();
     }
 }
+
 void JoinRoom::resetList()
 {
     row = 0;
@@ -148,6 +150,26 @@ void JoinRoom::downloadFinished(QNetworkReply *reply)
 void JoinRoom::refresh()
 {
     serverChanged(serverChooser->currentIndex());
+}
+
+void JoinRoom::getIP()
+{
+    QNetworkAccessManager *ipManager = new QNetworkAccessManager(this);
+    connect(ipManager, &QNetworkAccessManager::finished,
+        this, &JoinRoom::ipReplyFinished);
+
+    ipManager->get(QNetworkRequest(QUrl("https://api.ipify.org?format=json")));
+}
+
+void JoinRoom::ipReplyFinished(QNetworkReply *reply)
+{
+    if (!reply->error())
+    {
+        QJsonDocument json_doc = QJsonDocument::fromJson(reply->readAll());
+        QJsonObject json = json_doc.object();
+        clientIP = json.value("ip").toString();
+    }
+    reply->deleteLater();
 }
 
 void JoinRoom::joinGame()
@@ -202,6 +224,7 @@ void JoinRoom::joinGame()
                 json.insert("player_name", playerName->text());
                 json.insert("password", passwordEdit->text());
                 json.insert("client_sha", QStringLiteral(GUI_VERSION));
+                json.insert("IP", clientIP);
 /*
                 if (roomRequiresInputDelay)
                     json.insert("input_delay", inputDelay->text().toInt());

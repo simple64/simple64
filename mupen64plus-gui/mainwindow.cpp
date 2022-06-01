@@ -702,12 +702,11 @@ void MainWindow::showMessage(QString message)
 
 void MainWindow::createOGLWindow(QSurfaceFormat* format)
 {
-    my_window = new OGLWindow();
+    my_window = new OGLWindow(*format);
     QWidget *container = QWidget::createWindowContainer(my_window, this);
     container->setFocusPolicy(Qt::StrongFocus);
 
     my_window->setCursor(Qt::BlankCursor);
-    my_window->setFormat(*format);
 
     setCentralWidget(container);
 
@@ -718,8 +717,9 @@ void MainWindow::createOGLWindow(QSurfaceFormat* format)
 void MainWindow::deleteOGLWindow()
 {
     QWidget *container = new QWidget(this);
-    my_window->doneCurrent();
+    my_window->context()->doneCurrent();
     setCentralWidget(container);
+    my_window->deleteLater();
 }
 
 void MainWindow::stopGame()
