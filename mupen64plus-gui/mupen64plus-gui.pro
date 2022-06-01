@@ -6,6 +6,10 @@
 
 QT       += widgets websockets
 
+greaterThan(QT_MAJOR_VERSION, 5) {
+	QT	 += opengl
+}
+
 TARGET = mupen64plus-gui
 TEMPLATE = app
 

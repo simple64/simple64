@@ -19,8 +19,8 @@ CreateRoom::CreateRoom(QWidget *parent)
 {
     QGridLayout *layout = new QGridLayout(this);
 
-    QRegExp rx("[a-zA-Z0-9]+");
-    QValidator *validator = new QRegExpValidator(rx, this);
+    QRegularExpression rx("[a-zA-Z0-9]+");
+    QValidator *validator = new QRegularExpressionValidator(rx, this);
 
     QLabel *nameLabel = new QLabel("Room Name", this);
     layout->addWidget(nameLabel, 0, 0);
@@ -155,7 +155,7 @@ void CreateRoom::handleCreateButton()
         msgBox.exec();
         return;
     }
-    if (serverChooser->currentData() == "Custom" && (customServerHost == NULL || customServerHost.isEmpty()))
+    if (serverChooser->currentData() == "Custom" && customServerHost.isEmpty())
     {
         msgBox.setText("Custom Server Address is invalid");
         msgBox.exec();
