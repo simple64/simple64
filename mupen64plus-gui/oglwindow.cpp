@@ -8,6 +8,7 @@ OGLWindow::OGLWindow(QSurfaceFormat _format, QWindow *parent)
 {
     ogl_init = 0;
     setSurfaceType(QWindow::OpenGLSurface);
+    setFormat(_format);
     m_context.setFormat(_format);
     m_context.create();
 }
