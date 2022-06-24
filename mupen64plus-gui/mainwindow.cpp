@@ -955,7 +955,7 @@ void MainWindow::on_actionJoin_Room_triggered()
 
 void MainWindow::on_actionSupport_on_Patreon_triggered()
 {
-    QDesktopServices::openUrl(QUrl("https://www.patreon.com/m64p"));
+    QDesktopServices::openUrl(QUrl("https://www.patreon.com/loganmc10"));
 }
 
 void MainWindow::on_actionOpen_Discord_Channel_triggered()
