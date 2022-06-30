@@ -24,12 +24,12 @@ mkdir -p $install_dir
 base_dir=$PWD
 
 cd $base_dir/mupen64plus-core/projects/unix
-make NETPLAY=1 NO_ASM=1 OSD=0 -j4 all
+make NETPLAY=1 NO_ASM=1 OSD=0 V=1 -j4 all
 cp -P $base_dir/mupen64plus-core/projects/unix/*$suffix* $install_dir
 cp $base_dir/mupen64plus-core/data/* $install_dir
 
 cd $base_dir/mupen64plus-input-raphnetraw/projects/unix
-make -j4 all
+make V=1 -j4 all
 cp $base_dir/mupen64plus-input-raphnetraw/projects/unix/*$suffix $install_dir
 
 mkdir -p $base_dir/mupen64plus-input-qt/build
@@ -43,7 +43,7 @@ else
 fi
 
 cd $base_dir/mupen64plus-audio-sdl2/projects/unix
-make -j4 all
+make V=1 -j4 all
 cp $base_dir/mupen64plus-audio-sdl2/projects/unix/*$suffix $install_dir
 
 cd $base_dir
@@ -79,7 +79,7 @@ if [[ $UNAME == *"MINGW"* ]]; then
 else
   cmake -DCMAKE_BUILD_TYPE=Release ..
 fi
-cmake --build .
+VERBOSE=1 cmake --build .
 cp mupen64plus-rsp-parallel.* $install_dir
 
 mkdir -p $base_dir/parallel-rdp-standalone/build
@@ -89,7 +89,7 @@ if [[ $UNAME == *"MINGW"* ]]; then
 else
   cmake -DCMAKE_BUILD_TYPE=Release ..
 fi
-cmake --build .
+VERBOSE=1 cmake --build .
 cp mupen64plus-video-parallel.* $install_dir
 
 if [[ $UNAME == *"MINGW"* ]]; then
