@@ -55,6 +55,11 @@ LIBS += -L/usr/local/lib -ldl -lSDL2
 INCLUDEPATH += /usr/local/include /usr/include/SDL2 /usr/local/include/SDL2
 }
 
-CONFIG += optimize_full
+QMAKE_CXXFLAGS_RELEASE -= -O2
+QMAKE_CXXFLAGS_RELEASE += -O3 -flto -march=x86-64-v3
+QMAKE_CFLAGS_RELEASE -= -O2
+QMAKE_CFLAGS_RELEASE += -O3 -flto -march=x86-64-v3
+QMAKE_LFLAGS -= -O2
+QMAKE_LFLAGS += -O3 -flto -march=x86-64-v3
 
 QMAKE_PROJECT_DEPTH = 0
