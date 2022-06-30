@@ -17,17 +17,8 @@ jobs:
           dnf -y config-manager --set-enabled powertools
           dnf -y install epel-release epel-next-release
           dnf -y update
-          dnf -y install cmake make nasm qt5-qtwebsockets-devel hidapi-devel zlib-devel libpng-devel SDL2-devel wget zip git
+          dnf -y install cmake make nasm qt5-qtwebsockets-devel hidapi-devel zlib-devel libpng-devel SDL2_net-devel wget zip git
           ln -s /usr/bin/qmake-qt5 /usr/bin/qmake
-      - name: Install SDL2_net
-        run: |
-          wget https://www.libsdl.org/projects/SDL_net/release/SDL2_net-2.0.1.tar.gz
-          tar xf SDL2_net-2.0.1.tar.gz
-          cd SDL2_net-2.0.1
-          ./configure --prefix=/usr
-          make -j4
-          make install
-          cd ..
       - uses: actions/checkout@v2
       - name: Get short SHA
         id: slug
