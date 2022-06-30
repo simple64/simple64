@@ -74,4 +74,6 @@ if(WIN32)
     target_link_libraries(${NAME_PLUGIN_M64P} ${OPENGL_LIBRARIES} -lwinmm)
 endif()
 
+target_compile_options(${NAME_PLUGIN_M64P} PRIVATE -march=x86-64-v3)
+target_link_options(${NAME_PLUGIN_M64P} PRIVATE -march=x86-64-v3)
 set_target_properties(${NAME_PLUGIN_M64P} PROPERTIES PREFIX "")
