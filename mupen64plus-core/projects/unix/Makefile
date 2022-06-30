@@ -193,7 +193,6 @@ endif
 
 ifeq ($(ARCH_DETECTED), 64BITS)
   ifeq ($(OS), MINGW)
-    CFLAGS += -march=x86-64
     LDFLAGS += -Wl,-m,i386pep
   endif
 endif
