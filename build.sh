@@ -23,6 +23,8 @@ install_dir=$PWD/mupen64plus
 mkdir -p $install_dir
 base_dir=$PWD
 
+export OPTFLAGS="-O3 -flto -march=x86-64-v3"
+
 cd $base_dir/mupen64plus-core/projects/unix
 make NETPLAY=1 NO_ASM=1 OSD=0 V=1 -j4 all
 cp -P $base_dir/mupen64plus-core/projects/unix/*$suffix* $install_dir
