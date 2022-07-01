@@ -75,6 +75,8 @@ SOURCES += osal/osal_dynamiclib_win32.c
 !win32 {
 QT += dbus
 
+CONFIG += ltcg
+
 SOURCES += osal/osal_dynamiclib_unix.c
 
 LIBS += -L/usr/local/lib -ldl -lSDL2 -lz
@@ -109,7 +111,8 @@ QMAKE_CXXFLAGS_RELEASE -= -O2
 QMAKE_CXXFLAGS_RELEASE += -O3 -march=x86-64-v3
 QMAKE_CFLAGS_RELEASE -= -O2
 QMAKE_CFLAGS_RELEASE += -O3 -march=x86-64-v3
-QMAKE_LFLAGS -= -O2
-QMAKE_LFLAGS += -O3 -march=x86-64-v3
+QMAKE_LFLAGS_RELEASE -= -O2
+QMAKE_LFLAGS_RELEASE -= -Wl,-O1
+QMAKE_LFLAGS_RELEASE += -O3 -march=x86-64-v3
 
 QMAKE_PROJECT_DEPTH = 0
