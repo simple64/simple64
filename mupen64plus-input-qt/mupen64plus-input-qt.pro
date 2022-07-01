@@ -51,11 +51,11 @@ SOURCES += osal/osal_dynamiclib_win32.c
 !win32 {
 SOURCES += osal/osal_dynamiclib_unix.c
 
+CONFIG += ltcg
+
 LIBS += -L/usr/local/lib -ldl -lSDL2
 INCLUDEPATH += /usr/local/include /usr/include/SDL2 /usr/local/include/SDL2
 }
-
-CONFIG += ltcg
 
 QMAKE_CXXFLAGS_RELEASE -= -O2
 QMAKE_CXXFLAGS_RELEASE += -O3 -march=x86-64-v3
