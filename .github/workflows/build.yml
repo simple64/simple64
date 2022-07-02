@@ -19,7 +19,7 @@ jobs:
           dnf -y update
           dnf -y install gcc-toolset-11 cmake make nasm qt5-qtwebsockets-devel hidapi-devel zlib-devel libpng-devel SDL2_net-devel wget zip git
           ln -s /usr/bin/qmake-qt5 /usr/bin/qmake
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Get short SHA
         id: slug
         run: echo "::set-output name=sha7::$(git rev-parse --short HEAD)"
@@ -34,7 +34,7 @@ jobs:
   build-windows:
     runs-on: windows-2022
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Get short SHA
         id: slug
         run: echo "::set-output name=sha7::$(git rev-parse --short HEAD)"
@@ -70,7 +70,7 @@ jobs:
 #  build-mac:
 #    runs-on: macos-10.15
 #    steps:
-#      - uses: actions/checkout@v2
+#      - uses: actions/checkout@v3
 #      - name: Get short SHA
 #        id: slug
 #        run: echo "::set-output name=sha7::$(git rev-parse --short HEAD)"
