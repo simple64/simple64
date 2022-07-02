@@ -27,7 +27,7 @@ jobs:
         run: |
           scl enable gcc-toolset-11 'export M64P_AUTOUPDATE=1; bash ./build.sh'
       - name: Upload zip
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: m64p-linux64-${{ steps.slug.outputs.sha7 }}.zip
           path: m64p-*.zip
@@ -63,7 +63,7 @@ jobs:
           HOST_CPU: x86_64
           MSBUILD_PATH: "/c/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/MSBuild/Current/Bin/"
       - name: Upload zip
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: m64p-win64-${{ steps.slug.outputs.sha7 }}.zip
           path: m64p-*.zip
@@ -87,7 +87,7 @@ jobs:
 #          export PATH=$PATH:/usr/local/Cellar/qt@5/$qt_version/bin
 #          sudo sh ./build.sh
 #      - name: Upload dmg
-#        uses: actions/upload-artifact@v2
+#        uses: actions/upload-artifact@v3
 #        with:
 #          name: m64p-osx-${{ steps.slug.outputs.sha7 }}.dmg
 #          path: mupen64plus/m64p-*.dmg
