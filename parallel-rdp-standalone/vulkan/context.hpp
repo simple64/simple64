@@ -135,8 +135,9 @@ struct QueueInfo
 };
 
 class Context
+	: public Util::IntrusivePtrEnabled<Context, std::default_delete<Context>, HandleCounter>
 #ifdef GRANITE_VULKAN_FOSSILIZE
-		: public Fossilize::DeviceQueryInterface
+	, public Fossilize::DeviceQueryInterface
 #endif
 {
 public:
@@ -289,4 +290,6 @@ private:
 	bool descriptor_set_layout_is_supported(const VkDescriptorSetLayoutCreateInfo *set_layout) override;
 #endif
 };
+
+using ContextHandle = Util::IntrusivePtr<Context>;
 }
