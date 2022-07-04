@@ -1,7 +1,8 @@
+#pragma once
 
 #include "gfx_m64p.h"
-#include "glguts.h"
 #include "gfxstructdefs.h"
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -27,6 +28,7 @@ extern "C"
     void vk_process_commands();
     bool vk_init();
     void vk_destroy();
+    void vk_resize();
 
 #ifdef __cplusplus
 }

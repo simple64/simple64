@@ -50,7 +50,7 @@
 #include <stdarg.h>
 
 #include "gfx_m64p.h"
-#include "glguts.h"
+#include "vkguts.h"
 #include "parallel_imp.h"
 
 #include "m64p_types.h"
@@ -67,10 +67,18 @@ static ptr_ConfigSetDefaultBool ConfigSetDefaultBool = NULL;
 static ptr_ConfigGetParamInt ConfigGetParamInt = NULL;
 static ptr_ConfigGetParamBool ConfigGetParamBool = NULL;
 static ptr_ConfigSetParameter ConfigSetParameter = NULL;
+static ptr_ConfigReceiveNetplayConfig ConfigReceiveNetplayConfig = NULL;
 
 static bool vk_initialized;
 static bool warn_hle;
 static bool plugin_initialized;
+
+bool window_fullscreen;
+bool window_widescreen;
+int32_t window_width;
+int32_t window_height;
+int32_t window_vsync;
+
 void (*debug_callback)(void *, int, const char *);
 void *debug_call_context;
 
@@ -145,6 +153,7 @@ EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle _CoreLibHandle, void *Co
     ConfigGetParamInt = (ptr_ConfigGetParamInt)DLSYM(CoreLibHandle, "ConfigGetParamInt");
     ConfigGetParamBool = (ptr_ConfigGetParamBool)DLSYM(CoreLibHandle, "ConfigGetParamBool");
     ConfigSetParameter = (ptr_ConfigSetParameter)DLSYM(CoreLibHandle, "ConfigSetParameter");
+    ConfigReceiveNetplayConfig = (ptr_ConfigReceiveNetplayConfig)DLSYM(CoreLibHandle, "ConfigReceiveNetplayConfig");
 
     ConfigOpenSection("Video-Parallel", &configVideoParallel);
     ConfigSetDefaultBool(configVideoParallel, KEY_FULLSCREEN, 0, "Use fullscreen mode if True, or windowed mode if False");
@@ -248,7 +257,11 @@ EXPORT int CALL RomOpen(void)
     window_width = ConfigGetParamInt(configVideoParallel, KEY_SCREEN_WIDTH);
     window_height = ConfigGetParamInt(configVideoParallel, KEY_SCREEN_HEIGHT);
     window_widescreen = ConfigGetParamBool(configVideoParallel, KEY_WIDESCREEN);
-    window_vsync = ConfigGetParamBool(configVideoParallel, KEY_VSYNC);
+    m64p_error netplay_init = ConfigReceiveNetplayConfig(NULL, 0); // A bit of a hack to determine if netplay is enabled
+    if (netplay_init != M64ERR_NOT_INIT)
+        window_vsync = 0;
+    else
+        window_vsync = ConfigGetParamBool(configVideoParallel, KEY_VSYNC);
     vk_rescaling = ConfigGetParamInt(configVideoParallel, KEY_UPSCALING);
     vk_ssreadbacks = ConfigGetParamBool(configVideoParallel, KEY_SSREADBACKS);
     vk_ssdither = ConfigGetParamBool(configVideoParallel, KEY_SSDITHER);
@@ -322,17 +335,8 @@ EXPORT void CALL ChangeWindow(void)
 
 EXPORT void CALL ReadScreen2(void *dest, int *width, int *height, int front)
 {
-    struct frame_buffer fb = {0};
-    screen_read(&fb, false);
-
-    *width = fb.width;
-    *height = fb.height;
-
-    if (dest)
-    {
-        fb.pixels = dest;
-        screen_read(&fb, false);
-    }
+    *width = window_width;
+    *height = window_height;
 }
 
 EXPORT void CALL SetRenderingCallback(void (*callback)(int))
@@ -344,6 +348,7 @@ EXPORT void CALL ResizeVideoOutput(int width, int height)
 {
     window_width = width;
     window_height = height;
+    vk_resize();
 }
 
 EXPORT void CALL FBWrite(unsigned int addr, unsigned int size)
