@@ -23,7 +23,6 @@ if(ENABLE_IPO AND (CMAKE_BUILD_TYPE STREQUAL "Release"))
 endif()
 
 if(WIN32)
-    find_package(OpenGL REQUIRED)
     add_definitions(-DVK_USE_PLATFORM_WIN32_KHR)
 endif()
 
@@ -52,6 +51,8 @@ add_library(${NAME_PLUGIN_M64P} SHARED
     vulkan/semaphore_manager.cpp
     vulkan/shader.cpp
     vulkan/texture_format.cpp
+    vulkan/wsi.cpp
+    vulkan/wsi_timing.cpp
     util/logging.cpp
     util/thread_id.cpp
     util/aligned_alloc.cpp
@@ -60,8 +61,9 @@ add_library(${NAME_PLUGIN_M64P} SHARED
     util/thread_name.cpp
     volk/volk.c
     gfx_m64p.c
-    glguts.c
-    parallel_imp.cpp)
+    vkguts.c
+    parallel_imp.cpp
+    wsi_platform.cpp)
 
 target_include_directories(${NAME_PLUGIN_M64P} PUBLIC
     parallel-rdp
@@ -71,7 +73,7 @@ target_include_directories(${NAME_PLUGIN_M64P} PUBLIC
     util)
 
 if(WIN32)
-    target_link_libraries(${NAME_PLUGIN_M64P} ${OPENGL_LIBRARIES} -lwinmm)
+    target_link_libraries(${NAME_PLUGIN_M64P} -lwinmm)
 endif()
 
 target_compile_options(${NAME_PLUGIN_M64P} PRIVATE -march=x86-64-v3)

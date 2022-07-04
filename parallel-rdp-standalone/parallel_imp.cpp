@@ -1,9 +1,11 @@
+// Adapted from https://github.com/Themaister/parallel-rdp/blob/master/integration_example.cpp
 #include "parallel_imp.h"
+#include "vkguts.h"
 #include <memory>
 #include <vector>
 #include "rdp_device.hpp"
-#include "context.hpp"
-#include "device.hpp"
+#include "wsi.hpp"
+#include "wsi_platform.h"
 
 using namespace Vulkan;
 using namespace std;
@@ -12,9 +14,9 @@ static int cmd_cur;
 static int cmd_ptr;
 static uint32_t cmd_data[0x00040000 >> 2];
 
-static unique_ptr<RDP::CommandProcessor> frontend;
-static unique_ptr<Device> device;
-static unique_ptr<Context> context;
+static RDP::CommandProcessor* processor;
+static WSI* wsi;
+static QT_WSIPlatform* wsi_platform;
 
 int32_t vk_rescaling;
 bool vk_ssreadbacks;
@@ -38,94 +40,231 @@ static const unsigned cmd_len_lut[64] = {
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,  1,  1,  1,  1,  1,
 };
 
-void vk_blit(unsigned &width, unsigned &height)
+static const uint32_t vertex_spirv[] =
+		{0x07230203,0x00010000,0x000d000a,0x00000034,
+		 0x00000000,0x00020011,0x00000001,0x0006000b,
+		 0x00000001,0x4c534c47,0x6474732e,0x3035342e,
+		 0x00000000,0x0003000e,0x00000000,0x00000001,
+		 0x0008000f,0x00000000,0x00000004,0x6e69616d,
+		 0x00000000,0x00000008,0x00000016,0x0000002b,
+		 0x00040047,0x00000008,0x0000000b,0x0000002a,
+		 0x00050048,0x00000014,0x00000000,0x0000000b,
+		 0x00000000,0x00050048,0x00000014,0x00000001,
+		 0x0000000b,0x00000001,0x00050048,0x00000014,
+		 0x00000002,0x0000000b,0x00000003,0x00050048,
+		 0x00000014,0x00000003,0x0000000b,0x00000004,
+		 0x00030047,0x00000014,0x00000002,0x00040047,
+		 0x0000002b,0x0000001e,0x00000000,0x00020013,
+		 0x00000002,0x00030021,0x00000003,0x00000002,
+		 0x00040015,0x00000006,0x00000020,0x00000001,
+		 0x00040020,0x00000007,0x00000001,0x00000006,
+		 0x0004003b,0x00000007,0x00000008,0x00000001,
+		 0x0004002b,0x00000006,0x0000000a,0x00000000,
+		 0x00020014,0x0000000b,0x00030016,0x0000000f,
+		 0x00000020,0x00040017,0x00000010,0x0000000f,
+		 0x00000004,0x00040015,0x00000011,0x00000020,
+		 0x00000000,0x0004002b,0x00000011,0x00000012,
+		 0x00000001,0x0004001c,0x00000013,0x0000000f,
+		 0x00000012,0x0006001e,0x00000014,0x00000010,
+		 0x0000000f,0x00000013,0x00000013,0x00040020,
+		 0x00000015,0x00000003,0x00000014,0x0004003b,
+		 0x00000015,0x00000016,0x00000003,0x0004002b,
+		 0x0000000f,0x00000017,0xbf800000,0x0004002b,
+		 0x0000000f,0x00000018,0x00000000,0x0004002b,
+		 0x0000000f,0x00000019,0x3f800000,0x0007002c,
+		 0x00000010,0x0000001a,0x00000017,0x00000017,
+		 0x00000018,0x00000019,0x00040020,0x0000001b,
+		 0x00000003,0x00000010,0x0004002b,0x00000006,
+		 0x0000001f,0x00000001,0x0004002b,0x0000000f,
+		 0x00000023,0x40400000,0x0007002c,0x00000010,
+		 0x00000024,0x00000017,0x00000023,0x00000018,
+		 0x00000019,0x0007002c,0x00000010,0x00000027,
+		 0x00000023,0x00000017,0x00000018,0x00000019,
+		 0x00040017,0x00000029,0x0000000f,0x00000002,
+		 0x00040020,0x0000002a,0x00000003,0x00000029,
+		 0x0004003b,0x0000002a,0x0000002b,0x00000003,
+		 0x0004002b,0x0000000f,0x0000002f,0x3f000000,
+		 0x0005002c,0x00000029,0x00000033,0x0000002f,
+		 0x0000002f,0x00050036,0x00000002,0x00000004,
+		 0x00000000,0x00000003,0x000200f8,0x00000005,
+		 0x0004003d,0x00000006,0x00000009,0x00000008,
+		 0x000500aa,0x0000000b,0x0000000c,0x00000009,
+		 0x0000000a,0x000300f7,0x0000000e,0x00000000,
+		 0x000400fa,0x0000000c,0x0000000d,0x0000001d,
+		 0x000200f8,0x0000000d,0x00050041,0x0000001b,
+		 0x0000001c,0x00000016,0x0000000a,0x0003003e,
+		 0x0000001c,0x0000001a,0x000200f9,0x0000000e,
+		 0x000200f8,0x0000001d,0x000500aa,0x0000000b,
+		 0x00000020,0x00000009,0x0000001f,0x000300f7,
+		 0x00000022,0x00000000,0x000400fa,0x00000020,
+		 0x00000021,0x00000026,0x000200f8,0x00000021,
+		 0x00050041,0x0000001b,0x00000025,0x00000016,
+		 0x0000000a,0x0003003e,0x00000025,0x00000024,
+		 0x000200f9,0x00000022,0x000200f8,0x00000026,
+		 0x00050041,0x0000001b,0x00000028,0x00000016,
+		 0x0000000a,0x0003003e,0x00000028,0x00000027,
+		 0x000200f9,0x00000022,0x000200f8,0x00000022,
+		 0x000200f9,0x0000000e,0x000200f8,0x0000000e,
+		 0x00050041,0x0000001b,0x0000002c,0x00000016,
+		 0x0000000a,0x0004003d,0x00000010,0x0000002d,
+		 0x0000002c,0x0007004f,0x00000029,0x0000002e,
+		 0x0000002d,0x0000002d,0x00000000,0x00000001,
+		 0x0005008e,0x00000029,0x00000030,0x0000002e,
+		 0x0000002f,0x00050081,0x00000029,0x00000032,
+		 0x00000030,0x00000033,0x0003003e,0x0000002b,
+		 0x00000032,0x000100fd,0x00010038};
+
+static const uint32_t fragment_spirv[] =
+		{0x07230203,0x00010000,0x000d000a,0x00000015,
+		 0x00000000,0x00020011,0x00000001,0x0006000b,
+		 0x00000001,0x4c534c47,0x6474732e,0x3035342e,
+		 0x00000000,0x0003000e,0x00000000,0x00000001,
+		 0x0007000f,0x00000004,0x00000004,0x6e69616d,
+		 0x00000000,0x00000009,0x00000011,0x00030010,
+		 0x00000004,0x00000007,0x00040047,0x00000009,
+		 0x0000001e,0x00000000,0x00040047,0x0000000d,
+		 0x00000022,0x00000000,0x00040047,0x0000000d,
+		 0x00000021,0x00000000,0x00040047,0x00000011,
+		 0x0000001e,0x00000000,0x00020013,0x00000002,
+		 0x00030021,0x00000003,0x00000002,0x00030016,
+		 0x00000006,0x00000020,0x00040017,0x00000007,
+		 0x00000006,0x00000004,0x00040020,0x00000008,
+		 0x00000003,0x00000007,0x0004003b,0x00000008,
+		 0x00000009,0x00000003,0x00090019,0x0000000a,
+		 0x00000006,0x00000001,0x00000000,0x00000000,
+		 0x00000000,0x00000001,0x00000000,0x0003001b,
+		 0x0000000b,0x0000000a,0x00040020,0x0000000c,
+		 0x00000000,0x0000000b,0x0004003b,0x0000000c,
+		 0x0000000d,0x00000000,0x00040017,0x0000000f,
+		 0x00000006,0x00000002,0x00040020,0x00000010,
+		 0x00000001,0x0000000f,0x0004003b,0x00000010,
+		 0x00000011,0x00000001,0x0004002b,0x00000006,
+		 0x00000013,0x00000000,0x00050036,0x00000002,
+		 0x00000004,0x00000000,0x00000003,0x000200f8,
+		 0x00000005,0x0004003d,0x0000000b,0x0000000e,
+		 0x0000000d,0x0004003d,0x0000000f,0x00000012,
+		 0x00000011,0x00070058,0x00000007,0x00000014,
+		 0x0000000e,0x00000012,0x00000002,0x00000013,
+		 0x0003003e,0x00000009,0x00000014,0x000100fd,
+		 0x00010038};
+
+static void calculate_viewport(float* x, float* y, float* width, float* height)
 {
-	if (running)
-	{
+    int32_t display_width = (window_widescreen ? 854 : 640) * vk_rescaling;
+    int32_t display_height = 480 * vk_rescaling;
 
-		RDP::ScanoutOptions opts = {};
-		opts.persist_frame_on_invalid_input = true;
-		opts.vi.aa = vk_vi_aa;
-		opts.vi.scale = vk_vi_scale;
-		opts.vi.dither_filter = vk_dither_filter;
-		opts.vi.divot_filter = vk_divot_filter;
-		opts.vi.gamma_dither = vk_gamma_dither;
-		opts.blend_previous_frame = vk_interlacing;
-		opts.upscale_deinterlacing = !vk_interlacing;
-		opts.downscale_steps = vk_downscaling_steps;
-		opts.crop_overscan_pixels = vk_overscan;
-		if (vk_vertical_stretch) {
-			opts.crop_rect.top = vk_vertical_stretch;
-			opts.crop_rect.bottom = vk_vertical_stretch;
-			opts.crop_rect.enable = true;
-		}
+    *width = window_width;
+    *height = window_height;
+    *x = 0;
+    *y = 0;
+    int32_t hw = display_height * *width;
+    int32_t wh = display_width * *height;
 
-		RDP::VIScanoutBuffer scanout;
-		frontend->scanout_async_buffer(scanout, opts);
+    // add letterboxes or pillarboxes if the window has a different aspect ratio
+    // than the current display mode
+    if (hw > wh) {
+        int32_t w_max = wh / display_height;
+        *x += (*width - w_max) / 2;
+        *width = w_max;
+    } else if (hw < wh) {
+        int32_t h_max = hw / display_width;
+        *y += (*height - h_max) / 2;
+        *height = h_max;
+    }
+}
 
-		if (!scanout.width || !scanout.height)
-		{
-			width = 0;
-			height = 0;
-			return;
-		}
-
-		width = scanout.width;
-		height = scanout.height;
-
-		scanout.fence->wait();
-		uint8_t* color_data = screen_get_texture_data();
-		memcpy(color_data, device->map_host_buffer(*scanout.buffer, Vulkan::MEMORY_ACCESS_READ_BIT),
-			   width * height * sizeof(uint32_t));
-		device->unmap_host_buffer(*scanout.buffer, Vulkan::MEMORY_ACCESS_READ_BIT);
+static void render_frame(Vulkan::Device &device)
+{
+	RDP::ScanoutOptions opts = {};
+	opts.persist_frame_on_invalid_input = true;
+	opts.vi.aa = vk_vi_aa;
+	opts.vi.scale = vk_vi_scale;
+	opts.vi.dither_filter = vk_dither_filter;
+	opts.vi.divot_filter = vk_divot_filter;
+	opts.vi.gamma_dither = vk_gamma_dither;
+	opts.blend_previous_frame = vk_interlacing;
+	opts.upscale_deinterlacing = !vk_interlacing;
+	opts.downscale_steps = vk_downscaling_steps;
+	opts.crop_overscan_pixels = vk_overscan;
+	if (vk_vertical_stretch) {
+		opts.crop_rect.top = vk_vertical_stretch;
+		opts.crop_rect.bottom = vk_vertical_stretch;
+		opts.crop_rect.enable = true;
 	}
+	Vulkan::ImageHandle image = processor->scanout(opts);
+	if (image.get() == NULL && skip_swap_clear)
+		return;
+
+	// Normally reflection is automated.
+	Vulkan::ResourceLayout vertex_layout = {};
+	Vulkan::ResourceLayout fragment_layout = {};
+	fragment_layout.output_mask = 1 << 0;
+	fragment_layout.sets[0].sampled_image_mask = 1 << 0;
+
+	// This request is cached.
+	auto *program = device.request_program(vertex_spirv, sizeof(vertex_spirv),
+	                                       fragment_spirv, sizeof(fragment_spirv),
+	                                       &vertex_layout,
+	                                       &fragment_layout);
+
+	// Blit image on screen.
+	auto cmd = device.request_command_buffer();
+	{
+		auto rp = device.get_swapchain_render_pass(Vulkan::SwapchainRenderPass::ColorOnly);
+		cmd->begin_render_pass(rp);
+		if (image.get() != NULL)
+		{
+			VkViewport vp = cmd->get_viewport();
+			calculate_viewport(&vp.x, &vp.y, &vp.width, &vp.height);
+
+			cmd->set_program(program);
+
+			// Basic default render state.
+			cmd->set_opaque_state();
+			cmd->set_depth_test(false, false);
+			cmd->set_cull_mode(VK_CULL_MODE_NONE);
+
+			cmd->set_texture(0, 0, image->get_view(), Vulkan::StockSampler::LinearClamp);
+			cmd->set_viewport(vp);
+
+			// The vertices are constants in the shader.
+			// Draws fullscreen quad using oversized triangle.
+			cmd->draw(3);
+		}
+		cmd->end_render_pass();
+	}
+	device.submit(cmd);
 }
 
 void vk_rasterize()
 {
-
-	if (frontend && running)
+	if (processor && running)
 	{
-		frontend->set_vi_register(RDP::VIRegister::Control, *GET_GFX_INFO(VI_STATUS_REG));
-		frontend->set_vi_register(RDP::VIRegister::Origin, *GET_GFX_INFO(VI_ORIGIN_REG));
-		frontend->set_vi_register(RDP::VIRegister::Width, *GET_GFX_INFO(VI_WIDTH_REG));
-		frontend->set_vi_register(RDP::VIRegister::Intr, *GET_GFX_INFO(VI_INTR_REG));
-		frontend->set_vi_register(RDP::VIRegister::VCurrentLine, *GET_GFX_INFO(VI_V_CURRENT_LINE_REG));
-		frontend->set_vi_register(RDP::VIRegister::Timing, *GET_GFX_INFO(VI_V_BURST_REG));
-		frontend->set_vi_register(RDP::VIRegister::VSync, *GET_GFX_INFO(VI_V_SYNC_REG));
-		frontend->set_vi_register(RDP::VIRegister::HSync, *GET_GFX_INFO(VI_H_SYNC_REG));
-		frontend->set_vi_register(RDP::VIRegister::Leap, *GET_GFX_INFO(VI_LEAP_REG));
-		frontend->set_vi_register(RDP::VIRegister::HStart, *GET_GFX_INFO(VI_H_START_REG));
-		frontend->set_vi_register(RDP::VIRegister::VStart, *GET_GFX_INFO(VI_V_START_REG));
-		frontend->set_vi_register(RDP::VIRegister::VBurst, *GET_GFX_INFO(VI_V_BURST_REG));
-		frontend->set_vi_register(RDP::VIRegister::XScale, *GET_GFX_INFO(VI_X_SCALE_REG));
-		frontend->set_vi_register(RDP::VIRegister::YScale, *GET_GFX_INFO(VI_Y_SCALE_REG));
+		processor->set_vi_register(RDP::VIRegister::Control, *GET_GFX_INFO(VI_STATUS_REG));
+		processor->set_vi_register(RDP::VIRegister::Origin, *GET_GFX_INFO(VI_ORIGIN_REG));
+		processor->set_vi_register(RDP::VIRegister::Width, *GET_GFX_INFO(VI_WIDTH_REG));
+		processor->set_vi_register(RDP::VIRegister::Intr, *GET_GFX_INFO(VI_INTR_REG));
+		processor->set_vi_register(RDP::VIRegister::VCurrentLine, *GET_GFX_INFO(VI_V_CURRENT_LINE_REG));
+		processor->set_vi_register(RDP::VIRegister::Timing, *GET_GFX_INFO(VI_V_BURST_REG));
+		processor->set_vi_register(RDP::VIRegister::VSync, *GET_GFX_INFO(VI_V_SYNC_REG));
+		processor->set_vi_register(RDP::VIRegister::HSync, *GET_GFX_INFO(VI_H_SYNC_REG));
+		processor->set_vi_register(RDP::VIRegister::Leap, *GET_GFX_INFO(VI_LEAP_REG));
+		processor->set_vi_register(RDP::VIRegister::HStart, *GET_GFX_INFO(VI_H_START_REG));
+		processor->set_vi_register(RDP::VIRegister::VStart, *GET_GFX_INFO(VI_V_START_REG));
+		processor->set_vi_register(RDP::VIRegister::VBurst, *GET_GFX_INFO(VI_V_BURST_REG));
+		processor->set_vi_register(RDP::VIRegister::XScale, *GET_GFX_INFO(VI_X_SCALE_REG));
+		processor->set_vi_register(RDP::VIRegister::YScale, *GET_GFX_INFO(VI_Y_SCALE_REG));
 
 		RDP::Quirks quirks;
 		quirks.set_native_texture_lod(vk_native_texture_lod);
 		quirks.set_native_resolution_tex_rect(vk_native_tex_rect);
-		frontend->set_quirks(quirks);
+		processor->set_quirks(quirks);
 
-		frontend->begin_frame_context();
-
-		unsigned width = 0;
-		unsigned height = 0;
-		vk_blit(width, height);
-
-		if (width == 0 || height == 0)
-		{
-			if (!skip_swap_clear)
-				screen_swap(true);
-			return;
-		}
-
-		struct frame_buffer buf = {0};
-		buf.valid = true;
-		buf.height = height;
-		buf.width = width;
-		buf.pitch = width;
-		screen_write(&buf);
-		screen_swap(false);
+		auto &device = wsi->get_device();
+		wsi->begin_frame();
+		render_frame(device);
+		wsi->end_frame();
+		wsi->get_device().promote_read_write_caches_to_read_only();
 	}
 }
 
@@ -133,7 +272,6 @@ void vk_process_commands()
 {
 	if (running)
 	{
-
 		const uint32_t DP_CURRENT = *GET_GFX_INFO(DPC_CURRENT_REG) & 0x00FFFFF8;
 		const uint32_t DP_END = *GET_GFX_INFO(DPC_END_REG) & 0x00FFFFF8;
 
@@ -188,14 +326,14 @@ void vk_process_commands()
 				return;
 			}
 
-			if (command >= 8 && frontend)
-				frontend->enqueue_command(cmd_length * 2, &cmd_data[2 * cmd_cur]);
+			if (command >= 8 && processor)
+				processor->enqueue_command(cmd_length * 2, &cmd_data[2 * cmd_cur]);
 
 			if (RDP::Op(command) == RDP::Op::SyncFull)
 			{
 				// For synchronous RDP:
-				if (vk_synchronous && frontend)
-					frontend->wait_for_timeline(frontend->signal_timeline());
+				if (vk_synchronous && processor)
+					processor->wait_for_timeline(processor->signal_timeline());
 				*gfx.MI_INTR_REG |= DP_INTERRUPT;
 				gfx.CheckInterrupts();
 			}
@@ -209,36 +347,55 @@ void vk_process_commands()
 	}
 }
 
+void vk_resize()
+{
+	QT_WSIPlatform* platform = (QT_WSIPlatform*)&wsi->get_platform();
+	platform->do_resize();
+}
+
 void vk_destroy()
 {
-	running = false;
-	frontend.reset();
-	device.reset();
-	context.reset();
-
 	screen_close();
+	running = false;
+	if (processor)
+	{
+		delete processor;
+		processor = nullptr;
+	}
+	if (wsi)
+	{
+		delete wsi;
+		wsi = nullptr;
+	}
+	if (wsi_platform)
+	{
+		delete wsi_platform;
+		wsi_platform = nullptr;
+	}
 }
 
 bool vk_init()
 {
 	running = false;
 	screen_init();
-	context.reset(new Context);
-	device.reset(new Device);
-	frontend.reset();
-
+	screen_set_mode();
+	wsi = new WSI;
+	wsi_platform = new QT_WSIPlatform;
+	wsi->set_platform(wsi_platform);
+	wsi->set_present_mode(window_vsync ? PresentMode::SyncToVBlank: PresentMode::UnlockedMaybeTear);
+	wsi->set_backbuffer_srgb(false);
+	Context::SystemHandles handles = {};
 	if (!::Vulkan::Context::init_loader(nullptr))
 		return false;
-	if (!context->init_instance_and_device(nullptr, 0, nullptr, 0, ::Vulkan::CONTEXT_CREATION_DISABLE_BINDLESS_BIT))
+	if (!wsi->init_simple(1, handles))
 		return false;
 
 	uintptr_t aligned_rdram = reinterpret_cast<uintptr_t>(gfx.RDRAM);
 	uintptr_t offset = 0;
 
-
-	if (device->get_device_features().supports_external_memory_host)
+	if (wsi->get_device().get_device_features().supports_external_memory_host)
 	{
-		size_t align = device->get_device_features().host_memory_properties.minImportedHostPointerAlignment;
+		size_t align = wsi->get_device().get_device_features().host_memory_properties.minImportedHostPointerAlignment;
 		offset = aligned_rdram & (align - 1);
 
 		if (offset)
@@ -248,8 +405,6 @@ bool vk_init()
 		aligned_rdram -= offset;
 	}
 
-	device->set_context(*context);
-	device->init_frame_contexts(3);
 	::RDP::CommandProcessorFlags flags = 0;
 
 	switch (vk_rescaling)
@@ -274,19 +429,22 @@ bool vk_init()
 	if (vk_ssdither)
 		flags |= RDP::COMMAND_PROCESSOR_FLAG_SUPER_SAMPLED_DITHER_BIT;
 
-	frontend.reset(new RDP::CommandProcessor(*device, reinterpret_cast<void *>(aligned_rdram),
-											 offset, rdram_size, rdram_size / 2, flags));
-	if (!frontend->device_is_supported())
+	processor = new RDP::CommandProcessor(wsi->get_device(), reinterpret_cast<void *>(aligned_rdram),
+											 offset, rdram_size, rdram_size / 2, flags);
+	if (!processor->device_is_supported())
 	{
-		frontend.reset();
+		delete processor;
+		processor = nullptr;
 		return false;
 	}
 
 	RDP::Quirks quirks;
 	quirks.set_native_texture_lod(vk_native_texture_lod);
 	quirks.set_native_resolution_tex_rect(vk_native_tex_rect);
-	frontend->set_quirks(quirks);
+	processor->set_quirks(quirks);
 
+	if (window_fullscreen)
+		screen_toggle_fullscreen();
 	running = true;
 	return true;
 }
