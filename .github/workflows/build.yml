@@ -3,34 +3,22 @@ on:
   push:
     branches:
       - main
-    paths-ignore:
-      - "snap/**"
   pull_request:
 
 jobs:
   build-linux:
-    runs-on: ubuntu-20.04
-    container: quay.io/centos/centos:stream8
+    runs-on: ubuntu-latest
+    container: registry.fedoraproject.org/fedora:latest
     steps:
       - name: Update and install packages
         run: |
-          dnf -y config-manager --set-enabled powertools
-          dnf -y install epel-release epel-next-release
           dnf -y update
-          dnf -y install gcc-toolset-11 cmake make nasm qt5-qtwebsockets-devel hidapi-devel zlib-devel libpng-devel SDL2_net-devel wget zip git
-          ln -s /usr/bin/qmake-qt5 /usr/bin/qmake
+          dnf -y install pkgconf-pkg-config which cmake make nasm qt6-qtwebsockets-devel hidapi-devel zlib-devel libpng-devel SDL2_net-devel wget zip git
       - uses: actions/checkout@v3
-      - name: Get short SHA
-        id: slug
-        run: echo "::set-output name=sha7::$(git rev-parse --short HEAD)"
       - name: Run build script
         run: |
-          scl enable gcc-toolset-11 'export M64P_AUTOUPDATE=1; bash ./build.sh'
-      - name: Upload zip
-        uses: actions/upload-artifact@v3
-        with:
-          name: m64p-linux64-${{ steps.slug.outputs.sha7 }}.zip
-          path: m64p-*.zip
+          git config --global --add safe.directory /__w/m64p/m64p
+          ./build.sh
   build-windows:
     runs-on: windows-2022
     steps:
@@ -50,13 +38,15 @@ jobs:
             mingw-w64-x86_64-libpng
             mingw-w64-x86_64-SDL2
             mingw-w64-x86_64-SDL2_net
-            mingw-w64-x86_64-jasper
-            mingw-w64-x86_64-qt5
+            mingw-w64-x86_64-qt6
             mingw-w64-x86_64-python3-pip
             mingw-w64-x86_64-python3-pyopenssl
             mingw-w64-x86_64-nasm
             git
             zip
+      - name: Fix qmake path
+        run: |
+          msys2 -c 'ln -s /mingw64/bin/qmake-qt6.exe /mingw64/bin/qmake.exe'
       - name: Run build script
         run: msys2 -c 'export M64P_AUTOUPDATE=1; ./build.sh'
         env:
