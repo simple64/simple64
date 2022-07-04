@@ -2,7 +2,7 @@
 #define MAINWINDOW_H
 
 #include "discord/discord_game_sdk.h"
-#include "oglwindow.h"
+#include "vkwindow.h"
 #include "workerthread.h"
 #include "logviewer.h"
 #include "keypressfilter.h"
@@ -11,10 +11,10 @@ extern "C" {
 }
 #include <QMainWindow>
 #include <QSettings>
-#include <QSurfaceFormat>
 #include <QWidgetAction>
 #include <QSlider>
 #include <QLabel>
+#include <QVulkanInstance>
 #include <QNetworkReply>
 
 namespace Ui {
@@ -33,7 +33,7 @@ class MainWindow : public QMainWindow
 
 public:
     WorkerThread* getWorkerThread();
-    OGLWindow* getOGLWindow();
+    VkWindow* getVkWindow();
     QSettings* getSettings();
     LogViewer* getLogViewer();
 
@@ -43,19 +43,12 @@ public:
     m64p_dynlib_handle getGfxPlugin();
 
     void openROM(QString filename, QString netplay_ip, int netplay_port, int netplay_player);
-#ifdef SINGLE_THREAD
-    void singleThreadLaunch(QString filename, QString netplay_ip, int netplay_port, int netplay_player);
-#endif
     void setVerbose();
     int getVerbose();
     void setNoGUI();
     int getNoGUI();
-    void setGLES();
-    int getGLES();
     void updatePlugins();
     void resetCore();
-    QThread *getRenderingThread();
-    void setRenderingThread(QThread* thread);
     m64p_dynlib_handle getCoreLib();
     struct Discord_Application* getDiscordApp();
     explicit MainWindow(QWidget *parent = 0);
@@ -68,12 +61,11 @@ protected:
 public slots:
     void resizeMainWindow(int Width, int Height);
     void toggleFS(int force);
-    void createOGLWindow(QSurfaceFormat* format);
-    void deleteOGLWindow();
+    void createVkWindow(QVulkanInstance* instance);
+    void deleteVkWindow();
     void showMessage(QString message);
     void updateDiscordActivity(struct DiscordActivity activity);
     void clearDiscordActivity();
-    void setVolume();
 
 private slots:
     void discordCallback();
@@ -143,11 +135,9 @@ private:
     QMenu * OpenRecent;
     int verbose;
     int nogui;
-    int gles;
     QString m_title;
 
-    OGLWindow *my_window = nullptr;
-    QThread *rendering_thread = nullptr;
+    VkWindow *my_window = nullptr;
     WorkerThread *workerThread = nullptr;
     LogViewer logViewer;
     QSettings *settings = nullptr;

@@ -227,11 +227,7 @@ void WaitRoom::processBinaryMessage(QByteArray message)
     else if (json.value("type").toString() == "begin_game")
     {
         started = 1;
-#ifndef SINGLE_THREAD
         w->openROM(file_name, webSocket->peerAddress().toString(), room_port, player_number);
-#else
-        w->singleThreadLaunch(file_name, webSocket->peerAddress().toString(), room_port, player_number);
-#endif
         accept();
     }
     else if (json.value("type").toString() == "send_motd")
