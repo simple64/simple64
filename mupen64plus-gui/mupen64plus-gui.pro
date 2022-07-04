@@ -6,10 +6,6 @@
 
 QT       += widgets websockets
 
-greaterThan(QT_MAJOR_VERSION, 5) {
-	QT	 += opengl
-}
-
 TARGET = mupen64plus-gui
 TEMPLATE = app
 
@@ -39,7 +35,7 @@ SOURCES += main.cpp \
     settingsdialog.cpp \
     interface/common.cpp \
     plugindialog.cpp \
-    oglwindow.cpp \
+    vkwindow.cpp \
     workerthread.cpp \
     settingclasses.cpp \
     interface/core_commands.cpp \
@@ -49,10 +45,6 @@ SOURCES += main.cpp \
     netplay/createroom.cpp \
     netplay/joinroom.cpp \
     netplay/waitroom.cpp
-
-macx {
-DEFINES += SINGLE_THREAD
-}
 
 win32 {
 SOURCES += osal/osal_dynamiclib_win32.c
@@ -89,7 +81,7 @@ HEADERS  += mainwindow.h \
     settingsdialog.h \
     workerthread.h \
     plugindialog.h \
-    oglwindow.h \
+    vkwindow.h \
     settingclasses.h \
     osal/osal_dynamiclib.h \
     interface/sdl_key_converter.h \

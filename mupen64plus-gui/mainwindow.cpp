@@ -23,7 +23,7 @@
 
 #define SETTINGS_VER 2
 
-m64p_video_extension_functions vidExtFunctions = {14,
+m64p_video_extension_functions vidExtFunctions = {16,
                                                  qtVidExtFuncInit,
                                                  qtVidExtFuncQuit,
                                                  qtVidExtFuncListModes,
@@ -37,7 +37,9 @@ m64p_video_extension_functions vidExtFunctions = {14,
                                                  qtVidExtFuncSetCaption,
                                                  qtVidExtFuncToggleFS,
                                                  qtVidExtFuncResizeWindow,
-                                                 qtVidExtFuncGLGetDefaultFramebuffer};
+                                                 qtVidExtFuncGLGetDefaultFramebuffer,
+                                                 qtVidExtFuncGetVkSurface,
+                                                 qtVidExtFuncGetVkInstExtensions};
 
 void MainWindow::updatePlugins()
 {
@@ -321,7 +323,6 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     verbose = 0;
     nogui = 0;
-    gles = 0;
     ui->setupUi(this);
 
     m_title = "mupen64plus-gui    Build Date: ";
@@ -565,11 +566,6 @@ void MainWindow::setNoGUI()
     statusBar()->hide();
 }
 
-void MainWindow::setGLES()
-{
-    gles = 1;
-}
-
 int MainWindow::getNoGUI()
 {
     return nogui;
@@ -578,11 +574,6 @@ int MainWindow::getNoGUI()
 int MainWindow::getVerbose()
 {
     return verbose;
-}
-
-int MainWindow::getGLES()
-{
-    return gles;
 }
 
 void MainWindow::resizeMainWindow(int Width, int Height)
@@ -615,30 +606,8 @@ void MainWindow::toggleFS(int force)
     }
 }
 
-void MainWindow::setVolume()
-{
-    if (settings->contains("volume"))
-    {
-        int volume = settings->value("volume").toInt();
-        (*CoreDoCommand)(M64CMD_CORE_STATE_SET, M64CORE_AUDIO_VOLUME, &volume);
-    }
-}
-
 void MainWindow::closeEvent (QCloseEvent *event)
 {
-#ifdef SINGLE_THREAD
-    int response;
-    (*CoreDoCommand)(M64CMD_CORE_STATE_QUERY, M64CORE_EMU_STATE, &response);
-    if (response != M64EMU_STOPPED)
-    {
-        QMessageBox msgBox;
-        msgBox.setText("Stop current game first");
-        msgBox.exec();
-        event->ignore();
-        return;
-    }
-#endif
-
     stopGame();
 
     closePlugins();
@@ -675,11 +644,7 @@ void MainWindow::updateOpenRecent()
         OpenRecent->addAction(recent[i]);
         QAction *temp_recent = recent[i];
         connect(temp_recent, &QAction::triggered,[=](){
-#ifndef SINGLE_THREAD
                     openROM(temp_recent->text(), "", 0, 0);
-#else
-                    singleThreadLaunch(temp_recent->text(), "", 0, 0);
-#endif
                 });
     }
     OpenRecent->addSeparator();
@@ -700,9 +665,11 @@ void MainWindow::showMessage(QString message)
     msgBox->show();
 }
 
-void MainWindow::createOGLWindow(QSurfaceFormat* format)
+void MainWindow::createVkWindow(QVulkanInstance* vulkan_inst)
 {
-    my_window = new OGLWindow(*format);
+    my_window = new VkWindow;
+    my_window->setVulkanInstance(vulkan_inst);
+
     QWidget *container = QWidget::createWindowContainer(my_window, this);
     container->setFocusPolicy(Qt::StrongFocus);
 
@@ -714,12 +681,11 @@ void MainWindow::createOGLWindow(QSurfaceFormat* format)
     this->installEventFilter(&keyPressFilter);
 }
 
-void MainWindow::deleteOGLWindow()
+void MainWindow::deleteVkWindow()
 {
     QWidget *container = new QWidget(this);
-    my_window->context()->doneCurrent();
     setCentralWidget(container);
-    my_window->deleteLater();
+    delete my_window;
 }
 
 void MainWindow::stopGame()
@@ -731,10 +697,8 @@ void MainWindow::stopGame()
     if (response != M64EMU_STOPPED)
     {
         (*CoreDoCommand)(M64CMD_STOP, 0, NULL);
-#ifndef SINGLE_THREAD
         while (workerThread->isRunning())
             QCoreApplication::processEvents();
-#endif
     }
 }
 
@@ -746,27 +710,8 @@ void MainWindow::resetCore()
     loadPlugins();
 }
 
-#ifdef SINGLE_THREAD
-void MainWindow::singleThreadLaunch(QString filename, QString netplay_ip, int netplay_port, int netplay_player)
-{
-    QTimer::singleShot(1000, [=]() { openROM(filename, netplay_ip, netplay_port, netplay_player); } );
-}
-#endif
-
 void MainWindow::openROM(QString filename, QString netplay_ip, int netplay_port, int netplay_player)
 {
-#ifdef SINGLE_THREAD
-    int response;
-    (*CoreDoCommand)(M64CMD_CORE_STATE_QUERY, M64CORE_EMU_STATE, &response);
-    if (response != M64EMU_STOPPED)
-    {
-        QMessageBox msgBox;
-        msgBox.setText("Stop current game first");
-        msgBox.exec();
-        return;
-    }
-#endif
-
     stopGame();
 
     logViewer.clearLog();
@@ -796,11 +741,7 @@ void MainWindow::on_actionOpen_ROM_triggered()
     if (!filename.isNull()) {
         QFileInfo info(filename);
         settings->setValue("ROMdir", info.absoluteDir().absolutePath());
-#ifndef SINGLE_THREAD
         openROM(filename, "", 0, 0);
-#else
-        singleThreadLaunch(filename, "", 0, 0);
-#endif
     }
 }
 
@@ -828,18 +769,12 @@ void MainWindow::on_actionPlugin_Settings_triggered()
 
 void MainWindow::on_actionPause_Game_triggered()
 {
-#ifndef SINGLE_THREAD
     int response;
     (*CoreDoCommand)(M64CMD_CORE_STATE_QUERY, M64CORE_EMU_STATE, &response);
     if (response == M64EMU_RUNNING)
         (*CoreDoCommand)(M64CMD_PAUSE, 0, NULL);
     else if (response == M64EMU_PAUSED)
         (*CoreDoCommand)(M64CMD_RESUME, 0, NULL);
-#else
-    QMessageBox msgBox;
-    msgBox.setText("Paused");
-    msgBox.exec();
-#endif
 }
 
 void MainWindow::on_actionMute_triggered()
@@ -968,7 +903,7 @@ WorkerThread* MainWindow::getWorkerThread()
     return workerThread;
 }
 
-OGLWindow* MainWindow::getOGLWindow()
+VkWindow* MainWindow::getVkWindow()
 {
     return my_window;
 }
@@ -1097,11 +1032,13 @@ void MainWindow::closePlugins()
     }
 }
 
+typedef void (*ptr_VolumeSetLevel)(int level);
 void MainWindow::loadPlugins()
 {
     if (coreLib == nullptr)
         return;
 
+    ptr_VolumeSetLevel VolumeSetLevel;
     ptr_PluginStartup PluginStartup;
     ptr_PluginGetVersion PluginGetVersion;
     m64p_error res;
@@ -1166,6 +1103,11 @@ void MainWindow::loadPlugins()
 
     PluginStartup = (ptr_PluginStartup) osal_dynlib_getproc(audioPlugin, "PluginStartup");
     (*PluginStartup)(coreLib, (char*)"Audio", DebugCallback);
+    int volume = 100;
+    if (settings->contains("volume"))
+        volume = settings->value("volume").toInt();
+    VolumeSetLevel = (ptr_VolumeSetLevel) osal_dynlib_getproc(audioPlugin, "VolumeSetLevel");
+    (*VolumeSetLevel)(volume);
 
     res = osal_dynlib_open(&inputPlugin, QDir(pluginPath).filePath(settings->value("inputPlugin").toString()).toUtf8().constData());
     if (res != M64ERR_SUCCESS)
@@ -1211,14 +1153,4 @@ void MainWindow::loadPlugins()
 m64p_dynlib_handle MainWindow::getCoreLib()
 {
     return coreLib;
-}
-
-QThread* MainWindow::getRenderingThread()
-{
-    return rendering_thread;
-}
-
-void MainWindow::setRenderingThread(QThread* thread)
-{
-    rendering_thread = thread;
 }
