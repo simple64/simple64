@@ -5,7 +5,7 @@
 
 #ifdef __cplusplus
 
-#include "oglwindow.h"
+#include "vkwindow.h"
 
 extern "C" {
 #endif
@@ -23,6 +23,8 @@ m64p_error qtVidExtFuncSetCaption(const char *_title);
 m64p_error qtVidExtFuncToggleFS(void);
 m64p_error qtVidExtFuncResizeWindow(int, int);
 uint32_t   qtVidExtFuncGLGetDefaultFramebuffer(void);
+void*      qtVidExtFuncGetVkSurface(void*);
+m64p_error qtVidExtFuncGetVkInstExtensions(const char**[], uint32_t*);
 #ifdef __cplusplus
 }
 #endif
