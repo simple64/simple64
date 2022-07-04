@@ -38,7 +38,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
-#include <QTextCodec>
+#include <QStringDecoder>
 
 #define SETTINGS_VER 2
 #define AXIS_PEAK 32768
@@ -352,19 +352,14 @@ EXPORT void CALL SendVRUWord(uint16_t length, uint16_t *word, uint8_t lang)
     QJsonValue value = vruwordsobject.value(hex.toUpper());
     if (value == QJsonValue::Undefined)
     {
-        QTextCodec *en_codec = QTextCodec::codecForName("UTF-8");
-        QTextCodec::ConverterState state;
-        QString encoded_string = en_codec->toUnicode(word_array.constData(), word_array.size(), &state);
-        if (state.invalidChars > 0)
+        auto toUtf8 = QStringDecoder(QStringDecoder::Utf8);
+        QString encoded_string = toUtf8(word_array);
+        if (toUtf8.hasError())
         {
             if (lang == 0 /* English */)
                 DebugMessage(M64MSG_ERROR, "Unknown word: %s", hex.toUpper().toUtf8().constData());
             else /* Japanese or demo */
-            {
-                QTextCodec *jp_codec = QTextCodec::codecForName("Shift-JIS");
-                encoded_string = jp_codec->toUnicode(word_array);
-                DebugMessage(M64MSG_ERROR, "Unknown Japanese word: %s %s", hex.toUpper().toUtf8().constData(), encoded_string.toUtf8().constData());
-            }
+                DebugMessage(M64MSG_ERROR, "Unknown Japanese word: %s", hex.toUpper().toUtf8().constData());
         }
         else
         {
