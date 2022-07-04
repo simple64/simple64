@@ -78,4 +78,6 @@ VidExt_SetVideoModeWithRate;
 VidExt_ToggleFullScreen;
 VidExt_ResizeWindow;
 VidExt_GL_GetDefaultFramebuffer;
+VidExt_GetVkSurface;
+VidExt_GetVkInstExtensions;
 local: *; };
