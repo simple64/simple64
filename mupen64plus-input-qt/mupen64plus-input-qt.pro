@@ -6,10 +6,6 @@
 
 QT       += widgets network
 
-greaterThan(QT_MAJOR_VERSION, 5) {
-	QT	 += core5compat
-}
-
 TARGET = mupen64plus-input-qt
 TEMPLATE = lib
 
