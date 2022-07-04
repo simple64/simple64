@@ -181,6 +181,24 @@ typedef uint32_t (*ptr_VidExt_GL_GetDefaultFramebuffer)(void);
 EXPORT uint32_t CALL VidExt_GL_GetDefaultFramebuffer(void);
 #endif
 
+/* VidExt_GetVkSurface()
+ *
+ * Returns the VkSurfaceKHR handle which points to the rendering surface.
+ */
+typedef void* (*ptr_VidExt_GetVkSurface)(void*);
+#if defined(M64P_CORE_PROTOTYPES)
+EXPORT void* CALL VidExt_GetVkSurface(void*);
+#endif
+
+/* VidExt_GetVkInstExtensions()
+ *
+ * Returns a list of supported Vulkan instance extensions.
+ */
+typedef m64p_error (*ptr_VidExt_GetVkInstExtensions)(const char**[], uint32_t*);
+#if defined(M64P_CORE_PROTOTYPES)
+EXPORT m64p_error CALL VidExt_GetVkInstExtensions(const char**[], uint32_t*);
+#endif
+
 #ifdef __cplusplus
 }
 #endif

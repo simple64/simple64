@@ -43,7 +43,7 @@
 #endif
 
 /* local variables */
-static m64p_video_extension_functions l_ExternalVideoFuncTable = {14, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+static m64p_video_extension_functions l_ExternalVideoFuncTable = {16, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 static int l_VideoExtensionActive = 0;
 static int l_VideoOutputActive = 0;
 static int l_Fullscreen = 0;
@@ -56,7 +56,7 @@ m64p_error OverrideVideoFunctions(m64p_video_extension_functions *VideoFunctionS
     /* check input data */
     if (VideoFunctionStruct == NULL)
         return M64ERR_INPUT_ASSERT;
-    if (VideoFunctionStruct->Functions < 14)
+    if (VideoFunctionStruct->Functions < 16)
         return M64ERR_INPUT_INVALID;
 
     /* disable video extension if any of the function pointers are NULL */
@@ -73,10 +73,12 @@ m64p_error OverrideVideoFunctions(m64p_video_extension_functions *VideoFunctionS
         VideoFunctionStruct->VidExtFuncSetCaption == NULL ||
         VideoFunctionStruct->VidExtFuncToggleFS == NULL ||
         VideoFunctionStruct->VidExtFuncResizeWindow == NULL ||
-        VideoFunctionStruct->VidExtFuncGLGetDefaultFramebuffer == NULL)
+        VideoFunctionStruct->VidExtFuncGLGetDefaultFramebuffer == NULL ||
+        VideoFunctionStruct->VidExtFuncGetVkSurface == NULL ||
+        VideoFunctionStruct->VidExtFuncGetVkInstExtensions == NULL)
     {
-        l_ExternalVideoFuncTable.Functions = 14;
-        memset(&l_ExternalVideoFuncTable.VidExtFuncInit, 0, 14 * sizeof(void *));
+        l_ExternalVideoFuncTable.Functions = 16;
+        memset(&l_ExternalVideoFuncTable.VidExtFuncInit, 0, 16 * sizeof(void *));
         l_VideoExtensionActive = 0;
         return M64ERR_SUCCESS;
     }
@@ -700,4 +702,20 @@ EXPORT uint32_t CALL VidExt_GL_GetDefaultFramebuffer(void)
         return (*l_ExternalVideoFuncTable.VidExtFuncGLGetDefaultFramebuffer)();
 
     return 0;
+}
+
+EXPORT void* CALL VidExt_GetVkSurface(void* instance)
+{
+    if (l_VideoExtensionActive)
+        return (*l_ExternalVideoFuncTable.VidExtFuncGetVkSurface)(instance);
+
+    return 0;
+}
+
+EXPORT m64p_error CALL VidExt_GetVkInstExtensions(const char** ext[], uint32_t* ext_num)
+{
+    if (l_VideoExtensionActive)
+        return (*l_ExternalVideoFuncTable.VidExtFuncGetVkInstExtensions)(ext, ext_num);
+
+    return M64ERR_INPUT_INVALID;
 }
