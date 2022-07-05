@@ -21,7 +21,6 @@ static QT_WSIPlatform* wsi_platform;
 int32_t vk_rescaling;
 bool vk_ssreadbacks;
 bool vk_ssdither;
-bool running = false;
 unsigned width, height;
 unsigned vk_overscan;
 unsigned vk_vertical_stretch;
@@ -238,114 +237,108 @@ static void render_frame(Vulkan::Device &device)
 
 void vk_rasterize()
 {
-	if (processor && running)
-	{
-		processor->set_vi_register(RDP::VIRegister::Control, *GET_GFX_INFO(VI_STATUS_REG));
-		processor->set_vi_register(RDP::VIRegister::Origin, *GET_GFX_INFO(VI_ORIGIN_REG));
-		processor->set_vi_register(RDP::VIRegister::Width, *GET_GFX_INFO(VI_WIDTH_REG));
-		processor->set_vi_register(RDP::VIRegister::Intr, *GET_GFX_INFO(VI_INTR_REG));
-		processor->set_vi_register(RDP::VIRegister::VCurrentLine, *GET_GFX_INFO(VI_V_CURRENT_LINE_REG));
-		processor->set_vi_register(RDP::VIRegister::Timing, *GET_GFX_INFO(VI_V_BURST_REG));
-		processor->set_vi_register(RDP::VIRegister::VSync, *GET_GFX_INFO(VI_V_SYNC_REG));
-		processor->set_vi_register(RDP::VIRegister::HSync, *GET_GFX_INFO(VI_H_SYNC_REG));
-		processor->set_vi_register(RDP::VIRegister::Leap, *GET_GFX_INFO(VI_LEAP_REG));
-		processor->set_vi_register(RDP::VIRegister::HStart, *GET_GFX_INFO(VI_H_START_REG));
-		processor->set_vi_register(RDP::VIRegister::VStart, *GET_GFX_INFO(VI_V_START_REG));
-		processor->set_vi_register(RDP::VIRegister::VBurst, *GET_GFX_INFO(VI_V_BURST_REG));
-		processor->set_vi_register(RDP::VIRegister::XScale, *GET_GFX_INFO(VI_X_SCALE_REG));
-		processor->set_vi_register(RDP::VIRegister::YScale, *GET_GFX_INFO(VI_Y_SCALE_REG));
+	processor->set_vi_register(RDP::VIRegister::Control, *GET_GFX_INFO(VI_STATUS_REG));
+	processor->set_vi_register(RDP::VIRegister::Origin, *GET_GFX_INFO(VI_ORIGIN_REG));
+	processor->set_vi_register(RDP::VIRegister::Width, *GET_GFX_INFO(VI_WIDTH_REG));
+	processor->set_vi_register(RDP::VIRegister::Intr, *GET_GFX_INFO(VI_INTR_REG));
+	processor->set_vi_register(RDP::VIRegister::VCurrentLine, *GET_GFX_INFO(VI_V_CURRENT_LINE_REG));
+	processor->set_vi_register(RDP::VIRegister::Timing, *GET_GFX_INFO(VI_V_BURST_REG));
+	processor->set_vi_register(RDP::VIRegister::VSync, *GET_GFX_INFO(VI_V_SYNC_REG));
+	processor->set_vi_register(RDP::VIRegister::HSync, *GET_GFX_INFO(VI_H_SYNC_REG));
+	processor->set_vi_register(RDP::VIRegister::Leap, *GET_GFX_INFO(VI_LEAP_REG));
+	processor->set_vi_register(RDP::VIRegister::HStart, *GET_GFX_INFO(VI_H_START_REG));
+	processor->set_vi_register(RDP::VIRegister::VStart, *GET_GFX_INFO(VI_V_START_REG));
+	processor->set_vi_register(RDP::VIRegister::VBurst, *GET_GFX_INFO(VI_V_BURST_REG));
+	processor->set_vi_register(RDP::VIRegister::XScale, *GET_GFX_INFO(VI_X_SCALE_REG));
+	processor->set_vi_register(RDP::VIRegister::YScale, *GET_GFX_INFO(VI_Y_SCALE_REG));
 
-		RDP::Quirks quirks;
-		quirks.set_native_texture_lod(vk_native_texture_lod);
-		quirks.set_native_resolution_tex_rect(vk_native_tex_rect);
-		processor->set_quirks(quirks);
+	RDP::Quirks quirks;
+	quirks.set_native_texture_lod(vk_native_texture_lod);
+	quirks.set_native_resolution_tex_rect(vk_native_tex_rect);
+	processor->set_quirks(quirks);
 
-		auto &device = wsi->get_device();
-		wsi->begin_frame();
-		render_frame(device);
-		(*render_callback)(1);
-		wsi->end_frame();
-		wsi->get_device().promote_read_write_caches_to_read_only();
-	}
+	auto &device = wsi->get_device();
+	wsi->begin_frame();
+	render_frame(device);
+	(*render_callback)(1);
+	wsi->end_frame();
+	wsi->get_device().promote_read_write_caches_to_read_only();
 }
 
 void vk_process_commands()
 {
-	if (running)
+	const uint32_t DP_CURRENT = *GET_GFX_INFO(DPC_CURRENT_REG) & 0x00FFFFF8;
+	const uint32_t DP_END = *GET_GFX_INFO(DPC_END_REG) & 0x00FFFFF8;
+
+	int length = DP_END - DP_CURRENT;
+	if (length <= 0)
+		return;
+
+	length = unsigned(length) >> 3;
+	if ((cmd_ptr + length) & ~(0x0003FFFF >> 3))
+		return;
+
+	uint32_t offset = DP_CURRENT;
+	if (*GET_GFX_INFO(DPC_STATUS_REG) & DP_STATUS_XBUS_DMA)
 	{
-		const uint32_t DP_CURRENT = *GET_GFX_INFO(DPC_CURRENT_REG) & 0x00FFFFF8;
-		const uint32_t DP_END = *GET_GFX_INFO(DPC_END_REG) & 0x00FFFFF8;
-
-		int length = DP_END - DP_CURRENT;
-		if (length <= 0)
+		do
+		{
+			offset &= 0xFF8;
+			cmd_data[2 * cmd_ptr + 0] = *reinterpret_cast<const uint32_t *>(SP_DMEM + offset);
+			cmd_data[2 * cmd_ptr + 1] = *reinterpret_cast<const uint32_t *>(SP_DMEM + offset + 4);
+			offset += sizeof(uint64_t);
+			cmd_ptr++;
+		} while (--length > 0);
+	}
+	else
+	{
+		if (DP_END > 0x7ffffff || DP_CURRENT > 0x7ffffff)
+		{
 			return;
-
-		length = unsigned(length) >> 3;
-		if ((cmd_ptr + length) & ~(0x0003FFFF >> 3))
-			return;
-
-		uint32_t offset = DP_CURRENT;
-		if (*GET_GFX_INFO(DPC_STATUS_REG) & DP_STATUS_XBUS_DMA)
+		}
+		else
 		{
 			do
 			{
-				offset &= 0xFF8;
-				cmd_data[2 * cmd_ptr + 0] = *reinterpret_cast<const uint32_t *>(SP_DMEM + offset);
-				cmd_data[2 * cmd_ptr + 1] = *reinterpret_cast<const uint32_t *>(SP_DMEM + offset + 4);
+				offset &= 0xFFFFF8;
+				cmd_data[2 * cmd_ptr + 0] = *reinterpret_cast<const uint32_t *>(DRAM + offset);
+				cmd_data[2 * cmd_ptr + 1] = *reinterpret_cast<const uint32_t *>(DRAM + offset + 4);
 				offset += sizeof(uint64_t);
 				cmd_ptr++;
 			} while (--length > 0);
 		}
-		else
-		{
-			if (DP_END > 0x7ffffff || DP_CURRENT > 0x7ffffff)
-			{
-				return;
-			}
-			else
-			{
-				do
-				{
-					offset &= 0xFFFFF8;
-					cmd_data[2 * cmd_ptr + 0] = *reinterpret_cast<const uint32_t *>(DRAM + offset);
-					cmd_data[2 * cmd_ptr + 1] = *reinterpret_cast<const uint32_t *>(DRAM + offset + 4);
-					offset += sizeof(uint64_t);
-					cmd_ptr++;
-				} while (--length > 0);
-			}
-		}
-
-		while (cmd_cur - cmd_ptr < 0)
-		{
-			uint32_t w1 = cmd_data[2 * cmd_cur];
-			uint32_t command = (w1 >> 24) & 63;
-			int cmd_length = cmd_len_lut[command];
-
-			if (cmd_ptr - cmd_cur - cmd_length < 0)
-			{
-				*GET_GFX_INFO(DPC_START_REG) = *GET_GFX_INFO(DPC_CURRENT_REG) = *GET_GFX_INFO(DPC_END_REG);
-				return;
-			}
-
-			if (command >= 8 && processor)
-				processor->enqueue_command(cmd_length * 2, &cmd_data[2 * cmd_cur]);
-
-			if (RDP::Op(command) == RDP::Op::SyncFull)
-			{
-				// For synchronous RDP:
-				if (vk_synchronous && processor)
-					processor->wait_for_timeline(processor->signal_timeline());
-				*gfx.MI_INTR_REG |= DP_INTERRUPT;
-				gfx.CheckInterrupts();
-			}
-
-			cmd_cur += cmd_length;
-		}
-
-		cmd_ptr = 0;
-		cmd_cur = 0;
-		*GET_GFX_INFO(DPC_START_REG) = *GET_GFX_INFO(DPC_CURRENT_REG) = *GET_GFX_INFO(DPC_END_REG);
 	}
+
+	while (cmd_cur - cmd_ptr < 0)
+	{
+		uint32_t w1 = cmd_data[2 * cmd_cur];
+		uint32_t command = (w1 >> 24) & 63;
+		int cmd_length = cmd_len_lut[command];
+
+		if (cmd_ptr - cmd_cur - cmd_length < 0)
+		{
+			*GET_GFX_INFO(DPC_START_REG) = *GET_GFX_INFO(DPC_CURRENT_REG) = *GET_GFX_INFO(DPC_END_REG);
+			return;
+		}
+
+		if (command >= 8 && processor)
+			processor->enqueue_command(cmd_length * 2, &cmd_data[2 * cmd_cur]);
+
+		if (RDP::Op(command) == RDP::Op::SyncFull)
+		{
+			// For synchronous RDP:
+			if (vk_synchronous && processor)
+				processor->wait_for_timeline(processor->signal_timeline());
+			*gfx.MI_INTR_REG |= DP_INTERRUPT;
+			gfx.CheckInterrupts();
+		}
+
+		cmd_cur += cmd_length;
+	}
+
+	cmd_ptr = 0;
+	cmd_cur = 0;
+	*GET_GFX_INFO(DPC_START_REG) = *GET_GFX_INFO(DPC_CURRENT_REG) = *GET_GFX_INFO(DPC_END_REG);
 }
 
 void vk_resize()
@@ -357,7 +350,6 @@ void vk_resize()
 void vk_destroy()
 {
 	screen_close();
-	running = false;
 	if (processor)
 	{
 		delete processor;
@@ -377,7 +369,6 @@ void vk_destroy()
 
 bool vk_init()
 {
-	running = false;
 	screen_init();
 	screen_set_mode();
 	wsi = new WSI;
@@ -425,7 +416,7 @@ bool vk_init()
 	default:
 		break;
 	}
-	if (vk_rescaling >1 && vk_ssreadbacks)
+	if (vk_rescaling > 1 && vk_ssreadbacks)
 		flags |= RDP::COMMAND_PROCESSOR_FLAG_SUPER_SAMPLED_READ_BACK_BIT;
 	if (vk_ssdither)
 		flags |= RDP::COMMAND_PROCESSOR_FLAG_SUPER_SAMPLED_DITHER_BIT;
@@ -446,6 +437,5 @@ bool vk_init()
 
 	if (window_fullscreen)
 		screen_toggle_fullscreen();
-	running = true;
 	return true;
 }
