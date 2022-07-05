@@ -29,6 +29,7 @@ extern "C"
     bool vk_init();
     void vk_destroy();
     void vk_resize();
+    void vk_read_screen(unsigned char* dest);
 
 #ifdef __cplusplus
 }
