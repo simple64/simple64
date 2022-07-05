@@ -258,11 +258,11 @@ void vk_rasterize()
 	processor->set_quirks(quirks);
 
 	auto &device = wsi->get_device();
-	wsi->begin_frame();
 	render_frame(device);
 	(*render_callback)(1);
 	wsi->end_frame();
 	wsi->get_device().promote_read_write_caches_to_read_only();
+	wsi->begin_frame();
 }
 
 void vk_process_commands()
@@ -349,6 +349,7 @@ void vk_resize()
 
 void vk_destroy()
 {
+	wsi->end_frame();
 	screen_close();
 	if (processor)
 	{
@@ -437,5 +438,6 @@ bool vk_init()
 
 	if (window_fullscreen)
 		screen_toggle_fullscreen();
+	wsi->begin_frame();
 	return true;
 }
