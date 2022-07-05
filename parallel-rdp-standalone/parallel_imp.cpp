@@ -397,7 +397,7 @@ bool vk_init()
 		aligned_rdram -= offset;
 	}
 
-	::RDP::CommandProcessorFlags flags = 0;
+	RDP::CommandProcessorFlags flags = 0;
 
 	switch (vk_rescaling)
 	{
