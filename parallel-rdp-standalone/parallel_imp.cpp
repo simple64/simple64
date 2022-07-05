@@ -21,7 +21,6 @@ static QT_WSIPlatform* wsi_platform;
 int32_t vk_rescaling;
 bool vk_ssreadbacks;
 bool vk_ssdither;
-unsigned width, height;
 unsigned vk_overscan;
 unsigned vk_vertical_stretch;
 unsigned vk_downscaling_steps;
@@ -263,6 +262,63 @@ void vk_rasterize()
 	wsi->end_frame();
 	wsi->get_device().promote_read_write_caches_to_read_only();
 	wsi->begin_frame();
+}
+
+void vk_read_screen(unsigned char* dest)
+{
+	Vulkan::Fence fence;
+	Vulkan::BufferHandle buffer;
+	Vulkan::BufferCreateInfo info = {};
+	Vulkan::ImageView* image = &wsi->get_device().get_swapchain_view();
+	info.size = window_width * window_height * sizeof(uint32_t);
+	info.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+	info.domain = Vulkan::BufferDomain::CachedHost;
+	if (!buffer || buffer->get_create_info().size < info.size)
+		buffer = wsi->get_device().create_buffer(info);
+
+	auto cmd = wsi->get_device().request_command_buffer();
+	cmd->copy_image_to_buffer(*buffer, image->get_image(), 0, {}, { window_width, window_height, 1 }, 0, 0, { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1 });
+	cmd->barrier(VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT,
+	             VK_PIPELINE_STAGE_HOST_BIT, VK_ACCESS_HOST_READ_BIT);
+
+	fence.reset();
+	wsi->get_device().submit(cmd, &fence);
+
+	fence->wait();
+	unsigned char *image_buffer = (unsigned char*)wsi->get_device().map_host_buffer(*buffer, Vulkan::MEMORY_ACCESS_READ_BIT);
+
+	image_buffer = image_buffer + info.size;
+	for (int i = 0; i < window_height; ++i)
+	{
+		image_buffer -= window_width * 4;
+		for (int j = 0; j < window_width; ++j)
+		{
+			switch (image->get_format()) {
+				case VK_FORMAT_B8G8R8A8_UNORM:
+					dest[0] = image_buffer[2];
+					dest[1] = image_buffer[1];
+					dest[2] = image_buffer[0];
+					break;
+				case VK_FORMAT_R8G8B8A8_UNORM:
+					dest[0] = image_buffer[0];
+					dest[1] = image_buffer[1];
+					dest[2] = image_buffer[2];
+					break;
+				case VK_FORMAT_A8B8G8R8_UNORM_PACK32:
+					dest[0] = image_buffer[3];
+					dest[1] = image_buffer[2];
+					dest[2] = image_buffer[1];
+					break;
+				default:
+					wsi->get_device().unmap_host_buffer(*buffer, Vulkan::MEMORY_ACCESS_READ_BIT);
+					return;
+			}
+			dest += 3;
+			image_buffer += 4;
+		}
+		image_buffer -= window_width * 4;
+	}
+	wsi->get_device().unmap_host_buffer(*buffer, Vulkan::MEMORY_ACCESS_READ_BIT);
 }
 
 void vk_process_commands()

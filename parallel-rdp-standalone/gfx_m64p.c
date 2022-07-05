@@ -75,9 +75,9 @@ static bool plugin_initialized;
 
 bool window_fullscreen;
 bool window_widescreen;
-int32_t window_width;
-int32_t window_height;
-int32_t window_vsync;
+uint32_t window_width;
+uint32_t window_height;
+bool window_vsync;
 
 void (*debug_callback)(void *, int, const char *);
 void *debug_call_context;
@@ -337,6 +337,8 @@ EXPORT void CALL ReadScreen2(void *dest, int *width, int *height, int front)
 {
     *width = window_width;
     *height = window_height;
+    if (dest)
+        vk_read_screen(dest);
 }
 
 EXPORT void CALL SetRenderingCallback(void (*callback)(int))
