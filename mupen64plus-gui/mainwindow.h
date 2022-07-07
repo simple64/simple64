@@ -135,7 +135,6 @@ private:
     QMenu * OpenRecent;
     int verbose;
     int nogui;
-    QString m_title;
 
     VkWindow *my_window = nullptr;
     WorkerThread *workerThread = nullptr;
