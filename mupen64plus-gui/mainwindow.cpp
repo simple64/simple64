@@ -324,10 +324,7 @@ MainWindow::MainWindow(QWidget *parent) :
     verbose = 0;
     nogui = 0;
     ui->setupUi(this);
-
-    m_title = "mupen64plus-gui    Build Date: ";
-    m_title += __DATE__;
-    this->setWindowTitle(m_title);
+    this->setWindowTitle("m64p    build: " + QStringLiteral(GUI_VERSION).mid(0,7));
 
     QString ini_path = QDir(QCoreApplication::applicationDirPath()).filePath("mupen64plus-gui.ini");
     settings = new QSettings(ini_path, QSettings::IniFormat, this);
