@@ -45,8 +45,12 @@ m64p_error qtVidExtFuncListRates(m64p_2d_size, int*, int*)
     return M64ERR_UNSUPPORTED;
 }
 
-m64p_error qtVidExtFuncSetMode(int, int, int, int, int)
+m64p_error qtVidExtFuncSetMode(int Width, int Height, int, int WindowMode, int)
 {
+    if (WindowMode == M64VIDEO_FULLSCREEN)
+        w->getWorkerThread()->toggleFS(M64VIDEO_FULLSCREEN);
+    else
+        w->getWorkerThread()->resizeMainWindow(Width, Height);
     return M64ERR_SUCCESS;
 }
 
