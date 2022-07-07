@@ -36,8 +36,9 @@ jobs:
       - name: Checkout core repo
         uses: actions/checkout@v3
         with:
-          repository: mupen64plus/mupen64plus-core
+          repository: loganmc10/mupen64plus-core
           path: mupen64plus-core
+          ref: m64p
       - uses: msys2/setup-msys2@v2
         with:
           update: true
