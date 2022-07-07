@@ -11,7 +11,7 @@ extern "C"
     void screen_init();
     void screen_close();
     void screen_toggle_fullscreen();
-    void screen_set_mode();
+    void screen_set_mode(bool fullscreen);
     VkSurfaceKHR screen_get_surface(VkInstance instance);
     m64p_error screen_get_instance_extensions(const char** ext[], uint32_t* ext_num);
 

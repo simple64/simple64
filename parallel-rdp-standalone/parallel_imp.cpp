@@ -222,7 +222,7 @@ static void render_frame(Vulkan::Device &device)
 			cmd->set_depth_test(false, false);
 			cmd->set_cull_mode(VK_CULL_MODE_NONE);
 
-			cmd->set_texture(0, 0, image->get_view(), Vulkan::StockSampler::LinearClamp);
+			cmd->set_texture(0, 0, image->get_view(), Vulkan::StockSampler::NearestClamp);
 			cmd->set_viewport(vp);
 
 			// The vertices are constants in the shader.
@@ -427,7 +427,6 @@ void vk_destroy()
 bool vk_init()
 {
 	screen_init();
-	screen_set_mode();
 	wsi = new WSI;
 	wsi_platform = new QT_WSIPlatform;
 	wsi->set_platform(wsi_platform);
@@ -492,8 +491,7 @@ bool vk_init()
 	quirks.set_native_resolution_tex_rect(vk_native_tex_rect);
 	processor->set_quirks(quirks);
 
-	if (window_fullscreen)
-		screen_toggle_fullscreen();
+	screen_set_mode(window_fullscreen);
 	wsi->begin_frame();
 	return true;
 }
