@@ -30,9 +30,9 @@ void screen_init()
     CoreVideo_SetCaption("Mupen64Plus-Parallel");
 }
 
-void screen_set_mode()
+void screen_set_mode(bool fullscreen)
 {
-    CoreVideo_SetVideoMode(window_width, window_height, 0, M64VIDEO_WINDOWED, 0);
+    CoreVideo_SetVideoMode(window_width, window_height, 0, fullscreen ? M64VIDEO_FULLSCREEN : M64VIDEO_WINDOWED, 0);
 }
 
 void screen_close()
