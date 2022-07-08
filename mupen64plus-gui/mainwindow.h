@@ -13,6 +13,7 @@ extern "C" {
 #include <QSettings>
 #include <QWidgetAction>
 #include <QSlider>
+#include <QMessageBox>
 #include <QLabel>
 #include <QVulkanInstance>
 #include <QNetworkReply>
@@ -136,6 +137,7 @@ private:
     int verbose;
     int nogui;
 
+    QMessageBox *download_message = nullptr;
     VkWindow *my_window = nullptr;
     WorkerThread *workerThread = nullptr;
     LogViewer logViewer;
