@@ -144,6 +144,7 @@ void init_pif(struct pif* pif,
 
     pif->r4300 = r4300;
     pif->si = si;
+    pif->update_counter = 0;
 }
 
 void reset_pif(struct pif* pif, unsigned int reset_type)
@@ -380,6 +381,7 @@ void update_pif_ram(struct pif* pif)
     if (input.readController) {
         input.readController(-1, NULL);
     }
+    ++pif->update_counter;
 
     netplay_update_input(pif);
 

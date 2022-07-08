@@ -175,3 +175,24 @@ void si_end_of_dma_event(void* opaque)
     raise_rcp_interrupt(si->mi, MI_INTR_SI);
 }
 
+void si_dynamic_dma_duration(struct si_controller* si)
+{
+    uint32_t input_updated = 0;
+    for (int i = 0; i < 4; ++i)
+    {
+        if (si->pif->channels[i].tx)
+        {
+            input_updated = 1;
+        }
+    }
+    if (input_updated)
+    {
+        /* try to keep controller polling to 1-2 per VI */
+        if (si->pif->update_counter > 2)
+            si->dma_duration += 1000;
+        else if (si->pif->update_counter < 1 && si->dma_duration > 1000)
+            si->dma_duration -= 1000;
+    }
+
+    si->pif->update_counter = 0;
+}
