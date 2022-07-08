@@ -1,6 +1,5 @@
 #include <QString>
 #include <QFileDialog>
-#include <QMessageBox>
 #include <QCloseEvent>
 #include <QActionGroup>
 #include <QDesktopServices>
@@ -490,6 +489,7 @@ void MainWindow::updateDownloadFinished(QNetworkReply *reply)
         dir.setAutoRemove(false);
         if (dir.isValid())
         {
+            download_message->done(QDialog::Accepted);
             QString fullpath = dir.filePath(reply->url().fileName());
             QFile file(fullpath);
             file.open(QIODevice::WriteOnly);
@@ -530,10 +530,10 @@ void MainWindow::updateReplyFinished(QNetworkReply *reply)
 #endif
                 req.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
                 updateManager->get(req);
-                QMessageBox *message = new QMessageBox(this);
-                message->setStandardButtons(QMessageBox::NoButton);
-                message->setText("Downloading updater");
-                message->show();
+                download_message = new QMessageBox(this);
+                download_message->setStandardButtons(QMessageBox::NoButton);
+                download_message->setText("Downloading updater");
+                download_message->show();
             }
         }
     }
