@@ -144,7 +144,6 @@ void init_pif(struct pif* pif,
 
     pif->r4300 = r4300;
     pif->si = si;
-    pif->update_counter = 0;
 }
 
 void reset_pif(struct pif* pif, unsigned int reset_type)
@@ -280,6 +279,7 @@ static void process_cic_challenge(struct pif* pif)
 void poweron_pif(struct pif* pif)
 {
     memset(pif->ram, 0, PIF_RAM_SIZE);
+    pif->update_counter = 0;
 
     reset_pif(pif, 0); /* cold reset */
 }
