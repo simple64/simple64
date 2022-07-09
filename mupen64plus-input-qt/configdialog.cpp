@@ -271,6 +271,7 @@ void ProfileEditor::timerEvent(QTimerEvent *)
 {
     int i;
     SDL_Event e;
+    SDL_PumpEvents();
     while (SDL_PollEvent(&e)) {
         switch (e.type) {
             case SDL_JOYHATMOTION:
