@@ -331,8 +331,10 @@ void ProfileEditor::acceptInput(CustomButton* button)
     buttonTimer = 50;
     activeButton->origText = activeButton->text();
     activeButton->setText(QString::number(buttonTimer/10));
-    SDL_Event e;
-    while (SDL_PollEvent(&e)) {}
+    SDL_PumpEvents();
+    SDL_FlushEvent(SDL_JOYHATMOTION);
+    SDL_FlushEvent(SDL_JOYBUTTONDOWN);
+    SDL_FlushEvent(SDL_JOYAXISMOTION);
     timer = startTimer(100);
 }
 
