@@ -44,7 +44,7 @@ static void do_sp_dma(struct rsp_core* sp, const struct sp_dma* dma)
 
     unsigned int length = ((l & 0xfff) | 7) + 1;
     unsigned int count = ((l >> 12) & 0xff) + 1;
-    unsigned int skip = ((l >> 20) & 0xfff);
+    unsigned int skip = ((l >> 20) & 0xff8);
 
     unsigned int memaddr = dma->memaddr & 0xff8;
     unsigned int dramaddr = dma->dramaddr & 0xfffff8;
@@ -194,12 +194,10 @@ static void update_sp_status(struct rsp_core* sp, uint32_t w)
     if (w & 0x800000) sp->regs[SP_STATUS_REG] &= ~SP_STATUS_SIG7;
     if (w & 0x1000000) sp->regs[SP_STATUS_REG] |= SP_STATUS_SIG7;
 
-    if (sp->rsp_task_locked && (get_event(&sp->mi->r4300->cp0.q, SP_INT))) return;
-    if (!(w & 0x1) && !(w & 0x4) && !sp->rsp_task_locked)
+    if (!(w & 0x1) && !(w & 0x4))
         return;
 
-    if (!(sp->regs[SP_STATUS_REG] & (SP_STATUS_HALT | SP_STATUS_BROKE)))
-        do_SP_Task(sp);
+    do_SP_Task(sp);
 }
 
 void init_rsp(struct rsp_core* sp,
@@ -221,7 +219,7 @@ void poweron_rsp(struct rsp_core* sp)
     memset(sp->regs2, 0, SP_REGS2_COUNT*sizeof(uint32_t));
     memset(sp->fifo, 0, SP_DMA_FIFO_SIZE*sizeof(struct sp_dma));
 
-    sp->rsp_task_locked = 0;
+    sp->rsp_status = 0;
     sp->mi->r4300->cp0.interrupt_unsafe_state &= ~INTR_UNSAFE_RSP;
     sp->regs[SP_STATUS_REG] = 1;
 }
@@ -306,6 +304,9 @@ void write_rsp_regs2(void* opaque, uint32_t address, uint32_t value, uint32_t ma
 
 void do_SP_Task(struct rsp_core* sp)
 {
+    if (sp->regs[SP_STATUS_REG] & (SP_STATUS_HALT | SP_STATUS_BROKE))
+        return;
+
     uint32_t save_pc = sp->regs2[SP_PC_REG] & ~0xfff;
 
     uint32_t sp_delay_time;
@@ -364,43 +365,47 @@ void do_SP_Task(struct rsp_core* sp)
         sp_delay_time = 0;
     }
 
-    sp->rsp_task_locked = 0;
-    sp->mi->r4300->cp0.interrupt_unsafe_state &= ~INTR_UNSAFE_RSP;
-    if ((sp->regs[SP_STATUS_REG] & (SP_STATUS_HALT | SP_STATUS_BROKE)) == 0)
-    {
-        sp->rsp_task_locked = 1;
-        sp->mi->r4300->cp0.interrupt_unsafe_state |= INTR_UNSAFE_RSP;
-        sp->mi->regs[MI_INTR_REG] |= MI_INTR_SP;
-    }
+    cp0_update_count(sp->mi->r4300);
     if (sp->mi->regs[MI_INTR_REG] & MI_INTR_SP)
     {
-        cp0_update_count(sp->mi->r4300);
         add_interrupt_event(&sp->mi->r4300->cp0, SP_INT, sp_delay_time);
+        sp->mi->r4300->cp0.interrupt_unsafe_state |= INTR_UNSAFE_RSP;
         sp->mi->regs[MI_INTR_REG] &= ~MI_INTR_SP;
     }
+    else if ((sp->regs[SP_STATUS_REG] & SP_STATUS_BROKE) && (sp->regs[SP_STATUS_REG] & SP_STATUS_INTR_BREAK))
+    {
+        add_interrupt_event(&sp->mi->r4300->cp0, SP_INT, sp_delay_time);
+        sp->mi->r4300->cp0.interrupt_unsafe_state |= INTR_UNSAFE_RSP;
+    }
+    if ((sp->regs[SP_STATUS_REG] & (SP_STATUS_HALT | SP_STATUS_BROKE)) == 0 && !get_event(&sp->mi->r4300->cp0.q, RSP_TSK_EVT))
+    {
+        add_interrupt_event(&sp->mi->r4300->cp0, RSP_TSK_EVT, sp_delay_time * 2);
+        sp->mi->r4300->cp0.interrupt_unsafe_state |= INTR_UNSAFE_RSP_TASK;
+    }
 
-    sp->regs[SP_STATUS_REG] &=
-        ~(SP_STATUS_TASKDONE | SP_STATUS_BROKE | SP_STATUS_HALT);
+    sp->rsp_status = sp->regs[SP_STATUS_REG] & (SP_STATUS_BROKE | SP_STATUS_HALT);
+    sp->regs[SP_STATUS_REG] &= ~(SP_STATUS_BROKE | SP_STATUS_HALT);
 }
 
 void rsp_interrupt_event(void* opaque)
 {
     struct rsp_core* sp = (struct rsp_core*)opaque;
 
-    if (!sp->rsp_task_locked)
-    {
-        sp->regs[SP_STATUS_REG] |=
-            SP_STATUS_TASKDONE | SP_STATUS_BROKE | SP_STATUS_HALT;
-    }
-
-    if ((sp->regs[SP_STATUS_REG] & SP_STATUS_INTR_BREAK) != 0)
-    {
-        raise_rcp_interrupt(sp->mi, MI_INTR_SP);
-    }
+    sp->regs[SP_STATUS_REG] |= sp->rsp_status;
+    sp->rsp_status = 0;
+    sp->mi->r4300->cp0.interrupt_unsafe_state &= ~INTR_UNSAFE_RSP;
+    raise_rcp_interrupt(sp->mi, MI_INTR_SP);
 }
 
 void rsp_end_of_dma_event(void* opaque)
 {
     struct rsp_core* sp = (struct rsp_core*)opaque;
     fifo_pop(sp);
+}
+
+void rsp_end_of_tsk_event(void* opaque)
+{
+    struct rsp_core* sp = (struct rsp_core*)opaque;
+    sp->mi->r4300->cp0.interrupt_unsafe_state &= ~INTR_UNSAFE_RSP_TASK;
+    do_SP_Task(sp);
 }
