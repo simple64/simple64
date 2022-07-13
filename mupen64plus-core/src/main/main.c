@@ -1479,6 +1479,7 @@ m64p_error main_run(void)
     uint32_t emumode;
     uint32_t disable_extra_mem;
     int32_t si_dma_duration;
+    uint32_t rsp_delay_time;
     int32_t no_compiled_jump;
     int32_t randomize_interrupt;
     struct file_storage eep;
@@ -1543,8 +1544,10 @@ m64p_error main_run(void)
     if (si_dma_duration < 0)
         si_dma_duration = ROM_SETTINGS.sidmaduration;
 
+    rsp_delay_time = ROM_SETTINGS.rspdelaytime;
+
     //During netplay, player 1 is the source of truth for these settings
-    netplay_sync_settings(&count_per_op, &count_per_op_denom_pot, &disable_extra_mem, &si_dma_duration, &emumode, &no_compiled_jump);
+    netplay_sync_settings(&count_per_op, &count_per_op_denom_pot, &disable_extra_mem, &si_dma_duration, &emumode, &no_compiled_jump, &rsp_delay_time);
 
     cheat_add_hacks(&g_cheat_ctx, ROM_PARAMS.cheats);
 
@@ -1791,6 +1794,7 @@ m64p_error main_run(void)
                 no_compiled_jump,
                 randomize_interrupt,
                 g_start_address,
+                rsp_delay_time,
                 &g_dev.ai, &g_iaudio_out_backend_plugin_compat, ((float)ROM_SETTINGS.aidmamodifier / 100.0),
                 si_dma_duration,
                 rdram_size,
