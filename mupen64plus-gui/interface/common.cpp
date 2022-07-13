@@ -277,7 +277,7 @@ m64p_error launchGame(QString netplay_ip, int netplay_port, int netplay_player)
     if (netplay_port)
     {
         uint32_t version;
-        if ((*CoreDoCommand)(M64CMD_NETPLAY_GET_VERSION, 0x010001, &version) == M64ERR_SUCCESS)
+        if ((*CoreDoCommand)(M64CMD_NETPLAY_GET_VERSION, 0x010002, &version) == M64ERR_SUCCESS)
         {
             DebugMessage(M64MSG_INFO, "Netplay: using core version %u", version);
 
