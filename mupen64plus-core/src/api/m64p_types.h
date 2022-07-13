@@ -283,6 +283,7 @@ typedef struct
    unsigned int countperop; /* Number of CPU cycles per instruction. */
    unsigned int sidmaduration; /* Default SI DMA duration */
    unsigned int aidmamodifier; /* Percentage modifier for AI DMA duration */
+   unsigned int rspdelaytime; /* Cycles to delay RSP when needed */
 } m64p_rom_settings;
 
 /* ----------------------------------------- */

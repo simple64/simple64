@@ -429,6 +429,7 @@ EXPORT m64p_error CALL CoreGetRomSettings(m64p_rom_settings *RomSettings, int Ro
     RomSettings->savetype = entry->savetype;
     RomSettings->sidmaduration = entry->sidmaduration;
     RomSettings->aidmamodifier = entry->aidmamodifier;
+    RomSettings->rspdelaytime = entry->rspdelaytime;
 
     return M64ERR_SUCCESS;
 }

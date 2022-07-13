@@ -54,6 +54,8 @@ enum { DEFAULT_DISABLE_EXTRA_MEM = 0 };
 enum { DEFAULT_SI_DMA_DURATION = 0x900 };
 /* Default AI DMA modifier */
 enum { DEFAULT_AI_DMA_MODIFIER = 100 };
+/* Default RSP delay time */
+enum { DEFAULT_RSP_DELAY_TIME = 2000 };
 
 static romdatabase_entry* ini_search_by_md5(md5_byte_t* md5);
 
@@ -191,6 +193,7 @@ m64p_error open_rom(const unsigned char* romimage, unsigned int size)
         ROM_SETTINGS.disableextramem = entry->disableextramem;
         ROM_SETTINGS.sidmaduration = entry->sidmaduration;
         ROM_SETTINGS.aidmamodifier = entry->aidmamodifier;
+        ROM_SETTINGS.rspdelaytime = entry->rspdelaytime;
         ROM_PARAMS.cheats = entry->cheats;
     }
     else
@@ -209,6 +212,7 @@ m64p_error open_rom(const unsigned char* romimage, unsigned int size)
         ROM_SETTINGS.disableextramem = DEFAULT_DISABLE_EXTRA_MEM;
         ROM_SETTINGS.sidmaduration = DEFAULT_SI_DMA_DURATION;
         ROM_SETTINGS.aidmamodifier = DEFAULT_AI_DMA_MODIFIER;
+        ROM_SETTINGS.rspdelaytime = DEFAULT_RSP_DELAY_TIME;
         ROM_PARAMS.cheats = NULL;
     }
 
@@ -383,6 +387,12 @@ static size_t romdatabase_resolve_round(void)
             entry->entry.set_flags |= ROMDATABASE_ENTRY_AIDMAMODIFIER;
         }
 
+        if (!isset_bitmask(entry->entry.set_flags, ROMDATABASE_ENTRY_RSPDELAYTIME) &&
+            isset_bitmask(ref->set_flags, ROMDATABASE_ENTRY_RSPDELAYTIME)) {
+            entry->entry.rspdelaytime = ref->rspdelaytime;
+            entry->entry.set_flags |= ROMDATABASE_ENTRY_RSPDELAYTIME;
+        }
+
         free(entry->entry.refmd5);
         entry->entry.refmd5 = NULL;
     }
@@ -480,6 +490,7 @@ void romdatabase_open(void)
             search->entry.biopak = 0;
             search->entry.sidmaduration = DEFAULT_SI_DMA_DURATION;
             search->entry.aidmamodifier = DEFAULT_AI_DMA_MODIFIER;
+            search->entry.rspdelaytime = DEFAULT_RSP_DELAY_TIME;
             search->entry.set_flags = ROMDATABASE_ENTRY_NONE;
 
             search->next_entry = NULL;
@@ -683,6 +694,15 @@ void romdatabase_open(void)
                     search->entry.set_flags |= ROMDATABASE_ENTRY_AIDMAMODIFIER;
                 } else {
                     DebugMessage(M64MSG_WARNING, "ROM Database: Invalid AiDmaModifier on line %i", lineno);
+                }
+            }
+            else if(!strcmp(l.name, "RspDelayTime"))
+            {
+                if (string_to_int(l.value, &value) && value >= 0) {
+                    search->entry.rspdelaytime = value;
+                    search->entry.set_flags |= ROMDATABASE_ENTRY_RSPDELAYTIME;
+                } else {
+                    DebugMessage(M64MSG_WARNING, "ROM Database: Invalid RspDelayTime on line %i", lineno);
                 }
             }
             else

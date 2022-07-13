@@ -87,6 +87,8 @@ void init_device(struct device* dev,
     int no_compiled_jump,
     int randomize_interrupt,
     uint32_t start_address,
+    /* rsp */
+    uint32_t rsp_delay_time,
     /* ai */
     void* aout, const struct audio_out_backend_interface* iaout, float dma_modifier,
     /* si */
@@ -182,7 +184,7 @@ void init_device(struct device* dev,
     init_r4300(&dev->r4300, &dev->mem, &dev->mi, &dev->rdram, interrupt_handlers,
             emumode, count_per_op, count_per_op_denom_pot, no_compiled_jump, randomize_interrupt, start_address);
     init_rdp(&dev->dp, &dev->sp, &dev->mi, &dev->mem, &dev->rdram, &dev->r4300);
-    init_rsp(&dev->sp, mem_base_u32(base, MM_RSP_MEM), &dev->mi, &dev->dp, &dev->ri);
+    init_rsp(&dev->sp, mem_base_u32(base, MM_RSP_MEM), &dev->mi, &dev->dp, &dev->ri, rsp_delay_time);
     init_ai(&dev->ai, &dev->mi, &dev->ri, &dev->vi, aout, iaout, dma_modifier);
     init_mi(&dev->mi, &dev->r4300);
     init_pi(&dev->pi,
