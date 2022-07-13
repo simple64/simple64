@@ -97,6 +97,7 @@ struct rsp_core
     uint32_t regs[SP_REGS_COUNT];
     uint32_t regs2[SP_REGS2_COUNT];
     uint32_t rsp_status;
+    uint32_t rsp_delay_time;
 
     struct mi_controller* mi;
     struct rdp_core* dp;
@@ -123,7 +124,8 @@ void init_rsp(struct rsp_core* sp,
               uint32_t* sp_mem,
               struct mi_controller* mi,
               struct rdp_core* dp,
-              struct ri_controller* ri);
+              struct ri_controller* ri,
+              uint32_t rsp_delay_time);
 
 void poweron_rsp(struct rsp_core* sp);
 

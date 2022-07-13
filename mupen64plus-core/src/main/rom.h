@@ -114,6 +114,7 @@ typedef struct
    unsigned char biopak; /* 0 - No, 1 - Yes boolean for biopak support. */
    unsigned int sidmaduration;
    unsigned int aidmamodifier;
+   unsigned int rspdelaytime;
    uint32_t set_flags;
 } romdatabase_entry;
 
@@ -132,6 +133,7 @@ typedef struct
 #define ROMDATABASE_ENTRY_BIOPAK        BIT(11)
 #define ROMDATABASE_ENTRY_SIDMADURATION BIT(12)
 #define ROMDATABASE_ENTRY_AIDMAMODIFIER BIT(13)
+#define ROMDATABASE_ENTRY_RSPDELAYTIME  BIT(14)
 
 typedef struct _romdatabase_search
 {

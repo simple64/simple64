@@ -204,12 +204,14 @@ void init_rsp(struct rsp_core* sp,
               uint32_t* sp_mem,
               struct mi_controller* mi,
               struct rdp_core* dp,
-              struct ri_controller* ri)
+              struct ri_controller* ri,
+              uint32_t rsp_delay_time)
 {
     sp->mem = sp_mem;
     sp->mi = mi;
     sp->dp = dp;
     sp->ri = ri;
+    sp->rsp_delay_time = rsp_delay_time;
 }
 
 void poweron_rsp(struct rsp_core* sp)
@@ -379,7 +381,11 @@ void do_SP_Task(struct rsp_core* sp)
     }
     if ((sp->regs[SP_STATUS_REG] & (SP_STATUS_HALT | SP_STATUS_BROKE)) == 0 && !get_event(&sp->mi->r4300->cp0.q, RSP_TSK_EVT))
     {
-        add_interrupt_event(&sp->mi->r4300->cp0, RSP_TSK_EVT, sp_delay_time * 2);
+        if (get_event(&sp->mi->r4300->cp0.q, SP_INT))
+            sp_delay_time *= 2;
+        else
+            sp_delay_time = sp->rsp_delay_time;
+        add_interrupt_event(&sp->mi->r4300->cp0, RSP_TSK_EVT, sp_delay_time);
         sp->mi->r4300->cp0.interrupt_unsafe_state |= INTR_UNSAFE_RSP_TASK;
     }
 
