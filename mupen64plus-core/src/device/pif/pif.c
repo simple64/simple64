@@ -370,13 +370,8 @@ void process_pif_ram(struct pif* pif)
 
 static void update_pif_counter(struct pif* pif)
 {
-    uint32_t input_updated = 0;
-    for (int i = 0; i < 4; ++i)
-    {
-        if (pif->channels[i].tx && (pif->channels[i].tx_buf[0] == JCMD_CONTROLLER_READ))
-            input_updated = 1;
-    }
-    if (input_updated)
+    /* check if controller 0 was polled for input */
+    if (pif->channels[0].tx && (pif->channels[0].tx_buf[0] == JCMD_CONTROLLER_READ))
         ++pif->update_counter;
 }
 
