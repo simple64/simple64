@@ -368,6 +368,18 @@ void process_pif_ram(struct pif* pif)
     pif->ram[0x3f] &= ~clrmask;
 }
 
+static void update_pif_counter(struct pif* pif)
+{
+    uint32_t input_updated = 0;
+    for (int i = 0; i < 4; ++i)
+    {
+        if (pif->channels[i].tx && pif->channels[i].tx_buf[0] & (JCMD_CONTROLLER_READ))
+            input_updated = 1;
+    }
+    if (input_updated)
+        ++pif->update_counter;
+}
+
 void update_pif_ram(struct pif* pif)
 {
     size_t k;
@@ -381,7 +393,7 @@ void update_pif_ram(struct pif* pif)
     if (input.readController) {
         input.readController(-1, NULL);
     }
-    ++pif->update_counter;
+    update_pif_counter(pif);
 
     netplay_update_input(pif);
 
