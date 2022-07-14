@@ -373,7 +373,7 @@ static void update_pif_counter(struct pif* pif)
     uint32_t input_updated = 0;
     for (int i = 0; i < 4; ++i)
     {
-        if (pif->channels[i].tx && pif->channels[i].tx_buf[0] & (JCMD_CONTROLLER_READ))
+        if (pif->channels[i].tx && (pif->channels[i].tx_buf[0] == JCMD_CONTROLLER_READ))
             input_updated = 1;
     }
     if (input_updated)
