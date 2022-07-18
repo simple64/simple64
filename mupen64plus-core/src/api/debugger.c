@@ -447,7 +447,7 @@ EXPORT uint32_t CALL DebugVirtualToPhysical(uint32_t address)
     struct r4300_core* r4300 = &dev->r4300;
 
     if ((address & UINT32_C(0xc0000000)) != UINT32_C(0x80000000)) {
-        address = virtual_to_physical_address(r4300, address, 0);
+        address = virtual_to_physical_address(r4300, address, 0, &(uint8_t){0});
         if (address == 0) {
             return 0;
         }

@@ -34,6 +34,8 @@ void poweron_tlb(struct tlb* tlb)
     memset(tlb->entries, 0, 32 * sizeof(tlb->entries[0]));
     memset(tlb->LUT_r, 0, 0x100000 * sizeof(tlb->LUT_r[0]));
     memset(tlb->LUT_w, 0, 0x100000 * sizeof(tlb->LUT_w[0]));
+    memset(tlb->r_cached, 0, 0x100000 * sizeof(tlb->r_cached[0]));
+    memset(tlb->w_cached, 0, 0x100000 * sizeof(tlb->w_cached[0]));
 }
 
 void tlb_unmap(struct tlb* tlb, size_t entry)
@@ -47,19 +49,31 @@ void tlb_unmap(struct tlb* tlb, size_t entry)
     if (e->v_even)
     {
         for (i=e->start_even; i<e->end_even; i += 0x1000)
+        {
             tlb->LUT_r[i>>12] = 0;
+            tlb->r_cached[i>>12] = 0;
+        }
         if (e->d_even)
             for (i=e->start_even; i<e->end_even; i += 0x1000)
+            {
                 tlb->LUT_w[i>>12] = 0;
+                tlb->w_cached[i>>12] = 0;
+            }
     }
 
     if (e->v_odd)
     {
         for (i=e->start_odd; i<e->end_odd; i += 0x1000)
+        {
             tlb->LUT_r[i>>12] = 0;
+            tlb->r_cached[i>>12] = 0;
+        }
         if (e->d_odd)
             for (i=e->start_odd; i<e->end_odd; i += 0x1000)
+            {
                 tlb->LUT_w[i>>12] = 0;
+                tlb->w_cached[i>>12] = 0;
+            }
     }
 }
 
@@ -78,10 +92,16 @@ void tlb_map(struct tlb* tlb, size_t entry)
             e->phys_even < 0x20000000)
         {
             for (i=e->start_even;i<e->end_even;i+=0x1000)
+            {
                 tlb->LUT_r[i>>12] = UINT32_C(0x80000000) | (e->phys_even + (i - e->start_even) + 0xFFF);
+                tlb->r_cached[i>>12] = e->c_even != 2;
+            }
             if (e->d_even)
                 for (i=e->start_even;i<e->end_even;i+=0x1000)
+                {
                     tlb->LUT_w[i>>12] = UINT32_C(0x80000000) | (e->phys_even + (i - e->start_even) + 0xFFF);
+                    tlb->w_cached[i>>12] = e->c_even != 2;
+                }
         }
     }
 
@@ -92,15 +112,21 @@ void tlb_map(struct tlb* tlb, size_t entry)
             e->phys_odd < 0x20000000)
         {
             for (i=e->start_odd;i<e->end_odd;i+=0x1000)
+            {
                 tlb->LUT_r[i>>12] = UINT32_C(0x80000000) | (e->phys_odd + (i - e->start_odd) + 0xFFF);
+                tlb->r_cached[i>>12] = e->c_odd != 2;
+            }
             if (e->d_odd)
                 for (i=e->start_odd;i<e->end_odd;i+=0x1000)
+                {
                     tlb->LUT_w[i>>12] = UINT32_C(0x80000000) | (e->phys_odd + (i - e->start_odd) + 0xFFF);
+                    tlb->w_cached[i>>12] = e->c_odd != 2;
+                }
         }
     }
 }
 
-uint32_t virtual_to_physical_address(struct r4300_core* r4300, uint32_t address, int w)
+uint32_t virtual_to_physical_address(struct r4300_core* r4300, uint32_t address, int w, uint8_t *cached)
 {
     const struct tlb* tlb = &r4300->cp0.tlb;
     unsigned int addr = address >> 12;
@@ -130,12 +156,18 @@ uint32_t virtual_to_physical_address(struct r4300_core* r4300, uint32_t address,
     if (w == 1)
     {
         if (tlb->LUT_w[addr])
+        {
+            *cached = tlb->w_cached[addr];
             return (tlb->LUT_w[addr] & UINT32_C(0xFFFFF000)) | (address & UINT32_C(0xFFF));
+        }
     }
     else
     {
         if (tlb->LUT_r[addr])
+        {
+            *cached = tlb->r_cached[addr];
             return (tlb->LUT_r[addr] & UINT32_C(0xFFFFF000)) | (address & UINT32_C(0xFFF));
+        }
     }
     //printf("tlb exception !!! @ %x, %x, add:%x\n", address, w, r4300->pc->addr);
     //getchar();

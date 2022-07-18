@@ -201,10 +201,9 @@ struct cp0
 #endif
 
     uint32_t last_addr;
-    unsigned int count_per_op;
-    unsigned int count_per_op_denom_pot;
 
     struct tlb tlb;
+    uint8_t half_count;
 };
 
 #ifndef NEW_DYNAREC
@@ -217,7 +216,7 @@ struct cp0
     offsetof(struct new_dynarec_hot_state, cp0_regs))
 #endif
 
-void init_cp0(struct cp0* cp0, unsigned int count_per_op, unsigned int count_per_op_denom_pot, struct new_dynarec_hot_state* new_dynarec_hot_state, const struct interrupt_handler* interrupt_handlers);
+void init_cp0(struct cp0* cp0, struct new_dynarec_hot_state* new_dynarec_hot_state, const struct interrupt_handler* interrupt_handlers);
 void poweron_cp0(struct cp0* cp0);
 
 uint32_t* r4300_cp0_regs(struct cp0* cp0);
@@ -231,7 +230,7 @@ int* r4300_cp0_cycle_count(struct cp0* cp0);
 
 int check_cop1_unusable(struct r4300_core* r4300);
 
-void cp0_update_count(struct r4300_core* r4300);
+void cp0_add_count(struct r4300_core* r4300, uint32_t count, uint8_t half);
 
 void TLB_refill_exception(struct r4300_core* r4300, uint32_t address, int w);
 void exception_general(struct r4300_core* r4300);

@@ -80,8 +80,7 @@ static void do_sp_dma(struct rsp_core* sp, const struct sp_dma* dma)
     }
 
     /* schedule end of dma event */
-    cp0_update_count(sp->mi->r4300);
-    add_interrupt_event(&sp->mi->r4300->cp0, RSP_DMA_EVT, (count * length) / 8);
+    add_interrupt_event(&sp->mi->r4300->cp0, RSP_DMA_EVT, ((count * length) / 16) + 4);
 }
 
 static void fifo_push(struct rsp_core* sp, uint32_t dir)
@@ -312,6 +311,7 @@ void do_SP_Task(struct rsp_core* sp)
     uint32_t save_pc = sp->regs2[SP_PC_REG] & ~0xfff;
 
     uint32_t sp_delay_time;
+    uint32_t saved_status = sp->regs[SP_STATUS_REG];
 
     if (sp->mem[0xfc0/4] == 1)
     {
@@ -335,11 +335,10 @@ void do_SP_Task(struct rsp_core* sp)
             if (sp->dp->dpc_regs[DPC_STATUS_REG] & DPC_STATUS_FREEZE) {
                 sp->dp->do_on_unfreeze |= DELAY_DP_INT;
             } else {
-                cp0_update_count(sp->mi->r4300);
                 add_interrupt_event(&sp->mi->r4300->cp0, DP_INT, 4000);
             }
         }
-        sp_delay_time = 1000;
+        sp_delay_time = 4000;
 
         protect_framebuffers(&sp->dp->fb);
     }
@@ -356,7 +355,7 @@ void do_SP_Task(struct rsp_core* sp)
 #endif
         sp->regs2[SP_PC_REG] |= save_pc;
 
-        sp_delay_time = 4000;
+        sp_delay_time = 8000;
     }
     else
     {
@@ -367,7 +366,6 @@ void do_SP_Task(struct rsp_core* sp)
         sp_delay_time = 0;
     }
 
-    cp0_update_count(sp->mi->r4300);
     if (sp->mi->regs[MI_INTR_REG] & MI_INTR_SP)
     {
         add_interrupt_event(&sp->mi->r4300->cp0, SP_INT, sp_delay_time);
@@ -388,16 +386,18 @@ void do_SP_Task(struct rsp_core* sp)
         add_interrupt_event(&sp->mi->r4300->cp0, RSP_TSK_EVT, sp_delay_time);
         sp->mi->r4300->cp0.interrupt_unsafe_state |= INTR_UNSAFE_RSP_TASK;
     }
-
-    sp->rsp_status = sp->regs[SP_STATUS_REG] & (SP_STATUS_BROKE | SP_STATUS_HALT);
-    sp->regs[SP_STATUS_REG] &= ~(SP_STATUS_BROKE | SP_STATUS_HALT);
+    sp->rsp_status = sp->regs[SP_STATUS_REG];
+    if (sp->regs[SP_STATUS_REG] & (SP_STATUS_HALT | SP_STATUS_BROKE))
+    {
+        sp->regs[SP_STATUS_REG] = saved_status;
+    }
 }
 
 void rsp_interrupt_event(void* opaque)
 {
     struct rsp_core* sp = (struct rsp_core*)opaque;
 
-    sp->regs[SP_STATUS_REG] |= sp->rsp_status;
+    sp->regs[SP_STATUS_REG] = sp->rsp_status;
     sp->rsp_status = 0;
     sp->mi->r4300->cp0.interrupt_unsafe_state &= ~INTR_UNSAFE_RSP;
     raise_rcp_interrupt(sp->mi, MI_INTR_SP);

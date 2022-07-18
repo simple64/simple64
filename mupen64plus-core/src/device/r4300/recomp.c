@@ -578,7 +578,7 @@ void dynarec_init_block(struct r4300_core* r4300, uint32_t address)
     r4300->cached_interp.invalid_code[b->start>>12] = 0;
     if (b->end < UINT32_C(0x80000000) || b->start >= UINT32_C(0xc0000000))
     {
-        uint32_t paddr = virtual_to_physical_address(r4300, b->start, 2);
+        uint32_t paddr = virtual_to_physical_address(r4300, b->start, 2, &(uint8_t){0});
         r4300->cached_interp.invalid_code[paddr>>12] = 0;
         dynarec_init_block(r4300, paddr);
 
@@ -655,7 +655,7 @@ void dynarec_recompile_block(struct r4300_core* r4300, const uint32_t* iw, struc
 
         if (block_start_in_tlb)
         {
-            uint32_t address2 = virtual_to_physical_address(r4300, r4300->recomp.dst->addr, 0);
+            uint32_t address2 = virtual_to_physical_address(r4300, r4300->recomp.dst->addr, 0, &(uint8_t){0});
             if (r4300->cached_interp.blocks[address2>>12]->block[(address2&UINT32_C(0xFFF))/4].ops == r4300->cached_interp.not_compiled) {
                 r4300->cached_interp.blocks[address2>>12]->block[(address2&UINT32_C(0xFFF))/4].ops = r4300->cached_interp.not_compiled2;
             }
@@ -923,7 +923,6 @@ int dynarec_check_cop1_unusable(void)
 /* Parameterless version of cp0_update_count to ease usage in dynarec. */
 void dynarec_cp0_update_count(void)
 {
-    cp0_update_count(&g_dev.r4300);
 }
 
 /* Parameterless version of gen_interrupt to ease usage in dynarec. */

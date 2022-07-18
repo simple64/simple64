@@ -113,7 +113,6 @@ DEFINE(cp0, regs);
 DEFINE(cp0, next_interrupt);
 #endif
 DEFINE(cp0, last_addr);
-DEFINE(cp0, count_per_op);
 DEFINE(cp0, tlb);
 
 DEFINE(tlb, entries);

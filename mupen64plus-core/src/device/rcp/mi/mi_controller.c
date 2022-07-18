@@ -105,7 +105,6 @@ void write_mi_regs(void* opaque, uint32_t address, uint32_t value, uint32_t mask
         update_mi_intr_mask(&mi->regs[MI_INTR_MASK_REG], value & mask);
 
         r4300_check_interrupt(mi->r4300, CP0_CAUSE_IP2, mi->regs[MI_INTR_REG] & mi->regs[MI_INTR_MASK_REG]);
-        cp0_update_count(mi->r4300);
         if (*cp0_cycle_count >= 0) gen_interrupt(mi->r4300);
         break;
     }

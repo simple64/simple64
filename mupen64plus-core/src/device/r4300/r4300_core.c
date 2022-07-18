@@ -41,7 +41,7 @@
 #include <time.h>
 
 void init_r4300(struct r4300_core* r4300, struct memory* mem, struct mi_controller* mi, struct rdram* rdram, const struct interrupt_handler* interrupt_handlers,
-    unsigned int emumode, unsigned int count_per_op, unsigned int count_per_op_denom_pot, int no_compiled_jump, int randomize_interrupt, uint32_t start_address)
+    unsigned int emumode, int no_compiled_jump, int randomize_interrupt, uint32_t start_address)
 {
     struct new_dynarec_hot_state* new_dynarec_hot_state =
 #ifdef NEW_DYNAREC
@@ -51,7 +51,7 @@ void init_r4300(struct r4300_core* r4300, struct memory* mem, struct mi_controll
 #endif
 
     r4300->emumode = emumode;
-    init_cp0(&r4300->cp0, count_per_op, count_per_op_denom_pot, new_dynarec_hot_state, interrupt_handlers);
+    init_cp0(&r4300->cp0, new_dynarec_hot_state, interrupt_handlers);
     init_cp1(&r4300->cp1, new_dynarec_hot_state);
 
 #ifndef NEW_DYNAREC
@@ -63,6 +63,7 @@ void init_r4300(struct r4300_core* r4300, struct memory* mem, struct mi_controll
     r4300->rdram = rdram;
     r4300->randomize_interrupt = randomize_interrupt;
     r4300->start_address = start_address;
+    r4300->clock_rate = 93750000 / 2;
     srand((unsigned int) time(NULL));
 }
 
@@ -277,19 +278,38 @@ unsigned int get_r4300_emumode(struct r4300_core* r4300)
     return r4300->emumode;
 }
 
-uint32_t *fast_mem_access(struct r4300_core* r4300, uint32_t address)
+uint8_t r4300_translate_address(struct r4300_core* r4300, uint32_t* address, uint8_t* cached, uint8_t tlb_mode, uint8_t write)
+{
+    if ((*address & UINT32_C(0xc0000000)) != UINT32_C(0x80000000)) {
+        if (write)
+            invalidate_r4300_cached_code(r4300, *address, write);
+        *address = virtual_to_physical_address(r4300, *address, tlb_mode, cached);
+        if (*address == 0) // TLB exception
+            return 1;
+    } else if (!(*address & UINT32_C(0x20000000)))
+        *cached = 1;
+
+    if (write)
+    {
+        invalidate_r4300_cached_code(r4300, *address, write);
+        invalidate_r4300_cached_code(r4300, *address ^ UINT32_C(0x20000000), write);
+    }
+    return 0;
+}
+
+uint32_t *fast_mem_access(struct r4300_core* r4300, uint32_t address, uint8_t use_cache)
 {
     /* This code is performance critical, specially on pure interpreter mode.
      * Removing error checking saves some time, but the emulator may crash. */
+    uint8_t cached = 0;
+    if (r4300_translate_address(r4300, &address, &cached, 2, 0))
+        return NULL; // TLB exception
 
-    if ((address & UINT32_C(0xc0000000)) != UINT32_C(0x80000000)) {
-        address = virtual_to_physical_address(r4300, address, 2);
-        if (address == 0) // TLB exception
-            return NULL;
-    }
-
+    if (use_cache && cached)
+        return icache_fetch(r4300, address);
+    if (use_cache && !cached)
+        cp0_add_count(r4300, 18, 1);
     address &= UINT32_C(0x1ffffffc);
-
     return mem_base_u32(r4300->mem->base, address);
 }
 
@@ -299,16 +319,18 @@ uint32_t *fast_mem_access(struct r4300_core* r4300, uint32_t address)
  */
 int r4300_read_aligned_word(struct r4300_core* r4300, uint32_t address, uint32_t* value)
 {
-    if ((address & UINT32_C(0xc0000000)) != UINT32_C(0x80000000)) {
-        address = virtual_to_physical_address(r4300, address, 0);
-        if (address == 0) {
-            return 0;
-        }
+    uint8_t cached = 0;
+    if (r4300_translate_address(r4300, &address, &cached, 0, 0))
+        return 0; // TLB exception
+
+    if (cached)
+        dcache_read32(r4300, address & ~UINT32_C(3), value);
+    else
+    {
+        cp0_add_count(r4300, 18, 1);
+        address &= UINT32_C(0x1ffffffc);
+        mem_read32(mem_get_handler(r4300->mem, address), address & ~UINT32_C(3), value);
     }
-
-    address &= UINT32_C(0x1ffffffc);
-
-    mem_read32(mem_get_handler(r4300->mem, address), address & ~UINT32_C(3), value);
 
     return 1;
 }
@@ -317,6 +339,7 @@ int r4300_read_aligned_word(struct r4300_core* r4300, uint32_t address, uint32_t
 int r4300_read_aligned_dword(struct r4300_core* r4300, uint32_t address, uint64_t* value)
 {
     uint32_t w[2];
+    uint8_t cached = 0;
 
     /* XXX: unaligned dword accesses should trigger a address error,
      * but inaccurate timing of the core can lead to unaligned address on reset
@@ -325,18 +348,22 @@ int r4300_read_aligned_dword(struct r4300_core* r4300, uint32_t address, uint64_
         DebugMessage(M64MSG_WARNING, "Unaligned dword read %08x", address);
     }
 
-    if ((address & UINT32_C(0xc0000000)) != UINT32_C(0x80000000)) {
-        address = virtual_to_physical_address(r4300, address, 0);
-        if (address == 0) {
-            return 0;
-        }
+    if (r4300_translate_address(r4300, &address, &cached, 0, 0))
+        return 0; // TLB exception
+
+    if (cached)
+    {
+        dcache_read32(r4300, address + 0, &w[0]);
+        dcache_read32(r4300, address + 4, &w[1]);
     }
-
-    address &= UINT32_C(0x1ffffffc);
-
-    const struct mem_handler* handler = mem_get_handler(r4300->mem, address);
-    mem_read32(handler, address + 0, &w[0]);
-    mem_read32(handler, address + 4, &w[1]);
+    else
+    {
+        cp0_add_count(r4300, 18, 1);
+        address &= UINT32_C(0x1ffffffc);
+        const struct mem_handler* handler = mem_get_handler(r4300->mem, address);
+        mem_read32(handler, address + 0, &w[0]);
+        mem_read32(handler, address + 4, &w[1]);
+    }
 
     *value = ((uint64_t)w[0] << 32) | w[1];
 
@@ -349,22 +376,18 @@ int r4300_read_aligned_dword(struct r4300_core* r4300, uint32_t address, uint64_
  */
 int r4300_write_aligned_word(struct r4300_core* r4300, uint32_t address, uint32_t value, uint32_t mask)
 {
-    if ((address & UINT32_C(0xc0000000)) != UINT32_C(0x80000000)) {
+    uint8_t cached = 0;
+    if (r4300_translate_address(r4300, &address, &cached, 1, 4))
+        return 0; // TLB exception
 
-        invalidate_r4300_cached_code(r4300, address, 4);
-
-        address = virtual_to_physical_address(r4300, address, 1);
-        if (address == 0) {
-            return 0;
-        }
+    if (cached)
+        dcache_write32(r4300, address & ~UINT32_C(3), value, mask);
+    else
+    {
+        cp0_add_count(r4300, 18, 1);
+        address &= UINT32_C(0x1ffffffc);
+        mem_write32(mem_get_handler(r4300->mem, address), address & ~UINT32_C(3), value, mask);
     }
-
-    invalidate_r4300_cached_code(r4300, address, 4);
-    invalidate_r4300_cached_code(r4300, address ^ UINT32_C(0x20000000), 4);
-
-    address &= UINT32_C(0x1ffffffc);
-
-    mem_write32(mem_get_handler(r4300->mem, address), address & ~UINT32_C(3), value, mask);
 
     return 1;
 }
@@ -372,6 +395,7 @@ int r4300_write_aligned_word(struct r4300_core* r4300, uint32_t address, uint32_
 /* Write aligned dword to memory */
 int r4300_write_aligned_dword(struct r4300_core* r4300, uint32_t address, uint64_t value, uint64_t mask)
 {
+    uint8_t cached = 0;
     /* XXX: unaligned dword accesses should trigger a address error,
      * but inaccurate timing of the core can lead to unaligned address on reset
      * so just emit a warning and keep going */
@@ -379,24 +403,22 @@ int r4300_write_aligned_dword(struct r4300_core* r4300, uint32_t address, uint64
         DebugMessage(M64MSG_WARNING, "Unaligned dword write %08x", address);
     }
 
-    if ((address & UINT32_C(0xc0000000)) != UINT32_C(0x80000000)) {
+    if (r4300_translate_address(r4300, &address, &cached, 1, 8))
+        return 0; // TLB exception
 
-        invalidate_r4300_cached_code(r4300, address, 8);
-
-        address = virtual_to_physical_address(r4300, address, 1);
-        if (address == 0) {
-            return 0;
-        }
+    if (cached)
+    {
+        dcache_write32(r4300, address + 0, value >> 32, mask >> 32);
+        dcache_write32(r4300, address + 4, (uint32_t) value, (uint32_t) mask);
     }
-
-    invalidate_r4300_cached_code(r4300, address, 8);
-    invalidate_r4300_cached_code(r4300, address ^ UINT32_C(0x20000000), 8);
-
-    address &= UINT32_C(0x1ffffffc);
-
-    const struct mem_handler* handler = mem_get_handler(r4300->mem, address);
-    mem_write32(handler, address + 0, value >> 32,      mask >> 32);
-    mem_write32(handler, address + 4, (uint32_t) value, (uint32_t) mask      );
+    else
+    {
+        cp0_add_count(r4300, 18, 1);
+        address &= UINT32_C(0x1ffffffc);
+        const struct mem_handler* handler = mem_get_handler(r4300->mem, address);
+        mem_write32(handler, address + 0, value >> 32, mask >> 32);
+        mem_write32(handler, address + 4, (uint32_t) value, (uint32_t) mask);
+    }
 
     return 1;
 }

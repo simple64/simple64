@@ -59,8 +59,6 @@ struct pif
 
     struct cic cic;
 
-    uint32_t update_counter;
-
     struct r4300_core* r4300;
     struct si_controller* si;
 };

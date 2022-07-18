@@ -61,7 +61,6 @@ void set_vi_vertical_interrupt(struct vi_controller* vi)
 {
     if (!get_event(&vi->mi->r4300->cp0.q, VI_INT) && (vi->regs[VI_V_INTR_REG] < vi->regs[VI_V_SYNC_REG]))
     {
-        cp0_update_count(vi->mi->r4300);
         add_interrupt_event(&vi->mi->r4300->cp0, VI_INT, vi->delay);
     }
 }
@@ -80,7 +79,7 @@ void poweron_vi(struct vi_controller* vi)
 {
     memset(vi->regs, 0, VI_REGS_COUNT*sizeof(uint32_t));
     vi->field = 0;
-    vi->delay = 0;
+    vi->delay = vi->mi->r4300->clock_rate / vi->expected_refresh_rate;
     vi->count_per_scanline = 0;
 }
 
@@ -94,7 +93,6 @@ void read_vi_regs(void* opaque, uint32_t address, uint32_t* value)
     {
         uint32_t* next_vi = get_event(&vi->mi->r4300->cp0.q, VI_INT);
         if (next_vi != NULL) {
-            cp0_update_count(vi->mi->r4300);
             vi->regs[VI_CURRENT_REG] = (vi->delay - (*next_vi - cp0_regs[CP0_COUNT_REG])) / vi->count_per_scanline;
 
             /* wrap around VI_CURRENT_REG if needed */
@@ -140,8 +138,7 @@ void write_vi_regs(void* opaque, uint32_t address, uint32_t value, uint32_t mask
         if ((vi->regs[VI_V_SYNC_REG] & mask) != (value & mask))
         {
             masked_write(&vi->regs[VI_V_SYNC_REG], value, mask);
-            vi->count_per_scanline = (vi->clock / vi->expected_refresh_rate) / (vi->regs[VI_V_SYNC_REG] + 1);
-            vi->delay = (vi->regs[VI_V_SYNC_REG] + 1) * vi->count_per_scanline;
+            vi->count_per_scanline = (vi->mi->r4300->clock_rate / vi->expected_refresh_rate) / (vi->regs[VI_V_SYNC_REG] + 1);
             set_vi_vertical_interrupt(vi);
         }
         return;
@@ -165,7 +162,6 @@ void vi_vertical_interrupt_event(void* opaque)
 
     /* allow main module to do things on VI event */
     new_vi();
-    si_dynamic_dma_duration(vi->si);
 
     /* toggle vi field if in interlaced mode */
     vi->field ^= (vi->regs[VI_STATUS_REG] >> 6) & 0x1;

@@ -105,7 +105,7 @@ DECLARE_INSTRUCTION(NI)
 {
     DECLARE_R4300
     DebugMessage(M64MSG_ERROR, "NI() @ 0x%" PRIX32, PCADDR);
-    DebugMessage(M64MSG_ERROR, "opcode not implemented: %" PRIX32 ":%" PRIX32, PCADDR, *fast_mem_access(r4300, PCADDR));
+    DebugMessage(M64MSG_ERROR, "opcode not implemented: %" PRIX32 ":%" PRIX32, PCADDR, *fast_mem_access(r4300, PCADDR, 0));
     *r4300_stop(r4300) = 1;
 }
 
@@ -114,7 +114,7 @@ DECLARE_INSTRUCTION(NI)
 DECLARE_INSTRUCTION(RESERVED)
 {
     DECLARE_R4300
-    DebugMessage(M64MSG_ERROR, "reserved opcode: %" PRIX32 ":%" PRIX32, PCADDR, *fast_mem_access(r4300, PCADDR));
+    DebugMessage(M64MSG_ERROR, "reserved opcode: %" PRIX32 ":%" PRIX32, PCADDR, *fast_mem_access(r4300, PCADDR, 0));
     *r4300_stop(r4300) = 1;
 }
 
@@ -591,6 +591,7 @@ DECLARE_INSTRUCTION(NOR)
 {
     DECLARE_R4300
     rrd = ~(rrs | rrt);
+    cp0_add_count(r4300, 28, 1);
     ADD_TO_PC(1);
 }
 
@@ -723,6 +724,7 @@ DECLARE_INSTRUCTION(MULT)
     temp = rrs32 * (int64_t)rrt32;
     *r4300_mult_hi(r4300) = temp >> 32;
     *r4300_mult_lo(r4300) = SE32(temp);
+    cp0_add_count(r4300, 2, 1);
     ADD_TO_PC(1);
 }
 
@@ -733,6 +735,7 @@ DECLARE_INSTRUCTION(MULTU)
     temp = (uint32_t) rrs * (uint64_t) ((uint32_t) rrt);
     *r4300_mult_hi(r4300) = (int64_t) temp >> 32;
     *r4300_mult_lo(r4300) = SE32(temp);
+    cp0_add_count(r4300, 2, 1);
     ADD_TO_PC(1);
 }
 
@@ -780,6 +783,7 @@ DECLARE_INSTRUCTION(DMULT)
         if (!*r4300_mult_lo(r4300)) { (*r4300_mult_hi(r4300))++; }
         else { *r4300_mult_lo(r4300) = ~*r4300_mult_lo(r4300) + 1; }
     }
+    cp0_add_count(r4300, 4, 0);
     ADD_TO_PC(1);
 }
 
@@ -808,6 +812,7 @@ DECLARE_INSTRUCTION(DMULTU)
     *r4300_mult_lo(r4300) = result1 | (result2 << 32);
     *r4300_mult_hi(r4300) = (result3 & UINT64_C(0xFFFFFFFF)) | (result4 << 32);
 
+    cp0_add_count(r4300, 4, 0);
     ADD_TO_PC(1);
 }
 
@@ -832,6 +837,7 @@ DECLARE_INSTRUCTION(DIV)
         *r4300_mult_lo(r4300) = rrs32 < 0 ? 1 : -1;
         *r4300_mult_hi(r4300) = SE32(rrs32);
     }
+    cp0_add_count(r4300, 18, 1);
     ADD_TO_PC(1);
 }
 
@@ -848,6 +854,7 @@ DECLARE_INSTRUCTION(DIVU)
         *r4300_mult_lo(r4300) = -1;
         *r4300_mult_hi(r4300) = SE32(rrs32);
     }
+    cp0_add_count(r4300, 18, 1);
     ADD_TO_PC(1);
 }
 
@@ -872,6 +879,7 @@ DECLARE_INSTRUCTION(DDIV)
         *r4300_mult_lo(r4300) = rrs < 0 ? 1 : -1;
         *r4300_mult_hi(r4300) = rrs;
     }
+    cp0_add_count(r4300, 34, 1);
     ADD_TO_PC(1);
 }
 
@@ -888,6 +896,7 @@ DECLARE_INSTRUCTION(DDIVU)
         *r4300_mult_lo(r4300) = -1;
         *r4300_mult_hi(r4300) = rrs;
     }
+    cp0_add_count(r4300, 34, 1);
     ADD_TO_PC(1);
 }
 
@@ -959,6 +968,83 @@ DECLARE_JUMP(BC1TL, PCADDR + (iimmediate+1)*4, ((*r4300_cp1_fcr31(&r4300->cp1)) 
 DECLARE_INSTRUCTION(CACHE)
 {
     DECLARE_R4300
+    uint32_t lslfaddr = (uint32_t) r4300_regs(r4300)[lfbase] + lfoffset;
+    if (r4300_translate_address(r4300, &lslfaddr, &(uint8_t){0}, 2, 0))
+        return; // TLB exception
+    uint32_t* cp0_regs = r4300_cp0_regs(&r4300->cp0);
+    const unsigned char lslfft = lfft;
+    struct datacache *dcache_line = &r4300->mem->dcache[lslfaddr >> 4 & UINT32_C(0x1FF)];
+    struct instcache *icache_line = &r4300->mem->icache[lslfaddr >> 5 & UINT32_C(0x1FF)];
+    switch (lslfft)
+    {
+    case 0x00: //icache index invalidate
+        icache_line->valid = 0;
+        break;
+    case 0x04: //icache load tag
+        masked_write(&cp0_regs[CP0_TAGLO_REG], icache_line->valid << 7, UINT32_C(0x80));
+        masked_write(&cp0_regs[CP0_TAGLO_REG], 0, UINT32_C(0x40));
+        masked_write(&cp0_regs[CP0_TAGLO_REG], icache_line->tag >> 4, UINT32_C(0xFFFFF00));
+        break;
+    case 0x08: //icache store tag
+        icache_line->valid = (cp0_regs[CP0_TAGLO_REG] & UINT32_C(0x80)) >> 7;
+        icache_line->tag = (cp0_regs[CP0_TAGLO_REG] & UINT32_C(0xFFFFF00)) << 4;
+        break;
+    case 0x10: //icache hit invalidate
+        if(icache_hit(icache_line, lslfaddr))
+            icache_line->valid = 0;
+        break;
+    case 0x14: //icache fill
+        icache_fill(icache_line, r4300, lslfaddr);
+        break;
+    case 0x18: //icache hit write back
+        if(icache_hit(icache_line, lslfaddr))
+            icache_writeback(r4300, icache_line);
+        break;
+    case 0x01: //dcache index write back invalidate
+        if (dcache_line->dirty && dcache_line->valid)
+            dcache_writeback(r4300, dcache_line);
+        dcache_line->valid = 0;
+        break;
+    case 0x05: //dcache index load tag
+        masked_write(&cp0_regs[CP0_TAGLO_REG], dcache_line->valid << 7, UINT32_C(0x80));
+        masked_write(&cp0_regs[CP0_TAGLO_REG], dcache_line->dirty << 6, UINT32_C(0x40));
+        masked_write(&cp0_regs[CP0_TAGLO_REG], dcache_line->tag >> 4, UINT32_C(0xFFFFF00));
+        break;
+    case 0x09: //dcache index store tag
+        dcache_line->valid = (cp0_regs[CP0_TAGLO_REG] & UINT32_C(0x80)) >> 7;
+        dcache_line->dirty = (cp0_regs[CP0_TAGLO_REG] & UINT32_C(0x40)) >> 6;
+        dcache_line->tag = (cp0_regs[CP0_TAGLO_REG] & UINT32_C(0xFFFFF00)) << 4;
+        break;
+    case 0x0D: //dcache create dirty exclusive
+        if(!dcache_hit(dcache_line, lslfaddr) && dcache_line->dirty)
+            dcache_writeback(r4300, dcache_line);
+        dcache_line->tag = lslfaddr & ~UINT32_C(0xFFF);
+        dcache_line->valid = 1;
+        dcache_line->dirty = 1;
+        break;
+    case 0x11: //dcache hit invalidate
+        if(dcache_hit(dcache_line, lslfaddr))
+        {
+            dcache_line->valid = 0;
+            dcache_line->dirty = 0;
+        }
+        break;
+    case 0x15: //dcache hit write back invalidate
+        if(dcache_hit(dcache_line, lslfaddr))
+        {
+            if(dcache_line->dirty)
+                dcache_writeback(r4300, dcache_line);
+            dcache_line->valid = 0;
+        }
+        break;
+    case 0x19: //dcache hit write back
+        if(dcache_hit(dcache_line, lslfaddr))
+        {
+            if(dcache_line->dirty)
+                dcache_writeback(r4300, dcache_line);
+        }
+        break;
+    }
     ADD_TO_PC(1);
 }
 
@@ -968,7 +1054,6 @@ DECLARE_INSTRUCTION(ERET)
     uint32_t* cp0_regs = r4300_cp0_regs(&r4300->cp0);
     int* cp0_cycle_count = r4300_cp0_cycle_count(&r4300->cp0);
 
-    cp0_update_count(r4300);
     if (cp0_regs[CP0_STATUS_REG] & CP0_STATUS_ERL)
     {
         DebugMessage(M64MSG_ERROR, "error in ERET");
@@ -1191,8 +1276,7 @@ DECLARE_INSTRUCTION(TLBWR)
 {
     DECLARE_R4300
     uint32_t* cp0_regs = r4300_cp0_regs(&r4300->cp0);
-    cp0_update_count(r4300);
-    cp0_regs[CP0_RANDOM_REG] = (cp0_regs[CP0_COUNT_REG]/r4300->cp0.count_per_op % (32 - cp0_regs[CP0_WIRED_REG]))
+    cp0_regs[CP0_RANDOM_REG] = (cp0_regs[CP0_COUNT_REG]/2 % (32 - cp0_regs[CP0_WIRED_REG]))
         + cp0_regs[CP0_WIRED_REG];
     TLBWrite(r4300, cp0_regs[CP0_RANDOM_REG]);
     ADD_TO_PC(1);
@@ -1217,12 +1301,10 @@ DECLARE_INSTRUCTION(MFC0)
     switch(rfs)
     {
     case CP0_RANDOM_REG:
-        cp0_update_count(r4300);
-        cp0_regs[CP0_RANDOM_REG] = (cp0_regs[CP0_COUNT_REG]/r4300->cp0.count_per_op % (32 - cp0_regs[CP0_WIRED_REG]))
+        cp0_regs[CP0_RANDOM_REG] = (cp0_regs[CP0_COUNT_REG]/2 % (32 - cp0_regs[CP0_WIRED_REG]))
             + cp0_regs[CP0_WIRED_REG];
         break;
     case CP0_COUNT_REG:
-        cp0_update_count(r4300);
         break;
     }
     rrt = SE32(cp0_regs[rfs]);
@@ -1267,7 +1349,6 @@ DECLARE_INSTRUCTION(MTC0)
     case CP0_BADVADDR_REG:
         break;
     case CP0_COUNT_REG:
-        cp0_update_count(r4300);
         r4300->cp0.interrupt_unsafe_state |= INTR_UNSAFE_R4300;
         if (*cp0_cycle_count >= 0) { gen_interrupt(r4300); }
         r4300->cp0.interrupt_unsafe_state &= ~INTR_UNSAFE_R4300;
@@ -1277,14 +1358,13 @@ DECLARE_INSTRUCTION(MTC0)
         cp0_regs[CP0_ENTRYHI_REG] = rrt32 & UINT32_C(0xFFFFE0FF);
         break;
     case CP0_COMPARE_REG:
-        cp0_update_count(r4300);
         remove_event(&r4300->cp0.q, COMPARE_INT);
 
-        /* Add count_per_op to avoid wrong event order in case CP0_COUNT_REG == CP0_COMPARE_REG */
-        cp0_regs[CP0_COUNT_REG] += r4300->cp0.count_per_op;
-        *cp0_cycle_count += r4300->cp0.count_per_op;
+        /* Add 2 to avoid wrong event order in case CP0_COUNT_REG == CP0_COMPARE_REG */
+        cp0_regs[CP0_COUNT_REG] += 2;
+        *cp0_cycle_count += 2;
         add_interrupt_event_count(&r4300->cp0, COMPARE_INT, rrt32);
-        cp0_regs[CP0_COUNT_REG] -= r4300->cp0.count_per_op;
+        cp0_regs[CP0_COUNT_REG] -= 2;
 
         /* Update next interrupt in case first event is COMPARE_INT */
         *cp0_cycle_count = cp0_regs[CP0_COUNT_REG] - r4300->cp0.q.first->data.count;
@@ -1297,7 +1377,6 @@ DECLARE_INSTRUCTION(MTC0)
 
         cp0_regs[CP0_STATUS_REG] = rrt32;
         ADD_TO_PC(1);
-        cp0_update_count(r4300);
         r4300_check_interrupt(r4300, CP0_CAUSE_IP2, r4300->mi->regs[MI_INTR_REG] & r4300->mi->regs[MI_INTR_MASK_REG]); // ???
         r4300->cp0.interrupt_unsafe_state |= INTR_UNSAFE_R4300;
         if (*cp0_cycle_count >= 0) { gen_interrupt(r4300); }

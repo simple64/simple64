@@ -547,7 +547,7 @@ void write_dd_rom(void* opaque, uint32_t address, uint32_t value, uint32_t mask)
     DebugMessage(M64MSG_VERBOSE, "DD ROM: %08X <- %08x & %08x", address, value, mask);
 }
 
-unsigned int dd_dom_dma_read(void* opaque, const uint8_t* dram, uint32_t dram_addr, uint32_t cart_addr, uint32_t length)
+void dd_dom_dma_read(void* opaque, const uint8_t* dram, uint32_t dram_addr, uint32_t cart_addr, uint32_t length)
 {
     struct dd_controller* dd = (struct dd_controller*)opaque;
     uint8_t* mem;
@@ -562,29 +562,22 @@ unsigned int dd_dom_dma_read(void* opaque, const uint8_t* dram, uint32_t dram_ad
     }
     else if (cart_addr == MM_DD_MS_RAM) {
         /* MS is not emulated, we silence warnings for now */
-        /* Recommended Count Per Op = 1, this seems to break very easily */
-        return (length * 63) / 25;
+        return;
     }
     else {
         DebugMessage(M64MSG_ERROR, "Unknown DD dma read dram=%08x  cart=%08x length=%08x",
             dram_addr, cart_addr, length);
-
-        /* Recommended Count Per Op = 1, this seems to break very easily */
-        return (length * 63) / 25;
+        return;
     }
 
     for (i = 0; i < length; ++i) {
         mem[(cart_addr + i) ^ S8] = dram[(dram_addr + i) ^ S8];
     }
-
-    /* Recommended Count Per Op = 1, this seems to break very easily */
-    return (length * 63) / 25;
 }
 
-unsigned int dd_dom_dma_write(void* opaque, uint8_t* dram, uint32_t dram_addr, uint32_t cart_addr, uint32_t length)
+void dd_dom_dma_write(void* opaque, uint8_t* dram, uint32_t dram_addr, uint32_t cart_addr, uint32_t length)
 {
     struct dd_controller* dd = (struct dd_controller*)opaque;
-    unsigned int cycles;
     const uint8_t* mem;
     size_t i;
 
@@ -606,20 +599,13 @@ unsigned int dd_dom_dma_write(void* opaque, uint8_t* dram, uint32_t dram_addr, u
             DebugMessage(M64MSG_ERROR, "Unknown DD dma write dram=%08x  cart=%08x length=%08x",
                 dram_addr, cart_addr, length);
 
-            /* Recommended Count Per Op = 1, this seems to break very easily */
-            return (length * 63) / 25;
+            return;
         }
-
-        /* Recommended Count Per Op = 1, this seems to break very easily */
-        cycles = (length * 63) / 25;
     }
     else {
         /* DD ROM */
         cart_addr = (cart_addr - MM_DD_ROM);
         mem = (const uint8_t*)dd->rom;
-
-        /* Recommended Count Per Op = 1, this seems to break very easily */
-        cycles = (length * 63) / 25;
     }
 
     for (i = 0; i < length; ++i) {
@@ -628,8 +614,6 @@ unsigned int dd_dom_dma_write(void* opaque, uint8_t* dram, uint32_t dram_addr, u
 
     invalidate_r4300_cached_code(dd->r4300, R4300_KSEG0 + dram_addr, length);
     invalidate_r4300_cached_code(dd->r4300, R4300_KSEG1 + dram_addr, length);
-
-    return cycles;
 }
 
 void dd_on_pi_cart_addr_write(struct dd_controller* dd, uint32_t address)

@@ -46,12 +46,10 @@
 
 #define CHUNKSIZE 1024*128 /* Read files 128KB at a time. */
 
-/* Number of cpu cycles per instruction */
-enum { DEFAULT_COUNT_PER_OP = 2 };
 /* by default, extra mem is enabled */
 enum { DEFAULT_DISABLE_EXTRA_MEM = 0 };
 /* Default SI DMA duration */
-enum { DEFAULT_SI_DMA_DURATION = 0x900 };
+enum { DEFAULT_SI_DMA_DURATION = 0x3000 };
 /* Default AI DMA modifier */
 enum { DEFAULT_AI_DMA_MODIFIER = 100 };
 /* Default RSP delay time */
@@ -189,7 +187,6 @@ m64p_error open_rom(const unsigned char* romimage, unsigned int size)
         ROM_SETTINGS.transferpak = entry->transferpak;
         ROM_SETTINGS.mempak = entry->mempak;
         ROM_SETTINGS.biopak = entry->biopak;
-        ROM_SETTINGS.countperop = entry->countperop;
         ROM_SETTINGS.disableextramem = entry->disableextramem;
         ROM_SETTINGS.sidmaduration = entry->sidmaduration;
         ROM_SETTINGS.aidmamodifier = entry->aidmamodifier;
@@ -208,7 +205,6 @@ m64p_error open_rom(const unsigned char* romimage, unsigned int size)
         ROM_SETTINGS.transferpak = 0;
         ROM_SETTINGS.mempak = 1;
         ROM_SETTINGS.biopak = 0;
-        ROM_SETTINGS.countperop = DEFAULT_COUNT_PER_OP;
         ROM_SETTINGS.disableextramem = DEFAULT_DISABLE_EXTRA_MEM;
         ROM_SETTINGS.sidmaduration = DEFAULT_SI_DMA_DURATION;
         ROM_SETTINGS.aidmamodifier = DEFAULT_AI_DMA_MODIFIER;
@@ -336,12 +332,6 @@ static size_t romdatabase_resolve_round(void)
             isset_bitmask(ref->set_flags, ROMDATABASE_ENTRY_RUMBLE)) {
             entry->entry.rumble = ref->rumble;
             entry->entry.set_flags |= ROMDATABASE_ENTRY_RUMBLE;
-        }
-
-        if (!isset_bitmask(entry->entry.set_flags, ROMDATABASE_ENTRY_COUNTEROP) &&
-            isset_bitmask(ref->set_flags, ROMDATABASE_ENTRY_COUNTEROP)) {
-            entry->entry.countperop = ref->countperop;
-            entry->entry.set_flags |= ROMDATABASE_ENTRY_COUNTEROP;
         }
 
         if (!isset_bitmask(entry->entry.set_flags, ROMDATABASE_ENTRY_CHEATS) &&
@@ -482,7 +472,6 @@ void romdatabase_open(void)
             search->entry.savetype = SAVETYPE_EEPROM_4K;
             search->entry.players = 4;
             search->entry.rumble = 1;
-            search->entry.countperop = DEFAULT_COUNT_PER_OP;
             search->entry.disableextramem = DEFAULT_DISABLE_EXTRA_MEM;
             search->entry.cheats = NULL;
             search->entry.transferpak = 0;
@@ -598,15 +587,6 @@ void romdatabase_open(void)
                     DebugMessage(M64MSG_WARNING, "ROM Database: Invalid rumble string on line %i", lineno);
                 }
             }
-            else if(!strcmp(l.name, "CountPerOp"))
-            {
-                if (string_to_int(l.value, &value) && value > 0 && value <= 4) {
-                    search->entry.countperop = value;
-                    search->entry.set_flags |= ROMDATABASE_ENTRY_COUNTEROP;
-                } else {
-                    DebugMessage(M64MSG_WARNING, "ROM Database: Invalid CountPerOp on line %i", lineno);
-                }
-            }
             else if (!strcmp(l.name, "DisableExtraMem"))
             {
                 search->entry.disableextramem = atoi(l.value);
@@ -680,7 +660,7 @@ void romdatabase_open(void)
             }
             else if(!strcmp(l.name, "SiDmaDuration"))
             {
-                if (string_to_int(l.value, &value) && value >= 0 && value <= 0x10000) {
+                if (string_to_int(l.value, &value) && value >= 0 && value <= 0x30000) {
                     search->entry.sidmaduration = value;
                     search->entry.set_flags |= ROMDATABASE_ENTRY_SIDMADURATION;
                 } else {

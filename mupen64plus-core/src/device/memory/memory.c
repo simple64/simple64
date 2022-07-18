@@ -180,6 +180,9 @@ void init_memory(struct memory* mem,
     for(m = 0; m < mappings_count; ++m) {
         apply_mem_mapping(mem, &mappings[m]);
     }
+
+    init_dcache(&mem->dcache[0]);
+    init_icache(&mem->icache[0]);
 }
 
 static void map_region(struct memory* mem,

@@ -279,7 +279,6 @@ static void process_cic_challenge(struct pif* pif)
 void poweron_pif(struct pif* pif)
 {
     memset(pif->ram, 0, PIF_RAM_SIZE);
-    pif->update_counter = 0;
 
     reset_pif(pif, 0); /* cold reset */
 }
@@ -309,7 +308,6 @@ void write_pif_mem(void* opaque, uint32_t address, uint32_t value, uint32_t mask
 
     pif->si->dma_dir = SI_DMA_WRITE;
 
-    cp0_update_count(pif->r4300);
     pif->si->regs[SI_STATUS_REG] |= (SI_STATUS_DMA_BUSY | SI_STATUS_IO_BUSY);
     add_interrupt_event(&pif->r4300->cp0, SI_INT, pif->si->dma_duration);
 }
@@ -368,13 +366,6 @@ void process_pif_ram(struct pif* pif)
     pif->ram[0x3f] &= ~clrmask;
 }
 
-static void update_pif_counter(struct pif* pif)
-{
-    /* check if controller 0 was polled for input */
-    if (pif->channels[0].tx && (pif->channels[0].tx_buf[0] == JCMD_CONTROLLER_READ))
-        ++pif->update_counter;
-}
-
 void update_pif_ram(struct pif* pif)
 {
     size_t k;
@@ -388,7 +379,6 @@ void update_pif_ram(struct pif* pif)
     if (input.readController) {
         input.readController(-1, NULL);
     }
-    update_pif_counter(pif);
 
     netplay_update_input(pif);
 
