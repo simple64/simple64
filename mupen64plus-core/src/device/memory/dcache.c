@@ -33,7 +33,6 @@ void init_dcache(struct datacache *lines)
 
 void dcache_writeback(struct r4300_core* r4300, struct datacache *line)
 {
-    cp0_add_count(r4300, 22, 0);
     line->dirty = 0;
     uint32_t cache_address = line->tag | line->index;
     invalidate_r4300_cached_code(r4300, cache_address, 16);
