@@ -77,6 +77,15 @@ struct savestate_work {
     struct work_struct work;
 };
 
+union
+{
+    uint8_t bytes[8];
+    uint64_t force_alignment;
+} aligned;
+
+#define ALIGNED_GETDATA(buff, type) \
+    (COPYARRAY(aligned.bytes, buff, uint8_t, sizeof(type)), *(type*)aligned.bytes)
+
 /* Returns the malloc'd full path of the currently selected savestate. */
 static char *savestates_generate_path(savestates_type type)
 {
@@ -188,7 +197,7 @@ static int savestates_load_m64p(struct device* dev, char *filepath)
     unsigned char header[44];
     gzFile f;
     unsigned int version;
-    int i;
+    int i, j;
     uint32_t FCR31;
 
     size_t savestateSize;
@@ -196,7 +205,7 @@ static int savestates_load_m64p(struct device* dev, char *filepath)
     char queue[1024];
     unsigned char using_tlb_data[4];
     unsigned char data_0001_0200[4096]; // 4k for extra state from v1.2
-    unsigned char data_0001_0900[2129408]; // extra state from v1.9
+    unsigned char data_0001_0900[2129920]; // extra state from v1.9
 
     uint32_t* cp0_regs = r4300_cp0_regs(&dev->r4300.cp0);
 
@@ -448,8 +457,8 @@ static int savestates_load_m64p(struct device* dev, char *filepath)
     *r4300_llbit(&dev->r4300) = GETDATA(curr, uint32_t);
     COPYARRAY(r4300_regs(&dev->r4300), curr, int64_t, 32);
     COPYARRAY(cp0_regs, curr, uint32_t, CP0_REGS_COUNT);
-    *r4300_mult_lo(&dev->r4300) = GETDATA(curr, int64_t);
-    *r4300_mult_hi(&dev->r4300) = GETDATA(curr, int64_t);
+    *r4300_mult_lo(&dev->r4300) = ALIGNED_GETDATA(curr, int64_t);
+    *r4300_mult_hi(&dev->r4300) = ALIGNED_GETDATA(curr, int64_t);
     cp1_reg *cp1_regs = r4300_cp1_regs(&dev->r4300.cp1);
     COPYARRAY(&cp1_regs->dword, curr, int64_t, 32);
     *r4300_cp1_fcr0(&dev->r4300.cp1)  = GETDATA(curr, uint32_t);
@@ -509,15 +518,6 @@ static int savestates_load_m64p(struct device* dev, char *filepath)
 
     if (version == 0x00010200)
     {
-        union
-        {
-            uint8_t bytes[8];
-            uint64_t force_alignment;
-        } aligned;
-
-#define ALIGNED_GETDATA(buff, type) \
-    (COPYARRAY(aligned.bytes, buff, uint8_t, sizeof(type)), *(type*)aligned.bytes)
-
         curr = data_0001_0200;
 
         /* extra ai state */
@@ -789,25 +789,25 @@ static int savestates_load_m64p(struct device* dev, char *filepath)
         dev->dp.do_on_unfreeze = GETDATA(curr, uint8_t);
 
         /* extra vi state */
-        dev->vi.count_per_scanline = GETDATA(curr, uint32_t);
+        dev->vi.count_per_scanline = ALIGNED_GETDATA(curr, uint32_t);
 
         /* extra RDRAM register state */
         for (i = 1; i < RDRAM_MAX_MODULES_COUNT; ++i) {
-            dev->rdram.regs[i][RDRAM_CONFIG_REG]       = GETDATA(curr, uint32_t);
-            dev->rdram.regs[i][RDRAM_DEVICE_ID_REG]    = GETDATA(curr, uint32_t);
-            dev->rdram.regs[i][RDRAM_DELAY_REG]        = GETDATA(curr, uint32_t);
-            dev->rdram.regs[i][RDRAM_MODE_REG]         = GETDATA(curr, uint32_t);
-            dev->rdram.regs[i][RDRAM_REF_INTERVAL_REG] = GETDATA(curr, uint32_t);
-            dev->rdram.regs[i][RDRAM_REF_ROW_REG]      = GETDATA(curr, uint32_t);
-            dev->rdram.regs[i][RDRAM_RAS_INTERVAL_REG] = GETDATA(curr, uint32_t);
-            dev->rdram.regs[i][RDRAM_MIN_INTERVAL_REG] = GETDATA(curr, uint32_t);
-            dev->rdram.regs[i][RDRAM_ADDR_SELECT_REG]  = GETDATA(curr, uint32_t);
-            dev->rdram.regs[i][RDRAM_DEVICE_MANUF_REG] = GETDATA(curr, uint32_t);
+            dev->rdram.regs[i][RDRAM_CONFIG_REG]       = ALIGNED_GETDATA(curr, uint32_t);
+            dev->rdram.regs[i][RDRAM_DEVICE_ID_REG]    = ALIGNED_GETDATA(curr, uint32_t);
+            dev->rdram.regs[i][RDRAM_DELAY_REG]        = ALIGNED_GETDATA(curr, uint32_t);
+            dev->rdram.regs[i][RDRAM_MODE_REG]         = ALIGNED_GETDATA(curr, uint32_t);
+            dev->rdram.regs[i][RDRAM_REF_INTERVAL_REG] = ALIGNED_GETDATA(curr, uint32_t);
+            dev->rdram.regs[i][RDRAM_REF_ROW_REG]      = ALIGNED_GETDATA(curr, uint32_t);
+            dev->rdram.regs[i][RDRAM_RAS_INTERVAL_REG] = ALIGNED_GETDATA(curr, uint32_t);
+            dev->rdram.regs[i][RDRAM_MIN_INTERVAL_REG] = ALIGNED_GETDATA(curr, uint32_t);
+            dev->rdram.regs[i][RDRAM_ADDR_SELECT_REG]  = ALIGNED_GETDATA(curr, uint32_t);
+            dev->rdram.regs[i][RDRAM_DEVICE_MANUF_REG] = ALIGNED_GETDATA(curr, uint32_t);
         }
 
         if (version >= 0x00010400) {
             /* verify if DD data is present (and matches what's currently loaded) */
-            uint32_t disk_id = GETDATA(curr, uint32_t);
+            uint32_t disk_id = ALIGNED_GETDATA(curr, uint32_t);
 
             uint32_t* current_disk_id = ((dev->dd.rom_size > 0) && dev->dd.idisk != NULL)
                 ? (uint32_t*)(dev->dd.idisk->data(dev->dd.disk) + DD_DISK_ID_OFFSET)
@@ -863,14 +863,14 @@ static int savestates_load_m64p(struct device* dev, char *filepath)
 
         if (version >= 0x00010700)
         {
-            dev->sp.fifo[0].dir = GETDATA(curr, uint32_t);
-            dev->sp.fifo[0].length = GETDATA(curr, uint32_t);
-            dev->sp.fifo[0].memaddr = GETDATA(curr, uint32_t);
-            dev->sp.fifo[0].dramaddr = GETDATA(curr, uint32_t);
-            dev->sp.fifo[1].dir = GETDATA(curr, uint32_t);
-            dev->sp.fifo[1].length = GETDATA(curr, uint32_t);
-            dev->sp.fifo[1].memaddr = GETDATA(curr, uint32_t);
-            dev->sp.fifo[1].dramaddr = GETDATA(curr, uint32_t);
+            dev->sp.fifo[0].dir = ALIGNED_GETDATA(curr, uint32_t);
+            dev->sp.fifo[0].length = ALIGNED_GETDATA(curr, uint32_t);
+            dev->sp.fifo[0].memaddr = ALIGNED_GETDATA(curr, uint32_t);
+            dev->sp.fifo[0].dramaddr = ALIGNED_GETDATA(curr, uint32_t);
+            dev->sp.fifo[1].dir = ALIGNED_GETDATA(curr, uint32_t);
+            dev->sp.fifo[1].length = ALIGNED_GETDATA(curr, uint32_t);
+            dev->sp.fifo[1].memaddr = ALIGNED_GETDATA(curr, uint32_t);
+            dev->sp.fifo[1].dramaddr = ALIGNED_GETDATA(curr, uint32_t);
         }
         else {
             memset(dev->sp.fifo, 0, SP_DMA_FIFO_SIZE*sizeof(struct sp_dma));
@@ -881,9 +881,9 @@ static int savestates_load_m64p(struct device* dev, char *filepath)
             /* extra flashram state */
             COPYARRAY(dev->cart.flashram.page_buf, curr, uint8_t, 128);
             COPYARRAY(dev->cart.flashram.silicon_id, curr, uint32_t, 2);
-            dev->cart.flashram.status = GETDATA(curr, uint32_t);
-            dev->cart.flashram.erase_page = GETDATA(curr, uint16_t);
-            dev->cart.flashram.mode = GETDATA(curr, uint16_t);
+            dev->cart.flashram.status = ALIGNED_GETDATA(curr, uint32_t);
+            dev->cart.flashram.erase_page = ALIGNED_GETDATA(curr, uint16_t);
+            dev->cart.flashram.mode = ALIGNED_GETDATA(curr, uint16_t);
         }
 
         if (version >= 0x00010900)
@@ -896,16 +896,19 @@ static int savestates_load_m64p(struct device* dev, char *filepath)
             {
                 dev->mem.dcache[i].valid = GETDATA(curr, uint8_t);
                 dev->mem.dcache[i].dirty = GETDATA(curr, uint8_t);
-                dev->mem.dcache[i].tag = GETDATA(curr, uint32_t);
                 dev->mem.dcache[i].index = GETDATA(curr, uint16_t);
-                COPYARRAY(dev->mem.dcache[i].words, curr, uint32_t, 4);
+                dev->mem.dcache[i].tag = GETDATA(curr, uint32_t);
+                for (j = 0; j < 4; ++j)
+                    dev->mem.dcache[i].words[j] = GETDATA(curr, uint32_t);
             }
             for (i = 0; i < 512; ++i)
             {
                 dev->mem.icache[i].valid = GETDATA(curr, uint8_t);
-                dev->mem.icache[i].tag = GETDATA(curr, uint32_t);
+                curr += 1;
                 dev->mem.icache[i].index = GETDATA(curr, uint16_t);
-                COPYARRAY(dev->mem.icache[i].words, curr, uint32_t, 8);
+                dev->mem.icache[i].tag = GETDATA(curr, uint32_t);
+                for (j = 0; j < 8; ++j)
+                    dev->mem.icache[i].words[j] = GETDATA(curr, uint32_t);
             }
         }
     }
@@ -1547,7 +1550,7 @@ static void savestates_save_m64p_work(struct work_struct *work)
 static int savestates_save_m64p(const struct device* dev, char *filepath)
 {
     unsigned char outbuf[4];
-    int i;
+    int i, j;
 
     char queue[1024];
 
@@ -1571,7 +1574,7 @@ static int savestates_save_m64p(const struct device* dev, char *filepath)
     save_eventqueue_infos(&dev->r4300.cp0, queue);
 
     // Allocate memory for the save state data
-    save->size = 16788288 + sizeof(queue) + 4 + 4096 + 2129408;
+    save->size = 16788288 + sizeof(queue) + 4 + 4096 + 2129920;
     save->data = curr = malloc(save->size);
     if (save->data == NULL)
     {
@@ -1944,16 +1947,19 @@ static int savestates_save_m64p(const struct device* dev, char *filepath)
     {
         PUTDATA(curr, uint8_t, dev->mem.dcache[i].valid);
         PUTDATA(curr, uint8_t, dev->mem.dcache[i].dirty);
-        PUTDATA(curr, uint32_t, dev->mem.dcache[i].tag);
         PUTDATA(curr, uint16_t, dev->mem.dcache[i].index);
-        PUTARRAY(dev->mem.dcache[i].words, curr, uint32_t, 4);
+        PUTDATA(curr, uint32_t, dev->mem.dcache[i].tag);
+        for (j = 0; j < 4; ++j)
+            PUTDATA(curr, uint32_t, dev->mem.dcache[i].words[j]);
     }
     for (i = 0; i < 512; ++i)
     {
         PUTDATA(curr, uint8_t, dev->mem.icache[i].valid);
-        PUTDATA(curr, uint32_t, dev->mem.icache[i].tag);
+        curr += 1;
         PUTDATA(curr, uint16_t, dev->mem.icache[i].index);
-        PUTARRAY(dev->mem.icache[i].words, curr, uint32_t, 8);
+        PUTDATA(curr, uint32_t, dev->mem.icache[i].tag);
+        for (j = 0; j < 8; ++j)
+            PUTDATA(curr, uint32_t, dev->mem.icache[i].words[j]);
     }
     init_work(&save->work, savestates_save_m64p_work);
     queue_work(&save->work);
