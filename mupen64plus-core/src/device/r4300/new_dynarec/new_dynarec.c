@@ -1858,7 +1858,6 @@ void* ERET_new(void)
     struct r4300_core* r4300 = &g_dev.r4300;
     struct new_dynarec_hot_state* state = &r4300->new_dynarec_hot_state;
 
-    cp0_update_count(r4300);
     if (state->cp0_regs[CP0_STATUS_REG] & CP0_STATUS_ERL)
     {
         DebugMessage(M64MSG_ERROR, "error in ERET");
@@ -1976,7 +1975,6 @@ static void TLBWR_new(int pcaddr, int count)
   unsigned int i;
   UPDATE_COUNT_IN
   state->pcaddr = pcaddr;
-  cp0_update_count(r4300);
   state->cp0_regs[CP0_RANDOM_REG] = (state->cp0_regs[CP0_COUNT_REG]/r4300->cp0.count_per_op % (32 - state->cp0_regs[CP0_WIRED_REG])) + state->cp0_regs[CP0_WIRED_REG];
   /* Remove old entries */
   unsigned int old_start_even=r4300->cp0.tlb.entries[state->cp0_regs[CP0_RANDOM_REG]&0x3F].start_even;
@@ -3021,7 +3019,6 @@ void dynarec_gen_interrupt(void)
 {
     struct r4300_core* r4300 = &g_dev.r4300;
     struct new_dynarec_hot_state* state = &r4300->new_dynarec_hot_state;
-    cp0_update_count(r4300);
     uint32_t page = ((state->cp0_regs[CP0_COUNT_REG]>>19)&0x1fc);
     unsigned int *candidate = (unsigned int *)&restore_candidate[page];
     page <<= 3;

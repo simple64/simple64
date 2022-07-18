@@ -78,20 +78,17 @@ void write_cart_rom(void* opaque, uint32_t address, uint32_t value, uint32_t mas
 
     /* Mark IO as busy */
     cart_rom->pi->regs[PI_STATUS_REG] |= PI_STATUS_IO_BUSY;
-    cp0_update_count(cart_rom->r4300);
     add_interrupt_event(&cart_rom->r4300->cp0, PI_INT, 0x1000);
 }
 
-unsigned int cart_rom_dma_read(void* opaque, const uint8_t* dram, uint32_t dram_addr, uint32_t cart_addr, uint32_t length)
+void cart_rom_dma_read(void* opaque, const uint8_t* dram, uint32_t dram_addr, uint32_t cart_addr, uint32_t length)
 {
     cart_addr &= CART_ROM_ADDR_MASK;
 
     DebugMessage(M64MSG_WARNING, "DMA Writing to CART_ROM: 0x%" PRIX32 " -> 0x%" PRIX32 " (0x%" PRIX32 ")", dram_addr, cart_addr, length);
-
-    return /* length / 8 */0x1000;
 }
 
-unsigned int cart_rom_dma_write(void* opaque, uint8_t* dram, uint32_t dram_addr, uint32_t cart_addr, uint32_t length)
+void cart_rom_dma_write(void* opaque, uint8_t* dram, uint32_t dram_addr, uint32_t cart_addr, uint32_t length)
 {
     size_t i;
     struct cart_rom* cart_rom = (struct cart_rom*)opaque;
@@ -122,7 +119,5 @@ unsigned int cart_rom_dma_write(void* opaque, uint8_t* dram, uint32_t dram_addr,
     /* invalidate cached code */
     invalidate_r4300_cached_code(cart_rom->r4300, 0x80000000 + dram_addr, length);
     invalidate_r4300_cached_code(cart_rom->r4300, 0xa0000000 + dram_addr, length);
-
-    return (length / 8) + add_random_interrupt_time(cart_rom->r4300);
 }
 

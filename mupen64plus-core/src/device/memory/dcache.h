@@ -1,7 +1,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- *   Mupen64plus - tlb.h                                                   *
+ *   Mupen64plus - dcache.h                                                *
  *   Mupen64Plus homepage: https://mupen64plus.org/                        *
- *   Copyright (C) 2002 Hacktarux                                          *
+ *   Copyright (C) 2022 loganmc10                                          *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -19,53 +19,26 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef M64P_DEVICE_R4300_TLB_H
-#define M64P_DEVICE_R4300_TLB_H
+#ifndef M64P_DEVICE_MEMORY_DCACHE_H
+#define M64P_DEVICE_MEMORY_DCACHE_H
 
-#include <stddef.h>
 #include <stdint.h>
 
 struct r4300_core;
 
-struct tlb_entry
+struct datacache
 {
-   short mask;
-   unsigned int vpn2;
-   char g;
-   unsigned char asid;
-   unsigned int pfn_even;
-   char c_even;
-   char d_even;
-   char v_even;
-   unsigned int pfn_odd;
-   char c_odd;
-   char d_odd;
-   char v_odd;
-   char r;
-   //int check_parity_mask;
-
-   unsigned int start_even;
-   unsigned int end_even;
-   unsigned int phys_even;
-   unsigned int start_odd;
-   unsigned int end_odd;
-   unsigned int phys_odd;
+    uint8_t valid;
+    uint8_t dirty;
+    uint32_t tag;
+    uint16_t index;
+    uint32_t words[4];
 };
 
-struct tlb
-{
-    struct tlb_entry entries[32];
-    uint32_t LUT_r[0x100000];
-    uint32_t LUT_w[0x100000];
-    uint8_t r_cached[0x100000];
-    uint8_t w_cached[0x100000];
-};
+void init_dcache(struct datacache *lines);
+void dcache_writeback(struct r4300_core* r4300, struct datacache *line);
+uint32_t dcache_hit(struct datacache *line, uint32_t address);
+void dcache_read32(struct r4300_core* r4300, uint32_t address, uint32_t *value);
+void dcache_write32(struct r4300_core* r4300, uint32_t address, uint32_t value, uint32_t mask);
 
-void poweron_tlb(struct tlb* tlb);
-
-void tlb_unmap(struct tlb* tlb, size_t entry);
-void tlb_map(struct tlb* tlb, size_t entry);
-
-uint32_t virtual_to_physical_address(struct r4300_core* r4300, uint32_t address, int w, uint8_t *cached);
-
-#endif /* M64P_DEVICE_R4300_TLB_H */
+#endif

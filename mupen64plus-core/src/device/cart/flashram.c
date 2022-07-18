@@ -181,7 +181,7 @@ void write_flashram(void* opaque, uint32_t address, uint32_t value, uint32_t mas
 }
 
 
-unsigned int flashram_dma_write(void* opaque, uint8_t* dram, uint32_t dram_addr, uint32_t cart_addr, uint32_t length)
+void flashram_dma_write(void* opaque, uint8_t* dram, uint32_t dram_addr, uint32_t cart_addr, uint32_t length)
 {
     size_t i;
     struct flashram* flashram = (struct flashram*)opaque;
@@ -216,11 +216,9 @@ unsigned int flashram_dma_write(void* opaque, uint8_t* dram, uint32_t dram_addr,
         DebugMessage(M64MSG_WARNING, "unknown Flashram DMA Write (mode=%x) @%08x <- %08x length=%08x",
             flashram->mode, dram_addr, cart_addr, length);
     }
-
-    return /* length / 8 */0x1000;
 }
 
-unsigned int flashram_dma_read(void* opaque, const uint8_t* dram, uint32_t dram_addr, uint32_t cart_addr, uint32_t length)
+void flashram_dma_read(void* opaque, const uint8_t* dram, uint32_t dram_addr, uint32_t cart_addr, uint32_t length)
 {
     struct flashram* flashram = (struct flashram*)opaque;
     unsigned int i;
@@ -236,7 +234,5 @@ unsigned int flashram_dma_read(void* opaque, const uint8_t* dram, uint32_t dram_
         DebugMessage(M64MSG_WARNING, "unknown Flashram DMA Read (mode=%x) @%08x <- %08x length=%08x",
             flashram->mode, cart_addr, dram_addr, length);
     }
-
-    return /* length / 8 */0x1000;
 }
 

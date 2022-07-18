@@ -42,7 +42,7 @@ void init_sram(struct sram* sram,
     sram->istorage = istorage;
 }
 
-unsigned int sram_dma_read(void* opaque, const uint8_t* dram, uint32_t dram_addr, uint32_t cart_addr, uint32_t length)
+void sram_dma_read(void* opaque, const uint8_t* dram, uint32_t dram_addr, uint32_t cart_addr, uint32_t length)
 {
     size_t i;
     struct sram* sram = (struct sram*)opaque;
@@ -55,11 +55,9 @@ unsigned int sram_dma_read(void* opaque, const uint8_t* dram, uint32_t dram_addr
     }
 
     sram->istorage->save(sram->storage, cart_addr, length);
-
-    return /* length / 8 */0x1000;
 }
 
-unsigned int sram_dma_write(void* opaque, uint8_t* dram, uint32_t dram_addr, uint32_t cart_addr, uint32_t length)
+void sram_dma_write(void* opaque, uint8_t* dram, uint32_t dram_addr, uint32_t cart_addr, uint32_t length)
 {
     size_t i;
     struct sram* sram = (struct sram*)opaque;
@@ -70,8 +68,6 @@ unsigned int sram_dma_write(void* opaque, uint8_t* dram, uint32_t dram_addr, uin
     for (i = 0; i < length; ++i) {
         dram[(dram_addr+i)^S8] = mem[(cart_addr+i)^S8];
     }
-
-    return /* length / 8 */0x1000;
 }
 
 void read_sram(void* opaque, uint32_t address, uint32_t* value)

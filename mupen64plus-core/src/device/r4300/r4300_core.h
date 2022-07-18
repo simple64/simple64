@@ -197,6 +197,7 @@ struct r4300_core
     uint32_t randomize_interrupt;
 
     uint32_t start_address;
+    uint32_t clock_rate;
 };
 
 #define R4300_KSEG0 UINT32_C(0x80000000)
@@ -211,7 +212,7 @@ struct r4300_core
     offsetof(struct new_dynarec_hot_state, regs))
 #endif
 
-void init_r4300(struct r4300_core* r4300, struct memory* mem, struct mi_controller* mi, struct rdram* rdram, const struct interrupt_handler* interrupt_handlers, unsigned int emumode, unsigned int count_per_op, unsigned int count_per_op_denom_pot, int no_compiled_jump, int randomize_interrupt, uint32_t start_address);
+void init_r4300(struct r4300_core* r4300, struct memory* mem, struct mi_controller* mi, struct rdram* rdram, const struct interrupt_handler* interrupt_handlers, unsigned int emumode, int no_compiled_jump, int randomize_interrupt, uint32_t start_address);
 void poweron_r4300(struct r4300_core* r4300);
 
 void run_r4300(struct r4300_core* r4300);
@@ -229,7 +230,9 @@ unsigned int get_r4300_emumode(struct r4300_core* r4300);
 /* Returns a pointer to a block of contiguous memory
  * Can access RDRAM, SP_DMEM, SP_IMEM and ROM, using TLB if necessary
  * Useful for getting fast access to a zone with executable code. */
-uint32_t *fast_mem_access(struct r4300_core* r4300, uint32_t address);
+uint32_t *fast_mem_access(struct r4300_core* r4300, uint32_t address, uint8_t use_cache);
+
+uint8_t r4300_translate_address(struct r4300_core* r4300, uint32_t* address, uint8_t* cached, uint8_t tlb_mode, uint8_t write);
 
 int r4300_read_aligned_word(struct r4300_core* r4300, uint32_t address, uint32_t* value);
 int r4300_read_aligned_dword(struct r4300_core* r4300, uint32_t address, uint64_t* value);
