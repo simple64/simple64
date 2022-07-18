@@ -80,7 +80,7 @@ static void do_sp_dma(struct rsp_core* sp, const struct sp_dma* dma)
     }
 
     /* schedule end of dma event */
-    add_interrupt_event(&sp->mi->r4300->cp0, RSP_DMA_EVT, ((count * length) / 16) + 4);
+    add_interrupt_event(&sp->mi->r4300->cp0, RSP_DMA_EVT, ((count * length) / 10) + 4);
 }
 
 static void fifo_push(struct rsp_core* sp, uint32_t dir)
@@ -366,30 +366,23 @@ void do_SP_Task(struct rsp_core* sp)
         sp_delay_time = 0;
     }
 
-    if (sp->mi->regs[MI_INTR_REG] & MI_INTR_SP)
+    sp->rsp_status = sp->regs[SP_STATUS_REG];
+    if ((sp->regs[SP_STATUS_REG] & (SP_STATUS_HALT | SP_STATUS_BROKE)) == 0 && !get_event(&sp->mi->r4300->cp0.q, RSP_TSK_EVT))
+    {
+        add_interrupt_event(&sp->mi->r4300->cp0, RSP_TSK_EVT, sp->rsp_delay_time);
+        sp->mi->r4300->cp0.interrupt_unsafe_state |= INTR_UNSAFE_RSP_TASK;
+    }
+    if ((sp->regs[SP_STATUS_REG] & SP_STATUS_BROKE) && (sp->regs[SP_STATUS_REG] & SP_STATUS_INTR_BREAK))
+    {
+        add_interrupt_event(&sp->mi->r4300->cp0, SP_INT, sp_delay_time);
+        sp->mi->r4300->cp0.interrupt_unsafe_state |= INTR_UNSAFE_RSP;
+        sp->regs[SP_STATUS_REG] = saved_status;
+    }
+    else if (sp->mi->regs[MI_INTR_REG] & MI_INTR_SP)
     {
         add_interrupt_event(&sp->mi->r4300->cp0, SP_INT, sp_delay_time);
         sp->mi->r4300->cp0.interrupt_unsafe_state |= INTR_UNSAFE_RSP;
         sp->mi->regs[MI_INTR_REG] &= ~MI_INTR_SP;
-    }
-    else if ((sp->regs[SP_STATUS_REG] & SP_STATUS_BROKE) && (sp->regs[SP_STATUS_REG] & SP_STATUS_INTR_BREAK))
-    {
-        add_interrupt_event(&sp->mi->r4300->cp0, SP_INT, sp_delay_time);
-        sp->mi->r4300->cp0.interrupt_unsafe_state |= INTR_UNSAFE_RSP;
-    }
-    if ((sp->regs[SP_STATUS_REG] & (SP_STATUS_HALT | SP_STATUS_BROKE)) == 0 && !get_event(&sp->mi->r4300->cp0.q, RSP_TSK_EVT))
-    {
-        if (get_event(&sp->mi->r4300->cp0.q, SP_INT))
-            sp_delay_time *= 2;
-        else
-            sp_delay_time = sp->rsp_delay_time;
-        add_interrupt_event(&sp->mi->r4300->cp0, RSP_TSK_EVT, sp_delay_time);
-        sp->mi->r4300->cp0.interrupt_unsafe_state |= INTR_UNSAFE_RSP_TASK;
-    }
-    sp->rsp_status = sp->regs[SP_STATUS_REG];
-    if (sp->regs[SP_STATUS_REG] & (SP_STATUS_HALT | SP_STATUS_BROKE))
-    {
-        sp->regs[SP_STATUS_REG] = saved_status;
     }
 }
 
