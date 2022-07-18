@@ -182,7 +182,6 @@ ifeq ($(ARCH_DETECTED), 64BITS_32)
   endif
   ifneq ($(OS), OSX)
     ifeq ($(OS), MINGW)
-      CFLAGS += -march=i686
       LDFLAGS += -Wl,-m,i386pe
     else
       CFLAGS += -m32
@@ -551,6 +550,8 @@ SOURCE = \
     $(SRCDIR)/device/gb/mbc3_rtc.c \
     $(SRCDIR)/device/gb/m64282fp.c \
     $(SRCDIR)/device/memory/memory.c \
+    $(SRCDIR)/device/memory/dcache.c \
+    $(SRCDIR)/device/memory/icache.c \
     $(SRCDIR)/device/pif/bootrom_hle.c \
     $(SRCDIR)/device/pif/cic.c \
     $(SRCDIR)/device/pif/n64_cic_nus_6105.c \
@@ -805,7 +806,7 @@ uninstall:
 	$(RM) "$(DESTDIR)$(SHAREDIR)/mupencheat.txt"
 
 clean:
-	$(RM) -r $(TARGET) $(SONAME) $(OBJDIR) $(SRCDIR)/asm_defines/asm_defines_*
+	$(RM) -r $(TARGET) $(SONAME) _obj $(OBJDIR) $(SRCDIR)/asm_defines/asm_defines_*
 
 # build dependency files
 CFLAGS += -MD -MP

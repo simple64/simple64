@@ -278,11 +278,11 @@ void translate_event_queue(struct cp0* cp0, unsigned int base)
     cp0_regs[CP0_COUNT_REG] = base;
     add_interrupt_event_count(cp0, SPECIAL_INT, ((cp0_regs[CP0_COUNT_REG] & UINT32_C(0x80000000)) ^ UINT32_C(0x80000000)));
 
-    /* Add count_per_op to avoid wrong event order in case CP0_COUNT_REG == CP0_COMPARE_REG */
-    cp0_regs[CP0_COUNT_REG] += cp0->count_per_op;
-    *cp0_cycle_count += cp0->count_per_op;
+    /* Add 2 to avoid wrong event order in case CP0_COUNT_REG == CP0_COMPARE_REG */
+    cp0_regs[CP0_COUNT_REG] += 2;
+    *cp0_cycle_count += 2;
     add_interrupt_event_count(cp0, COMPARE_INT, cp0_regs[CP0_COMPARE_REG]);
-    cp0_regs[CP0_COUNT_REG] -= cp0->count_per_op;
+    cp0_regs[CP0_COUNT_REG] -= 2;
 
     /* Update next interrupt in case first event is COMPARE_INT */
     *cp0_cycle_count = cp0_regs[CP0_COUNT_REG] - cp0->q.first->data.count;
@@ -399,11 +399,11 @@ void compare_int_handler(void* opaque)
     uint32_t* cp0_regs = r4300_cp0_regs(&r4300->cp0);
     int* cp0_cycle_count = r4300_cp0_cycle_count(&r4300->cp0);
 
-    /* Add count_per_op to avoid wrong event order in case CP0_COUNT_REG == CP0_COMPARE_REG */
-    cp0_regs[CP0_COUNT_REG] += r4300->cp0.count_per_op;
-    *cp0_cycle_count += r4300->cp0.count_per_op;
+    /* Add 2 to avoid wrong event order in case CP0_COUNT_REG == CP0_COMPARE_REG */
+    cp0_regs[CP0_COUNT_REG] += 2;
+    *cp0_cycle_count += 2;
     add_interrupt_event_count(&r4300->cp0, COMPARE_INT, cp0_regs[CP0_COMPARE_REG]);
-    cp0_regs[CP0_COUNT_REG] -= r4300->cp0.count_per_op;
+    cp0_regs[CP0_COUNT_REG] -= 2;
 
     /* Update next interrupt in case first event is COMPARE_INT */
     *cp0_cycle_count = cp0_regs[CP0_COUNT_REG] - r4300->cp0.q.first->data.count;

@@ -59,7 +59,6 @@ static void InterpretOpcode(struct r4300_core* r4300);
         r4300->interp_PC.addr += 4; \
         r4300->delay_slot=1; \
         InterpretOpcode(r4300); \
-        cp0_update_count(r4300); \
         r4300->delay_slot=0; \
         if (take_jump && !r4300->skip_jump) \
         { \
@@ -69,7 +68,6 @@ static void InterpretOpcode(struct r4300_core* r4300);
       else \
       { \
          r4300->interp_PC.addr += 8; \
-         cp0_update_count(r4300); \
       } \
       r4300->cp0.last_addr = r4300->interp_PC.addr; \
       if (*r4300_cp0_cycle_count(&r4300->cp0) >= 0) gen_interrupt(r4300); \
@@ -82,7 +80,6 @@ static void InterpretOpcode(struct r4300_core* r4300);
       if (cop1 && check_cop1_unusable(r4300)) return; \
       if (take_jump) \
       { \
-         cp0_update_count(r4300); \
          if(*cp0_cycle_count < 0) \
          { \
              cp0_regs[CP0_COUNT_REG] -= *cp0_cycle_count; \
@@ -108,7 +105,7 @@ static void InterpretOpcode(struct r4300_core* r4300);
  * relative to the instruction in the delay slot, so 1 instruction backwards
  * (-1) goes back to the jump. */
 #define IS_RELATIVE_IDLE_LOOP(r4300, op, addr) \
-	(IMM16S_OF(op) == -1 && *fast_mem_access((r4300), (addr) + 4) == 0)
+	(IMM16S_OF(op) == -1 && *fast_mem_access((r4300), (addr) + 4, 0) == 0)
 
 /* Determines whether an absolute jump in a 26-bit immediate goes back to the
  * same instruction without doing any work in its delay slot. The jump is
@@ -117,7 +114,7 @@ static void InterpretOpcode(struct r4300_core* r4300);
 #define IS_ABSOLUTE_IDLE_LOOP(r4300, op, addr) \
 	(JUMP_OF(op) == ((addr) & UINT32_C(0x0FFFFFFF)) >> 2 \
 	 && ((addr) & UINT32_C(0x0FFFFFFF)) != UINT32_C(0x0FFFFFFC) \
-	 && *fast_mem_access((r4300), (addr) + 4) == 0)
+	 && *fast_mem_access((r4300), (addr) + 4, 0) == 0)
 
 /* These macros parse opcode fields. */
 #define rrt r4300_regs(r4300)[RT_OF(op)]
@@ -164,7 +161,7 @@ static void InterpretOpcode(struct r4300_core* r4300);
 
 void InterpretOpcode(struct r4300_core* r4300)
 {
-	uint32_t* op_address = fast_mem_access(r4300, *r4300_pc(r4300));
+	uint32_t* op_address = fast_mem_access(r4300, *r4300_pc(r4300), 1);
 	if (op_address == NULL)
 		return;
 	uint32_t op = *op_address;

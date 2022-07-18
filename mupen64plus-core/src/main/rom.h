@@ -107,7 +107,6 @@ typedef struct
    unsigned char savetype;
    unsigned char players; /* Local players 0-4, 2/3/4 way Netplay indicated by 5/6/7. */
    unsigned char rumble; /* 0 - No, 1 - Yes boolean for rumble support. */
-   unsigned char countperop;
    unsigned char disableextramem;
    unsigned char transferpak; /* 0 - No, 1 - Yes boolean for transferpak support. */
    unsigned char mempak; /* 0 - No, 1 - Yes boolean for mempak support. */
@@ -125,7 +124,6 @@ typedef struct
 #define ROMDATABASE_ENTRY_SAVETYPE      BIT(3)
 #define ROMDATABASE_ENTRY_PLAYERS       BIT(4)
 #define ROMDATABASE_ENTRY_RUMBLE        BIT(5)
-#define ROMDATABASE_ENTRY_COUNTEROP     BIT(6)
 #define ROMDATABASE_ENTRY_CHEATS        BIT(7)
 #define ROMDATABASE_ENTRY_EXTRAMEM      BIT(8)
 #define ROMDATABASE_ENTRY_TRANSFERPAK   BIT(9)

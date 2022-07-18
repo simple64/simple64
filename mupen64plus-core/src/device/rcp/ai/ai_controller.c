@@ -45,7 +45,6 @@ static uint32_t get_remaining_dma_length(struct ai_controller* ai)
     if (ai->fifo[0].duration == 0)
         return 0;
 
-    cp0_update_count(ai->mi->r4300);
     next_ai_event = get_event(&ai->mi->r4300->cp0.q, AI_INT);
     if (next_ai_event == NULL)
         return 0;
@@ -64,9 +63,9 @@ static unsigned int get_dma_duration(struct ai_controller* ai)
 {
     unsigned int samples_per_sec = ai->vi->clock / (1 + ai->regs[AI_DACRATE_REG]);
     unsigned int bytes_per_sample = 4; /* XXX: assume 16bit stereo - should depends on bitrate instead */
-    unsigned int cpu_counts_per_sec = ai->vi->delay == 0 ? ai->vi->clock : ai->vi->delay * ai->vi->expected_refresh_rate; /* estimate cpu counts/sec using VI */
+    unsigned int length = (ai->regs[AI_LEN_REG] & ~UINT32_C(7)) - 8;
 
-    return ai->regs[AI_LEN_REG] * (cpu_counts_per_sec / (bytes_per_sample * samples_per_sec));
+    return length * (ai->mi->r4300->clock_rate / (bytes_per_sample * samples_per_sec));
 }
 
 
@@ -94,7 +93,6 @@ static void do_dma(struct ai_controller* ai, struct ai_dma* dma)
         ai->delayed_carry = 0;
 
     /* schedule end of dma event */
-    cp0_update_count(ai->mi->r4300);
     add_interrupt_event(&ai->mi->r4300->cp0, AI_INT, dma->duration);
 }
 

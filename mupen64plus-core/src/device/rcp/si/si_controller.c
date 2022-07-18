@@ -80,7 +80,6 @@ static void dma_si_write(struct si_controller* si)
 
     copy_pif_rdram(si);
 
-    cp0_update_count(si->mi->r4300);
     si->regs[SI_STATUS_REG] |= SI_STATUS_DMA_BUSY;
     add_interrupt_event(&si->mi->r4300->cp0, SI_INT, si->dma_duration + add_random_interrupt_time(si->mi->r4300));
 }
@@ -94,7 +93,6 @@ static void dma_si_read(struct si_controller* si)
 
     update_pif_ram(si->pif);
 
-    cp0_update_count(si->mi->r4300);
     si->regs[SI_STATUS_REG] |= SI_STATUS_DMA_BUSY;
     add_interrupt_event(&si->mi->r4300->cp0, SI_INT, si->dma_duration + add_random_interrupt_time(si->mi->r4300));
 }
@@ -173,15 +171,4 @@ void si_end_of_dma_event(void* opaque)
     /* raise si interrupt */
     si->regs[SI_STATUS_REG] |= SI_STATUS_INTERRUPT;
     raise_rcp_interrupt(si->mi, MI_INTR_SI);
-}
-
-void si_dynamic_dma_duration(struct si_controller* si)
-{
-    /* try to keep controller polling to 1 per VI */
-    if (si->pif->update_counter > 1)
-        si->dma_duration += 1000;
-    else if (si->pif->update_counter < 1 && si->dma_duration > 0x900)
-        si->dma_duration -= 1000;
-
-    si->pif->update_counter = 0;
 }

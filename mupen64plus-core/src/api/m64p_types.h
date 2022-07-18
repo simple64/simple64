@@ -280,7 +280,6 @@ typedef struct
    unsigned char mempak; /* 0 - No, 1 - Yes boolean for memory pak support. */
    unsigned char biopak; /* 0 - No, 1 - Yes boolean for bio pak support. */
    unsigned char disableextramem; /* 0 - No, 1 - Yes boolean for disabling 4MB expansion RAM pack */
-   unsigned int countperop; /* Number of CPU cycles per instruction. */
    unsigned int sidmaduration; /* Default SI DMA duration */
    unsigned int aidmamodifier; /* Percentage modifier for AI DMA duration */
    unsigned int rspdelaytime; /* Cycles to delay RSP when needed */
