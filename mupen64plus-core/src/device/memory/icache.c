@@ -33,7 +33,6 @@ void init_icache(struct instcache *lines)
 
 void icache_writeback(struct r4300_core* r4300, struct instcache *line)
 {
-    cp0_add_count(r4300, 24, 0);
     uint32_t cache_address = line->tag | line->index;
     invalidate_r4300_cached_code(r4300, cache_address, 32);
     invalidate_r4300_cached_code(r4300, cache_address ^ UINT32_C(0x20000000), 32);
@@ -96,5 +95,5 @@ void icache_step(struct r4300_core* r4300, uint32_t address)
             cp0_add_count(r4300, 1, 0);
     }
     else
-        cp0_add_count(r4300, 18, 1);
+        cp0_uncached_word_access(r4300);
 }
