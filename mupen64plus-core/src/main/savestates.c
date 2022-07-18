@@ -58,7 +58,7 @@ enum { GB_CART_FINGERPRINT_OFFSET = 0x134 };
 enum { DD_DISK_ID_OFFSET = 0x43670 };
 
 static const char* savestate_magic = "M64+SAVE";
-static const int savestate_latest_version = 0x00010800;  /* 1.8 */
+static const int savestate_latest_version = 0x00010900;  /* 1.9 */
 static const unsigned char pj64_magic[4] = { 0xC8, 0xA6, 0xD8, 0x23 };
 
 static savestates_job job = savestates_job_nothing;
@@ -196,6 +196,7 @@ static int savestates_load_m64p(struct device* dev, char *filepath)
     char queue[1024];
     unsigned char using_tlb_data[4];
     unsigned char data_0001_0200[4096]; // 4k for extra state from v1.2
+    unsigned char data_0001_0900[2129408]; // extra state from v1.9
 
     uint32_t* cp0_regs = r4300_cp0_regs(&dev->r4300.cp0);
 
@@ -284,7 +285,7 @@ static int savestates_load_m64p(struct device* dev, char *filepath)
             return 0;
         }
     }
-    else // version >= 0x00010200  saves entire eventqueue, 4-byte using_tlb flags and extra state
+    else if (version >= 0x00010200 && version < 0x00010900)// version >= 0x00010200  saves entire eventqueue, 4-byte using_tlb flags and extra state
     {
         if (gzread(f, savestateData, savestateSize) != (int)savestateSize ||
             gzread(f, queue, sizeof(queue)) != sizeof(queue) ||
@@ -292,6 +293,21 @@ static int savestates_load_m64p(struct device* dev, char *filepath)
             gzread(f, data_0001_0200, sizeof(data_0001_0200)) != sizeof(data_0001_0200))
         {
             main_message(M64MSG_STATUS, OSD_BOTTOM_LEFT, "Could not read Mupen64Plus savestate 1.2+ data from %s", filepath);
+            free(savestateData);
+            gzclose(f);
+            SDL_UnlockMutex(savestates_lock);
+            return 0;
+        }
+    }
+    else
+    {
+        if (gzread(f, savestateData, savestateSize) != (int)savestateSize ||
+            gzread(f, queue, sizeof(queue)) != sizeof(queue) ||
+            gzread(f, using_tlb_data, sizeof(using_tlb_data)) != sizeof(using_tlb_data) ||
+            gzread(f, data_0001_0200, sizeof(data_0001_0200)) != sizeof(data_0001_0200) ||
+            gzread(f, data_0001_0900, sizeof(data_0001_0900)) != sizeof(data_0001_0900))
+        {
+            main_message(M64MSG_STATUS, OSD_BOTTOM_LEFT, "Could not read Mupen64Plus savestate 1.9+ data from %s", filepath);
             free(savestateData);
             gzclose(f);
             SDL_UnlockMutex(savestates_lock);
@@ -868,6 +884,29 @@ static int savestates_load_m64p(struct device* dev, char *filepath)
             dev->cart.flashram.status = GETDATA(curr, uint32_t);
             dev->cart.flashram.erase_page = GETDATA(curr, uint16_t);
             dev->cart.flashram.mode = GETDATA(curr, uint16_t);
+        }
+
+        if (version >= 0x00010900)
+        {
+            curr = data_0001_0900;
+            /* extra cache state */
+            COPYARRAY(dev->r4300.cp0.tlb.r_cached, curr, uint8_t, 0x100000);
+            COPYARRAY(dev->r4300.cp0.tlb.w_cached, curr, uint8_t, 0x100000);
+            for (i = 0; i < 512; ++i)
+            {
+                dev->mem.dcache[i].valid = GETDATA(curr, uint8_t);
+                dev->mem.dcache[i].dirty = GETDATA(curr, uint8_t);
+                dev->mem.dcache[i].tag = GETDATA(curr, uint32_t);
+                dev->mem.dcache[i].index = GETDATA(curr, uint16_t);
+                COPYARRAY(dev->mem.dcache[i].words, curr, uint32_t, 4);
+            }
+            for (i = 0; i < 512; ++i)
+            {
+                dev->mem.icache[i].valid = GETDATA(curr, uint8_t);
+                dev->mem.icache[i].tag = GETDATA(curr, uint32_t);
+                dev->mem.icache[i].index = GETDATA(curr, uint16_t);
+                COPYARRAY(dev->mem.icache[i].words, curr, uint32_t, 8);
+            }
         }
     }
     else
@@ -1532,7 +1571,7 @@ static int savestates_save_m64p(const struct device* dev, char *filepath)
     save_eventqueue_infos(&dev->r4300.cp0, queue);
 
     // Allocate memory for the save state data
-    save->size = 16788288 + sizeof(queue) + 4 + 4096;
+    save->size = 16788288 + sizeof(queue) + 4 + 4096 + 2129408;
     save->data = curr = malloc(save->size);
     if (save->data == NULL)
     {
@@ -1897,6 +1936,25 @@ static int savestates_save_m64p(const struct device* dev, char *filepath)
     PUTDATA(curr, uint16_t, dev->cart.flashram.erase_page);
     PUTDATA(curr, uint16_t, dev->cart.flashram.mode);
 
+    curr += 2965;
+    /* extra cache state (since 1.9) */
+    PUTARRAY(dev->r4300.cp0.tlb.r_cached, curr, uint8_t, 0x100000);
+    PUTARRAY(dev->r4300.cp0.tlb.w_cached, curr, uint8_t, 0x100000);
+    for (i = 0; i < 512; ++i)
+    {
+        PUTDATA(curr, uint8_t, dev->mem.dcache[i].valid);
+        PUTDATA(curr, uint8_t, dev->mem.dcache[i].dirty);
+        PUTDATA(curr, uint32_t, dev->mem.dcache[i].tag);
+        PUTDATA(curr, uint16_t, dev->mem.dcache[i].index);
+        PUTARRAY(dev->mem.dcache[i].words, curr, uint32_t, 4);
+    }
+    for (i = 0; i < 512; ++i)
+    {
+        PUTDATA(curr, uint8_t, dev->mem.icache[i].valid);
+        PUTDATA(curr, uint32_t, dev->mem.icache[i].tag);
+        PUTDATA(curr, uint16_t, dev->mem.icache[i].index);
+        PUTARRAY(dev->mem.icache[i].words, curr, uint32_t, 8);
+    }
     init_work(&save->work, savestates_save_m64p_work);
     queue_work(&save->work);
 

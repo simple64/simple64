@@ -221,7 +221,7 @@ void poweron_rsp(struct rsp_core* sp)
     memset(sp->fifo, 0, SP_DMA_FIFO_SIZE*sizeof(struct sp_dma));
 
     sp->rsp_status = 0;
-    sp->mi->r4300->cp0.interrupt_unsafe_state &= ~INTR_UNSAFE_RSP;
+    sp->mi->r4300->cp0.interrupt_unsafe_state &= ~(INTR_UNSAFE_RSP | INTR_UNSAFE_RSP_TASK);
     sp->regs[SP_STATUS_REG] = 1;
 }
 
