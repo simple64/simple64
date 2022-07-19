@@ -157,19 +157,23 @@ extern MainWindow *w;
 
 class VolumeAction : public QWidgetAction {
 public:
-    VolumeAction (const QString& title) :
-      QWidgetAction (NULL) {
-        QWidget* pWidget = new QWidget (NULL);
-        QHBoxLayout* pLayout = new QHBoxLayout();
-        QLabel* pLabel = new QLabel (title);
+    VolumeAction (const QString& title, QObject* parent) :
+      QWidgetAction (parent) {
+        QWidget* pWidget = new QWidget;
+        QHBoxLayout* pLayout = new QHBoxLayout(pWidget);
+        QLabel* pLabel = new QLabel (title, pWidget);
         pLayout->addWidget (pLabel);
-        pSlider = new QSlider(Qt::Horizontal);
+        pSlider = new QSlider(Qt::Horizontal, pWidget);
         pSlider->setMinimum(0);
         pSlider->setMaximum(100);
         pLayout->addWidget (pSlider);
         pWidget->setLayout (pLayout);
 
         setDefaultWidget(pWidget);
+    }
+    void releaseWidget(QWidget* widget)
+    {
+        widget->deleteLater();
     }
 
     QSlider * slider () {

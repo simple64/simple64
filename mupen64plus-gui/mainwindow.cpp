@@ -381,7 +381,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     if (!settings->contains("volume"))
         settings->setValue("volume", 100);
-    VolumeAction * volumeAction = new VolumeAction(tr("Volume"));
+    VolumeAction * volumeAction = new VolumeAction(tr("Volume"), this);
     connect(volumeAction->slider(), SIGNAL(valueChanged(int)), this, SLOT(volumeValueChanged(int)));
     volumeAction->slider()->setValue(settings->value("volume").toInt());
     ui->menuEmulation->insertAction(ui->actionMute, volumeAction);
