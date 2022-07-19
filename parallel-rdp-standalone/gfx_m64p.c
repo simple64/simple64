@@ -302,10 +302,6 @@ EXPORT int CALL RomOpen(void)
 
 EXPORT void CALL RomClosed(void)
 {
-    ConfigSetParameter(configVideoParallel, KEY_SCREEN_WIDTH, M64TYPE_INT, &window_width);
-    ConfigSetParameter(configVideoParallel, KEY_SCREEN_HEIGHT, M64TYPE_INT, &window_height);
-    ConfigSaveSection("Video-Parallel");
-
     if (vk_initialized)
         vk_destroy();
 }
