@@ -25,8 +25,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "dcache.h"
-#include "icache.h"
 #include "osal/preproc.h"
 
 enum { RDRAM_MAX_SIZE = 0x800000 };
@@ -55,8 +53,6 @@ struct memory
 {
     struct mem_handler handlers[0x10000];
     void* base;
-    struct datacache dcache[512];
-    struct instcache icache[512];
 
 #ifdef DBG
     int memtype[0x10000];

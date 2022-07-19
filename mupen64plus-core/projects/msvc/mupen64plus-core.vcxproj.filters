@@ -177,12 +177,6 @@
     <ClCompile Include="..\..\src\device\memory\memory.c">
       <Filter>device\memory</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\device\memory\dcache.c">
-      <Filter>device\memory</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\device\memory\icache.c">
-      <Filter>device\memory</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\osal\dynamiclib_unix.c">
       <Filter>osal</Filter>
     </ClCompile>
@@ -257,6 +251,12 @@
     </ClCompile>
     <ClCompile Include="..\..\src\device\r4300\r4300_core.c">
       <Filter>device\r4300</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\device\r4300\dcache.c">
+      <Filter>device\memory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\device\r4300\icache.c">
+      <Filter>device\memory</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\device\r4300\recomp.c">
       <Filter>device\r4300</Filter>

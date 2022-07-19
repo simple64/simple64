@@ -24,7 +24,7 @@
 #include "device/r4300/r4300_core.h"
 #include "device/memory/memory.h"
 
-void init_dcache(struct datacache *lines)
+void poweron_dcache(struct datacache *lines)
 {
     memset(lines, 0, 512 * sizeof(lines[0]));
     for (uint32_t i = 0; i < 512; ++i)
@@ -67,7 +67,7 @@ static void dcache_fill(struct datacache *line, struct r4300_core* r4300, uint32
 
 void dcache_read32(struct r4300_core* r4300, uint32_t address, uint32_t *value)
 {
-    struct datacache *line = &r4300->mem->dcache[(address >> 4) & UINT32_C(0x1FF)];
+    struct datacache *line = &r4300->dcache[(address >> 4) & UINT32_C(0x1FF)];
     if(!dcache_hit(line, address))
     {
         if(line->valid && line->dirty)
@@ -81,7 +81,7 @@ void dcache_read32(struct r4300_core* r4300, uint32_t address, uint32_t *value)
 
 void dcache_write32(struct r4300_core* r4300, uint32_t address, uint32_t value, uint32_t mask)
 {
-    struct datacache *line = &r4300->mem->dcache[(address >> 4) & UINT32_C(0x1FF)];
+    struct datacache *line = &r4300->dcache[(address >> 4) & UINT32_C(0x1FF)];
     if(!dcache_hit(line, address))
     {
         if(line->valid && line->dirty)

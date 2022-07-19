@@ -24,7 +24,7 @@
 #include "device/r4300/r4300_core.h"
 #include "device/memory/memory.h"
 
-void init_icache(struct instcache *lines)
+void poweron_icache(struct instcache *lines)
 {
     memset(lines, 0, 512 * sizeof(lines[0]));
     for (uint32_t i = 0; i < 512; ++i)
@@ -73,7 +73,7 @@ void icache_fill(struct instcache *line, struct r4300_core* r4300, uint32_t addr
 
 uint32_t* icache_fetch(struct r4300_core* r4300, uint32_t address)
 {
-    struct instcache *line = &r4300->mem->icache[(address >> 5) & UINT32_C(0x1FF)];
+    struct instcache *line = &r4300->icache[(address >> 5) & UINT32_C(0x1FF)];
     if(!icache_hit(line, address))
         icache_fill(line, r4300, address);
     else
@@ -84,7 +84,7 @@ uint32_t* icache_fetch(struct r4300_core* r4300, uint32_t address)
 
 void icache_step(struct r4300_core* r4300, uint32_t address)
 {
-    struct instcache *line = &r4300->mem->icache[(address >> 5) & UINT32_C(0x1FF)];
+    struct instcache *line = &r4300->icache[(address >> 5) & UINT32_C(0x1FF)];
     uint8_t cached = 0;
     r4300_translate_address(r4300, &address, &cached, 2, 0);
     if (cached)
