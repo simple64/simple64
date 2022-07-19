@@ -121,7 +121,7 @@ unsigned int add_random_interrupt_time(struct r4300_core* r4300)
 #else
         value = rand();
 #endif
-        return value % 0x40;
+        return value % 0x100;
     } else
         return 0;
 }
