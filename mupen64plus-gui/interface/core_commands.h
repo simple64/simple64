@@ -21,6 +21,7 @@ extern ptr_ConfigGetParamString        ConfigGetParamString;
 extern ptr_ConfigSetParameter          ConfigSetParameter;
 extern ptr_ConfigDeleteSection         ConfigDeleteSection;
 extern ptr_ConfigOpenSection           ConfigOpenSection;
+extern ptr_ConfigSaveSection           ConfigSaveSection;
 extern ptr_ConfigListParameters        ConfigListParameters;
 extern ptr_ConfigGetSharedDataFilepath ConfigGetSharedDataFilepath;
 #endif

@@ -17,5 +17,6 @@ ptr_ConfigGetParamString         ConfigGetParamString = nullptr;
 ptr_ConfigSetParameter           ConfigSetParameter = nullptr;
 ptr_ConfigDeleteSection          ConfigDeleteSection = nullptr;
 ptr_ConfigOpenSection            ConfigOpenSection = nullptr;
+ptr_ConfigSaveSection            ConfigSaveSection = nullptr;
 ptr_ConfigListParameters         ConfigListParameters = nullptr;
 ptr_ConfigGetSharedDataFilepath  ConfigGetSharedDataFilepath = nullptr;

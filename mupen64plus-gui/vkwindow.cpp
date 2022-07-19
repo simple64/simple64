@@ -9,6 +9,18 @@ VkWindow::VkWindow(QWindow *parent)
     setSurfaceType(QWindow::VulkanSurface);
 }
 
+VkWindow::~VkWindow()
+{
+    if (w->getCoreLib())
+    {
+        m64p_handle configVideoParallel = NULL;
+        (*ConfigOpenSection)("Video-Parallel", &configVideoParallel);
+        (*ConfigSetParameter)(configVideoParallel, "ScreenWidth", M64TYPE_INT, &orig_width);
+        (*ConfigSetParameter)(configVideoParallel, "ScreenHeight", M64TYPE_INT, &orig_height);
+        (*ConfigSaveSection)("Video-Parallel");
+    }
+}
+
 void VkWindow::resizeEvent(QResizeEvent *event) {
     QWindow::resizeEvent(event);
     if (timerId) {
@@ -16,8 +28,10 @@ void VkWindow::resizeEvent(QResizeEvent *event) {
         timerId = 0;
     }
     timerId = startTimer(500);
-    m_width = event->size().width() * devicePixelRatio();
-    m_height = event->size().height() * devicePixelRatio();
+    orig_width = event->size().width();
+    orig_height = event->size().height();
+    m_width = orig_width * devicePixelRatio();
+    m_height = orig_height * devicePixelRatio();
 }
 
 void VkWindow::timerEvent(QTimerEvent *te) {
