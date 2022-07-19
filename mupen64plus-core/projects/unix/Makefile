@@ -550,8 +550,6 @@ SOURCE = \
     $(SRCDIR)/device/gb/mbc3_rtc.c \
     $(SRCDIR)/device/gb/m64282fp.c \
     $(SRCDIR)/device/memory/memory.c \
-    $(SRCDIR)/device/memory/dcache.c \
-    $(SRCDIR)/device/memory/icache.c \
     $(SRCDIR)/device/pif/bootrom_hle.c \
     $(SRCDIR)/device/pif/cic.c \
     $(SRCDIR)/device/pif/n64_cic_nus_6105.c \
@@ -563,6 +561,8 @@ SOURCE = \
     $(SRCDIR)/device/r4300/interrupt.c \
     $(SRCDIR)/device/r4300/pure_interp.c \
     $(SRCDIR)/device/r4300/r4300_core.c \
+    $(SRCDIR)/device/r4300/dcache.c \
+    $(SRCDIR)/device/r4300/icache.c \
     $(SRCDIR)/device/r4300/tlb.c \
     $(SRCDIR)/device/rcp/ai/ai_controller.c \
     $(SRCDIR)/device/rcp/mi/mi_controller.c \

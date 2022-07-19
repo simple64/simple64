@@ -160,8 +160,6 @@
     <ClCompile Include="..\..\src\main\util.c" />
     <ClCompile Include="..\..\src\main\workqueue.c" />
     <ClCompile Include="..\..\src\device\memory\memory.c" />
-    <ClCompile Include="..\..\src\device\memory\dcache.c" />
-    <ClCompile Include="..\..\src\device\memory\icache.c" />
     <ClCompile Include="..\..\src\osal\dynamiclib_unix.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
@@ -273,6 +271,8 @@
     </ClCompile>
     <ClCompile Include="..\..\src\device\r4300\pure_interp.c" />
     <ClCompile Include="..\..\src\device\r4300\r4300_core.c" />
+    <ClCompile Include="..\..\src\device\r4300\dcache.c" />
+    <ClCompile Include="..\..\src\device\r4300\icache.c" />
     <ClCompile Include="..\..\src\device\r4300\recomp.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='New_Dynarec_Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='x86_New_Dynarec_Debug|Win32'">true</ExcludedFromBuild>
