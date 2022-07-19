@@ -66,13 +66,12 @@ void set_vi_vertical_interrupt(struct vi_controller* vi)
 }
 
 void init_vi(struct vi_controller* vi, unsigned int clock, unsigned int expected_refresh_rate,
-             struct mi_controller* mi, struct rdp_core* dp, struct si_controller* si)
+             struct mi_controller* mi, struct rdp_core* dp)
 {
     vi->clock = clock;
     vi->expected_refresh_rate = expected_refresh_rate;
     vi->mi = mi;
     vi->dp = dp;
-    vi->si = si;
 }
 
 void poweron_vi(struct vi_controller* vi)
