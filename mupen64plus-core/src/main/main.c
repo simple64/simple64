@@ -1525,12 +1525,14 @@ m64p_error main_run(void)
     else
         disable_extra_mem = ConfigGetParamInt(g_CoreConfig, "DisableExtraMem");
 
-
     rdram_size = (disable_extra_mem == 0) ? 0x800000 : 0x400000;
 
     si_dma_duration = ConfigGetParamInt(g_CoreConfig, "SiDmaDuration");
     if (si_dma_duration < 0)
         si_dma_duration = ROM_SETTINGS.sidmaduration;
+
+    if (si_dma_duration != DEFAULT_SI_DMA_DURATION)
+        randomize_interrupt = 0; // Disable interrupt randomness if a specific SI DMA is set
 
     rsp_delay_time = ROM_SETTINGS.rspdelaytime;
 
