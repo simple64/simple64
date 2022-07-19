@@ -973,8 +973,8 @@ DECLARE_INSTRUCTION(CACHE)
         return; // TLB exception
     uint32_t* cp0_regs = r4300_cp0_regs(&r4300->cp0);
     const unsigned char lslfft = lfft;
-    struct datacache *dcache_line = &r4300->mem->dcache[lslfaddr >> 4 & UINT32_C(0x1FF)];
-    struct instcache *icache_line = &r4300->mem->icache[lslfaddr >> 5 & UINT32_C(0x1FF)];
+    struct datacache *dcache_line = &r4300->dcache[lslfaddr >> 4 & UINT32_C(0x1FF)];
+    struct instcache *icache_line = &r4300->icache[lslfaddr >> 5 & UINT32_C(0x1FF)];
     switch (lslfft)
     {
     case 0x00: //icache index invalidate

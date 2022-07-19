@@ -75,6 +75,9 @@ void poweron_r4300(struct r4300_core* r4300)
     *r4300_mult_lo(r4300) = 0;
     r4300->llbit = 0;
 
+    poweron_dcache(&r4300->dcache[0]);
+    poweron_icache(&r4300->icache[0]);
+
     *r4300_pc_struct(r4300) = NULL;
     r4300->delay_slot = 0;
     r4300->skip_jump = 0;

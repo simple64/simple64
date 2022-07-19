@@ -1,5 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- *   Mupen64plus - dcache.h                                                *
+ *   Mupen64plus - icache.h                                                *
  *   Mupen64Plus homepage: https://mupen64plus.org/                        *
  *   Copyright (C) 2022 loganmc10                                          *
  *                                                                         *
@@ -19,26 +19,26 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef M64P_DEVICE_MEMORY_DCACHE_H
-#define M64P_DEVICE_MEMORY_DCACHE_H
+#ifndef M64P_DEVICE_R4300_ICACHE_H
+#define M64P_DEVICE_R4300_ICACHE_H
 
 #include <stdint.h>
 
 struct r4300_core;
 
-struct datacache
+struct instcache
 {
     uint8_t valid;
-    uint8_t dirty;
     uint32_t tag;
     uint16_t index;
-    uint32_t words[4];
+    uint32_t words[8];
 };
 
-void init_dcache(struct datacache *lines);
-void dcache_writeback(struct r4300_core* r4300, struct datacache *line);
-uint32_t dcache_hit(struct datacache *line, uint32_t address);
-void dcache_read32(struct r4300_core* r4300, uint32_t address, uint32_t *value);
-void dcache_write32(struct r4300_core* r4300, uint32_t address, uint32_t value, uint32_t mask);
+void poweron_icache(struct instcache *lines);
+void icache_writeback(struct r4300_core* r4300, struct instcache *line);
+uint32_t icache_hit(struct instcache *line, uint32_t address);
+void icache_fill(struct instcache *line, struct r4300_core* r4300, uint32_t address);
+uint32_t* icache_fetch(struct r4300_core* r4300, uint32_t address);
+void icache_step(struct r4300_core* r4300, uint32_t address);
 
 #endif

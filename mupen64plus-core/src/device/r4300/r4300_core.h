@@ -31,6 +31,8 @@
 
 #include "cp0.h"
 #include "cp1.h"
+#include "dcache.h"
+#include "icache.h"
 
 #include "recomp_types.h" /* for precomp_instr, regcache_state */
 
@@ -198,6 +200,9 @@ struct r4300_core
 
     uint32_t start_address;
     uint32_t clock_rate;
+
+    struct datacache dcache[512];
+    struct instcache icache[512];
 };
 
 #define R4300_KSEG0 UINT32_C(0x80000000)
