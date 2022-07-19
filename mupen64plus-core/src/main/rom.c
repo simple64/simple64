@@ -46,15 +46,6 @@
 
 #define CHUNKSIZE 1024*128 /* Read files 128KB at a time. */
 
-/* by default, extra mem is enabled */
-enum { DEFAULT_DISABLE_EXTRA_MEM = 0 };
-/* Default SI DMA duration */
-enum { DEFAULT_SI_DMA_DURATION = 0x3000 };
-/* Default AI DMA modifier */
-enum { DEFAULT_AI_DMA_MODIFIER = 100 };
-/* Default RSP delay time */
-enum { DEFAULT_RSP_DELAY_TIME = 2000 };
-
 static romdatabase_entry* ini_search_by_md5(md5_byte_t* md5);
 
 static _romdatabase g_romdatabase;
