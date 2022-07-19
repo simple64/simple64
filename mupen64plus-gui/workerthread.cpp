@@ -14,6 +14,9 @@
 WorkerThread::WorkerThread(QString _netplay_ip, int _netplay_port, int _netplay_player, QObject *parent)
     : QThread(parent)
 {
+#ifdef _WIN32
+    setStackSize(4194304);
+#endif
     netplay_ip = _netplay_ip;
     netplay_port = _netplay_port;
     netplay_player = _netplay_player;
