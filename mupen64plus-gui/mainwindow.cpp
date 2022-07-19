@@ -980,6 +980,7 @@ void MainWindow::loadCoreLib()
     ConfigSetParameter =          (ptr_ConfigSetParameter) osal_dynlib_getproc(coreLib, "ConfigSetParameter");
     ConfigDeleteSection =         (ptr_ConfigDeleteSection) osal_dynlib_getproc(coreLib, "ConfigDeleteSection");
     ConfigOpenSection =           (ptr_ConfigOpenSection) osal_dynlib_getproc(coreLib, "ConfigOpenSection");
+    ConfigSaveSection =           (ptr_ConfigSaveSection) osal_dynlib_getproc(coreLib, "ConfigSaveSection");
     ConfigListParameters =        (ptr_ConfigListParameters) osal_dynlib_getproc(coreLib, "ConfigListParameters");
     ConfigGetSharedDataFilepath = (ptr_ConfigGetSharedDataFilepath) osal_dynlib_getproc(coreLib, "ConfigGetSharedDataFilepath");
 
