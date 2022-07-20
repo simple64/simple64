@@ -322,7 +322,7 @@ void do_SP_Task(struct rsp_core* sp)
 #if defined(PROFILE)
         timed_section_start(TIMED_SECTION_GFX);
 #endif
-        sp_delay_time = rsp.doRspCycles(0xffffffff);
+        sp_delay_time = rsp.doRspCycles(0xffffffff) * 38;
 #if defined(PROFILE)
         timed_section_end(TIMED_SECTION_GFX);
 #endif
@@ -347,7 +347,7 @@ void do_SP_Task(struct rsp_core* sp)
 #if defined(PROFILE)
         timed_section_start(TIMED_SECTION_AUDIO);
 #endif
-        sp_delay_time = rsp.doRspCycles(0xffffffff);
+        sp_delay_time = rsp.doRspCycles(0xffffffff) * 19;
 #if defined(PROFILE)
         timed_section_end(TIMED_SECTION_AUDIO);
 #endif
@@ -356,7 +356,7 @@ void do_SP_Task(struct rsp_core* sp)
     else
     {
         sp->regs2[SP_PC_REG] &= 0xfff;
-        sp_delay_time =  rsp.doRspCycles(0xffffffff);
+        sp_delay_time = rsp.doRspCycles(0xffffffff) * 0;
         sp->regs2[SP_PC_REG] |= save_pc;
     }
 
