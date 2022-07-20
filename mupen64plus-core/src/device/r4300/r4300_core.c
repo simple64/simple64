@@ -314,6 +314,7 @@ uint32_t *fast_mem_access(struct r4300_core* r4300, uint32_t address, uint8_t us
             return icache_fetch(r4300, address);
         else
             cp0_uncached_word_access(r4300);
+        cp0_add_count(r4300, 0, 1); // instruction execution
     }
     address &= UINT32_C(0x1ffffffc);
     return mem_base_u32(r4300->mem->base, address);

@@ -63,7 +63,7 @@ static unsigned int get_dma_duration(struct ai_controller* ai)
 {
     unsigned int samples_per_sec = ai->vi->clock / (1 + ai->regs[AI_DACRATE_REG]);
     unsigned int bytes_per_sample = 4; /* XXX: assume 16bit stereo - should depends on bitrate instead */
-    unsigned int length = (ai->regs[AI_LEN_REG] & ~UINT32_C(7)) - 8;
+    unsigned int length = ai->regs[AI_LEN_REG] & ~UINT32_C(7);
 
     return length * (ai->mi->r4300->clock_rate / (bytes_per_sample * samples_per_sec));
 }

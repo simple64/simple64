@@ -75,7 +75,7 @@ void dcache_read32(struct r4300_core* r4300, uint32_t address, uint32_t *value)
         dcache_fill(line, r4300, address);
     }
     else
-        cp0_add_count(r4300, 0, 1);
+        cp0_cached_word_access(r4300);
     *value = line->words[(address >> 2) & UINT32_C(3)];
 }
 
@@ -89,7 +89,7 @@ void dcache_write32(struct r4300_core* r4300, uint32_t address, uint32_t value, 
         dcache_fill(line, r4300, address);
     }
     else
-        cp0_add_count(r4300, 0, 1);
+        cp0_cached_word_access(r4300);
     masked_write(&line->words[(address >> 2) & UINT32_C(3)], value, mask);
     line->dirty = 1;
 }

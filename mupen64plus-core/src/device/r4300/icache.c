@@ -77,7 +77,7 @@ uint32_t* icache_fetch(struct r4300_core* r4300, uint32_t address)
     if(!icache_hit(line, address))
         icache_fill(line, r4300, address);
     else
-        cp0_add_count(r4300, 1, 0);
+        cp0_cached_word_access(r4300);
 
     return &line->words[address >> 2 & 7];
 }
@@ -92,8 +92,9 @@ void icache_step(struct r4300_core* r4300, uint32_t address)
         if(!icache_hit(line, address))
             icache_fill(line, r4300, address);
         else
-            cp0_add_count(r4300, 1, 0);
+            cp0_cached_word_access(r4300);
     }
     else
         cp0_uncached_word_access(r4300);
+    cp0_add_count(r4300, 0, 1); // instruction execution
 }
