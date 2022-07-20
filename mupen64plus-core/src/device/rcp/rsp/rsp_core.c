@@ -322,7 +322,7 @@ void do_SP_Task(struct rsp_core* sp)
 #if defined(PROFILE)
         timed_section_start(TIMED_SECTION_GFX);
 #endif
-        rsp.doRspCycles(0xffffffff);
+        sp_delay_time = rsp.doRspCycles(0xffffffff);
 #if defined(PROFILE)
         timed_section_end(TIMED_SECTION_GFX);
 #endif
@@ -335,11 +335,9 @@ void do_SP_Task(struct rsp_core* sp)
             if (sp->dp->dpc_regs[DPC_STATUS_REG] & DPC_STATUS_FREEZE) {
                 sp->dp->do_on_unfreeze |= DELAY_DP_INT;
             } else {
-                add_interrupt_event(&sp->mi->r4300->cp0, DP_INT, 4000);
+                add_interrupt_event(&sp->mi->r4300->cp0, DP_INT, sp_delay_time + 4000);
             }
         }
-        sp_delay_time = 4000;
-
         protect_framebuffers(&sp->dp->fb);
     }
     else if (sp->mem[0xfc0/4] == 2)
@@ -349,26 +347,23 @@ void do_SP_Task(struct rsp_core* sp)
 #if defined(PROFILE)
         timed_section_start(TIMED_SECTION_AUDIO);
 #endif
-        rsp.doRspCycles(0xffffffff);
+        sp_delay_time = rsp.doRspCycles(0xffffffff);
 #if defined(PROFILE)
         timed_section_end(TIMED_SECTION_AUDIO);
 #endif
         sp->regs2[SP_PC_REG] |= save_pc;
-
-        sp_delay_time = 8000;
     }
     else
     {
         sp->regs2[SP_PC_REG] &= 0xfff;
-        rsp.doRspCycles(0xffffffff);
+        sp_delay_time =  rsp.doRspCycles(0xffffffff);
         sp->regs2[SP_PC_REG] |= save_pc;
-
-        sp_delay_time = 0;
     }
 
     sp->rsp_status = sp->regs[SP_STATUS_REG];
     if ((sp->regs[SP_STATUS_REG] & (SP_STATUS_HALT | SP_STATUS_BROKE)) == 0 && !get_event(&sp->mi->r4300->cp0.q, RSP_TSK_EVT))
     {
+        sp_delay_time = sp->rsp_delay_time;
         add_interrupt_event(&sp->mi->r4300->cp0, RSP_TSK_EVT, sp->rsp_delay_time);
         sp->mi->r4300->cp0.interrupt_unsafe_state |= INTR_UNSAFE_RSP_TASK;
     }

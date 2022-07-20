@@ -232,6 +232,7 @@ int check_cop1_unusable(struct r4300_core* r4300);
 
 void cp0_add_count(struct r4300_core* r4300, uint32_t count, uint8_t half);
 void cp0_uncached_word_access(struct r4300_core* r4300);
+void cp0_cached_word_access(struct r4300_core* r4300);
 
 void TLB_refill_exception(struct r4300_core* r4300, uint32_t address, int w);
 void exception_general(struct r4300_core* r4300);
