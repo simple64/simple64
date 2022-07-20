@@ -139,12 +139,16 @@ void cp0_add_count(struct r4300_core* r4300, uint32_t count, uint8_t half)
 
 void cp0_uncached_word_access(struct r4300_core* r4300)
 {
-    cp0_add_count(r4300, 19, 1);
+    cp0_add_count(r4300, 19, 0);
+}
+
+void cp0_cached_word_access(struct r4300_core* r4300)
+{
+    cp0_add_count(r4300, 0, 1);
 }
 
 static void exception_epilog(struct r4300_core* r4300)
 {
-    cp0_add_count(r4300, 1, 1);
 #ifndef NO_ASM
 #ifndef NEW_DYNAREC
     if (r4300->emumode == EMUMODE_DYNAREC)
