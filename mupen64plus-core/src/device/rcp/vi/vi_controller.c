@@ -137,7 +137,7 @@ void write_vi_regs(void* opaque, uint32_t address, uint32_t value, uint32_t mask
         if ((vi->regs[VI_V_SYNC_REG] & mask) != (value & mask))
         {
             masked_write(&vi->regs[VI_V_SYNC_REG], value, mask);
-            vi->count_per_scanline = (vi->mi->r4300->clock_rate / vi->expected_refresh_rate) / (vi->regs[VI_V_SYNC_REG] + 1);
+            vi->count_per_scanline = vi->delay / (vi->regs[VI_V_SYNC_REG] + 1);
             set_vi_vertical_interrupt(vi);
         }
         return;
