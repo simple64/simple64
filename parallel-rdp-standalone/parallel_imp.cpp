@@ -260,7 +260,6 @@ void vk_rasterize()
 	render_frame(device);
 	(*render_callback)(1);
 	wsi->end_frame();
-	wsi->get_device().promote_read_write_caches_to_read_only();
 	wsi->begin_frame();
 }
 
