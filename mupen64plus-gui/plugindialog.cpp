@@ -46,7 +46,7 @@ static void paramListCallback(void *context, const char *ParamName, m64p_type Pa
     float l_ParamFloat;
     QString l_ParamString;
     QString helper = (*ConfigGetParameterHelp)(current_handle, ParamName);
-    QLabel *desc = new QLabel(ParamName);
+    QLabel *desc = new QLabel(ParamName, my_layout->parentWidget());
     if (!helper.isEmpty()) {
        helper.prepend("<span style=\"color:black;\">");
        helper.append("</span>");
@@ -57,27 +57,27 @@ static void paramListCallback(void *context, const char *ParamName, m64p_type Pa
     void *my_Widget = nullptr;
     switch (ParamType) {
     case M64TYPE_INT:
-        my_Widget = new CustomLineEdit();
+        my_Widget = new CustomLineEdit(my_layout->parentWidget());
         ((CustomLineEdit*)my_Widget)->setConfigHandle(current_handle);
         ((CustomLineEdit*)my_Widget)->setParamType(ParamType);
         ((CustomLineEdit*)my_Widget)->setParamName(ParamName);
         ((CustomLineEdit*)my_Widget)->setStyleSheet("border: 1px solid; padding: 10px");
         l_ParamInt = (*ConfigGetParamInt)(current_handle, ParamName);
         ((CustomLineEdit*)my_Widget)->setText(QString::number(l_ParamInt));
-        ((CustomLineEdit*)my_Widget)->setValidator(new QIntValidator());
+        ((CustomLineEdit*)my_Widget)->setValidator(new QIntValidator(my_layout->parentWidget()));
         break;
     case M64TYPE_FLOAT:
-        my_Widget = new CustomLineEdit();
+        my_Widget = new CustomLineEdit(my_layout->parentWidget());
         ((CustomLineEdit*)my_Widget)->setConfigHandle(current_handle);
         ((CustomLineEdit*)my_Widget)->setParamType(ParamType);
         ((CustomLineEdit*)my_Widget)->setParamName(ParamName);
         ((CustomLineEdit*)my_Widget)->setStyleSheet("border: 1px solid; padding: 10px");
         l_ParamFloat = (*ConfigGetParamFloat)(current_handle, ParamName);
         ((CustomLineEdit*)my_Widget)->setText(QString::number(l_ParamFloat));
-        ((CustomLineEdit*)my_Widget)->setValidator(new QDoubleValidator());
+        ((CustomLineEdit*)my_Widget)->setValidator(new QDoubleValidator(my_layout->parentWidget()));
         break;
     case M64TYPE_BOOL:
-        my_Widget = new CustomCheckBox();
+        my_Widget = new CustomCheckBox(my_layout->parentWidget());
         ((CustomCheckBox*)my_Widget)->setConfigHandle(current_handle);
         ((CustomCheckBox*)my_Widget)->setParamType(ParamType);
         ((CustomCheckBox*)my_Widget)->setParamName(ParamName);
@@ -86,7 +86,7 @@ static void paramListCallback(void *context, const char *ParamName, m64p_type Pa
         ((CustomCheckBox*)my_Widget)->setCheckState(l_ParamBool ? Qt::Checked : Qt::Unchecked);
         break;
     case M64TYPE_STRING:
-        my_Widget = new CustomLineEdit();
+        my_Widget = new CustomLineEdit(my_layout->parentWidget());
         ((CustomLineEdit*)my_Widget)->setConfigHandle(current_handle);
         ((CustomLineEdit*)my_Widget)->setParamType(ParamType);
         ((CustomLineEdit*)my_Widget)->setParamName(ParamName);
