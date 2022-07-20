@@ -100,7 +100,7 @@ extern "C"
 				break;
 		}
 
-		cycles = RSP::cpu.get_state().pc * 38;
+		cycles = RSP::cpu.get_state().pc;
 		*RSP::rsp.SP_PC_REG = 0x04001000 | (RSP::cpu.get_state().pc & 0xffc);
 
 		// From CXD4.
