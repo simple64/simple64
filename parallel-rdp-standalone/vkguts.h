@@ -14,6 +14,7 @@ extern "C"
     void screen_set_mode(bool fullscreen);
     VkSurfaceKHR screen_get_surface(VkInstance instance);
     m64p_error screen_get_instance_extensions(const char** ext[], uint32_t* ext_num);
+    void screen_frame_count();
 
     extern bool window_fullscreen;
     extern bool window_widescreen;

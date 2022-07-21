@@ -260,6 +260,7 @@ void vk_rasterize()
 	render_frame(device);
 	(*render_callback)(1);
 	wsi->end_frame();
+	screen_frame_count();
 	wsi->begin_frame();
 }
 
