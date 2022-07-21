@@ -426,7 +426,6 @@ EXPORT m64p_error CALL CoreGetRomSettings(m64p_rom_settings *RomSettings, int Ro
     RomSettings->mempak = entry->mempak;
     RomSettings->disableextramem = entry->disableextramem;
     RomSettings->savetype = entry->savetype;
-    RomSettings->sidmaduration = entry->sidmaduration;
     RomSettings->aidmamodifier = entry->aidmamodifier;
     RomSettings->rspdelaytime = entry->rspdelaytime;
 

@@ -355,7 +355,6 @@ int main_set_core_defaults(void)
     ConfigSetDefaultString(g_CoreConfig, "SaveSRAMPath", "", "Path to directory where SRAM/EEPROM data (in-game saves) are stored. If this is blank, the default value of ${UserDataPath}/save will be used");
     ConfigSetDefaultString(g_CoreConfig, "SharedDataPath", "", "Path to a directory to search when looking for shared data files");
     ConfigSetDefaultBool(g_CoreConfig, "RandomizeInterrupt", 1, "Randomize PI/SI Interrupt Timing");
-    ConfigSetDefaultInt(g_CoreConfig, "SiDmaDuration", -1, "Duration of SI DMA (-1: use per game settings)");
     ConfigSetDefaultString(g_CoreConfig, "GbCameraVideoCaptureBackend1", DEFAULT_VIDEO_CAPTURE_BACKEND, "Gameboy Camera Video Capture backend");
     ConfigSetDefaultInt(g_CoreConfig, "SaveDiskFormat", 1, "Disk Save Format (0: Full Disk Copy (*.ndr/*.d6r), 1: RAM Area Only (*.ram))");
 
@@ -1474,7 +1473,6 @@ m64p_error main_run(void)
     size_t rdram_size;
     uint32_t emumode;
     uint32_t disable_extra_mem;
-    int32_t si_dma_duration;
     uint32_t rsp_delay_time;
     int32_t no_compiled_jump;
     int32_t randomize_interrupt;
@@ -1527,17 +1525,11 @@ m64p_error main_run(void)
 
     rdram_size = (disable_extra_mem == 0) ? 0x800000 : 0x400000;
 
-    si_dma_duration = ConfigGetParamInt(g_CoreConfig, "SiDmaDuration");
-    if (si_dma_duration < 0)
-        si_dma_duration = ROM_SETTINGS.sidmaduration;
-
-    if (si_dma_duration != DEFAULT_SI_DMA_DURATION)
-        randomize_interrupt = 0; // Disable interrupt randomness if a specific SI DMA is set
-
     rsp_delay_time = ROM_SETTINGS.rspdelaytime;
 
     uint32_t count_per_op; //UNUSED
     uint32_t count_per_op_denom_pot; //UNUSED
+    int32_t si_dma_duration; //UNUSED
     //During netplay, player 1 is the source of truth for these settings
     netplay_sync_settings(&count_per_op, &count_per_op_denom_pot, &disable_extra_mem, &si_dma_duration, &emumode, &no_compiled_jump, &rsp_delay_time);
 
@@ -1786,7 +1778,6 @@ m64p_error main_run(void)
                 g_start_address,
                 rsp_delay_time,
                 &g_dev.ai, &g_iaudio_out_backend_plugin_compat, ((float)ROM_SETTINGS.aidmamodifier / 100.0),
-                si_dma_duration,
                 rdram_size,
                 joybus_devices, ijoybus_devices,
                 vi_clock_from_tv_standard(ROM_PARAMS.systemtype), vi_expected_refresh_rate_from_tv_standard(ROM_PARAMS.systemtype),

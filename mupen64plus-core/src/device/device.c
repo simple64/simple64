@@ -89,8 +89,6 @@ void init_device(struct device* dev,
     uint32_t rsp_delay_time,
     /* ai */
     void* aout, const struct audio_out_backend_interface* iaout, float dma_modifier,
-    /* si */
-    unsigned int si_dma_duration,
     /* rdram */
     size_t dram_size,
     /* pif */
@@ -190,7 +188,7 @@ void init_device(struct device* dev,
             &dev->cart, &dev->dd,
             &dev->mi, &dev->ri, &dev->dp);
     init_ri(&dev->ri, &dev->rdram);
-    init_si(&dev->si, si_dma_duration, &dev->mi, &dev->pif, &dev->ri);
+    init_si(&dev->si, &dev->mi, &dev->pif, &dev->ri);
     init_vi(&dev->vi, vi_clock, expected_refresh_rate, &dev->mi, &dev->dp);
 
     /* FIXME: should boot on cart, unless only a disk is present, but having no cart is not yet supported by ui/core,
