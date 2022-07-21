@@ -83,7 +83,7 @@ extern "C"
 		RSP::cpu.invalidate_imem();
 
 		// Run CPU until we either break or we need to fire an IRQ.
-		RSP::cpu.get_state().pc = *RSP::rsp.SP_PC_REG & 0xfff;
+		cycles = RSP::cpu.get_state().pc = *RSP::rsp.SP_PC_REG & 0xfff;
 
 #ifdef INTENSE_DEBUG
 		fprintf(stderr, "RUN TASK: %u\n", RSP::cpu.get_state().pc);
@@ -100,7 +100,10 @@ extern "C"
 				break;
 		}
 
-		cycles = RSP::cpu.get_state().pc;
+		if (RSP::cpu.get_state().pc > cycles)
+			cycles = RSP::cpu.get_state().pc - cycles;
+		else
+			cycles = 0;
 		*RSP::rsp.SP_PC_REG = 0x04001000 | (RSP::cpu.get_state().pc & 0xffc);
 
 		// From CXD4.
