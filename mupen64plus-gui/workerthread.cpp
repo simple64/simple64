@@ -30,6 +30,7 @@ void WorkerThread::run()
     connect(this, SIGNAL(updateDiscordActivity(struct DiscordActivity)), w, SLOT(updateDiscordActivity(struct DiscordActivity)), Qt::BlockingQueuedConnection);
     connect(this, SIGNAL(clearDiscordActivity()), w, SLOT(clearDiscordActivity()), Qt::BlockingQueuedConnection);
     connect(this, SIGNAL(addLog(QString)), w->getLogViewer(), SLOT(addLog(QString)), Qt::QueuedConnection);
+    connect(this, SIGNAL(addFrameCount()), w, SLOT(addFrameCount()), Qt::QueuedConnection);
 #ifdef _WIN32
     SetThreadExecutionState(ES_CONTINUOUS | ES_DISPLAY_REQUIRED);
 #else
