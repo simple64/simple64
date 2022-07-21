@@ -259,7 +259,7 @@ EXPORT int CALL RomOpen(void)
     window_widescreen = ConfigGetParamBool(configVideoParallel, KEY_WIDESCREEN);
     m64p_error netplay_init = ConfigReceiveNetplayConfig(NULL, 0); // A bit of a hack to determine if netplay is enabled
     if (netplay_init != M64ERR_NOT_INIT)
-        window_vsync = 0;
+        window_vsync = 0; // force disable vsync during netplay
     else
         window_vsync = ConfigGetParamBool(configVideoParallel, KEY_VSYNC);
     vk_rescaling = ConfigGetParamInt(configVideoParallel, KEY_UPSCALING);
@@ -278,7 +278,10 @@ EXPORT int CALL RomOpen(void)
     vk_overscan = ConfigGetParamInt(configVideoParallel, KEY_OVERSCANCROP);
     vk_vertical_stretch = ConfigGetParamInt(configVideoParallel, KEY_VERTICAL_STRETCH);
 
-    vk_synchronous = ConfigGetParamBool(configVideoParallel, KEY_SYNCHRONOUS);
+    if (netplay_init != M64ERR_NOT_INIT)
+        vk_synchronous = 1; // force synchronous rdp during netplay
+    else
+        vk_synchronous = ConfigGetParamBool(configVideoParallel, KEY_SYNCHRONOUS);
 
     char romname[21];
     for (int i = 0; i < 20; ++i)
