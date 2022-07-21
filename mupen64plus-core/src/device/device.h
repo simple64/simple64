@@ -127,8 +127,6 @@ void init_device(struct device* dev,
     uint32_t rsp_delay_time,
     /* ai */
     void* aout, const struct audio_out_backend_interface* iaout, float dma_modifier,
-    /* si */
-    unsigned int si_dma_duration,
     /* rdram */
     size_t dram_size,
     /* pif */
