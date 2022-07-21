@@ -67,8 +67,11 @@ public slots:
     void showMessage(QString message);
     void updateDiscordActivity(struct DiscordActivity activity);
     void clearDiscordActivity();
+    void addFrameCount();
 
 private slots:
+    void updateFrameCount();
+
     void discordCallback();
 
     void updateDownloadFinished(QNetworkReply *reply);
@@ -136,6 +139,7 @@ private:
     QMenu * OpenRecent;
     int verbose;
     int nogui;
+    uint32_t frame_count;
 
     QMessageBox *download_message = nullptr;
     VkWindow *my_window = nullptr;
@@ -143,6 +147,8 @@ private:
     LogViewer logViewer;
     QSettings *settings = nullptr;
     KeyPressFilter keyPressFilter;
+    QTimer *frame_timer = nullptr;
+    QLabel *FPSLabel = nullptr;
 
     m64p_dynlib_handle coreLib;
     m64p_dynlib_handle rspPlugin;
