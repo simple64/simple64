@@ -9,8 +9,6 @@
 #include <QDBusInterface>
 #endif
 
-#define CONNECTION_TYPE Qt::BlockingQueuedConnection
-
 WorkerThread::WorkerThread(QString _netplay_ip, int _netplay_port, int _netplay_player, QObject *parent)
     : QThread(parent)
 {
@@ -24,14 +22,14 @@ WorkerThread::WorkerThread(QString _netplay_ip, int _netplay_port, int _netplay_
 
 void WorkerThread::run()
 {
-    connect(this, SIGNAL(resizeMainWindow(int,int)), w, SLOT(resizeMainWindow(int, int)), CONNECTION_TYPE);
-    connect(this, SIGNAL(toggleFS(int)), w, SLOT(toggleFS(int)), CONNECTION_TYPE);
-    connect(this, SIGNAL(createVkWindow(QVulkanInstance*)), w, SLOT(createVkWindow(QVulkanInstance*)), CONNECTION_TYPE);
-    connect(this, SIGNAL(deleteVkWindow()), w, SLOT(deleteVkWindow()), CONNECTION_TYPE);
-    connect(this, SIGNAL(showMessage(QString)), w, SLOT(showMessage(QString)), CONNECTION_TYPE);
-    connect(this, SIGNAL(updateDiscordActivity(struct DiscordActivity)), w, SLOT(updateDiscordActivity(struct DiscordActivity)), CONNECTION_TYPE);
-    connect(this, SIGNAL(clearDiscordActivity()), w, SLOT(clearDiscordActivity()), CONNECTION_TYPE);
-    connect(this, SIGNAL(addLog(QString)), w->getLogViewer(), SLOT(addLog(QString)), CONNECTION_TYPE);
+    connect(this, SIGNAL(resizeMainWindow(int,int)), w, SLOT(resizeMainWindow(int, int)), Qt::BlockingQueuedConnection);
+    connect(this, SIGNAL(toggleFS(int)), w, SLOT(toggleFS(int)), Qt::BlockingQueuedConnection);
+    connect(this, SIGNAL(createVkWindow(QVulkanInstance*)), w, SLOT(createVkWindow(QVulkanInstance*)), Qt::BlockingQueuedConnection);
+    connect(this, SIGNAL(deleteVkWindow()), w, SLOT(deleteVkWindow()), Qt::BlockingQueuedConnection);
+    connect(this, SIGNAL(showMessage(QString)), w, SLOT(showMessage(QString)), Qt::QueuedConnection);
+    connect(this, SIGNAL(updateDiscordActivity(struct DiscordActivity)), w, SLOT(updateDiscordActivity(struct DiscordActivity)), Qt::BlockingQueuedConnection);
+    connect(this, SIGNAL(clearDiscordActivity()), w, SLOT(clearDiscordActivity()), Qt::BlockingQueuedConnection);
+    connect(this, SIGNAL(addLog(QString)), w->getLogViewer(), SLOT(addLog(QString)), Qt::QueuedConnection);
 #ifdef _WIN32
     SetThreadExecutionState(ES_CONTINUOUS | ES_DISPLAY_REQUIRED);
 #else
