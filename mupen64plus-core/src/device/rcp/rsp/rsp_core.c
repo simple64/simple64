@@ -335,7 +335,7 @@ void do_SP_Task(struct rsp_core* sp)
             if (sp->dp->dpc_regs[DPC_STATUS_REG] & DPC_STATUS_FREEZE) {
                 sp->dp->do_on_unfreeze |= DELAY_DP_INT;
             } else {
-                add_interrupt_event(&sp->mi->r4300->cp0, DP_INT, sp_delay_time + 4000);
+                add_interrupt_event(&sp->mi->r4300->cp0, DP_INT, sp_delay_time * 4);
             }
         }
         protect_framebuffers(&sp->dp->fb);
@@ -360,6 +360,8 @@ void do_SP_Task(struct rsp_core* sp)
         sp->regs2[SP_PC_REG] |= save_pc;
     }
 
+    if (sp->rsp_status)
+        sp_delay_time = sp->rsp_delay_time;
     sp->rsp_status = sp->regs[SP_STATUS_REG];
     if ((sp->regs[SP_STATUS_REG] & (SP_STATUS_HALT | SP_STATUS_BROKE)) == 0 && !get_event(&sp->mi->r4300->cp0.q, RSP_TSK_EVT))
     {
