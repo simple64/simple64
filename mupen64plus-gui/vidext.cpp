@@ -77,7 +77,8 @@ m64p_error qtVidExtFuncGLGetAttr(m64p_GLattr, int*)
 
 m64p_error qtVidExtFuncGLSwapBuf(void)
 {
-    return M64ERR_UNSUPPORTED;
+    w->getWorkerThread()->addFrameCount();
+    return M64ERR_SUCCESS;
 }
 
 m64p_error qtVidExtFuncSetCaption(const char *)

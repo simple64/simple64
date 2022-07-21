@@ -406,6 +406,8 @@ MainWindow::MainWindow(QWidget *parent) :
     }
 
     setupDiscord();
+    FPSLabel = new QLabel(this);
+    statusBar()->addPermanentWidget(FPSLabel);
 }
 
 MainWindow::~MainWindow()
@@ -676,6 +678,10 @@ void MainWindow::createVkWindow(QVulkanInstance* vulkan_inst)
 
     my_window->installEventFilter(&keyPressFilter);
     this->installEventFilter(&keyPressFilter);
+    frame_timer = new QTimer(this);
+    connect(frame_timer, &QTimer::timeout, this, &MainWindow::updateFrameCount);
+    frame_timer->start(1000);
+    frame_count = 0;
 }
 
 void MainWindow::deleteVkWindow()
@@ -683,6 +689,9 @@ void MainWindow::deleteVkWindow()
     QWidget *container = new QWidget(this);
     setCentralWidget(container);
     delete my_window;
+    frame_timer->stop();
+    frame_timer->deleteLater();
+    FPSLabel->clear();
 }
 
 void MainWindow::stopGame()
@@ -1151,4 +1160,16 @@ void MainWindow::loadPlugins()
 m64p_dynlib_handle MainWindow::getCoreLib()
 {
     return coreLib;
+}
+
+void MainWindow::addFrameCount()
+{
+    ++frame_count;
+}
+
+void MainWindow::updateFrameCount()
+{
+    QString FPS = QString("%1 FPS").arg(frame_count);
+    FPSLabel->setText(FPS);
+    frame_count = 0;
 }
