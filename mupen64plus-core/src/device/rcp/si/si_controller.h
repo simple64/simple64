@@ -77,7 +77,6 @@ static osal_inline uint32_t si_reg(uint32_t address)
 
 
 void init_si(struct si_controller* si,
-             unsigned int dma_duration,
              struct mi_controller* mi,
              struct pif* pif,
              struct ri_controller* ri);

@@ -179,7 +179,6 @@ m64p_error open_rom(const unsigned char* romimage, unsigned int size)
         ROM_SETTINGS.mempak = entry->mempak;
         ROM_SETTINGS.biopak = entry->biopak;
         ROM_SETTINGS.disableextramem = entry->disableextramem;
-        ROM_SETTINGS.sidmaduration = entry->sidmaduration;
         ROM_SETTINGS.aidmamodifier = entry->aidmamodifier;
         ROM_SETTINGS.rspdelaytime = entry->rspdelaytime;
         ROM_PARAMS.cheats = entry->cheats;
@@ -197,7 +196,6 @@ m64p_error open_rom(const unsigned char* romimage, unsigned int size)
         ROM_SETTINGS.mempak = 1;
         ROM_SETTINGS.biopak = 0;
         ROM_SETTINGS.disableextramem = DEFAULT_DISABLE_EXTRA_MEM;
-        ROM_SETTINGS.sidmaduration = DEFAULT_SI_DMA_DURATION;
         ROM_SETTINGS.aidmamodifier = DEFAULT_AI_DMA_MODIFIER;
         ROM_SETTINGS.rspdelaytime = DEFAULT_RSP_DELAY_TIME;
         ROM_PARAMS.cheats = NULL;
@@ -356,12 +354,6 @@ static size_t romdatabase_resolve_round(void)
             entry->entry.set_flags |= ROMDATABASE_ENTRY_BIOPAK;
         }
 
-        if (!isset_bitmask(entry->entry.set_flags, ROMDATABASE_ENTRY_SIDMADURATION) &&
-            isset_bitmask(ref->set_flags, ROMDATABASE_ENTRY_SIDMADURATION)) {
-            entry->entry.sidmaduration = ref->sidmaduration;
-            entry->entry.set_flags |= ROMDATABASE_ENTRY_SIDMADURATION;
-        }
-
         if (!isset_bitmask(entry->entry.set_flags, ROMDATABASE_ENTRY_AIDMAMODIFIER) &&
             isset_bitmask(ref->set_flags, ROMDATABASE_ENTRY_AIDMAMODIFIER)) {
             entry->entry.aidmamodifier = ref->aidmamodifier;
@@ -468,7 +460,6 @@ void romdatabase_open(void)
             search->entry.transferpak = 0;
             search->entry.mempak = 1;
             search->entry.biopak = 0;
-            search->entry.sidmaduration = DEFAULT_SI_DMA_DURATION;
             search->entry.aidmamodifier = DEFAULT_AI_DMA_MODIFIER;
             search->entry.rspdelaytime = DEFAULT_RSP_DELAY_TIME;
             search->entry.set_flags = ROMDATABASE_ENTRY_NONE;
@@ -647,15 +638,6 @@ void romdatabase_open(void)
                     search->entry.set_flags |= ROMDATABASE_ENTRY_BIOPAK;
                 } else {
                     DebugMessage(M64MSG_WARNING, "ROM Database: Invalid biopak string on line %i", lineno);
-                }
-            }
-            else if(!strcmp(l.name, "SiDmaDuration"))
-            {
-                if (string_to_int(l.value, &value) && value >= 0 && value <= 0x30000) {
-                    search->entry.sidmaduration = value;
-                    search->entry.set_flags |= ROMDATABASE_ENTRY_SIDMADURATION;
-                } else {
-                    DebugMessage(M64MSG_WARNING, "ROM Database: Invalid SiDmaDuration on line %i", lineno);
                 }
             }
             else if(!strcmp(l.name, "AiDmaModifier"))

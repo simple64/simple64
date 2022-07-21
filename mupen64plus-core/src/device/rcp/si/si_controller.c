@@ -69,6 +69,7 @@ static void copy_pif_rdram(struct si_controller* si)
             dram[i] = tohl(pif_ram[i]);
         }
     }
+    si->regs[SI_DRAM_ADDR_REG] += (PIF_RAM_SIZE / 4);
 }
 
 static void dma_si_write(struct si_controller* si)
@@ -98,12 +99,11 @@ static void dma_si_read(struct si_controller* si)
 }
 
 void init_si(struct si_controller* si,
-             unsigned int dma_duration,
              struct mi_controller* mi,
              struct pif* pif,
              struct ri_controller* ri)
 {
-    si->dma_duration = dma_duration;
+    si->dma_duration = 4000;
     si->mi = mi;
     si->pif = pif;
     si->ri = ri;

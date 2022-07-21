@@ -78,7 +78,8 @@ static void do_sp_dma(struct rsp_core* sp, const struct sp_dma* dma)
             dramaddr+=skip;
         }
     }
-
+    sp->regs[SP_MEM_ADDR_REG] += memaddr;
+    sp->regs[SP_DRAM_ADDR_REG] += dramaddr;
     /* schedule end of dma event */
     add_interrupt_event(&sp->mi->r4300->cp0, RSP_DMA_EVT, ((count * length) / 10) + 4);
 }
