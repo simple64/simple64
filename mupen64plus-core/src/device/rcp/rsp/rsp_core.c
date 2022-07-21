@@ -311,8 +311,6 @@ void do_SP_Task(struct rsp_core* sp)
     if (sp->regs[SP_STATUS_REG] & (SP_STATUS_HALT | SP_STATUS_BROKE))
         return;
 
-    uint32_t save_pc = sp->regs2[SP_PC_REG] & ~0xfff;
-
     uint32_t sp_delay_time;
     uint32_t saved_status = sp->regs[SP_STATUS_REG];
 
@@ -320,8 +318,6 @@ void do_SP_Task(struct rsp_core* sp)
     {
         unprotect_framebuffers(&sp->dp->fb);
 
-        //gfx.processDList();
-        sp->regs2[SP_PC_REG] &= 0xfff;
 #if defined(PROFILE)
         timed_section_start(TIMED_SECTION_GFX);
 #endif
@@ -329,7 +325,6 @@ void do_SP_Task(struct rsp_core* sp)
 #if defined(PROFILE)
         timed_section_end(TIMED_SECTION_GFX);
 #endif
-        sp->regs2[SP_PC_REG] |= save_pc;
         new_frame();
 
         if (sp->mi->regs[MI_INTR_REG] & MI_INTR_DP)
@@ -345,8 +340,6 @@ void do_SP_Task(struct rsp_core* sp)
     }
     else if (sp->mem[0xfc0/4] == 2)
     {
-        //audio.processAList();
-        sp->regs2[SP_PC_REG] &= 0xfff;
 #if defined(PROFILE)
         timed_section_start(TIMED_SECTION_AUDIO);
 #endif
@@ -354,13 +347,10 @@ void do_SP_Task(struct rsp_core* sp)
 #if defined(PROFILE)
         timed_section_end(TIMED_SECTION_AUDIO);
 #endif
-        sp->regs2[SP_PC_REG] |= save_pc;
     }
     else
     {
-        sp->regs2[SP_PC_REG] &= 0xfff;
         sp_delay_time = rsp.doRspCycles(0xffffffff) * 0;
-        sp->regs2[SP_PC_REG] |= save_pc;
     }
 
     if (sp->rsp_status)
