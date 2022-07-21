@@ -48,6 +48,8 @@ static void do_sp_dma(struct rsp_core* sp, const struct sp_dma* dma)
 
     unsigned int memaddr = dma->memaddr & 0xff8;
     unsigned int dramaddr = dma->dramaddr & 0xfffff8;
+    unsigned int initial_memaddr = memaddr;
+    unsigned int initial_dramaddr = dramaddr;
 
     unsigned char *spmem = (unsigned char*)sp->mem + (dma->memaddr & 0x1000);
     unsigned char *dram = (unsigned char*)sp->ri->rdram->dram;
@@ -78,8 +80,8 @@ static void do_sp_dma(struct rsp_core* sp, const struct sp_dma* dma)
             dramaddr+=skip;
         }
     }
-    sp->regs[SP_MEM_ADDR_REG] += memaddr;
-    sp->regs[SP_DRAM_ADDR_REG] += dramaddr;
+    sp->regs[SP_MEM_ADDR_REG] += memaddr - initial_memaddr;
+    sp->regs[SP_DRAM_ADDR_REG] += dramaddr - initial_dramaddr;
     /* schedule end of dma event */
     add_interrupt_event(&sp->mi->r4300->cp0, RSP_DMA_EVT, ((count * length) / 10) + 4);
 }
