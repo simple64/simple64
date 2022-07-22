@@ -1473,7 +1473,6 @@ m64p_error main_run(void)
     size_t rdram_size;
     uint32_t emumode;
     uint32_t disable_extra_mem;
-    uint32_t rsp_delay_time;
     int32_t no_compiled_jump;
     int32_t randomize_interrupt;
     struct file_storage eep;
@@ -1525,10 +1524,9 @@ m64p_error main_run(void)
 
     rdram_size = (disable_extra_mem == 0) ? 0x800000 : 0x400000;
 
-    rsp_delay_time = ROM_SETTINGS.rspdelaytime;
-
     uint32_t count_per_op; //UNUSED
     uint32_t count_per_op_denom_pot; //UNUSED
+    uint32_t rsp_delay_time;
     int32_t si_dma_duration; //UNUSED
     //During netplay, player 1 is the source of truth for these settings
     netplay_sync_settings(&count_per_op, &count_per_op_denom_pot, &disable_extra_mem, &si_dma_duration, &emumode, &no_compiled_jump, &rsp_delay_time);
@@ -1776,7 +1774,6 @@ m64p_error main_run(void)
                 no_compiled_jump,
                 randomize_interrupt,
                 g_start_address,
-                rsp_delay_time,
                 &g_dev.ai, &g_iaudio_out_backend_plugin_compat, ((float)ROM_SETTINGS.aidmamodifier / 100.0),
                 rdram_size,
                 joybus_devices, ijoybus_devices,
