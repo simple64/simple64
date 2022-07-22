@@ -43,7 +43,7 @@ RSP::CPU cpu;
 #else
 RSP::JIT::CPU cpu;
 #endif
-short MFC0_count[32];
+uint32_t MFC0_count[32];
 int SP_STATUS_TIMEOUT;
 } // namespace RSP
 
@@ -183,7 +183,7 @@ extern "C"
 		RSP::cpu.get_state().cp0.irq = RSP::rsp.MI_INTR_REG;
 
 		// From CXD4.
-		RSP::SP_STATUS_TIMEOUT = 0x7fff;
+		RSP::SP_STATUS_TIMEOUT = 0xffff;
 
 		RSP::cpu.set_dmem(reinterpret_cast<uint32_t *>(Rsp_Info.DMEM));
 		RSP::cpu.set_imem(reinterpret_cast<uint32_t *>(Rsp_Info.IMEM));
