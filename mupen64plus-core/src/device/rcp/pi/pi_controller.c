@@ -48,30 +48,19 @@ int validate_pi_request(struct pi_controller* pi)
     return 1;
 }
 
-static uint32_t dma_pi_calculate_cycles(struct pi_controller* pi, uint32_t length)
+uint32_t pi_calculate_cycles(struct pi_controller* pi, uint8_t domain, uint32_t length, uint8_t dma)
 {
+    if (!domain)
+    {
+        DebugMessage(M64MSG_WARNING, "Unknown PI DMA domain: 0x%x", pi->regs[PI_CART_ADDR_REG]);
+        return length / 8;
+    }
     uint32_t cycles = 0;
-    uint8_t domain = 0;
     uint32_t latency;
     uint32_t pulse_width;
     uint32_t release;
     uint32_t page_size;
     uint32_t pages;
-    if (pi->regs[PI_CART_ADDR_REG] >= 0x1FC04000 && pi->regs[PI_CART_ADDR_REG] < 0x80000000)
-        domain = 1;
-    else if (pi->regs[PI_CART_ADDR_REG] >= 0x10000000 && pi->regs[PI_CART_ADDR_REG] < 0x1FC00000)
-        domain = 1;
-    else if (pi->regs[PI_CART_ADDR_REG] >= 0x08000000 && pi->regs[PI_CART_ADDR_REG] < 0x10000000)
-        domain = 2;
-    else if (pi->regs[PI_CART_ADDR_REG] >= 0x06000000 && pi->regs[PI_CART_ADDR_REG] < 0x08000000)
-        domain = 1;
-    else if (pi->regs[PI_CART_ADDR_REG] >= 0x05000000 && pi->regs[PI_CART_ADDR_REG] < 0x06000000)
-        domain = 2;
-    else
-    {
-        DebugMessage(M64MSG_WARNING, "Unknown PI DMA domain: 0x%x", pi->regs[PI_CART_ADDR_REG]);
-        return length / 8;
-    }
 
     if (domain == 1)
     {
@@ -87,12 +76,14 @@ static uint32_t dma_pi_calculate_cycles(struct pi_controller* pi, uint32_t lengt
         release = pi->regs[PI_BSD_DOM2_RLS_REG] + 1;
         page_size = 2 ^ (pi->regs[PI_BSD_DOM2_PGS_REG] + 2);
     }
-    pages = length / page_size;
+    if (dma)
+        pages = length / page_size;
+    else
+        pages = 1;
 
     cycles += (14 + latency) * pages;
     cycles += (pulse_width + release) * (length / 2);
     cycles += 5 * pages;
-    cycles /= 2;
     return cycles;
 }
 
@@ -121,7 +112,7 @@ static void dma_pi_read(struct pi_controller* pi)
     /* PI seems to treat the first 128 bytes differently, see https://n64brew.dev/wiki/Peripheral_Interface#Unaligned_DMA_transfer */
     if (length >= 0x7f && (length & 1))
         length += 1;
-    handler->dma_read(opaque, dram, dram_addr, cart_addr, length);
+    uint32_t cycles = handler->dma_read(opaque, dram, dram_addr, cart_addr, length);
 
     /* Mark DMA as busy */
     pi->regs[PI_STATUS_REG] |= PI_STATUS_DMA_BUSY;
@@ -130,8 +121,7 @@ static void dma_pi_read(struct pi_controller* pi)
     pi->regs[PI_CART_ADDR_REG] = (pi->regs[PI_CART_ADDR_REG] + length + 1) & ~1;
 
     /* schedule end of dma interrupt event */
-    uint32_t cycles = dma_pi_calculate_cycles(pi, length);
-    add_interrupt_event(&pi->mi->r4300->cp0, PI_INT, cycles);
+    add_interrupt_event(&pi->mi->r4300->cp0, PI_INT, cycles / 2);
 }
 
 static void dma_pi_write(struct pi_controller* pi)
@@ -159,7 +149,7 @@ static void dma_pi_write(struct pi_controller* pi)
         length += 1;
     if (length <= 0x80)
         length -= dram_addr & 0x7;
-    handler->dma_write(opaque, dram, dram_addr, cart_addr, length);
+    uint32_t cycles = handler->dma_write(opaque, dram, dram_addr, cart_addr, length);
 
     post_framebuffer_write(&pi->dp->fb, dram_addr, length);
 
@@ -170,8 +160,7 @@ static void dma_pi_write(struct pi_controller* pi)
     pi->regs[PI_CART_ADDR_REG] = (pi->regs[PI_CART_ADDR_REG] + length + 1) & ~1;
 
     /* schedule end of dma interrupt event */
-    uint32_t cycles = dma_pi_calculate_cycles(pi, length);
-    add_interrupt_event(&pi->mi->r4300->cp0, PI_INT, cycles);
+    add_interrupt_event(&pi->mi->r4300->cp0, PI_INT, cycles / 2);
 }
 
 

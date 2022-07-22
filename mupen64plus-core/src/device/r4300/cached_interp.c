@@ -83,8 +83,9 @@ void cached_interp_##name(void) \
         (*r4300_pc_struct(r4300))++; \
         r4300->delay_slot=1; \
         UPDATE_DEBUGGER(); \
-        icache_step(r4300, (*r4300_pc_struct(r4300))->addr); \
+        icache_fetch(r4300, (*r4300_pc_struct(r4300))->addr); \
         (*r4300_pc_struct(r4300))->ops(); \
+        cp0_add_cycles(r4300, r4300->cp0.instr_count); \
         r4300->delay_slot=0; \
         if (take_jump && !r4300->skip_jump) \
         { \
@@ -115,8 +116,9 @@ void cached_interp_##name##_OUT(void) \
         (*r4300_pc_struct(r4300))++; \
         r4300->delay_slot=1; \
         UPDATE_DEBUGGER(); \
-        icache_step(r4300, (*r4300_pc_struct(r4300))->addr); \
+        icache_fetch(r4300, (*r4300_pc_struct(r4300))->addr); \
         (*r4300_pc_struct(r4300))->ops(); \
+        cp0_add_cycles(r4300, r4300->cp0.instr_count); \
         r4300->delay_slot=0; \
         if (take_jump && !r4300->skip_jump) \
         { \
@@ -200,8 +202,9 @@ void cached_interp_FIN_BLOCK(void)
 #endif
 Used by dynarec only, check should be unnecessary
 */
-        icache_step(r4300, (*r4300_pc_struct(r4300))->addr);
+        icache_fetch(r4300, (*r4300_pc_struct(r4300))->addr);
         (*r4300_pc_struct(r4300))->ops();
+        cp0_add_cycles(r4300, r4300->cp0.instr_count);
     }
     else
     {
@@ -217,8 +220,9 @@ Used by dynarec only, check should be unnecessary
 */
         if (!r4300->skip_jump)
         {
-            icache_step(r4300, (*r4300_pc_struct(r4300))->addr);
+            icache_fetch(r4300, (*r4300_pc_struct(r4300))->addr);
             (*r4300_pc_struct(r4300))->ops();
+            cp0_add_cycles(r4300, r4300->cp0.instr_count);
             r4300->cached_interp.actual = blk;
             (*r4300_pc_struct(r4300)) = inst+1;
         }
@@ -230,7 +234,7 @@ Used by dynarec only, check should be unnecessary
 void cached_interp_NOTCOMPILED(void)
 {
     DECLARE_R4300
-    uint32_t *mem = fast_mem_access(r4300, r4300->cached_interp.blocks[*r4300_pc(r4300)>>12]->start, 0);
+    uint32_t *mem = fast_mem_access(r4300, r4300->cached_interp.blocks[*r4300_pc(r4300)>>12]->start);
 #ifdef DBG
     DebugMessage(M64MSG_INFO, "NOTCOMPILED: addr = %x ops = %lx", *r4300_pc(r4300), (long) (*r4300_pc_struct(r4300))->ops);
 #endif
@@ -249,8 +253,9 @@ void cached_interp_NOTCOMPILED(void)
 The preceeding update_debugger SHOULD be unnecessary since it should have been
 called before NOTCOMPILED would have been executed
 */
-    icache_step(r4300, (*r4300_pc_struct(r4300))->addr);
+    icache_fetch(r4300, (*r4300_pc_struct(r4300))->addr);
     (*r4300_pc_struct(r4300))->ops();
+    cp0_add_cycles(r4300, r4300->cp0.instr_count);
 }
 
 void cached_interp_NOTCOMPILED2(void)
@@ -998,7 +1003,8 @@ void run_cached_interpreter(struct r4300_core* r4300)
 #ifdef DBG
         if (g_DebuggerActive) update_debugger((*r4300_pc_struct(r4300))->addr);
 #endif
-        icache_step(r4300, (*r4300_pc_struct(r4300))->addr);
+        icache_fetch(r4300, (*r4300_pc_struct(r4300))->addr);
         (*r4300_pc_struct(r4300))->ops();
+        cp0_add_cycles(r4300, r4300->cp0.instr_count);
     }
 }

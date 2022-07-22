@@ -235,6 +235,7 @@ void read_rsp_mem(void* opaque, uint32_t address, uint32_t* value)
     uint32_t addr = rsp_mem_address(address);
 
     *value = sp->mem[addr];
+    cp0_add_cycles(sp->mi->r4300, 8);
 }
 
 void write_rsp_mem(void* opaque, uint32_t address, uint32_t value, uint32_t mask)

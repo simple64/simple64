@@ -291,6 +291,7 @@ void read_pif_mem(void* opaque, uint32_t address, uint32_t* value)
     memcpy(value, pif->base + addr, sizeof(*value));
     if (addr >= PIF_ROM_SIZE)
         *value = tohl(*value);
+    cp0_add_cycles(pif->r4300, 1);
 }
 
 void write_pif_mem(void* opaque, uint32_t address, uint32_t value, uint32_t mask)
