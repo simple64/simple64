@@ -55,7 +55,7 @@ uint32_t icache_hit(struct instcache *line, uint32_t address)
 
 void icache_fill(struct instcache *line, struct r4300_core* r4300, uint32_t address)
 {
-    cp0_add_count(r4300, 24, 0);
+    cp0_add_cycles(r4300, 5);
     line->valid = 1;
     line->tag = address & ~UINT32_C(0xFFF);
     uint32_t cache_address = line->tag | line->index;
@@ -74,27 +74,22 @@ void icache_fill(struct instcache *line, struct r4300_core* r4300, uint32_t addr
 uint32_t* icache_fetch(struct r4300_core* r4300, uint32_t address)
 {
     struct instcache *line = &r4300->icache[(address >> 5) & UINT32_C(0x1FF)];
-    if(!icache_hit(line, address))
-        icache_fill(line, r4300, address);
-    else
-        cp0_cached_word_access(r4300);
-
-    return &line->words[address >> 2 & 7];
-}
-
-void icache_step(struct r4300_core* r4300, uint32_t address)
-{
-    struct instcache *line = &r4300->icache[(address >> 5) & UINT32_C(0x1FF)];
     uint8_t cached = 0;
-    r4300_translate_address(r4300, &address, &cached, 2, 0);
+    r4300->cp0.instr_count = 1;
+    if (r4300_translate_address(r4300, &address, &cached, 2, 0))
+        return NULL;
     if (cached)
     {
         if(!icache_hit(line, address))
             icache_fill(line, r4300, address);
         else
-            cp0_cached_word_access(r4300);
+            cp0_cached_read(r4300);
+        return &line->words[address >> 2 & 7];
     }
     else
-        cp0_uncached_word_access(r4300);
-    cp0_add_count(r4300, 0, 1); // instruction execution
+    {
+        address &= UINT32_C(0x1ffffffc);
+        mem_read32(mem_get_handler(r4300->mem, address), address, &(uint32_t){0}); // Done in order to get correct cycle count
+        return mem_base_u32(r4300->mem->base, address);
+    }
 }

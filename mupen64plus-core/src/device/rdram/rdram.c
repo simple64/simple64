@@ -232,6 +232,7 @@ void read_rdram_dram(void* opaque, uint32_t address, uint32_t* value)
     uint32_t addr = rdram_dram_address(address);
 
     *value = rdram->dram[addr];
+    cp0_add_cycles(rdram->r4300, 8);
 }
 
 void write_rdram_dram(void* opaque, uint32_t address, uint32_t value, uint32_t mask)

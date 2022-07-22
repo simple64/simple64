@@ -90,6 +90,7 @@ struct dd_controller
     const struct storage_backend_interface* idisk;
 
     struct r4300_core* r4300;
+    struct pi_controller* pi;
 };
 
 static osal_inline uint32_t dd_reg(uint32_t address)
@@ -107,7 +108,7 @@ void init_dd(struct dd_controller* dd,
              void* clock, const struct clock_backend_interface* iclock,
              const uint32_t* rom, size_t rom_size,
              struct dd_disk* disk, const struct storage_backend_interface* idisk,
-             struct r4300_core* r4300);
+             struct r4300_core* r4300, struct pi_controller* pi);
 
 void poweron_dd(struct dd_controller* dd);
 
@@ -117,8 +118,8 @@ void write_dd_regs(void* opaque, uint32_t address, uint32_t value, uint32_t mask
 void read_dd_rom(void* opaque, uint32_t address, uint32_t* value);
 void write_dd_rom(void* opaque, uint32_t address, uint32_t value, uint32_t mask);
 
-void dd_dom_dma_read(void* opaque, const uint8_t* dram, uint32_t dram_addr, uint32_t cart_addr, uint32_t length);
-void dd_dom_dma_write(void* opaque, uint8_t* dram, uint32_t dram_addr, uint32_t cart_addr, uint32_t length);
+uint32_t dd_dom_dma_read(void* opaque, const uint8_t* dram, uint32_t dram_addr, uint32_t cart_addr, uint32_t length);
+uint32_t dd_dom_dma_write(void* opaque, uint8_t* dram, uint32_t dram_addr, uint32_t cart_addr, uint32_t length);
 
 void dd_on_pi_cart_addr_write(struct dd_controller* dd, uint32_t address);
 void dd_update_bm(void* opaque);

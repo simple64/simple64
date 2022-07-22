@@ -300,22 +300,13 @@ uint8_t r4300_translate_address(struct r4300_core* r4300, uint32_t* address, uin
     return 0;
 }
 
-uint32_t *fast_mem_access(struct r4300_core* r4300, uint32_t address, uint8_t use_cache)
+uint32_t *fast_mem_access(struct r4300_core* r4300, uint32_t address)
 {
     /* This code is performance critical, specially on pure interpreter mode.
      * Removing error checking saves some time, but the emulator may crash. */
-    uint8_t cached = 0;
-    if (r4300_translate_address(r4300, &address, &cached, 2, 0))
+    if (r4300_translate_address(r4300, &address, &(uint8_t){0}, 2, 0))
         return NULL; // TLB exception
 
-    if (use_cache)
-    {
-        if (cached)
-            return icache_fetch(r4300, address);
-        else
-            cp0_uncached_word_access(r4300);
-        cp0_add_count(r4300, 0, 1); // instruction execution
-    }
     address &= UINT32_C(0x1ffffffc);
     return mem_base_u32(r4300->mem->base, address);
 }
@@ -334,7 +325,6 @@ int r4300_read_aligned_word(struct r4300_core* r4300, uint32_t address, uint32_t
         dcache_read32(r4300, address & ~UINT32_C(3), value);
     else
     {
-        cp0_uncached_word_access(r4300);
         address &= UINT32_C(0x1ffffffc);
         mem_read32(mem_get_handler(r4300->mem, address), address & ~UINT32_C(3), value);
     }
@@ -365,7 +355,6 @@ int r4300_read_aligned_dword(struct r4300_core* r4300, uint32_t address, uint64_
     }
     else
     {
-        cp0_uncached_word_access(r4300);
         address &= UINT32_C(0x1ffffffc);
         const struct mem_handler* handler = mem_get_handler(r4300->mem, address);
         mem_read32(handler, address + 0, &w[0]);
@@ -391,7 +380,6 @@ int r4300_write_aligned_word(struct r4300_core* r4300, uint32_t address, uint32_
         dcache_write32(r4300, address & ~UINT32_C(3), value, mask);
     else
     {
-        cp0_uncached_word_access(r4300);
         address &= UINT32_C(0x1ffffffc);
         mem_write32(mem_get_handler(r4300->mem, address), address & ~UINT32_C(3), value, mask);
     }
@@ -420,7 +408,6 @@ int r4300_write_aligned_dword(struct r4300_core* r4300, uint32_t address, uint64
     }
     else
     {
-        cp0_uncached_word_access(r4300);
         address &= UINT32_C(0x1ffffffc);
         const struct mem_handler* handler = mem_get_handler(r4300->mem, address);
         mem_write32(handler, address + 0, value >> 32, mask >> 32);

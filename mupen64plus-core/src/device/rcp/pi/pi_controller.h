@@ -66,8 +66,8 @@ enum
 
 struct pi_dma_handler
 {
-    void (*dma_read)(void* opaque, const uint8_t* dram, uint32_t dram_addr, uint32_t cart_addr, uint32_t length);
-    void (*dma_write)(void* opaque, uint8_t* dram, uint32_t dram_addr, uint32_t cart_addr, uint32_t length);
+    uint32_t (*dma_read)(void* opaque, const uint8_t* dram, uint32_t dram_addr, uint32_t cart_addr, uint32_t length);
+    uint32_t (*dma_write)(void* opaque, uint8_t* dram, uint32_t dram_addr, uint32_t cart_addr, uint32_t length);
 };
 
 typedef void (*pi_dma_handler_getter)(struct cart* cart, struct dd_controller* dd, uint32_t address, void** opaque, const struct pi_dma_handler** handler);
@@ -107,5 +107,7 @@ void write_pi_regs(void* opaque, uint32_t address, uint32_t value, uint32_t mask
 
 void pi_end_of_dma_event(void* opaque);
 int validate_pi_request(struct pi_controller* pi);
+
+uint32_t pi_calculate_cycles(struct pi_controller* pi, uint8_t domain, uint32_t length, uint8_t dma);
 
 #endif

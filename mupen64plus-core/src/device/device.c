@@ -164,7 +164,7 @@ void init_device(struct device* dev,
                 dd_rtc_clock, dd_rtc_iclock,
                 mem_base_u32(base, MM_DD_ROM), dd_rom_size,
                 dd_disk, dd_idisk,
-                &dev->r4300);
+                &dev->r4300, &dev->pi);
     }
 
     struct mem_handler dbg_handler = { &dev->r4300, RW(with_bp_checks) };

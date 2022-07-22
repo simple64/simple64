@@ -289,7 +289,8 @@ void init_dd(struct dd_controller* dd,
              void* clock, const struct clock_backend_interface* iclock,
              const uint32_t* rom, size_t rom_size,
              struct dd_disk* disk, const struct storage_backend_interface* idisk,
-             struct r4300_core* r4300)
+             struct r4300_core* r4300,
+             struct pi_controller* pi)
 {
     dd->rtc.clock = clock;
     dd->rtc.iclock = iclock;
@@ -301,6 +302,7 @@ void init_dd(struct dd_controller* dd,
     dd->idisk = idisk;
 
     dd->r4300 = r4300;
+    dd->pi = pi;
 }
 
 void poweron_dd(struct dd_controller* dd)
@@ -540,6 +542,7 @@ void read_dd_rom(void* opaque, uint32_t address, uint32_t* value)
     *value = dd->rom[addr];
 
     DebugMessage(M64MSG_VERBOSE, "DD ROM: %08X -> %08x", address, *value);
+    cp0_add_cycles(dd->r4300, pi_calculate_cycles(dd->pi, 1, 4, 0));
 }
 
 void write_dd_rom(void* opaque, uint32_t address, uint32_t value, uint32_t mask)
@@ -547,11 +550,12 @@ void write_dd_rom(void* opaque, uint32_t address, uint32_t value, uint32_t mask)
     DebugMessage(M64MSG_VERBOSE, "DD ROM: %08X <- %08x & %08x", address, value, mask);
 }
 
-void dd_dom_dma_read(void* opaque, const uint8_t* dram, uint32_t dram_addr, uint32_t cart_addr, uint32_t length)
+uint32_t dd_dom_dma_read(void* opaque, const uint8_t* dram, uint32_t dram_addr, uint32_t cart_addr, uint32_t length)
 {
     struct dd_controller* dd = (struct dd_controller*)opaque;
     uint8_t* mem;
     size_t i;
+    uint32_t cycles = pi_calculate_cycles(dd->pi, 1, length, 1);
 
     DebugMessage(M64MSG_VERBOSE, "DD DMA read dram=%08x  cart=%08x length=%08x",
             dram_addr, cart_addr, length);
@@ -562,24 +566,26 @@ void dd_dom_dma_read(void* opaque, const uint8_t* dram, uint32_t dram_addr, uint
     }
     else if (cart_addr == MM_DD_MS_RAM) {
         /* MS is not emulated, we silence warnings for now */
-        return;
+        return cycles;
     }
     else {
         DebugMessage(M64MSG_ERROR, "Unknown DD dma read dram=%08x  cart=%08x length=%08x",
             dram_addr, cart_addr, length);
-        return;
+        return cycles;
     }
 
     for (i = 0; i < length; ++i) {
         mem[(cart_addr + i) ^ S8] = dram[(dram_addr + i) ^ S8];
     }
+    return cycles;
 }
 
-void dd_dom_dma_write(void* opaque, uint8_t* dram, uint32_t dram_addr, uint32_t cart_addr, uint32_t length)
+uint32_t dd_dom_dma_write(void* opaque, uint8_t* dram, uint32_t dram_addr, uint32_t cart_addr, uint32_t length)
 {
     struct dd_controller* dd = (struct dd_controller*)opaque;
     const uint8_t* mem;
     size_t i;
+    uint32_t cycles = pi_calculate_cycles(dd->pi, 1, length, 1);
 
     DebugMessage(M64MSG_VERBOSE, "DD DMA write dram=%08x  cart=%08x length=%08x",
             dram_addr, cart_addr, length);
@@ -599,7 +605,7 @@ void dd_dom_dma_write(void* opaque, uint8_t* dram, uint32_t dram_addr, uint32_t 
             DebugMessage(M64MSG_ERROR, "Unknown DD dma write dram=%08x  cart=%08x length=%08x",
                 dram_addr, cart_addr, length);
 
-            return;
+            return cycles;
         }
     }
     else {
@@ -614,6 +620,7 @@ void dd_dom_dma_write(void* opaque, uint8_t* dram, uint32_t dram_addr, uint32_t 
 
     invalidate_r4300_cached_code(dd->r4300, R4300_KSEG0 + dram_addr, length);
     invalidate_r4300_cached_code(dd->r4300, R4300_KSEG1 + dram_addr, length);
+    return cycles;
 }
 
 void dd_on_pi_cart_addr_write(struct dd_controller* dd, uint32_t address)
