@@ -6,7 +6,7 @@
 namespace RSP
 {
 extern RSP_INFO rsp;
-extern short MFC0_count[32];
+extern uint32_t MFC0_count[32];
 extern int SP_STATUS_TIMEOUT;
 } // namespace RSP
 #endif
