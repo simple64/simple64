@@ -281,7 +281,6 @@ typedef struct
    unsigned char biopak; /* 0 - No, 1 - Yes boolean for bio pak support. */
    unsigned char disableextramem; /* 0 - No, 1 - Yes boolean for disabling 4MB expansion RAM pack */
    unsigned int aidmamodifier; /* Percentage modifier for AI DMA duration */
-   unsigned int rspdelaytime; /* Cycles to delay RSP when needed */
 } m64p_rom_settings;
 
 /* ----------------------------------------- */
