@@ -329,7 +329,7 @@ void do_SP_Task(struct rsp_core* sp)
         if (sp->dp->dpc_regs[DPC_STATUS_REG] & DPC_STATUS_FREEZE) {
             sp->dp->do_on_unfreeze |= DELAY_DP_INT;
         } else {
-            add_interrupt_event(&sp->mi->r4300->cp0, DP_INT, sp->rsp_cycles + 4000);
+            add_interrupt_event(&sp->mi->r4300->cp0, DP_INT, sp->rsp_cycles * 4);
         }
     }
     protect_framebuffers(&sp->dp->fb);
