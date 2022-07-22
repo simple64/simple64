@@ -235,7 +235,7 @@ unsigned int get_r4300_emumode(struct r4300_core* r4300);
 /* Returns a pointer to a block of contiguous memory
  * Can access RDRAM, SP_DMEM, SP_IMEM and ROM, using TLB if necessary
  * Useful for getting fast access to a zone with executable code. */
-uint32_t *fast_mem_access(struct r4300_core* r4300, uint32_t address, uint8_t use_cache);
+uint32_t *fast_mem_access(struct r4300_core* r4300, uint32_t address);
 
 uint8_t r4300_translate_address(struct r4300_core* r4300, uint32_t* address, uint8_t* cached, uint8_t tlb_mode, uint8_t write);
 

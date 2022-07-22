@@ -204,6 +204,7 @@ struct cp0
 
     struct tlb tlb;
     uint8_t half_count;
+    uint32_t instr_count;
 };
 
 #ifndef NEW_DYNAREC
@@ -230,9 +231,10 @@ int* r4300_cp0_cycle_count(struct cp0* cp0);
 
 int check_cop1_unusable(struct r4300_core* r4300);
 
-void cp0_add_count(struct r4300_core* r4300, uint32_t count, uint8_t half);
-void cp0_uncached_word_access(struct r4300_core* r4300);
-void cp0_cached_word_access(struct r4300_core* r4300);
+void cp0_set_cycles(struct r4300_core* r4300, uint32_t cycles);
+void cp0_add_cycles(struct r4300_core* r4300, uint32_t cycles);
+
+void cp0_cached_read(struct r4300_core* r4300);
 
 void TLB_refill_exception(struct r4300_core* r4300, uint32_t address, int w);
 void exception_general(struct r4300_core* r4300);

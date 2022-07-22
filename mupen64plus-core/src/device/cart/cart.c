@@ -25,6 +25,8 @@
 #include "api/m64p_types.h"
 
 #include "main/rom.h"
+#include "device/r4300/r4300_core.h"
+#include "device/rcp/pi/pi_controller.h"
 
 #include <stdint.h>
 #include <string.h>
@@ -165,6 +167,7 @@ void read_cart_dom2(void* opaque, uint32_t address, uint32_t* value)
         cart->use_flashram = 1;
         read_flashram(&cart->flashram, address, value);
     }
+    cp0_add_cycles(cart->cart_rom.r4300, pi_calculate_cycles(cart->cart_rom.pi, 2, 4, 0));
 }
 
 void write_cart_dom2(void* opaque, uint32_t address, uint32_t value, uint32_t mask)
@@ -188,7 +191,7 @@ void write_cart_dom2(void* opaque, uint32_t address, uint32_t value, uint32_t ma
     }
 }
 
-void cart_dom2_dma_read(void* opaque, const uint8_t* dram, uint32_t dram_addr, uint32_t cart_addr, uint32_t length)
+uint32_t cart_dom2_dma_read(void* opaque, const uint8_t* dram, uint32_t dram_addr, uint32_t cart_addr, uint32_t length)
 {
     struct cart* cart = (struct cart*)opaque;
 
@@ -201,9 +204,10 @@ void cart_dom2_dma_read(void* opaque, const uint8_t* dram, uint32_t dram_addr, u
     {
         flashram_dma_read(&cart->flashram, dram, dram_addr, cart_addr, length);
     }
+    return pi_calculate_cycles(cart->cart_rom.pi, 2, length, 1);
 }
 
-void cart_dom2_dma_write(void* opaque, uint8_t* dram, uint32_t dram_addr, uint32_t cart_addr, uint32_t length)
+uint32_t cart_dom2_dma_write(void* opaque, uint8_t* dram, uint32_t dram_addr, uint32_t cart_addr, uint32_t length)
 {
     struct cart* cart = (struct cart*)opaque;
 
@@ -216,17 +220,20 @@ void cart_dom2_dma_write(void* opaque, uint8_t* dram, uint32_t dram_addr, uint32
     {
         flashram_dma_write(&cart->flashram, dram, dram_addr, cart_addr, length);
     }
+    return pi_calculate_cycles(cart->cart_rom.pi, 2, length, 1);
 }
 
-void cart_dom3_dma_read(void* opaque, const uint8_t* dram, uint32_t dram_addr, uint32_t cart_addr, uint32_t length)
+uint32_t cart_dom3_dma_read(void* opaque, const uint8_t* dram, uint32_t dram_addr, uint32_t cart_addr, uint32_t length)
 {
     struct cart* cart = (struct cart*)opaque;
     cart_rom_dma_read(&cart->cart_rom, dram, dram_addr, cart_addr, length);
+    return pi_calculate_cycles(cart->cart_rom.pi, 1, length, 1);
 }
 
-void cart_dom3_dma_write(void* opaque, uint8_t* dram, uint32_t dram_addr, uint32_t cart_addr, uint32_t length)
+uint32_t cart_dom3_dma_write(void* opaque, uint8_t* dram, uint32_t dram_addr, uint32_t cart_addr, uint32_t length)
 {
     struct cart* cart = (struct cart*)opaque;
     cart_rom_dma_write(&cart->cart_rom, dram, dram_addr, cart_addr, length);
+    return pi_calculate_cycles(cart->cart_rom.pi, 1, length, 1);
 }
 
