@@ -166,7 +166,14 @@ static void update_sp_status(struct rsp_core* sp, uint32_t w)
 
     /* clear / set signal 0 */
     if (w & 0x200) sp->regs[SP_STATUS_REG] &= ~SP_STATUS_SIG0;
-    if (w & 0x400) sp->regs[SP_STATUS_REG] |= SP_STATUS_SIG0;
+    if (w & 0x400)
+    {
+        // This is a timing hack, some games seem to think the RSP should still be running after we've stopped it
+        // They set SP_STATUS_YIELD (SP_STATUS_SIG0), expecting the RSP to yield and generate an interrupt
+        sp->regs[SP_STATUS_REG] |= SP_STATUS_SIG0;
+        if (sp->rsp_cycles > 0 && !get_event(&sp->mi->r4300->cp0.q, RSP_TSK_EVT) && !get_event(&sp->mi->r4300->cp0.q, SP_INT))
+            signal_rcp_interrupt(sp->mi, MI_INTR_SP);
+    }
 
     /* clear / set signal 1 */
     if (w & 0x800) sp->regs[SP_STATUS_REG] &= ~SP_STATUS_SIG1;
@@ -206,14 +213,12 @@ void init_rsp(struct rsp_core* sp,
               uint32_t* sp_mem,
               struct mi_controller* mi,
               struct rdp_core* dp,
-              struct ri_controller* ri,
-              uint32_t rsp_delay_time)
+              struct ri_controller* ri)
 {
     sp->mem = sp_mem;
     sp->mi = mi;
     sp->dp = dp;
     sp->ri = ri;
-    sp->rsp_delay_time = rsp_delay_time;
 }
 
 void poweron_rsp(struct rsp_core* sp)
@@ -224,6 +229,7 @@ void poweron_rsp(struct rsp_core* sp)
     memset(sp->fifo, 0, SP_DMA_FIFO_SIZE*sizeof(struct sp_dma));
 
     sp->rsp_status = 0;
+    sp->rsp_cycles = 0;
     sp->mi->r4300->cp0.interrupt_unsafe_state &= ~(INTR_UNSAFE_RSP | INTR_UNSAFE_RSP_TASK);
     sp->regs[SP_STATUS_REG] = 1;
 }
@@ -290,7 +296,6 @@ void write_rsp_regs(void* opaque, uint32_t address, uint32_t value, uint32_t mas
     }
 }
 
-
 void read_rsp_regs2(void* opaque, uint32_t address, uint32_t* value)
 {
     struct rsp_core* sp = (struct rsp_core*)opaque;
@@ -312,65 +317,40 @@ void do_SP_Task(struct rsp_core* sp)
     if (sp->regs[SP_STATUS_REG] & (SP_STATUS_HALT | SP_STATUS_BROKE))
         return;
 
-    uint32_t sp_delay_time;
     uint32_t saved_status = sp->regs[SP_STATUS_REG];
+    uint32_t sp_delay_time = 0;
 
-    if (sp->mem[0xfc0/4] == 1)
+    unprotect_framebuffers(&sp->dp->fb);
+    sp->rsp_cycles = (rsp.doRspCycles(0xffffffff) / 4) * 10;
+    if (sp->mi->regs[MI_INTR_REG] & MI_INTR_DP)
     {
-        unprotect_framebuffers(&sp->dp->fb);
-
-#if defined(PROFILE)
-        timed_section_start(TIMED_SECTION_GFX);
-#endif
-        sp_delay_time = rsp.doRspCycles(0xffffffff) * 38;
-#if defined(PROFILE)
-        timed_section_end(TIMED_SECTION_GFX);
-#endif
         new_frame();
-
-        if (sp->mi->regs[MI_INTR_REG] & MI_INTR_DP)
-        {
-            sp->mi->regs[MI_INTR_REG] &= ~MI_INTR_DP;
-            if (sp->dp->dpc_regs[DPC_STATUS_REG] & DPC_STATUS_FREEZE) {
-                sp->dp->do_on_unfreeze |= DELAY_DP_INT;
-            } else {
-                add_interrupt_event(&sp->mi->r4300->cp0, DP_INT, sp_delay_time * 4);
-            }
+        sp->mi->regs[MI_INTR_REG] &= ~MI_INTR_DP;
+        if (sp->dp->dpc_regs[DPC_STATUS_REG] & DPC_STATUS_FREEZE) {
+            sp->dp->do_on_unfreeze |= DELAY_DP_INT;
+        } else {
+            add_interrupt_event(&sp->mi->r4300->cp0, DP_INT, 4000);
         }
-        protect_framebuffers(&sp->dp->fb);
     }
-    else if (sp->mem[0xfc0/4] == 2)
-    {
-#if defined(PROFILE)
-        timed_section_start(TIMED_SECTION_AUDIO);
-#endif
-        sp_delay_time = rsp.doRspCycles(0xffffffff) * 19;
-#if defined(PROFILE)
-        timed_section_end(TIMED_SECTION_AUDIO);
-#endif
-    }
-    else
-    {
-        sp_delay_time = rsp.doRspCycles(0xffffffff) * 0;
-    }
+    protect_framebuffers(&sp->dp->fb);
 
-    if (sp->rsp_status)
-        sp_delay_time = sp->rsp_delay_time;
     sp->rsp_status = sp->regs[SP_STATUS_REG];
     if ((sp->regs[SP_STATUS_REG] & (SP_STATUS_HALT | SP_STATUS_BROKE)) == 0 && !get_event(&sp->mi->r4300->cp0.q, RSP_TSK_EVT))
     {
-        sp_delay_time = sp->rsp_delay_time;
-        add_interrupt_event(&sp->mi->r4300->cp0, RSP_TSK_EVT, sp->rsp_delay_time);
+        sp_delay_time = 2000;
+        add_interrupt_event(&sp->mi->r4300->cp0, RSP_TSK_EVT, sp_delay_time);
         sp->mi->r4300->cp0.interrupt_unsafe_state |= INTR_UNSAFE_RSP_TASK;
     }
     if ((sp->regs[SP_STATUS_REG] & SP_STATUS_BROKE) && (sp->regs[SP_STATUS_REG] & SP_STATUS_INTR_BREAK))
     {
+        sp_delay_time = sp->rsp_cycles & ~0xff;
         add_interrupt_event(&sp->mi->r4300->cp0, SP_INT, sp_delay_time);
         sp->mi->r4300->cp0.interrupt_unsafe_state |= INTR_UNSAFE_RSP;
         sp->regs[SP_STATUS_REG] = saved_status;
     }
     else if (sp->mi->regs[MI_INTR_REG] & MI_INTR_SP)
     {
+        sp_delay_time = sp->rsp_cycles & ~0xff;
         add_interrupt_event(&sp->mi->r4300->cp0, SP_INT, sp_delay_time);
         sp->mi->r4300->cp0.interrupt_unsafe_state |= INTR_UNSAFE_RSP;
         sp->mi->regs[MI_INTR_REG] &= ~MI_INTR_SP;

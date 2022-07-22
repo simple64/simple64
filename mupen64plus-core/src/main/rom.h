@@ -112,7 +112,6 @@ typedef struct
    unsigned char mempak; /* 0 - No, 1 - Yes boolean for mempak support. */
    unsigned char biopak; /* 0 - No, 1 - Yes boolean for biopak support. */
    unsigned int aidmamodifier;
-   unsigned int rspdelaytime;
    uint32_t set_flags;
 } romdatabase_entry;
 
@@ -129,14 +128,11 @@ typedef struct
 #define ROMDATABASE_ENTRY_MEMPAK        BIT(10)
 #define ROMDATABASE_ENTRY_BIOPAK        BIT(11)
 #define ROMDATABASE_ENTRY_AIDMAMODIFIER BIT(13)
-#define ROMDATABASE_ENTRY_RSPDELAYTIME  BIT(14)
 
 /* by default, extra mem is enabled */
 enum { DEFAULT_DISABLE_EXTRA_MEM = 0 };
 /* Default AI DMA modifier */
 enum { DEFAULT_AI_DMA_MODIFIER = 100 };
-/* Default RSP delay time */
-enum { DEFAULT_RSP_DELAY_TIME = 2000 };
 
 typedef struct _romdatabase_search
 {
