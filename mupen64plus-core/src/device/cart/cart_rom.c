@@ -79,7 +79,7 @@ void write_cart_rom(void* opaque, uint32_t address, uint32_t value, uint32_t mas
 
     /* Mark IO as busy */
     cart_rom->pi->regs[PI_STATUS_REG] |= PI_STATUS_IO_BUSY;
-    add_interrupt_event(&cart_rom->r4300->cp0, PI_INT, 0x1000);
+    add_interrupt_event(&cart_rom->r4300->cp0, PI_INT, pi_calculate_cycles(cart_rom->pi, 1, 4, 0) / 2);
 }
 
 uint32_t cart_rom_dma_read(void* opaque, const uint8_t* dram, uint32_t dram_addr, uint32_t cart_addr, uint32_t length)
