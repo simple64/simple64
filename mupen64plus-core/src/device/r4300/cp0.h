@@ -235,6 +235,7 @@ void cp0_set_cycles(struct r4300_core* r4300, uint32_t cycles);
 void cp0_add_cycles(struct r4300_core* r4300, uint32_t cycles);
 
 void cp0_cached_read(struct r4300_core* r4300);
+void cp0_uncached_read(struct r4300_core* r4300);
 
 void TLB_refill_exception(struct r4300_core* r4300, uint32_t address, int w);
 void exception_general(struct r4300_core* r4300);

@@ -153,6 +153,11 @@ void cp0_cached_read(struct r4300_core* r4300)
     cp0_add_cycles(r4300, 1);
 }
 
+void cp0_uncached_read(struct r4300_core* r4300)
+{
+    cp0_add_cycles(r4300, 7);
+}
+
 static void exception_epilog(struct r4300_core* r4300)
 {
 #ifndef NO_ASM

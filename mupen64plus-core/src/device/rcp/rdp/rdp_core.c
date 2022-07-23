@@ -26,6 +26,7 @@
 #include "device/memory/memory.h"
 #include "device/rcp/mi/mi_controller.h"
 #include "device/rcp/rsp/rsp_core.h"
+#include "device/r4300/r4300_core.h"
 #include "plugin/plugin.h"
 
 static void update_dpc_status(struct rdp_core* dp, uint32_t w)
@@ -87,6 +88,7 @@ void read_dpc_regs(void* opaque, uint32_t address, uint32_t* value)
     uint32_t reg = dpc_reg(address);
 
     *value = dp->dpc_regs[reg];
+    cp0_uncached_read(dp->mi->r4300);
 }
 
 void write_dpc_regs(void* opaque, uint32_t address, uint32_t value, uint32_t mask)
@@ -129,6 +131,7 @@ void read_dps_regs(void* opaque, uint32_t address, uint32_t* value)
     uint32_t reg = dps_reg(address);
 
     *value = dp->dps_regs[reg];
+    cp0_uncached_read(dp->mi->r4300);
 }
 
 void write_dps_regs(void* opaque, uint32_t address, uint32_t value, uint32_t mask)

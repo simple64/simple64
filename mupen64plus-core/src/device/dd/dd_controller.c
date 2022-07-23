@@ -366,6 +366,7 @@ void read_dd_regs(void* opaque, uint32_t address, uint32_t* value)
             }
         } break;
     }
+    cp0_uncached_read(dd->r4300);
 }
 
 void write_dd_regs(void* opaque, uint32_t address, uint32_t value, uint32_t mask)

@@ -204,6 +204,7 @@ void read_pi_regs(void* opaque, uint32_t address, uint32_t* value)
         *value &= 0xFFFFFFFE;
     else if (reg == PI_DRAM_ADDR_REG)
         *value &= 0xFFFFFE;
+    cp0_uncached_read(pi->mi->r4300);
 }
 
 void write_pi_regs(void* opaque, uint32_t address, uint32_t value, uint32_t mask)

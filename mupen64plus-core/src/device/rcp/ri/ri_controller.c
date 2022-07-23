@@ -24,6 +24,8 @@
 #include <string.h>
 
 #include "device/memory/memory.h"
+#include "device/r4300/r4300_core.h"
+#include "device/rdram/rdram.h"
 
 void init_ri(struct ri_controller* ri, struct rdram* rdram)
 {
@@ -42,6 +44,7 @@ void read_ri_regs(void* opaque, uint32_t address, uint32_t* value)
     uint32_t reg = ri_reg(address);
 
     *value = ri->regs[reg];
+    cp0_uncached_read(ri->rdram->r4300);
 }
 
 void write_ri_regs(void* opaque, uint32_t address, uint32_t value, uint32_t mask)
