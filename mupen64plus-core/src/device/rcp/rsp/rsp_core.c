@@ -168,10 +168,10 @@ static void update_sp_status(struct rsp_core* sp, uint32_t w)
     if (w & 0x200) sp->regs[SP_STATUS_REG] &= ~SP_STATUS_SIG0;
     if (w & 0x400)
     {
+        sp->regs[SP_STATUS_REG] |= SP_STATUS_SIG0;
         // This is a timing hack, some games seem to think the RSP should still be running after we've stopped it
         // They set SP_STATUS_YIELD (SP_STATUS_SIG0), expecting the RSP to yield and generate an interrupt
-        sp->regs[SP_STATUS_REG] |= SP_STATUS_SIG0;
-        if (sp->rsp_cycles > 0 && !get_event(&sp->mi->r4300->cp0.q, RSP_TSK_EVT) && !get_event(&sp->mi->r4300->cp0.q, SP_INT))
+        if (sp->rsp_force_interrupt)
             signal_rcp_interrupt(sp->mi, MI_INTR_SP);
     }
 
@@ -213,12 +213,14 @@ void init_rsp(struct rsp_core* sp,
               uint32_t* sp_mem,
               struct mi_controller* mi,
               struct rdp_core* dp,
-              struct ri_controller* ri)
+              struct ri_controller* ri,
+              uint32_t rsp_force_interrupt)
 {
     sp->mem = sp_mem;
     sp->mi = mi;
     sp->dp = dp;
     sp->ri = ri;
+    sp->rsp_force_interrupt = rsp_force_interrupt;
 }
 
 void poweron_rsp(struct rsp_core* sp)
@@ -241,7 +243,7 @@ void read_rsp_mem(void* opaque, uint32_t address, uint32_t* value)
     uint32_t addr = rsp_mem_address(address);
 
     *value = sp->mem[addr];
-    cp0_add_cycles(sp->mi->r4300, 8);
+    cp0_uncached_read(sp->mi->r4300);
 }
 
 void write_rsp_mem(void* opaque, uint32_t address, uint32_t value, uint32_t mask)
@@ -264,6 +266,7 @@ void read_rsp_regs(void* opaque, uint32_t address, uint32_t* value)
     {
         sp->regs[SP_SEMAPHORE_REG] = 1;
     }
+    cp0_uncached_read(sp->mi->r4300);
 }
 
 void write_rsp_regs(void* opaque, uint32_t address, uint32_t value, uint32_t mask)
@@ -302,6 +305,7 @@ void read_rsp_regs2(void* opaque, uint32_t address, uint32_t* value)
     uint32_t reg = rsp_reg2(address);
 
     *value = sp->regs2[reg];
+    cp0_uncached_read(sp->mi->r4300);
 }
 
 void write_rsp_regs2(void* opaque, uint32_t address, uint32_t value, uint32_t mask)

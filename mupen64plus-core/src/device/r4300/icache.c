@@ -55,7 +55,7 @@ uint32_t icache_hit(struct instcache *line, uint32_t address)
 
 void icache_fill(struct instcache *line, struct r4300_core* r4300, uint32_t address)
 {
-    cp0_add_cycles(r4300, 5);
+    cp0_add_cycles(r4300, 6);
     line->valid = 1;
     line->tag = address & ~UINT32_C(0xFFF);
     uint32_t cache_address = line->tag | line->index;

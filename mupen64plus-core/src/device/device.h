@@ -123,6 +123,8 @@ void init_device(struct device* dev,
     int no_compiled_jump,
     int randomize_interrupt,
     uint32_t start_address,
+    /* rsp */
+    uint32_t rsp_force_interrupt,
     /* ai */
     void* aout, const struct audio_out_backend_interface* iaout, float dma_modifier,
     /* rdram */

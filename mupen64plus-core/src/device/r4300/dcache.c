@@ -52,7 +52,7 @@ uint32_t dcache_hit(struct datacache *line, uint32_t address)
 
 static void dcache_fill(struct datacache *line, struct r4300_core* r4300, uint32_t address)
 {
-    cp0_add_cycles(r4300, 4);
+    cp0_add_cycles(r4300, 5);
     line->valid = 1;
     line->dirty = 0;
     line->tag = address & ~UINT32_C(0xFFF);

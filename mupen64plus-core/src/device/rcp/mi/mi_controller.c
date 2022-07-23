@@ -84,6 +84,7 @@ void read_mi_regs(void* opaque, uint32_t address, uint32_t* value)
     uint32_t reg = mi_reg(address);
 
     *value = mi->regs[reg];
+    cp0_uncached_read(mi->r4300);
 }
 
 void write_mi_regs(void* opaque, uint32_t address, uint32_t value, uint32_t mask)
