@@ -100,6 +100,7 @@ static void read_rdram_dram_corrupted(void* opaque, uint32_t address, uint32_t* 
     if ((mode & 0x80000000) && (cc_value(mode) == 0)) {
         *value = 0;
     }
+    cp0_uncached_read(rdram->r4300);
 }
 
 static void map_corrupt_rdram(struct rdram* rdram, int corrupt)
@@ -179,6 +180,7 @@ void read_rdram_regs(void* opaque, uint32_t address, uint32_t* value)
     if (reg == RDRAM_MODE_REG) {
         *value ^= UINT32_C(0xc0c0c0c0);
     }
+    cp0_uncached_read(rdram->r4300);
 }
 
 void write_rdram_regs(void* opaque, uint32_t address, uint32_t value, uint32_t mask)
@@ -232,7 +234,7 @@ void read_rdram_dram(void* opaque, uint32_t address, uint32_t* value)
     uint32_t addr = rdram_dram_address(address);
 
     *value = rdram->dram[addr];
-    cp0_add_cycles(rdram->r4300, 8);
+    cp0_uncached_read(rdram->r4300);
 }
 
 void write_rdram_dram(void* opaque, uint32_t address, uint32_t value, uint32_t mask)

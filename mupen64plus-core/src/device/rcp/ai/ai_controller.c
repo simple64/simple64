@@ -182,6 +182,7 @@ void read_ai_regs(void* opaque, uint32_t address, uint32_t* value)
     {
         *value = ai->regs[reg];
     }
+    cp0_uncached_read(ai->mi->r4300);
 }
 
 void write_ai_regs(void* opaque, uint32_t address, uint32_t value, uint32_t mask)

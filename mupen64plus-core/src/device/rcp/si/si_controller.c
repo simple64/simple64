@@ -122,6 +122,7 @@ void read_si_regs(void* opaque, uint32_t address, uint32_t* value)
     uint32_t reg = si_reg(address);
 
     *value = si->regs[reg];
+    cp0_uncached_read(si->mi->r4300);
 }
 
 void write_si_regs(void* opaque, uint32_t address, uint32_t value, uint32_t mask)

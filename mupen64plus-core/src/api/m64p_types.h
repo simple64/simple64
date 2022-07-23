@@ -280,6 +280,7 @@ typedef struct
    unsigned char mempak; /* 0 - No, 1 - Yes boolean for memory pak support. */
    unsigned char biopak; /* 0 - No, 1 - Yes boolean for bio pak support. */
    unsigned char disableextramem; /* 0 - No, 1 - Yes boolean for disabling 4MB expansion RAM pack */
+   unsigned char rspforceinterrupt;
    unsigned int aidmamodifier; /* Percentage modifier for AI DMA duration */
 } m64p_rom_settings;
 
