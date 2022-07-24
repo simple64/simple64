@@ -1422,7 +1422,7 @@ void CPU::jit_instruction(jit_state_t *_jit, uint32_t pc, uint32_t instr,
 		unsigned rt = (instr >> 16) & 31;
 		NOP_IF_RT_ZERO();
 		int16_t imm = int16_t(instr);
-		regs.immediate_mips_register(_jit, rt, imm << 16);
+		regs.immediate_mips_register(_jit, rt, uint16_t(imm) << 16);
 		regs.unlock_mips_register(rt);
 		break;
 	}
