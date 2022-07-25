@@ -93,7 +93,7 @@ static void do_dma(struct ai_controller* ai, struct ai_dma* dma)
         ai->delayed_carry = 0;
 
     /* schedule end of dma event */
-    add_interrupt_event(&ai->mi->r4300->cp0, AI_INT, dma->duration / 2);
+    add_interrupt_event(&ai->mi->r4300->cp0, AI_INT, dma->duration / 16);
     add_interrupt_event(&ai->mi->r4300->cp0, AI_DMA, dma->duration);
 }
 
