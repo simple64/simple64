@@ -59,7 +59,6 @@ struct ai_controller
     unsigned int samples_format_changed;
     uint32_t last_read;
     uint32_t delayed_carry;
-    float dma_modifier;
 
     struct mi_controller* mi;
     struct ri_controller* ri;
@@ -79,14 +78,14 @@ void init_ai(struct ai_controller* ai,
              struct ri_controller* ri,
              struct vi_controller* vi,
              void* aout,
-             const struct audio_out_backend_interface* iaout,
-             float dma_modifier);
+             const struct audio_out_backend_interface* iaout);
 
 void poweron_ai(struct ai_controller* ai);
 
 void read_ai_regs(void* opaque, uint32_t address, uint32_t* value);
 void write_ai_regs(void* opaque, uint32_t address, uint32_t value, uint32_t mask);
 
+void ai_end_of_interrupt_event(void* opaque);
 void ai_end_of_dma_event(void* opaque);
 
 #endif

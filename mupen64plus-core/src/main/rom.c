@@ -180,7 +180,6 @@ m64p_error open_rom(const unsigned char* romimage, unsigned int size)
         ROM_SETTINGS.biopak = entry->biopak;
         ROM_SETTINGS.disableextramem = entry->disableextramem;
         ROM_SETTINGS.rspforceinterrupt = entry->rspforceinterrupt;
-        ROM_SETTINGS.aidmamodifier = entry->aidmamodifier;
         ROM_PARAMS.cheats = entry->cheats;
     }
     else
@@ -197,7 +196,6 @@ m64p_error open_rom(const unsigned char* romimage, unsigned int size)
         ROM_SETTINGS.biopak = 0;
         ROM_SETTINGS.disableextramem = DEFAULT_DISABLE_EXTRA_MEM;
         ROM_SETTINGS.rspforceinterrupt = DEFAULT_RSP_FORCE_INTERRUPT;
-        ROM_SETTINGS.aidmamodifier = DEFAULT_AI_DMA_MODIFIER;
         ROM_PARAMS.cheats = NULL;
     }
 
@@ -360,12 +358,6 @@ static size_t romdatabase_resolve_round(void)
             entry->entry.set_flags |= ROMDATABASE_ENTRY_BIOPAK;
         }
 
-        if (!isset_bitmask(entry->entry.set_flags, ROMDATABASE_ENTRY_AIDMAMODIFIER) &&
-            isset_bitmask(ref->set_flags, ROMDATABASE_ENTRY_AIDMAMODIFIER)) {
-            entry->entry.aidmamodifier = ref->aidmamodifier;
-            entry->entry.set_flags |= ROMDATABASE_ENTRY_AIDMAMODIFIER;
-        }
-
         free(entry->entry.refmd5);
         entry->entry.refmd5 = NULL;
     }
@@ -461,7 +453,6 @@ void romdatabase_open(void)
             search->entry.transferpak = 0;
             search->entry.mempak = 1;
             search->entry.biopak = 0;
-            search->entry.aidmamodifier = DEFAULT_AI_DMA_MODIFIER;
             search->entry.set_flags = ROMDATABASE_ENTRY_NONE;
 
             search->next_entry = NULL;
@@ -643,15 +634,6 @@ void romdatabase_open(void)
                     search->entry.set_flags |= ROMDATABASE_ENTRY_BIOPAK;
                 } else {
                     DebugMessage(M64MSG_WARNING, "ROM Database: Invalid biopak string on line %i", lineno);
-                }
-            }
-            else if(!strcmp(l.name, "AiDmaModifier"))
-            {
-                if (string_to_int(l.value, &value) && value >= 0 && value <= 200) {
-                    search->entry.aidmamodifier = value;
-                    search->entry.set_flags |= ROMDATABASE_ENTRY_AIDMAMODIFIER;
-                } else {
-                    DebugMessage(M64MSG_WARNING, "ROM Database: Invalid AiDmaModifier on line %i", lineno);
                 }
             }
             else

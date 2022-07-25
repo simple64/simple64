@@ -112,7 +112,6 @@ typedef struct
    unsigned char transferpak; /* 0 - No, 1 - Yes boolean for transferpak support. */
    unsigned char mempak; /* 0 - No, 1 - Yes boolean for mempak support. */
    unsigned char biopak; /* 0 - No, 1 - Yes boolean for biopak support. */
-   unsigned int aidmamodifier;
    uint32_t set_flags;
 } romdatabase_entry;
 
@@ -128,13 +127,10 @@ typedef struct
 #define ROMDATABASE_ENTRY_TRANSFERPAK   BIT(9)
 #define ROMDATABASE_ENTRY_MEMPAK        BIT(10)
 #define ROMDATABASE_ENTRY_BIOPAK        BIT(11)
-#define ROMDATABASE_ENTRY_AIDMAMODIFIER BIT(13)
 #define ROMDATABASE_ENTRY_RSPFORCEINTERRUPT BIT(14)
 
 /* by default, extra mem is enabled */
 enum { DEFAULT_DISABLE_EXTRA_MEM = 0 };
-/* Default AI DMA modifier */
-enum { DEFAULT_AI_DMA_MODIFIER = 100 };
 /* Default RSP Force Interrupt */
 enum { DEFAULT_RSP_FORCE_INTERRUPT = 0 };
 
