@@ -44,7 +44,7 @@ RSP::CPU cpu;
 RSP::JIT::CPU cpu;
 #endif
 uint32_t MFC0_count[32];
-int SP_STATUS_TIMEOUT;
+uint32_t SP_STATUS_TIMEOUT;
 } // namespace RSP
 
 extern "C"
