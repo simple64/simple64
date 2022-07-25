@@ -97,6 +97,7 @@ ptr_ConfigGetUserCachePath      ConfigGetUserCachePath = NULL;
 static void (*l_DebugCallback)(void *, int, const char *) = NULL;
 static void *l_DebugCallContext = NULL;
 static int l_PluginInit = 0;
+extern uint32_t input_counter;
 
 /* Global functions */
 static void DebugMessage(int level, const char *message, ...)
@@ -238,7 +239,9 @@ EXPORT m64p_error CALL PluginGetVersion(m64p_plugin_type *PluginType, int *Plugi
 *******************************************************************/
 EXPORT void CALL InitiateControllers(CONTROL_INFO ControlInfo)
 {
-    int i, n_controllers, adap_port;
+	int i, n_controllers, adap_port;
+
+	input_counter = 0;
 
 	n_controllers = pb_scanControllers();
 
@@ -328,4 +331,9 @@ EXPORT void CALL SDL_KeyDown(int keymod, int keysym)
 *******************************************************************/
 EXPORT void CALL SDL_KeyUp(int keymod, int keysym)
 {
+}
+
+EXPORT void CALL RenderCallback(void)
+{
+    input_counter = 0;
 }

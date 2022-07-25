@@ -18,9 +18,9 @@ git fetch mupen64plus-input-qt
 git merge -s subtree mupen64plus-input-qt/main --allow-unrelated-histories --squash
 git commit -m "update input qt"
 
-git remote add mupen64plus-input-raphnetraw https://github.com/raphnet/mupen64plus-input-raphnetraw.git
+git remote add mupen64plus-input-raphnetraw https://github.com/loganmc10/mupen64plus-input-raphnetraw.git
 git fetch mupen64plus-input-raphnetraw
-git merge -s subtree mupen64plus-input-raphnetraw/master --allow-unrelated-histories --squash
+git merge -s subtree mupen64plus-input-raphnetraw/m64p --allow-unrelated-histories --squash
 git commit -m "update raphnet"
 
 git remote add parallel-rsp https://github.com/loganmc10/parallel-rsp.git
