@@ -1778,7 +1778,7 @@ m64p_error main_run(void)
                 randomize_interrupt,
                 g_start_address,
                 rsp_force_interrupt,
-                &g_dev.ai, &g_iaudio_out_backend_plugin_compat, ((float)ROM_SETTINGS.aidmamodifier / 100.0),
+                &g_dev.ai, &g_iaudio_out_backend_plugin_compat,
                 rdram_size,
                 joybus_devices, ijoybus_devices,
                 vi_clock_from_tv_standard(ROM_PARAMS.systemtype), vi_expected_refresh_rate_from_tv_standard(ROM_PARAMS.systemtype),
