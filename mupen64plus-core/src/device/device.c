@@ -90,7 +90,7 @@ void init_device(struct device* dev,
     /* rsp */
     uint32_t rsp_force_interrupt,
     /* ai */
-    void* aout, const struct audio_out_backend_interface* iaout, float dma_modifier,
+    void* aout, const struct audio_out_backend_interface* iaout,
     /* rdram */
     size_t dram_size,
     /* pif */
@@ -118,14 +118,15 @@ void init_device(struct device* dev,
         { &dev->si,        si_end_of_dma_event         }, /* SI */
         { &dev->pi,        pi_end_of_dma_event         }, /* PI */
         { &dev->r4300.cp0, special_int_handler         }, /* SPECIAL */
-        { &dev->ai,        ai_end_of_dma_event         }, /* AI */
+        { &dev->ai,        ai_end_of_interrupt_event   }, /* AI */
         { &dev->sp,        rsp_interrupt_event         }, /* SP */
         { &dev->dp,        rdp_interrupt_event         }, /* DP */
         { &dev->pif,       hw2_int_handler             }, /* HW2 */
         { dev,             nmi_int_handler             }, /* NMI */
         { dev,             reset_hard_handler          }, /* reset_hard */
         { &dev->sp,        rsp_end_of_dma_event        },
-        { &dev->sp,        rsp_end_of_tsk_event        }
+        { &dev->sp,        rsp_end_of_tsk_event        },
+        { &dev->ai,        ai_end_of_dma_event         }
     };
 
 #define R(x) read_ ## x
@@ -183,7 +184,7 @@ void init_device(struct device* dev,
             emumode, no_compiled_jump, randomize_interrupt, start_address);
     init_rdp(&dev->dp, &dev->sp, &dev->mi, &dev->mem, &dev->rdram, &dev->r4300);
     init_rsp(&dev->sp, mem_base_u32(base, MM_RSP_MEM), &dev->mi, &dev->dp, &dev->ri, rsp_force_interrupt);
-    init_ai(&dev->ai, &dev->mi, &dev->ri, &dev->vi, aout, iaout, dma_modifier);
+    init_ai(&dev->ai, &dev->mi, &dev->ri, &dev->vi, aout, iaout);
     init_mi(&dev->mi, &dev->r4300);
     init_pi(&dev->pi,
             get_pi_dma_handler,

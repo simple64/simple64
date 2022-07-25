@@ -126,7 +126,7 @@ void init_device(struct device* dev,
     /* rsp */
     uint32_t rsp_force_interrupt,
     /* ai */
-    void* aout, const struct audio_out_backend_interface* iaout, float dma_modifier,
+    void* aout, const struct audio_out_backend_interface* iaout,
     /* rdram */
     size_t dram_size,
     /* pif */
