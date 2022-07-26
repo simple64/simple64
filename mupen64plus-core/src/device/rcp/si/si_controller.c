@@ -103,7 +103,7 @@ void init_si(struct si_controller* si,
              struct pif* pif,
              struct ri_controller* ri)
 {
-    si->dma_duration = 0;
+    si->dma_duration = 6000;
     si->mi = mi;
     si->pif = pif;
     si->ri = ri;
