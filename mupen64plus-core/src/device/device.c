@@ -118,15 +118,14 @@ void init_device(struct device* dev,
         { &dev->si,        si_end_of_dma_event         }, /* SI */
         { &dev->pi,        pi_end_of_dma_event         }, /* PI */
         { &dev->r4300.cp0, special_int_handler         }, /* SPECIAL */
-        { &dev->ai,        ai_end_of_interrupt_event   }, /* AI */
+        { &dev->ai,        ai_end_of_dma_event         }, /* AI */
         { &dev->sp,        rsp_interrupt_event         }, /* SP */
         { &dev->dp,        rdp_interrupt_event         }, /* DP */
         { &dev->pif,       hw2_int_handler             }, /* HW2 */
         { dev,             nmi_int_handler             }, /* NMI */
         { dev,             reset_hard_handler          }, /* reset_hard */
         { &dev->sp,        rsp_end_of_dma_event        },
-        { &dev->sp,        rsp_end_of_tsk_event        },
-        { &dev->ai,        ai_end_of_dma_event         }
+        { &dev->sp,        rsp_end_of_tsk_event        }
     };
 
 #define R(x) read_ ## x

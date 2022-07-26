@@ -45,7 +45,7 @@ static uint32_t get_remaining_dma_length(struct ai_controller* ai)
     if (ai->fifo[0].duration == 0)
         return 0;
 
-    next_ai_event = get_event(&ai->mi->r4300->cp0.q, AI_DMA);
+    next_ai_event = get_event(&ai->mi->r4300->cp0.q, AI_INT);
     if (next_ai_event == NULL)
         return 0;
 
@@ -93,8 +93,8 @@ static void do_dma(struct ai_controller* ai, struct ai_dma* dma)
         ai->delayed_carry = 0;
 
     /* schedule end of dma event */
-    add_interrupt_event(&ai->mi->r4300->cp0, AI_INT, dma->duration / 16);
-    add_interrupt_event(&ai->mi->r4300->cp0, AI_DMA, dma->duration);
+    signal_rcp_interrupt(ai->mi, MI_INTR_AI);
+    add_interrupt_event(&ai->mi->r4300->cp0, AI_INT, dma->duration);
 }
 
 static void fifo_push(struct ai_controller* ai)
@@ -215,13 +215,6 @@ void write_ai_regs(void* opaque, uint32_t address, uint32_t value, uint32_t mask
     }
 
     masked_write(&ai->regs[reg], value, mask);
-}
-
-void ai_end_of_interrupt_event(void* opaque)
-{
-    struct ai_controller* ai = (struct ai_controller*)opaque;
-
-    raise_rcp_interrupt(ai->mi, MI_INTR_AI);
 }
 
 void ai_end_of_dma_event(void* opaque)
