@@ -14,7 +14,7 @@ void QT_WSIPlatform::destroy_surface(VkInstance instance, VkSurfaceKHR surface)
 std::vector<const char *> QT_WSIPlatform::get_instance_extensions()
 {
     const char** ext;
-    uint32_t ext_num;
+    uint32_t ext_num = 0;
     screen_get_instance_extensions(&ext, &ext_num);
     std::vector<const char*> return_value;
     for (int i=0; i< ext_num; ++i)
