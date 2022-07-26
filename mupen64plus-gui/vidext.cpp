@@ -131,11 +131,15 @@ void* qtVidExtFuncGetVkSurface(void* instance)
 m64p_error qtVidExtFuncGetVkInstExtensions(const char** ext[], uint32_t* ext_num)
 {
     extensions = vulkan_inst.supportedExtensions();
-    *ext_num = extensions.size();
     extension_list.clear();
     for (int i=0; i<extensions.size(); ++i)
     {
-        extension_list.append(extensions[i].name.data());
+        QString ext_name = QString(extensions[i].name);
+        if (ext_name.endsWith("surface"))
+        {
+            extension_list.append(extensions[i].name.data());
+            ++*ext_num;
+        }
     }
     *ext = extension_list.data();
     return M64ERR_SUCCESS;
