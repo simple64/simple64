@@ -135,7 +135,7 @@ m64p_error qtVidExtFuncGetVkInstExtensions(const char** ext[], uint32_t* ext_num
     for (int i=0; i<extensions.size(); ++i)
     {
         QString ext_name = QString(extensions[i].name);
-        if (ext_name.endsWith("surface"))
+        if (ext_name.startsWith("VK_KHR_") && ext_name.endsWith("surface"))
         {
             extension_list.append(extensions[i].name.data());
             ++*ext_num;
