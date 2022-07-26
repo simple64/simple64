@@ -737,7 +737,7 @@ void MainWindow::openROM(QString filename, QString netplay_ip, int netplay_port,
     settings->setValue("RecentROMs2",list);
     updateOpenRecent();
 
-    workerThread->start(QThread::HighPriority);
+    workerThread->start();
 }
 
 void MainWindow::on_actionOpen_ROM_triggered()
