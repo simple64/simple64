@@ -36,7 +36,7 @@ cp $base_dir/mupen64plus-input-raphnetraw/projects/unix/*$suffix $install_dir
 
 mkdir -p $base_dir/mupen64plus-input-qt/build
 cd $base_dir/mupen64plus-input-qt/build
-qmake ../mupen64plus-input-qt.pro
+qmake6 ../mupen64plus-input-qt.pro
 make -j4
 if [[ $UNAME == *"MINGW"* ]]; then
   cp $base_dir/mupen64plus-input-qt/build/release/mupen64plus-input-qt.dll $install_dir
@@ -63,7 +63,7 @@ fi
 
 mkdir -p $base_dir/mupen64plus-gui/build
 cd $base_dir/mupen64plus-gui/build
-qmake ../mupen64plus-gui.pro
+qmake6 ../mupen64plus-gui.pro
 make -j4
 if [[ $UNAME == *"MINGW"* ]]; then
   cp $base_dir/mupen64plus-gui/build/release/mupen64plus-gui.exe $install_dir
