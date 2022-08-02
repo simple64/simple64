@@ -58,7 +58,6 @@ extern int g_gs_vi_counter;
 const char* get_savestatepath(void);
 const char* get_savesrampath(void);
 
-void new_frame(void);
 void new_vi(void);
 
 void main_switch_next_pak(int control_id);

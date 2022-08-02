@@ -24,6 +24,7 @@
 #define M64P_CORE_PROTOTYPES 1
 #include <stdint.h>
 #include <string.h>
+#include <math.h>
 
 #include "api/callbacks.h"
 #include "api/m64p_types.h"
@@ -48,7 +49,7 @@ int validate_pi_request(struct pi_controller* pi)
     return 1;
 }
 
-uint32_t pi_calculate_cycles(struct pi_controller* pi, uint8_t domain, uint32_t length, uint8_t dma)
+uint32_t pi_calculate_cycles(struct pi_controller* pi, uint8_t domain, uint32_t length)
 {
     if (!domain)
     {
@@ -56,35 +57,32 @@ uint32_t pi_calculate_cycles(struct pi_controller* pi, uint8_t domain, uint32_t 
         return length / 8;
     }
     uint32_t cycles = 0;
-    uint32_t latency;
-    uint32_t pulse_width;
-    uint32_t release;
-    uint32_t page_size;
-    uint32_t pages;
+    uint32_t latency = 0;
+    uint32_t pulse_width = 0;
+    uint32_t release = 0;
+    uint32_t page_size = 0;
+    uint32_t pages = 0;
 
     if (domain == 1)
     {
         latency = pi->regs[PI_BSD_DOM1_LAT_REG] + 1;
         pulse_width = pi->regs[PI_BSD_DOM1_PWD_REG] + 1;
         release = pi->regs[PI_BSD_DOM1_RLS_REG] + 1;
-        page_size = 2 ^ (pi->regs[PI_BSD_DOM1_PGS_REG] + 2);
+        page_size = pow(2, (pi->regs[PI_BSD_DOM1_PGS_REG] + 2));
     }
     else if (domain == 2)
     {
         latency = pi->regs[PI_BSD_DOM2_LAT_REG] + 1;
         pulse_width = pi->regs[PI_BSD_DOM2_PWD_REG] + 1;
         release = pi->regs[PI_BSD_DOM2_RLS_REG] + 1;
-        page_size = 2 ^ (pi->regs[PI_BSD_DOM2_PGS_REG] + 2);
+        page_size = pow(2, (pi->regs[PI_BSD_DOM2_PGS_REG] + 2));
     }
-    if (dma)
-        pages = length / page_size;
-    else
-        pages = 1;
+    pages = ceil((double)length / page_size);
 
     cycles += (14 + latency) * pages;
     cycles += (pulse_width + release) * (length / 2);
     cycles += 5 * pages;
-    return cycles;
+    return cycles * 1.5; // Converting RCP clock speed to CPU clock speed
 }
 
 static void dma_pi_read(struct pi_controller* pi)
@@ -185,10 +183,10 @@ void poweron_pi(struct pi_controller* pi)
     memset(pi->regs, 0, PI_REGS_COUNT*sizeof(uint32_t));
     pi->regs[PI_BSD_DOM1_LAT_REG] = 0xFF;
     pi->regs[PI_BSD_DOM1_PWD_REG] = 0xFF;
-    pi->regs[PI_BSD_DOM1_PGS_REG] = 0x03;
+    pi->regs[PI_BSD_DOM1_RLS_REG] = 0x03;
     pi->regs[PI_BSD_DOM2_LAT_REG] = 0xFF;
     pi->regs[PI_BSD_DOM2_PWD_REG] = 0xFF;
-    pi->regs[PI_BSD_DOM2_PGS_REG] = 0x03;
+    pi->regs[PI_BSD_DOM2_RLS_REG] = 0x03;
 }
 
 void read_pi_regs(void* opaque, uint32_t address, uint32_t* value)
@@ -204,7 +202,6 @@ void read_pi_regs(void* opaque, uint32_t address, uint32_t* value)
         *value &= 0xFFFFFFFE;
     else if (reg == PI_DRAM_ADDR_REG)
         *value &= 0xFFFFFE;
-    cp0_uncached_read(pi->mi->r4300);
 }
 
 void write_pi_regs(void* opaque, uint32_t address, uint32_t value, uint32_t mask)

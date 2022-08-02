@@ -38,10 +38,8 @@
 
 static void read_open_bus(void* opaque, uint32_t address, uint32_t* value)
 {
-    struct r4300_core* r4300 = (struct r4300_core*)opaque;
     *value = (address & 0xffff);
     *value |= (*value << 16);
-    cp0_uncached_read(r4300);
 }
 
 static void write_open_bus(void* opaque, uint32_t address, uint32_t value, uint32_t mask)
@@ -87,8 +85,6 @@ void init_device(struct device* dev,
     int no_compiled_jump,
     int randomize_interrupt,
     uint32_t start_address,
-    /* rsp */
-    uint32_t rsp_force_interrupt,
     /* ai */
     void* aout, const struct audio_out_backend_interface* iaout,
     /* rdram */
@@ -134,7 +130,7 @@ void init_device(struct device* dev,
 #define A(x,m) (x), (x) | (m)
     struct mem_mapping mappings[] = {
         /* clear mappings */
-        { 0x00000000, 0xffffffff, M64P_MEM_NOTHING, { &dev->r4300, RW(open_bus) } },
+        { 0x00000000, 0xffffffff, M64P_MEM_NOTHING, { NULL, RW(open_bus) } },
         /* memory map */
         { A(MM_RDRAM_DRAM, dram_size-1), M64P_MEM_RDRAM, { &dev->rdram, RW(rdram_dram) } },
         { A(MM_RDRAM_REGS, 0xfffff), M64P_MEM_RDRAMREG, { &dev->rdram, RW(rdram_regs) } },
@@ -149,8 +145,8 @@ void init_device(struct device* dev,
         { A(MM_PI_REGS, 0xffff), M64P_MEM_PI, { &dev->pi, RW(pi_regs) } },
         { A(MM_RI_REGS, 0xffff), M64P_MEM_RI, { &dev->ri, RW(ri_regs) } },
         { A(MM_SI_REGS, 0xffff), M64P_MEM_SI, { &dev->si, RW(si_regs) } },
-        { A(MM_DOM2_ADDR1, 0xffffff), M64P_MEM_NOTHING, { &dev->r4300, RW(open_bus) } },
-        { A(MM_DD_ROM, 0x1ffffff), M64P_MEM_NOTHING, { &dev->r4300, RW(open_bus) } },
+        { A(MM_DOM2_ADDR1, 0xffffff), M64P_MEM_NOTHING, { NULL, RW(open_bus) } },
+        { A(MM_DD_ROM, 0x1ffffff), M64P_MEM_NOTHING, { NULL, RW(open_bus) } },
         { A(MM_DOM2_ADDR2, 0x1ffff), M64P_MEM_FLASHRAMSTAT, { &dev->cart, RW(cart_dom2)  } },
         { A(MM_IS_VIEWER, 0xfff), M64P_MEM_NOTHING, { &dev->is, RW(is_viewer) } },
         { A(MM_CART_ROM, rom_size-1), M64P_MEM_ROM, { &dev->cart.cart_rom, RW(cart_rom) } },
@@ -182,7 +178,7 @@ void init_device(struct device* dev,
     init_r4300(&dev->r4300, &dev->mem, &dev->mi, &dev->rdram, interrupt_handlers,
             emumode, no_compiled_jump, randomize_interrupt, start_address);
     init_rdp(&dev->dp, &dev->sp, &dev->mi, &dev->mem, &dev->rdram, &dev->r4300);
-    init_rsp(&dev->sp, mem_base_u32(base, MM_RSP_MEM), &dev->mi, &dev->dp, &dev->ri, rsp_force_interrupt);
+    init_rsp(&dev->sp, mem_base_u32(base, MM_RSP_MEM), &dev->mi, &dev->dp, &dev->ri);
     init_ai(&dev->ai, &dev->mi, &dev->ri, &dev->vi, aout, iaout);
     init_mi(&dev->mi, &dev->r4300);
     init_pi(&dev->pi,

@@ -837,7 +837,7 @@ static void video_plugin_render_callback(int bScreenRedrawn)
     }
 }
 
-void new_frame(void)
+static void new_frame(void)
 {
     if (g_FrameCallback != NULL)
         (*g_FrameCallback)(l_CurrentFrame);
@@ -956,6 +956,7 @@ static void pause_loop(void)
  * Allow the core to perform various things */
 void new_vi(void)
 {
+    new_frame();
 #if defined(PROFILE)
     timed_sections_refresh();
 #endif
@@ -1480,7 +1481,6 @@ m64p_error main_run(void)
     struct file_storage sra;
     size_t dd_rom_size;
     struct dd_disk dd_disk;
-    uint32_t rsp_force_interrupt;
 
     int control_ids[GAME_CONTROLLERS_COUNT];
     struct controller_input_compat cin_compats[GAME_CONTROLLERS_COUNT];
@@ -1517,8 +1517,6 @@ m64p_error main_run(void)
     no_compiled_jump = ConfigGetParamBool(g_CoreConfig, "NoCompiledJump");
     //We disable any randomness for netplay
     randomize_interrupt = !netplay_is_init() ? ConfigGetParamBool(g_CoreConfig, "RandomizeInterrupt") : 0;
-
-    rsp_force_interrupt = ROM_SETTINGS.rspforceinterrupt;
 
     if (ROM_SETTINGS.disableextramem)
         disable_extra_mem = ROM_SETTINGS.disableextramem;
@@ -1777,7 +1775,6 @@ m64p_error main_run(void)
                 no_compiled_jump,
                 randomize_interrupt,
                 g_start_address,
-                rsp_force_interrupt,
                 &g_dev.ai, &g_iaudio_out_backend_plugin_compat,
                 rdram_size,
                 joybus_devices, ijoybus_devices,

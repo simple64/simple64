@@ -179,7 +179,6 @@ m64p_error open_rom(const unsigned char* romimage, unsigned int size)
         ROM_SETTINGS.mempak = entry->mempak;
         ROM_SETTINGS.biopak = entry->biopak;
         ROM_SETTINGS.disableextramem = entry->disableextramem;
-        ROM_SETTINGS.rspforceinterrupt = entry->rspforceinterrupt;
         ROM_PARAMS.cheats = entry->cheats;
     }
     else
@@ -195,7 +194,6 @@ m64p_error open_rom(const unsigned char* romimage, unsigned int size)
         ROM_SETTINGS.mempak = 1;
         ROM_SETTINGS.biopak = 0;
         ROM_SETTINGS.disableextramem = DEFAULT_DISABLE_EXTRA_MEM;
-        ROM_SETTINGS.rspforceinterrupt = DEFAULT_RSP_FORCE_INTERRUPT;
         ROM_PARAMS.cheats = NULL;
     }
 
@@ -334,12 +332,6 @@ static size_t romdatabase_resolve_round(void)
             entry->entry.set_flags |= ROMDATABASE_ENTRY_EXTRAMEM;
         }
 
-        if (!isset_bitmask(entry->entry.set_flags, ROMDATABASE_ENTRY_RSPFORCEINTERRUPT) &&
-            isset_bitmask(ref->set_flags, ROMDATABASE_ENTRY_RSPFORCEINTERRUPT)) {
-            entry->entry.rspforceinterrupt = ref->rspforceinterrupt;
-            entry->entry.set_flags |= ROMDATABASE_ENTRY_RSPFORCEINTERRUPT;
-        }
-
         if (!isset_bitmask(entry->entry.set_flags, ROMDATABASE_ENTRY_TRANSFERPAK) &&
             isset_bitmask(ref->set_flags, ROMDATABASE_ENTRY_TRANSFERPAK)) {
             entry->entry.transferpak = ref->transferpak;
@@ -448,7 +440,6 @@ void romdatabase_open(void)
             search->entry.players = 4;
             search->entry.rumble = 1;
             search->entry.disableextramem = DEFAULT_DISABLE_EXTRA_MEM;
-            search->entry.rspforceinterrupt = DEFAULT_RSP_FORCE_INTERRUPT;
             search->entry.cheats = NULL;
             search->entry.transferpak = 0;
             search->entry.mempak = 1;
@@ -564,11 +555,6 @@ void romdatabase_open(void)
             {
                 search->entry.disableextramem = atoi(l.value);
                 search->entry.set_flags |= ROMDATABASE_ENTRY_EXTRAMEM;
-            }
-            else if (!strcmp(l.name, "RspForceInterrupt"))
-            {
-                search->entry.rspforceinterrupt = atoi(l.value);
-                search->entry.set_flags |= ROMDATABASE_ENTRY_RSPFORCEINTERRUPT;
             }
             else if(!strncmp(l.name, "Cheat", 5))
             {

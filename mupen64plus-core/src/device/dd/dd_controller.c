@@ -366,7 +366,6 @@ void read_dd_regs(void* opaque, uint32_t address, uint32_t* value)
             }
         } break;
     }
-    cp0_uncached_read(dd->r4300);
 }
 
 void write_dd_regs(void* opaque, uint32_t address, uint32_t value, uint32_t mask)
@@ -543,7 +542,7 @@ void read_dd_rom(void* opaque, uint32_t address, uint32_t* value)
     *value = dd->rom[addr];
 
     DebugMessage(M64MSG_VERBOSE, "DD ROM: %08X -> %08x", address, *value);
-    cp0_add_cycles(dd->r4300, pi_calculate_cycles(dd->pi, 1, 4, 0));
+    cp0_dcm_interlock(dd->r4300, pi_calculate_cycles(dd->pi, 1, 4));
 }
 
 void write_dd_rom(void* opaque, uint32_t address, uint32_t value, uint32_t mask)
@@ -556,7 +555,7 @@ uint32_t dd_dom_dma_read(void* opaque, const uint8_t* dram, uint32_t dram_addr, 
     struct dd_controller* dd = (struct dd_controller*)opaque;
     uint8_t* mem;
     size_t i;
-    uint32_t cycles = pi_calculate_cycles(dd->pi, 1, length, 1);
+    uint32_t cycles = pi_calculate_cycles(dd->pi, 1, length);
 
     DebugMessage(M64MSG_VERBOSE, "DD DMA read dram=%08x  cart=%08x length=%08x",
             dram_addr, cart_addr, length);
@@ -586,7 +585,7 @@ uint32_t dd_dom_dma_write(void* opaque, uint8_t* dram, uint32_t dram_addr, uint3
     struct dd_controller* dd = (struct dd_controller*)opaque;
     const uint8_t* mem;
     size_t i;
-    uint32_t cycles = pi_calculate_cycles(dd->pi, 1, length, 1);
+    uint32_t cycles = pi_calculate_cycles(dd->pi, 1, length);
 
     DebugMessage(M64MSG_VERBOSE, "DD DMA write dram=%08x  cart=%08x length=%08x",
             dram_addr, cart_addr, length);

@@ -69,7 +69,7 @@ static void copy_pif_rdram(struct si_controller* si)
             dram[i] = tohl(pif_ram[i]);
         }
     }
-    si->regs[SI_DRAM_ADDR_REG] += (PIF_RAM_SIZE / 4);
+    si->regs[SI_DRAM_ADDR_REG] += PIF_RAM_SIZE;
 }
 
 static void dma_si_write(struct si_controller* si)
@@ -122,7 +122,6 @@ void read_si_regs(void* opaque, uint32_t address, uint32_t* value)
     uint32_t reg = si_reg(address);
 
     *value = si->regs[reg];
-    cp0_uncached_read(si->mi->r4300);
 }
 
 void write_si_regs(void* opaque, uint32_t address, uint32_t value, uint32_t mask)

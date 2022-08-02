@@ -44,7 +44,6 @@ void read_ri_regs(void* opaque, uint32_t address, uint32_t* value)
     uint32_t reg = ri_reg(address);
 
     *value = ri->regs[reg];
-    cp0_uncached_read(ri->rdram->r4300);
 }
 
 void write_ri_regs(void* opaque, uint32_t address, uint32_t value, uint32_t mask)

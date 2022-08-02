@@ -237,7 +237,7 @@ unsigned int get_r4300_emumode(struct r4300_core* r4300);
  * Useful for getting fast access to a zone with executable code. */
 uint32_t *fast_mem_access(struct r4300_core* r4300, uint32_t address);
 
-uint8_t r4300_translate_address(struct r4300_core* r4300, uint32_t* address, uint8_t* cached, uint8_t tlb_mode, uint8_t write);
+uint8_t r4300_translate_address(struct r4300_core* r4300, uint32_t* address, uint8_t* cached, uint8_t tlb_mode);
 
 int r4300_read_aligned_word(struct r4300_core* r4300, uint32_t address, uint32_t* value);
 int r4300_read_aligned_dword(struct r4300_core* r4300, uint32_t address, uint64_t* value);

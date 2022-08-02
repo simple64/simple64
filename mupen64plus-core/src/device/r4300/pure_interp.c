@@ -704,7 +704,6 @@ void InterpretOpcode(struct r4300_core* r4300)
 		RESERVED(r4300, op);
 		break;
 	} /* switch ((op >> 26) & 0x3F) */
-	cp0_add_cycles(r4300, r4300->cp0.instr_count);
 }
 
 void run_pure_interpreter(struct r4300_core* r4300)

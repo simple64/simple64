@@ -88,7 +88,6 @@ void read_dpc_regs(void* opaque, uint32_t address, uint32_t* value)
     uint32_t reg = dpc_reg(address);
 
     *value = dp->dpc_regs[reg];
-    cp0_uncached_read(dp->mi->r4300);
 }
 
 void write_dpc_regs(void* opaque, uint32_t address, uint32_t value, uint32_t mask)
@@ -119,7 +118,15 @@ void write_dpc_regs(void* opaque, uint32_t address, uint32_t value, uint32_t mas
         unprotect_framebuffers(&dp->fb);
         gfx.processRDPList();
         protect_framebuffers(&dp->fb);
-        signal_rcp_interrupt(dp->mi, MI_INTR_DP);
+        if (dp->mi->regs[MI_INTR_REG] & MI_INTR_DP)
+        {
+            dp->mi->regs[MI_INTR_REG] &= ~MI_INTR_DP;
+            if (dp->dpc_regs[DPC_STATUS_REG] & DPC_STATUS_FREEZE) {
+                dp->do_on_unfreeze |= DELAY_DP_INT;
+            } else {
+                add_interrupt_event(&dp->mi->r4300->cp0, DP_INT, 8000);
+            }
+        }
         break;
     }
 }
@@ -131,7 +138,6 @@ void read_dps_regs(void* opaque, uint32_t address, uint32_t* value)
     uint32_t reg = dps_reg(address);
 
     *value = dp->dps_regs[reg];
-    cp0_uncached_read(dp->mi->r4300);
 }
 
 void write_dps_regs(void* opaque, uint32_t address, uint32_t value, uint32_t mask)
