@@ -46,9 +46,6 @@ jobs:
             zip
       - name: Run build script
         run: msys2 -c 'export M64P_AUTOUPDATE=1; ./build.sh'
-        env:
-          HOST_CPU: x86_64
-          MSBUILD_PATH: "/c/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/MSBuild/Current/Bin/"
       - name: Upload zip
         uses: actions/upload-artifact@v3
         with:
