@@ -170,7 +170,6 @@ static void update_sp_status(struct rsp_core* sp, uint32_t w)
     if (w & 0x200) sp->regs[SP_STATUS_REG] &= ~SP_STATUS_SIG0;
     if (w & 0x400) sp->regs[SP_STATUS_REG] |= SP_STATUS_SIG0;
 
-
     /* clear / set signal 1 */
     if (w & 0x800) sp->regs[SP_STATUS_REG] &= ~SP_STATUS_SIG1;
     if (w & 0x1000) sp->regs[SP_STATUS_REG] |= SP_STATUS_SIG1;
