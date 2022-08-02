@@ -72,7 +72,6 @@ void poweron_cp0(struct cp0* cp0)
     *cp0_next_interrupt = 0;
     *cp0_cycle_count = 0;
     cp0->half_count = 0;
-    cp0->instr_count = 1;
     cp0->last_addr = UINT32_C(0xbfc00000);
 
     init_interrupt(cp0);
@@ -125,14 +124,7 @@ int check_cop1_unusable(struct r4300_core* r4300)
     return 0;
 }
 
-void cp0_set_cycles(struct r4300_core* r4300, uint32_t cycles)
-{
-    struct cp0* cp0 = &r4300->cp0;
-    if (cycles > cp0->instr_count)
-        cp0->instr_count = cycles;
-}
-
-void cp0_add_cycles(struct r4300_core* r4300, uint32_t cycles)
+static void cp0_add_cycles(struct r4300_core* r4300, uint32_t cycles)
 {
     struct cp0* cp0 = &r4300->cp0;
     uint32_t* cp0_regs = r4300_cp0_regs(cp0);
@@ -148,18 +140,39 @@ void cp0_add_cycles(struct r4300_core* r4300, uint32_t cycles)
     *r4300_cp0_cycle_count(cp0) += count;
 }
 
-void cp0_cached_read(struct r4300_core* r4300)
+void cp0_base_cycle(struct r4300_core* r4300)
 {
     cp0_add_cycles(r4300, 1);
 }
 
-void cp0_uncached_read(struct r4300_core* r4300)
+void cp0_mci_interlock(struct r4300_core* r4300, uint32_t cycles)
 {
-    cp0_add_cycles(r4300, 7);
+    cp0_add_cycles(r4300, cycles - 1);
+}
+
+void cp0_itm_interlock(struct r4300_core* r4300)
+{
+    cp0_add_cycles(r4300, 3);
+}
+
+void cp0_dcm_interlock(struct r4300_core* r4300, uint32_t cycles)
+{
+    cp0_add_cycles(r4300, cycles);
+}
+
+void cp0_dcb_interlock(struct r4300_core* r4300, uint32_t cycles)
+{
+    cp0_add_cycles(r4300, cycles);
+}
+
+void cp0_icb_interlock(struct r4300_core* r4300, uint32_t cycles)
+{
+    cp0_add_cycles(r4300, cycles);
 }
 
 static void exception_epilog(struct r4300_core* r4300)
 {
+    cp0_add_cycles(r4300, 2);
 #ifndef NO_ASM
 #ifndef NEW_DYNAREC
     if (r4300->emumode == EMUMODE_DYNAREC)

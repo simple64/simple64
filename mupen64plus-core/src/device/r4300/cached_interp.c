@@ -85,7 +85,6 @@ void cached_interp_##name(void) \
         UPDATE_DEBUGGER(); \
         icache_fetch(r4300, (*r4300_pc_struct(r4300))->addr); \
         (*r4300_pc_struct(r4300))->ops(); \
-        cp0_add_cycles(r4300, r4300->cp0.instr_count); \
         r4300->delay_slot=0; \
         if (take_jump && !r4300->skip_jump) \
         { \
@@ -118,7 +117,6 @@ void cached_interp_##name##_OUT(void) \
         UPDATE_DEBUGGER(); \
         icache_fetch(r4300, (*r4300_pc_struct(r4300))->addr); \
         (*r4300_pc_struct(r4300))->ops(); \
-        cp0_add_cycles(r4300, r4300->cp0.instr_count); \
         r4300->delay_slot=0; \
         if (take_jump && !r4300->skip_jump) \
         { \
@@ -204,7 +202,6 @@ Used by dynarec only, check should be unnecessary
 */
         icache_fetch(r4300, (*r4300_pc_struct(r4300))->addr);
         (*r4300_pc_struct(r4300))->ops();
-        cp0_add_cycles(r4300, r4300->cp0.instr_count);
     }
     else
     {
@@ -222,7 +219,6 @@ Used by dynarec only, check should be unnecessary
         {
             icache_fetch(r4300, (*r4300_pc_struct(r4300))->addr);
             (*r4300_pc_struct(r4300))->ops();
-            cp0_add_cycles(r4300, r4300->cp0.instr_count);
             r4300->cached_interp.actual = blk;
             (*r4300_pc_struct(r4300)) = inst+1;
         }
@@ -255,7 +251,6 @@ called before NOTCOMPILED would have been executed
 */
     icache_fetch(r4300, (*r4300_pc_struct(r4300))->addr);
     (*r4300_pc_struct(r4300))->ops();
-    cp0_add_cycles(r4300, r4300->cp0.instr_count);
 }
 
 void cached_interp_NOTCOMPILED2(void)
@@ -1005,6 +1000,5 @@ void run_cached_interpreter(struct r4300_core* r4300)
 #endif
         icache_fetch(r4300, (*r4300_pc_struct(r4300))->addr);
         (*r4300_pc_struct(r4300))->ops();
-        cp0_add_cycles(r4300, r4300->cp0.instr_count);
     }
 }

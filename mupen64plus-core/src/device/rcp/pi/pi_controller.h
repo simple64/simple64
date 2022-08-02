@@ -108,6 +108,6 @@ void write_pi_regs(void* opaque, uint32_t address, uint32_t value, uint32_t mask
 void pi_end_of_dma_event(void* opaque);
 int validate_pi_request(struct pi_controller* pi);
 
-uint32_t pi_calculate_cycles(struct pi_controller* pi, uint8_t domain, uint32_t length, uint8_t dma);
+uint32_t pi_calculate_cycles(struct pi_controller* pi, uint8_t domain, uint32_t length);
 
 #endif
