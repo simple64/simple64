@@ -117,6 +117,8 @@ struct alignas(64) CP2
 struct CPUState
 {
 	uint32_t pc = 0;
+	uint32_t instruction_count = 0;
+	uint32_t last_instruction_type = 0;
 	uint32_t dirty_blocks = 0;
 	static_assert(CODE_BLOCKS <= 32, "Code blocks must fit in 32-bit register.");
 
@@ -139,6 +141,12 @@ enum ReturnMode
 	MODE_BREAK = 2,
 	MODE_DMA_READ = 3,
 	MODE_CHECK_FLAGS = 4
+};
+
+enum InstructionType
+{
+	VU_INSTRUCTION = 0,
+	SU_INSTRUCTION = 1
 };
 
 } // namespace RSP
