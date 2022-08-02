@@ -305,6 +305,12 @@ extern "C"
 		printf("  ... Enter 0x%03x ...  ", unsigned(pc & 0xffcu));
 	}
 #endif
+	static void add_instruction_count(CPUState *rsp, uint32_t instruction_type)
+	{
+		if (instruction_type == rsp->last_instruction_type)
+			++rsp->instruction_count;
+		rsp->last_instruction_type = instruction_type;
+	}
 }
 
 void CPU::jit_save_indirect_register(jit_state_t *_jit, unsigned mips_register)
@@ -864,6 +870,11 @@ void CPU::jit_instruction(jit_state_t *_jit, uint32_t pc, uint32_t instr,
 	// VU
 	if ((instr >> 25) == 0x25)
 	{
+		regs.flush_register_window(_jit);
+		jit_begin_call(_jit);
+		jit_pushargr(JIT_REGISTER_STATE);
+		jit_pushargi(RSP::VU_INSTRUCTION);
+		jit_end_call(_jit, reinterpret_cast<jit_pointer_t>(add_instruction_count));
 		// VU instruction. COP2, and high bit of opcode is set.
 		uint32_t op = instr & 63;
 		uint32_t vd = (instr >> 6) & 31;
@@ -895,6 +906,14 @@ void CPU::jit_instruction(jit_state_t *_jit, uint32_t pc, uint32_t instr,
 		jit_pushargi(e);
 		jit_end_call(_jit ,reinterpret_cast<jit_pointer_t>(vuop));
 		return;
+	}
+	else
+	{
+		regs.flush_register_window(_jit);
+		jit_begin_call(_jit);
+		jit_pushargr(JIT_REGISTER_STATE);
+		jit_pushargi(RSP::SU_INSTRUCTION);
+		jit_end_call(_jit, reinterpret_cast<jit_pointer_t>(add_instruction_count));
 	}
 
 	// TODO: Meaningful register allocation.
