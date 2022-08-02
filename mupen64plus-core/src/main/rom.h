@@ -108,7 +108,6 @@ typedef struct
    unsigned char players; /* Local players 0-4, 2/3/4 way Netplay indicated by 5/6/7. */
    unsigned char rumble; /* 0 - No, 1 - Yes boolean for rumble support. */
    unsigned char disableextramem;
-   unsigned char rspforceinterrupt;
    unsigned char transferpak; /* 0 - No, 1 - Yes boolean for transferpak support. */
    unsigned char mempak; /* 0 - No, 1 - Yes boolean for mempak support. */
    unsigned char biopak; /* 0 - No, 1 - Yes boolean for biopak support. */
@@ -127,12 +126,9 @@ typedef struct
 #define ROMDATABASE_ENTRY_TRANSFERPAK   BIT(9)
 #define ROMDATABASE_ENTRY_MEMPAK        BIT(10)
 #define ROMDATABASE_ENTRY_BIOPAK        BIT(11)
-#define ROMDATABASE_ENTRY_RSPFORCEINTERRUPT BIT(14)
 
 /* by default, extra mem is enabled */
 enum { DEFAULT_DISABLE_EXTRA_MEM = 0 };
-/* Default RSP Force Interrupt */
-enum { DEFAULT_RSP_FORCE_INTERRUPT = 0 };
 
 typedef struct _romdatabase_search
 {

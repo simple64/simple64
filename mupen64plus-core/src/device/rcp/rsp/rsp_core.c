@@ -48,8 +48,6 @@ static void do_sp_dma(struct rsp_core* sp, const struct sp_dma* dma)
 
     unsigned int memaddr = dma->memaddr & 0xff8;
     unsigned int dramaddr = dma->dramaddr & 0xfffff8;
-    unsigned int initial_memaddr = memaddr;
-    unsigned int initial_dramaddr = dramaddr;
 
     unsigned char *spmem = (unsigned char*)sp->mem + (dma->memaddr & 0x1000);
     unsigned char *dram = (unsigned char*)sp->ri->rdram->dram;
@@ -61,10 +59,13 @@ static void do_sp_dma(struct rsp_core* sp, const struct sp_dma* dma)
                 dram[dramaddr^S8] = spmem[memaddr^S8];
                 memaddr++;
                 dramaddr++;
+                sp->regs[SP_MEM_ADDR_REG]++;
+                sp->regs[SP_DRAM_ADDR_REG]++;
             }
 
             post_framebuffer_write(&sp->dp->fb, dramaddr - length, length);
             dramaddr+=skip;
+            sp->regs[SP_DRAM_ADDR_REG]+=skip;
         }
     }
     else
@@ -76,12 +77,13 @@ static void do_sp_dma(struct rsp_core* sp, const struct sp_dma* dma)
                 spmem[memaddr^S8] = dram[dramaddr^S8];
                 memaddr++;
                 dramaddr++;
+                sp->regs[SP_MEM_ADDR_REG]++;
+                sp->regs[SP_DRAM_ADDR_REG]++;
             }
             dramaddr+=skip;
+            sp->regs[SP_DRAM_ADDR_REG]+=skip;
         }
     }
-    sp->regs[SP_MEM_ADDR_REG] += memaddr - initial_memaddr;
-    sp->regs[SP_DRAM_ADDR_REG] += dramaddr - initial_dramaddr;
     /* schedule end of dma event */
     add_interrupt_event(&sp->mi->r4300->cp0, RSP_DMA_EVT, ((count * length) / 10) + 4);
 }
@@ -166,14 +168,8 @@ static void update_sp_status(struct rsp_core* sp, uint32_t w)
 
     /* clear / set signal 0 */
     if (w & 0x200) sp->regs[SP_STATUS_REG] &= ~SP_STATUS_SIG0;
-    if (w & 0x400)
-    {
-        sp->regs[SP_STATUS_REG] |= SP_STATUS_SIG0;
-        // This is a timing hack, some games seem to think the RSP should still be running after we've stopped it
-        // They set SP_STATUS_YIELD (SP_STATUS_SIG0), expecting the RSP to yield and generate an interrupt
-        if (sp->rsp_force_interrupt)
-            signal_rcp_interrupt(sp->mi, MI_INTR_SP);
-    }
+    if (w & 0x400) sp->regs[SP_STATUS_REG] |= SP_STATUS_SIG0;
+
 
     /* clear / set signal 1 */
     if (w & 0x800) sp->regs[SP_STATUS_REG] &= ~SP_STATUS_SIG1;
@@ -213,14 +209,12 @@ void init_rsp(struct rsp_core* sp,
               uint32_t* sp_mem,
               struct mi_controller* mi,
               struct rdp_core* dp,
-              struct ri_controller* ri,
-              uint32_t rsp_force_interrupt)
+              struct ri_controller* ri)
 {
     sp->mem = sp_mem;
     sp->mi = mi;
     sp->dp = dp;
     sp->ri = ri;
-    sp->rsp_force_interrupt = rsp_force_interrupt;
 }
 
 void poweron_rsp(struct rsp_core* sp)
@@ -231,7 +225,6 @@ void poweron_rsp(struct rsp_core* sp)
     memset(sp->fifo, 0, SP_DMA_FIFO_SIZE*sizeof(struct sp_dma));
 
     sp->rsp_status = 0;
-    sp->rsp_cycles = 0;
     sp->mi->r4300->cp0.interrupt_unsafe_state &= ~(INTR_UNSAFE_RSP | INTR_UNSAFE_RSP_TASK);
     sp->regs[SP_STATUS_REG] = 1;
 }
@@ -243,7 +236,6 @@ void read_rsp_mem(void* opaque, uint32_t address, uint32_t* value)
     uint32_t addr = rsp_mem_address(address);
 
     *value = sp->mem[addr];
-    cp0_uncached_read(sp->mi->r4300);
 }
 
 void write_rsp_mem(void* opaque, uint32_t address, uint32_t value, uint32_t mask)
@@ -266,7 +258,6 @@ void read_rsp_regs(void* opaque, uint32_t address, uint32_t* value)
     {
         sp->regs[SP_SEMAPHORE_REG] = 1;
     }
-    cp0_uncached_read(sp->mi->r4300);
 }
 
 void write_rsp_regs(void* opaque, uint32_t address, uint32_t value, uint32_t mask)
@@ -305,7 +296,6 @@ void read_rsp_regs2(void* opaque, uint32_t address, uint32_t* value)
     uint32_t reg = rsp_reg2(address);
 
     *value = sp->regs2[reg];
-    cp0_uncached_read(sp->mi->r4300);
 }
 
 void write_rsp_regs2(void* opaque, uint32_t address, uint32_t value, uint32_t mask)
@@ -322,18 +312,17 @@ void do_SP_Task(struct rsp_core* sp)
         return;
 
     uint32_t saved_status = sp->regs[SP_STATUS_REG];
-    uint32_t sp_delay_time = 0;
 
     unprotect_framebuffers(&sp->dp->fb);
-    sp->rsp_cycles = (rsp.doRspCycles(0xffffffff) / 4) * 10;
+    uint32_t rsp_cycles = rsp.doRspCycles(0xffffffff) / 2;
+
     if (sp->mi->regs[MI_INTR_REG] & MI_INTR_DP)
     {
-        new_frame();
         sp->mi->regs[MI_INTR_REG] &= ~MI_INTR_DP;
         if (sp->dp->dpc_regs[DPC_STATUS_REG] & DPC_STATUS_FREEZE) {
             sp->dp->do_on_unfreeze |= DELAY_DP_INT;
         } else {
-            add_interrupt_event(&sp->mi->r4300->cp0, DP_INT, sp->rsp_cycles + 8000);
+            add_interrupt_event(&sp->mi->r4300->cp0, DP_INT, rsp_cycles + 2000);
         }
     }
     protect_framebuffers(&sp->dp->fb);
@@ -341,24 +330,21 @@ void do_SP_Task(struct rsp_core* sp)
     sp->rsp_status = sp->regs[SP_STATUS_REG];
     if ((sp->regs[SP_STATUS_REG] & (SP_STATUS_HALT | SP_STATUS_BROKE)) == 0 && !get_event(&sp->mi->r4300->cp0.q, RSP_TSK_EVT))
     {
-        sp_delay_time = 2000;
-        add_interrupt_event(&sp->mi->r4300->cp0, RSP_TSK_EVT, sp_delay_time);
+        add_interrupt_event(&sp->mi->r4300->cp0, RSP_TSK_EVT, 2000);
         sp->mi->r4300->cp0.interrupt_unsafe_state |= INTR_UNSAFE_RSP_TASK;
     }
     if ((sp->regs[SP_STATUS_REG] & SP_STATUS_BROKE) && (sp->regs[SP_STATUS_REG] & SP_STATUS_INTR_BREAK))
     {
-        sp_delay_time = sp->rsp_cycles & ~0xff;
-        add_interrupt_event(&sp->mi->r4300->cp0, SP_INT, sp_delay_time);
+        add_interrupt_event(&sp->mi->r4300->cp0, SP_INT, rsp_cycles);
         sp->mi->r4300->cp0.interrupt_unsafe_state |= INTR_UNSAFE_RSP;
         sp->regs[SP_STATUS_REG] = saved_status;
     }
     else if (sp->mi->regs[MI_INTR_REG] & MI_INTR_SP)
     {
-        sp_delay_time = sp->rsp_cycles & ~0xff;
-        add_interrupt_event(&sp->mi->r4300->cp0, SP_INT, sp_delay_time);
+        add_interrupt_event(&sp->mi->r4300->cp0, SP_INT, rsp_cycles);
         sp->mi->r4300->cp0.interrupt_unsafe_state |= INTR_UNSAFE_RSP;
-        sp->mi->regs[MI_INTR_REG] &= ~MI_INTR_SP;
     }
+    sp->mi->regs[MI_INTR_REG] &= ~MI_INTR_SP;
 }
 
 void rsp_interrupt_event(void* opaque)

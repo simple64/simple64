@@ -104,7 +104,6 @@ void read_vi_regs(void* opaque, uint32_t address, uint32_t* value)
     }
 
     *value = vi->regs[reg];
-    cp0_uncached_read(vi->mi->r4300);
 }
 
 void write_vi_regs(void* opaque, uint32_t address, uint32_t value, uint32_t mask)
