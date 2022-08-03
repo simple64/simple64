@@ -45,6 +45,8 @@ RSP::JIT::CPU cpu;
 #endif
 uint32_t MFC0_count[32];
 uint32_t SP_STATUS_TIMEOUT;
+uint32_t dma0_timer;
+uint32_t dma1_timer;
 } // namespace RSP
 
 extern "C"
@@ -86,6 +88,8 @@ extern "C"
 		RSP::cpu.get_state().pc = *RSP::rsp.SP_PC_REG & 0xfff;
 		RSP::cpu.get_state().instruction_count = 0;
 		RSP::cpu.get_state().last_instruction_type = RSP::VU_INSTRUCTION;
+		RSP::dma0_timer = 0;
+		RSP::dma1_timer = 0;
 
 #ifdef INTENSE_DEBUG
 		fprintf(stderr, "RUN TASK: %u\n", RSP::cpu.get_state().pc);
@@ -103,6 +107,9 @@ extern "C"
 		}
 
 		*RSP::rsp.SP_PC_REG = 0x04001000 | (RSP::cpu.get_state().pc & 0xffc);
+		*RSP::rsp.SP_DMA_BUSY_REG = 0;
+		*RSP::rsp.SP_DMA_FULL_REG = 0;
+		*RSP::rsp.SP_STATUS_REG &= ~(SP_STATUS_DMA_BUSY | SP_STATUS_DMA_FULL);
 
 		// From CXD4.
 		if (*RSP::rsp.SP_STATUS_REG & SP_STATUS_BROKE)
