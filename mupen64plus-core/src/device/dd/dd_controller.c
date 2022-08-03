@@ -542,7 +542,7 @@ void read_dd_rom(void* opaque, uint32_t address, uint32_t* value)
     *value = dd->rom[addr];
 
     DebugMessage(M64MSG_VERBOSE, "DD ROM: %08X -> %08x", address, *value);
-    cp0_dcm_interlock(dd->r4300, pi_calculate_cycles(dd->pi, 1, 4));
+    cp0_rom_interlock(dd->r4300, pi_calculate_cycles(dd->pi, 1, 4));
 }
 
 void write_dd_rom(void* opaque, uint32_t address, uint32_t value, uint32_t mask)

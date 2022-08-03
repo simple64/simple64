@@ -184,23 +184,24 @@ const struct rumble_backend_interface
 };
 
 
-static void input_plugin_read_controller(void* opaque,
+static uint32_t input_plugin_read_controller(void* opaque,
     const uint8_t* tx, const uint8_t* tx_buf,
     uint8_t* rx, uint8_t* rx_buf)
 {
     int control_id = *(int*)opaque;
 
     if (input.readController == NULL) {
-        return;
+        return 0;
     }
 
     //This is for netplay, -1 means there is no local controller controlling this player
     if (control_id == -1) {
-        return;
+        return 0;
     }
 
     /* UGLY: use negative offsets to get access to non-const tx pointer */
     input.readController(control_id, rx - 1);
+    return 0;
 }
 
 void input_plugin_controller_command(void* opaque,

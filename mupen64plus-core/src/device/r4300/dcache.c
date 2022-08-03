@@ -33,7 +33,7 @@ void poweron_dcache(struct datacache *lines)
 
 void dcache_writeback(struct r4300_core* r4300, struct datacache *line)
 {
-    cp0_dcb_interlock(r4300, 20);
+    cp0_dcb_interlock(r4300, 24);
     line->dirty = 0;
     uint32_t cache_address = line->tag | line->index;
     invalidate_r4300_cached_code(r4300, cache_address, 16);
@@ -53,7 +53,7 @@ uint32_t dcache_hit(struct datacache *line, uint32_t address)
 
 static void dcache_fill(struct datacache *line, struct r4300_core* r4300, uint32_t address)
 {
-    cp0_dcb_interlock(r4300, 5);
+    cp0_dcb_interlock(r4300, 9);
     line->valid = 1;
     line->dirty = 0;
     line->tag = address & ~UINT32_C(0xFFF);

@@ -93,7 +93,6 @@ static void do_dma(struct ai_controller* ai, struct ai_dma* dma)
         ai->delayed_carry = 0;
 
     /* schedule end of dma event */
-    signal_rcp_interrupt(ai->mi, MI_INTR_AI);
     add_interrupt_event(&ai->mi->r4300->cp0, AI_INT, dma->duration);
 }
 
@@ -115,6 +114,7 @@ static void fifo_push(struct ai_controller* ai)
         ai->fifo[0].duration = duration;
         ai->regs[AI_STATUS_REG] |= AI_STATUS_BUSY;
 
+        signal_rcp_interrupt(ai->mi, MI_INTR_AI);
         do_dma(ai, &ai->fifo[0]);
     }
 }
@@ -229,4 +229,5 @@ void ai_end_of_dma_event(void* opaque)
     }
 
     fifo_pop(ai);
+    raise_rcp_interrupt(ai->mi, MI_INTR_AI);
 }

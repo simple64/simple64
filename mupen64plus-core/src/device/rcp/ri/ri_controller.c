@@ -42,6 +42,8 @@ void read_ri_regs(void* opaque, uint32_t address, uint32_t* value)
 {
     struct ri_controller* ri = (struct ri_controller*)opaque;
     uint32_t reg = ri_reg(address);
+    if (reg == RI_SELECT_REG)
+        cp0_startup_cycles(ri->rdram->r4300); // Hack to simulate console startup time
 
     *value = ri->regs[reg];
 }
