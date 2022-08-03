@@ -8,6 +8,8 @@ namespace RSP
 extern RSP_INFO rsp;
 extern uint32_t MFC0_count[32];
 extern uint32_t SP_STATUS_TIMEOUT;
+extern uint32_t dma0_timer;
+extern uint32_t dma1_timer;
 } // namespace RSP
 #endif
 
@@ -22,6 +24,22 @@ extern "C"
 
 	int RSP_MFC0(RSP::CPUState *rsp, unsigned rt, unsigned rd)
 	{
+		if (RSP::dma0_timer && RSP::dma0_timer < rsp->instruction_count) // DMA complete
+		{
+			if (RSP::dma1_timer) // Pending DMA
+			{
+				RSP::dma0_timer = rsp->instruction_count + RSP::dma1_timer;
+				RSP::dma1_timer = 0;
+				*rsp->cp0.cr[CP0_REGISTER_DMA_FULL] = 0;
+				*rsp->cp0.cr[CP0_REGISTER_SP_STATUS] &= ~SP_STATUS_DMA_FULL;
+			}
+			else
+			{
+				RSP::dma0_timer = 0;
+				*rsp->cp0.cr[CP0_REGISTER_DMA_BUSY] = 0;
+				*rsp->cp0.cr[CP0_REGISTER_SP_STATUS] &= ~SP_STATUS_DMA_BUSY;
+			}
+		}
 		rd &= 15;
 		uint32_t res = *rsp->cp0.cr[rd];
 		if (rt)
@@ -35,6 +53,7 @@ extern "C"
 		// WAIT_FOR_CPU_HOST. From CXD4.
 		if (rd == CP0_REGISTER_SP_STATUS)
 		{
+			--rsp->instruction_count; // Some games check the STATUS reg more than normal since we don't really yield properly
 			RSP::MFC0_count[rt] += 1;
 			if (RSP::MFC0_count[rt] >= RSP::SP_STATUS_TIMEOUT)
 			{
@@ -182,6 +201,18 @@ extern "C"
 #ifdef INTENSE_DEBUG
 		log_rsp_mem_parallel();
 #endif
+		if (*rsp->cp0.cr[CP0_REGISTER_DMA_BUSY] == 0)
+		{
+			*rsp->cp0.cr[CP0_REGISTER_DMA_BUSY] = 1;
+			*rsp->cp0.cr[CP0_REGISTER_SP_STATUS] |= SP_STATUS_DMA_BUSY;
+			RSP::dma0_timer = rsp->instruction_count + (((length * count) / 4) / 1.5); // see https://hcs64.com/dma.html, divided by 1.5 to convert CPU cycles to RCP cycles
+		}
+		else
+		{
+			*rsp->cp0.cr[CP0_REGISTER_DMA_FULL] = 1;
+			*rsp->cp0.cr[CP0_REGISTER_SP_STATUS] |= SP_STATUS_DMA_FULL;
+			RSP::dma1_timer = ((length * count) / 4) / 1.5;
+		}
 		return rsp->dirty_blocks ? MODE_CHECK_FLAGS : MODE_CONTINUE;
 	}
 
@@ -234,6 +265,18 @@ extern "C"
 #ifdef INTENSE_DEBUG
 		log_rsp_mem_parallel();
 #endif
+		if (*rsp->cp0.cr[CP0_REGISTER_DMA_BUSY] == 0)
+		{
+			*rsp->cp0.cr[CP0_REGISTER_DMA_BUSY] = 1;
+			*rsp->cp0.cr[CP0_REGISTER_SP_STATUS] |= SP_STATUS_DMA_BUSY;
+			RSP::dma0_timer = rsp->instruction_count + (((length * count) / 4) / 1.5); // see https://hcs64.com/dma.html, divided by 1.5 to convert CPU cycles to RCP cycles
+		}
+		else
+		{
+			*rsp->cp0.cr[CP0_REGISTER_DMA_FULL] = 1;
+			*rsp->cp0.cr[CP0_REGISTER_SP_STATUS] |= SP_STATUS_DMA_FULL;
+			RSP::dma1_timer = ((length * count) / 4) / 1.5;
+		}
 	}
 #endif
 
