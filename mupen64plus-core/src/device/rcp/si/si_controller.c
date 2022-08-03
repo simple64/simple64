@@ -92,10 +92,10 @@ static void dma_si_read(struct si_controller* si)
 
     si->dma_dir = SI_DMA_READ;
 
-    update_pif_ram(si->pif);
+    uint32_t duration = update_pif_ram(si->pif);
 
     si->regs[SI_STATUS_REG] |= SI_STATUS_DMA_BUSY;
-    add_interrupt_event(&si->mi->r4300->cp0, SI_INT, si->dma_duration + add_random_interrupt_time(si->mi->r4300));
+    add_interrupt_event(&si->mi->r4300->cp0, SI_INT, duration + add_random_interrupt_time(si->mi->r4300));
 }
 
 void init_si(struct si_controller* si,

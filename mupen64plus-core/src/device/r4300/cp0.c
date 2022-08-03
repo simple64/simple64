@@ -140,6 +140,11 @@ static void cp0_add_cycles(struct r4300_core* r4300, uint32_t cycles)
     *r4300_cp0_cycle_count(cp0) += count;
 }
 
+void cp0_startup_cycles(struct r4300_core* r4300)
+{
+    cp0_add_cycles(r4300, r4300->clock_rate / 2);
+}
+
 void cp0_base_cycle(struct r4300_core* r4300)
 {
     cp0_add_cycles(r4300, 1);
@@ -155,7 +160,12 @@ void cp0_itm_interlock(struct r4300_core* r4300)
     cp0_add_cycles(r4300, 3);
 }
 
-void cp0_dcm_interlock(struct r4300_core* r4300, uint32_t cycles)
+void cp0_ram_interlock(struct r4300_core* r4300)
+{
+    cp0_add_cycles(r4300, 10);
+}
+
+void cp0_rom_interlock(struct r4300_core* r4300, uint32_t cycles)
 {
     cp0_add_cycles(r4300, cycles);
 }

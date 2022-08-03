@@ -87,7 +87,7 @@ void read_pif_mem(void* opaque, uint32_t address, uint32_t* value);
 void write_pif_mem(void* opaque, uint32_t address, uint32_t value, uint32_t mask);
 
 void process_pif_ram(struct pif* pif);
-void update_pif_ram(struct pif* pif);
+uint32_t update_pif_ram(struct pif* pif);
 
 void hw2_int_handler(void* opaque);
 

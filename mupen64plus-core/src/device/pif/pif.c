@@ -62,11 +62,11 @@ void print_pif(struct pif* pif)
 }
 #endif
 
-static void process_channel(struct pif_channel* channel)
+static uint32_t process_channel(struct pif_channel* channel)
 {
     /* don't process channel if it has been disabled */
     if (channel->tx == NULL) {
-        return;
+        return 0;
     }
 
     /* reset Tx/Rx just in case */
@@ -76,11 +76,11 @@ static void process_channel(struct pif_channel* channel)
     /* set NoResponse if no device is connected */
     if (channel->ijbd == NULL) {
         *channel->rx |= 0x80;
-        return;
+        return 0;
     }
 
     /* do device processing */
-    channel->ijbd->process(channel->jbd,
+    return channel->ijbd->process(channel->jbd,
         channel->tx, channel->tx_buf,
         channel->rx, channel->rx_buf);
 }
@@ -366,13 +366,14 @@ void process_pif_ram(struct pif* pif)
     pif->ram[0x3f] &= ~clrmask;
 }
 
-void update_pif_ram(struct pif* pif)
+uint32_t update_pif_ram(struct pif* pif)
 {
     size_t k;
+    uint32_t dma_duration = 0;
 
     /* perform PIF/Channel communications */
     for (k = 0; k < PIF_CHANNELS_COUNT; ++k) {
-        process_channel(&pif->channels[k]);
+        dma_duration += process_channel(&pif->channels[k]);
     }
 
     /* Zilmar-Spec plugin expect a call with control_id = -1 when RAM processing is done */
@@ -386,6 +387,9 @@ void update_pif_ram(struct pif* pif)
     DebugMessage(M64MSG_INFO, "PIF post read");
     print_pif(pif);
 #endif
+    if (dma_duration == 0)
+        dma_duration = pif->si->dma_duration;
+    return dma_duration;
 }
 
 void hw2_int_handler(void* opaque)

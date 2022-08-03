@@ -66,7 +66,7 @@ void read_cart_rom(void* opaque, uint32_t address, uint32_t* value)
     {
         *value = *(uint32_t*)(cart_rom->rom + addr);
     }
-    cp0_dcm_interlock(cart_rom->r4300, pi_calculate_cycles(cart_rom->pi, 1, 4));
+    cp0_rom_interlock(cart_rom->r4300, pi_calculate_cycles(cart_rom->pi, 1, 4));
 }
 
 void write_cart_rom(void* opaque, uint32_t address, uint32_t value, uint32_t mask)

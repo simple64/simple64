@@ -31,7 +31,7 @@
 #include <stdint.h>
 #include <string.h>
 
-static void process_cart_command(void* jbd,
+static uint32_t process_cart_command(void* jbd,
     const uint8_t* tx, const uint8_t* tx_buf,
     uint8_t* rx, uint8_t* rx_buf)
 {
@@ -63,6 +63,7 @@ static void process_cart_command(void* jbd,
     case JCMD_EEPROM_WRITE: {
         JOYBUS_CHECK_COMMAND_FORMAT(10, 1)
         eeprom_write_block(&cart->eeprom, tx_buf[1], &tx_buf[2], &rx_buf[0]);
+        return cart->cart_rom.r4300->clock_rate * 0.015; // 15 ms
     } break;
 
     case JCMD_AF_RTC_STATUS: {
@@ -88,6 +89,7 @@ static void process_cart_command(void* jbd,
         DebugMessage(M64MSG_WARNING, "cart: Unknown command %02x %02x %02x",
             *tx, *rx, cmd);
     }
+    return 0;
 }
 
 const struct joybus_device_interface
