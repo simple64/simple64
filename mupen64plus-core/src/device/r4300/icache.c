@@ -33,7 +33,7 @@ void poweron_icache(struct instcache *lines)
 
 void icache_writeback(struct r4300_core* r4300, struct instcache *line)
 {
-    cp0_icb_interlock(r4300, 24);
+    cp0_dcb_interlock(r4300, 48);
     uint32_t cache_address = line->tag | line->index;
     invalidate_r4300_cached_code(r4300, cache_address, 32);
     invalidate_r4300_cached_code(r4300, cache_address ^ UINT32_C(0x20000000), 32);
@@ -56,7 +56,7 @@ uint32_t icache_hit(struct instcache *line, uint32_t address)
 
 void icache_fill(struct instcache *line, struct r4300_core* r4300, uint32_t address)
 {
-    cp0_icb_interlock(r4300, 6);
+    cp0_icb_interlock(r4300, 15);
     line->valid = 1;
     line->tag = address & ~UINT32_C(0xFFF);
     uint32_t cache_address = line->tag | line->index;

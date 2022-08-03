@@ -85,7 +85,7 @@ static void do_sp_dma(struct rsp_core* sp, const struct sp_dma* dma)
         }
     }
     /* schedule end of dma event */
-    add_interrupt_event(&sp->mi->r4300->cp0, RSP_DMA_EVT, ((count * length) / 10) + 4);
+    add_interrupt_event(&sp->mi->r4300->cp0, RSP_DMA_EVT, (count * length) / 8); // https://hcs64.com/dma.html
 }
 
 static void fifo_push(struct rsp_core* sp, uint32_t dir)

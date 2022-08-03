@@ -75,7 +75,7 @@ struct joybus_device_interface
 
     /* Required. Perform command processing.
      */
-    void (*process)(void* jbd,
+    uint32_t (*process)(void* jbd,
         const uint8_t* tx, const uint8_t* tx_buf,
         uint8_t* rx, uint8_t* rx_buf);
 

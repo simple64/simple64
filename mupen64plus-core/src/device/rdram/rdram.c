@@ -94,6 +94,7 @@ static void read_rdram_dram_corrupted(void* opaque, uint32_t address, uint32_t* 
         *value = 0;
         return;
     }
+    cp0_ram_interlock(rdram->r4300);
 
     /* corrupt read value if CC value is not calibrated */
     uint32_t mode = rdram->regs[module][RDRAM_MODE_REG] ^ UINT32_C(0xc0c0c0c0);
@@ -229,9 +230,9 @@ void read_rdram_dram(void* opaque, uint32_t address, uint32_t* value)
 {
     struct rdram* rdram = (struct rdram*)opaque;
     uint32_t addr = rdram_dram_address(address);
+    cp0_ram_interlock(rdram->r4300);
 
     *value = rdram->dram[addr];
-    cp0_dcm_interlock(rdram->r4300, 11);
 }
 
 void write_rdram_dram(void* opaque, uint32_t address, uint32_t value, uint32_t mask)
