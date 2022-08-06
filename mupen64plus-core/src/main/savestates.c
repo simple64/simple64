@@ -205,7 +205,7 @@ static int savestates_load_m64p(struct device* dev, char *filepath)
     char queue[1024];
     unsigned char using_tlb_data[4];
     unsigned char data_0001_0200[4096]; // 4k for extra state from v1.2
-    unsigned char data_0001_0900[2129920]; // extra state from v1.9
+    unsigned char data_0001_0900[2129936]; // extra state from v1.9
 
     uint32_t* cp0_regs = r4300_cp0_regs(&dev->r4300.cp0);
 
@@ -908,6 +908,11 @@ static int savestates_load_m64p(struct device* dev, char *filepath)
                 dev->r4300.icache[i].tag = GETDATA(curr, uint32_t);
                 COPYARRAY(dev->r4300.icache[i].words, curr, uint32_t, 8);
             }
+            /* extra sp state */
+            dev->sp.rsp_status = GETDATA(curr, uint32_t);
+            dev->sp.first_run = GETDATA(curr, uint32_t);
+            dev->sp.last_cp0_count = GETDATA(curr, uint32_t);
+            dev->sp.next_rsp_run = GETDATA(curr, int32_t);
         }
     }
     else
@@ -980,7 +985,6 @@ static int savestates_load_m64p(struct device* dev, char *filepath)
     /* reset fb state */
     poweron_fb(&dev->dp.fb);
 
-    dev->sp.rsp_status = 0;
     dev->r4300.cp0.interrupt_unsafe_state = 0;
 
     *r4300_cp0_last_addr(&dev->r4300.cp0) = *r4300_pc(&dev->r4300);
@@ -1284,7 +1288,6 @@ static int savestates_load_pj64(struct device* dev,
     // No flashram info in pj64 savestate.
     poweron_flashram(&dev->cart.flashram);
 
-    dev->sp.rsp_status = 0;
     dev->r4300.cp0.interrupt_unsafe_state = 0;
 
     /* extra fb state */
@@ -1572,7 +1575,7 @@ static int savestates_save_m64p(const struct device* dev, char *filepath)
     save_eventqueue_infos(&dev->r4300.cp0, queue);
 
     // Allocate memory for the save state data
-    save->size = 16788288 + sizeof(queue) + 4 + 4096 + 2129920;
+    save->size = 16788288 + sizeof(queue) + 4 + 4096 + 2129936;
     save->data = curr = malloc(save->size);
     if (save->data == NULL)
     {
@@ -1957,6 +1960,12 @@ static int savestates_save_m64p(const struct device* dev, char *filepath)
         PUTDATA(curr, uint32_t, dev->r4300.icache[i].tag);
         PUTARRAY(dev->r4300.icache[i].words, curr, uint32_t, 8);
     }
+    /* extra sp state */
+    PUTDATA(curr, uint32_t, dev->sp.rsp_status);
+    PUTDATA(curr, uint32_t, dev->sp.first_run);
+    PUTDATA(curr, uint32_t, dev->sp.last_cp0_count);
+    PUTDATA(curr, int32_t, dev->sp.next_rsp_run);
+
     init_work(&save->work, savestates_save_m64p_work);
     queue_work(&save->work);
 

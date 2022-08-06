@@ -120,8 +120,7 @@ void init_device(struct device* dev,
         { &dev->pif,       hw2_int_handler             }, /* HW2 */
         { dev,             nmi_int_handler             }, /* NMI */
         { dev,             reset_hard_handler          }, /* reset_hard */
-        { &dev->sp,        rsp_end_of_dma_event        },
-        { &dev->sp,        rsp_end_of_tsk_event        }
+        { &dev->sp,        rsp_end_of_dma_event        }
     };
 
 #define R(x) read_ ## x
@@ -175,7 +174,7 @@ void init_device(struct device* dev,
 
     init_rdram(&dev->rdram, mem_base_u32(base, MM_RDRAM_DRAM), dram_size, &dev->r4300);
 
-    init_r4300(&dev->r4300, &dev->mem, &dev->mi, &dev->rdram, interrupt_handlers,
+    init_r4300(&dev->r4300, &dev->mem, &dev->mi, &dev->rdram, &dev->sp, interrupt_handlers,
             emumode, no_compiled_jump, randomize_interrupt, start_address);
     init_rdp(&dev->dp, &dev->sp, &dev->mi, &dev->mem, &dev->rdram, &dev->r4300);
     init_rsp(&dev->sp, mem_base_u32(base, MM_RSP_MEM), &dev->mi, &dev->dp, &dev->ri);
