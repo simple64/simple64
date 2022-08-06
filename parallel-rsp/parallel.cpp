@@ -45,8 +45,6 @@ RSP::JIT::CPU cpu;
 #endif
 uint32_t MFC0_count[32];
 uint32_t SP_STATUS_TIMEOUT;
-uint32_t dma0_timer;
-uint32_t dma1_timer;
 } // namespace RSP
 
 extern "C"
@@ -76,20 +74,19 @@ extern "C"
 	}
 #endif
 
-	EXPORT unsigned int CALL DoRspCycles(unsigned int cycles)
+	EXPORT unsigned int CALL DoRspCycles(unsigned int first_run)
 	{
 		if (*RSP::rsp.SP_STATUS_REG & (SP_STATUS_HALT | SP_STATUS_BROKE))
 			return 0;
 
 		// We don't know if Mupen from the outside invalidated our IMEM.
-		RSP::cpu.invalidate_imem();
+		if (first_run)
+			RSP::cpu.invalidate_imem();
 
 		// Run CPU until we either break or we need to fire an IRQ.
 		RSP::cpu.get_state().pc = *RSP::rsp.SP_PC_REG & 0xfff;
 		RSP::cpu.get_state().instruction_count = 0;
 		RSP::cpu.get_state().last_instruction_type = RSP::VU_INSTRUCTION;
-		RSP::dma0_timer = 0;
-		RSP::dma1_timer = 0;
 
 #ifdef INTENSE_DEBUG
 		fprintf(stderr, "RUN TASK: %u\n", RSP::cpu.get_state().pc);
@@ -119,8 +116,6 @@ extern "C"
 		else if (*RSP::rsp.SP_SEMAPHORE_REG != 0) // Semaphore lock fixes.
 		{
 		}
-		else
-			RSP::SP_STATUS_TIMEOUT = 16; // From now on, wait 16 times, not 0x7fff
 
 		// CPU restarts with the correct SIGs.
 		*RSP::rsp.SP_STATUS_REG &= ~SP_STATUS_HALT;
@@ -188,7 +183,7 @@ extern "C"
 		RSP::cpu.get_state().cp0.irq = RSP::rsp.MI_INTR_REG;
 
 		// From CXD4.
-		RSP::SP_STATUS_TIMEOUT = 0xffff;
+		RSP::SP_STATUS_TIMEOUT = 256;
 
 		RSP::cpu.set_dmem(reinterpret_cast<uint32_t *>(Rsp_Info.DMEM));
 		RSP::cpu.set_imem(reinterpret_cast<uint32_t *>(Rsp_Info.IMEM));
