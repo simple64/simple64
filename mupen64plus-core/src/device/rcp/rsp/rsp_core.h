@@ -97,6 +97,9 @@ struct rsp_core
     uint32_t regs[SP_REGS_COUNT];
     uint32_t regs2[SP_REGS2_COUNT];
     uint32_t rsp_status;
+    uint32_t first_run;
+    uint32_t last_cp0_count;
+    int32_t next_rsp_run;
 
     struct mi_controller* mi;
     struct rdp_core* dp;
@@ -140,6 +143,5 @@ void do_SP_Task(struct rsp_core* sp);
 
 void rsp_interrupt_event(void* opaque);
 void rsp_end_of_dma_event(void* opaque);
-void rsp_end_of_tsk_event(void* opaque);
 
 #endif
