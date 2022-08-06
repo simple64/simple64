@@ -142,8 +142,13 @@ void cached_interp_##name##_IDLE(void) \
     { \
         if(*cp0_cycle_count < 0) \
         { \
-            cp0_regs[CP0_COUNT_REG] -= *cp0_cycle_count; \
-            *cp0_cycle_count = 0; \
+            int target = *cp0_cycle_count; \
+            if (target < r4300->sp->next_rsp_run && r4300->sp->next_rsp_run < 0) \
+            { \
+                target = r4300->sp->next_rsp_run; \
+            } \
+            cp0_regs[CP0_COUNT_REG] -= target; \
+            *cp0_cycle_count -= target; \
         } \
     } \
     cached_interp_##name(); \

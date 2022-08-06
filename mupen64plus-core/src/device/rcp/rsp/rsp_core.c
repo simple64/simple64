@@ -142,7 +142,14 @@ static void update_sp_status(struct rsp_core* sp, uint32_t w)
 {
     /* clear / set halt */
     if (w & 0x1) sp->regs[SP_STATUS_REG] &= ~SP_STATUS_HALT;
-    if (w & 0x2) sp->regs[SP_STATUS_REG] |= SP_STATUS_HALT;
+    if (w & 0x2)
+    {
+        remove_event(&sp->mi->r4300->cp0.q, SP_INT);
+        sp->rsp_status = 0;
+        sp->first_run = 1;
+        sp->next_rsp_run = 0;
+        sp->regs[SP_STATUS_REG] |= SP_STATUS_HALT;
+    }
 
     /* clear broke */
     if (w & 0x4) sp->regs[SP_STATUS_REG] &= ~SP_STATUS_BROKE;
@@ -197,11 +204,6 @@ static void update_sp_status(struct rsp_core* sp, uint32_t w)
     /* clear / set signal 7 */
     if (w & 0x800000) sp->regs[SP_STATUS_REG] &= ~SP_STATUS_SIG7;
     if (w & 0x1000000) sp->regs[SP_STATUS_REG] |= SP_STATUS_SIG7;
-
-    if (!(w & 0x1) && !(w & 0x4))
-        return;
-
-    do_SP_Task(sp);
 }
 
 void init_rsp(struct rsp_core* sp,
@@ -224,7 +226,10 @@ void poweron_rsp(struct rsp_core* sp)
     memset(sp->fifo, 0, SP_DMA_FIFO_SIZE*sizeof(struct sp_dma));
 
     sp->rsp_status = 0;
-    sp->mi->r4300->cp0.interrupt_unsafe_state &= ~(INTR_UNSAFE_RSP | INTR_UNSAFE_RSP_TASK);
+    sp->first_run = 1;
+    sp->next_rsp_run = 0;
+    sp->last_cp0_count = 0;
+    sp->mi->r4300->cp0.interrupt_unsafe_state &= ~INTR_UNSAFE_RSP;
     sp->regs[SP_STATUS_REG] = 1;
 }
 
@@ -307,13 +312,23 @@ void write_rsp_regs2(void* opaque, uint32_t address, uint32_t value, uint32_t ma
 
 void do_SP_Task(struct rsp_core* sp)
 {
+    const uint32_t* cp0_regs = r4300_cp0_regs(&sp->mi->r4300->cp0);
+    sp->next_rsp_run += cp0_regs[CP0_COUNT_REG] - sp->last_cp0_count;
+    sp->last_cp0_count = cp0_regs[CP0_COUNT_REG];
     if (sp->regs[SP_STATUS_REG] & (SP_STATUS_HALT | SP_STATUS_BROKE))
+        return;
+    if (get_event(&sp->mi->r4300->cp0.q, SP_INT))
+        return;
+    if (sp->mi->regs[MI_INTR_REG] & MI_INTR_SP)
+        return;
+    if (sp->next_rsp_run < 0)
         return;
 
     uint32_t saved_status = sp->regs[SP_STATUS_REG];
 
     unprotect_framebuffers(&sp->dp->fb);
-    uint32_t rsp_cycles = rsp.doRspCycles(0xffffffff) / 2;
+    uint32_t rsp_cycles = rsp.doRspCycles(sp->first_run) / 2;
+    protect_framebuffers(&sp->dp->fb);
 
     if (sp->mi->regs[MI_INTR_REG] & MI_INTR_DP)
     {
@@ -321,28 +336,31 @@ void do_SP_Task(struct rsp_core* sp)
         if (sp->dp->dpc_regs[DPC_STATUS_REG] & DPC_STATUS_FREEZE) {
             sp->dp->do_on_unfreeze |= DELAY_DP_INT;
         } else {
-            add_interrupt_event(&sp->mi->r4300->cp0, DP_INT, rsp_cycles + 2000);
+            add_interrupt_event(&sp->mi->r4300->cp0, DP_INT, rsp_cycles + 8000);
         }
     }
-    protect_framebuffers(&sp->dp->fb);
 
     sp->rsp_status = sp->regs[SP_STATUS_REG];
-    if ((sp->regs[SP_STATUS_REG] & (SP_STATUS_HALT | SP_STATUS_BROKE)) == 0 && !get_event(&sp->mi->r4300->cp0.q, RSP_TSK_EVT))
+    if ((sp->regs[SP_STATUS_REG] & (SP_STATUS_HALT | SP_STATUS_BROKE)) == 0)
     {
-        add_interrupt_event(&sp->mi->r4300->cp0, RSP_TSK_EVT, 2000);
-        sp->mi->r4300->cp0.interrupt_unsafe_state |= INTR_UNSAFE_RSP_TASK;
+        sp->next_rsp_run = rsp_cycles * -1;
+        sp->first_run = 0;
+    }
+    else
+    {
+        sp->next_rsp_run = 0;
+        sp->first_run = 1;
     }
     if ((sp->regs[SP_STATUS_REG] & SP_STATUS_BROKE) && (sp->regs[SP_STATUS_REG] & SP_STATUS_INTR_BREAK))
     {
         add_interrupt_event(&sp->mi->r4300->cp0, SP_INT, rsp_cycles);
-        sp->mi->r4300->cp0.interrupt_unsafe_state |= INTR_UNSAFE_RSP;
         sp->regs[SP_STATUS_REG] = saved_status;
     }
     else if (sp->mi->regs[MI_INTR_REG] & MI_INTR_SP)
     {
         add_interrupt_event(&sp->mi->r4300->cp0, SP_INT, rsp_cycles);
-        sp->mi->r4300->cp0.interrupt_unsafe_state |= INTR_UNSAFE_RSP;
     }
+    sp->mi->r4300->cp0.interrupt_unsafe_state |= INTR_UNSAFE_RSP;
     sp->mi->regs[MI_INTR_REG] &= ~MI_INTR_SP;
 }
 
@@ -360,11 +378,4 @@ void rsp_end_of_dma_event(void* opaque)
 {
     struct rsp_core* sp = (struct rsp_core*)opaque;
     fifo_pop(sp);
-}
-
-void rsp_end_of_tsk_event(void* opaque)
-{
-    struct rsp_core* sp = (struct rsp_core*)opaque;
-    sp->mi->r4300->cp0.interrupt_unsafe_state &= ~INTR_UNSAFE_RSP_TASK;
-    do_SP_Task(sp);
 }

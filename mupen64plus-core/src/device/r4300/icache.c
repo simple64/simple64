@@ -23,6 +23,7 @@
 
 #include "device/r4300/r4300_core.h"
 #include "device/memory/memory.h"
+#include "device/rcp/rsp/rsp_core.h"
 
 void poweron_icache(struct instcache *lines)
 {
@@ -76,6 +77,7 @@ uint32_t* icache_fetch(struct r4300_core* r4300, uint32_t address)
 {
     struct instcache *line = &r4300->icache[(address >> 5) & UINT32_C(0x1FF)];
     uint8_t cached = 0;
+    do_SP_Task(r4300->sp);
     cp0_base_cycle(r4300);
     if (r4300_translate_address(r4300, &address, &cached, 2))
     {

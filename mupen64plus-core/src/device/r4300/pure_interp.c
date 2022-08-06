@@ -30,6 +30,7 @@
 #include "api/debugger.h"
 #include "api/m64p_types.h"
 #include "device/r4300/r4300_core.h"
+#include "device/rcp/rsp/rsp_core.h"
 #include "osal/preproc.h"
 
 #ifdef DBG
@@ -80,11 +81,16 @@ static void InterpretOpcode(struct r4300_core* r4300);
       if (cop1 && check_cop1_unusable(r4300)) return; \
       if (take_jump) \
       { \
-         if(*cp0_cycle_count < 0) \
-         { \
-             cp0_regs[CP0_COUNT_REG] -= *cp0_cycle_count; \
-             *cp0_cycle_count = 0; \
-         } \
+        if(*cp0_cycle_count < 0) \
+        { \
+          int target = *cp0_cycle_count; \
+          if (target < r4300->sp->next_rsp_run && r4300->sp->next_rsp_run < 0) \
+          { \
+            target = r4300->sp->next_rsp_run; \
+          } \
+          cp0_regs[CP0_COUNT_REG] -= target; \
+          *cp0_cycle_count -= target; \
+        } \
       } \
       name(r4300, op); \
    }

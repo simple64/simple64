@@ -195,6 +195,7 @@ struct r4300_core
     struct memory* mem;
     struct mi_controller* mi;
     struct rdram* rdram;
+    struct rsp_core* sp;
 
     uint32_t randomize_interrupt;
 
@@ -217,7 +218,7 @@ struct r4300_core
     offsetof(struct new_dynarec_hot_state, regs))
 #endif
 
-void init_r4300(struct r4300_core* r4300, struct memory* mem, struct mi_controller* mi, struct rdram* rdram, const struct interrupt_handler* interrupt_handlers, unsigned int emumode, int no_compiled_jump, int randomize_interrupt, uint32_t start_address);
+void init_r4300(struct r4300_core* r4300, struct memory* mem, struct mi_controller* mi, struct rdram* rdram, struct rsp_core* sp, const struct interrupt_handler* interrupt_handlers, unsigned int emumode, int no_compiled_jump, int randomize_interrupt, uint32_t start_address);
 void poweron_r4300(struct r4300_core* r4300);
 
 void run_r4300(struct r4300_core* r4300);
