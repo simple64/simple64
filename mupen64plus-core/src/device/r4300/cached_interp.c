@@ -205,7 +205,6 @@ void cached_interp_FIN_BLOCK(void)
 #endif
 Used by dynarec only, check should be unnecessary
 */
-        icache_fetch(r4300, (*r4300_pc_struct(r4300))->addr);
         (*r4300_pc_struct(r4300))->ops();
     }
     else
@@ -222,7 +221,6 @@ Used by dynarec only, check should be unnecessary
 */
         if (!r4300->skip_jump)
         {
-            icache_fetch(r4300, (*r4300_pc_struct(r4300))->addr);
             (*r4300_pc_struct(r4300))->ops();
             r4300->cached_interp.actual = blk;
             (*r4300_pc_struct(r4300)) = inst+1;
@@ -254,7 +252,6 @@ void cached_interp_NOTCOMPILED(void)
 The preceeding update_debugger SHOULD be unnecessary since it should have been
 called before NOTCOMPILED would have been executed
 */
-    icache_fetch(r4300, (*r4300_pc_struct(r4300))->addr);
     (*r4300_pc_struct(r4300))->ops();
 }
 
