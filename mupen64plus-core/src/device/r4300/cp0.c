@@ -162,7 +162,7 @@ void cp0_itm_interlock(struct r4300_core* r4300)
 
 void cp0_ram_interlock(struct r4300_core* r4300)
 {
-    cp0_add_cycles(r4300, 6);
+    cp0_add_cycles(r4300, 7);
 }
 
 void cp0_rom_interlock(struct r4300_core* r4300, uint32_t cycles)
