@@ -75,7 +75,6 @@ void icache_fill(struct instcache *line, struct r4300_core* r4300, uint32_t addr
 
 uint32_t* icache_fetch(struct r4300_core* r4300, uint32_t address)
 {
-    struct instcache *line = &r4300->icache[(address >> 5) & UINT32_C(0x1FF)];
     uint8_t cached = 0;
     do_SP_Task(r4300->sp);
     cp0_base_cycle(r4300);
@@ -84,6 +83,7 @@ uint32_t* icache_fetch(struct r4300_core* r4300, uint32_t address)
         cp0_itm_interlock(r4300);
         return NULL;
     }
+    struct instcache *line = &r4300->icache[(address >> 5) & UINT32_C(0x1FF)];
     if (cached)
     {
         if(!icache_hit(line, address))
