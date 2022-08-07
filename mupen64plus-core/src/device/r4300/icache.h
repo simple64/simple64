@@ -34,10 +34,15 @@ struct instcache
     uint32_t words[8];
 };
 
+static osal_inline uint8_t icache_hit(struct instcache *line, uint32_t address)
+{
+    return line->valid && line->tag == (address & ~UINT32_C(0xFFF));
+}
+
 void poweron_icache(struct instcache *lines);
 void icache_writeback(struct r4300_core* r4300, struct instcache *line);
-uint32_t icache_hit(struct instcache *line, uint32_t address);
 void icache_fill(struct instcache *line, struct r4300_core* r4300, uint32_t address);
+void icache_step(struct r4300_core* r4300, uint32_t address);
 uint32_t* icache_fetch(struct r4300_core* r4300, uint32_t address);
 
 #endif

@@ -50,11 +50,6 @@ void icache_writeback(struct r4300_core* r4300, struct instcache *line)
     mem_write32(handler, cache_address | UINT32_C(0x1C), line->words[7], ~UINT32_C(0));
 }
 
-uint32_t icache_hit(struct instcache *line, uint32_t address)
-{
-    return line->valid && line->tag == (address & ~UINT32_C(0xFFF));
-}
-
 void icache_fill(struct instcache *line, struct r4300_core* r4300, uint32_t address)
 {
     cp0_icb_interlock(r4300, 15);
@@ -73,19 +68,41 @@ void icache_fill(struct instcache *line, struct r4300_core* r4300, uint32_t addr
     mem_read32(handler, cache_address | UINT32_C(0x1C), &line->words[7]);
 }
 
-uint32_t* icache_fetch(struct r4300_core* r4300, uint32_t address)
+// This code is performance critical, so for the cached interpreter, we used a version that doesn't need to return anything in order to save some CPU
+void icache_step(struct r4300_core* r4300, uint32_t address)
 {
-    uint8_t cached = 0;
     do_SP_Task(r4300->sp);
     cp0_base_cycle(r4300);
-    if (r4300_translate_address(r4300, &address, &cached, 2))
+    if (r4300_translate_address(r4300, &address, &r4300->cached, 2))
+    {
+        cp0_itm_interlock(r4300);
+        return;
+    }
+    if (r4300->cached)
+    {
+        struct instcache *line = &r4300->icache[(address >> 5) & UINT32_C(0x1FF)];
+        if(!icache_hit(line, address))
+            icache_fill(line, r4300, address);
+    }
+    else
+    {
+        address &= UINT32_C(0x1ffffffc);
+        mem_read32(mem_get_handler(r4300->mem, address), address, &(uint32_t){0}); // Done in order to get correct cycle count
+    }
+}
+
+uint32_t* icache_fetch(struct r4300_core* r4300, uint32_t address)
+{
+    do_SP_Task(r4300->sp);
+    cp0_base_cycle(r4300);
+    if (r4300_translate_address(r4300, &address, &r4300->cached, 2))
     {
         cp0_itm_interlock(r4300);
         return NULL;
     }
-    struct instcache *line = &r4300->icache[(address >> 5) & UINT32_C(0x1FF)];
-    if (cached)
+    if (r4300->cached)
     {
+        struct instcache *line = &r4300->icache[(address >> 5) & UINT32_C(0x1FF)];
         if(!icache_hit(line, address))
             icache_fill(line, r4300, address);
         return &line->words[address >> 2 & 7];

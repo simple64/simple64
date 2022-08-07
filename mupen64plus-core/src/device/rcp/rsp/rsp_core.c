@@ -312,15 +312,15 @@ void write_rsp_regs2(void* opaque, uint32_t address, uint32_t value, uint32_t ma
 
 void do_SP_Task(struct rsp_core* sp)
 {
-    const uint32_t* cp0_regs = r4300_cp0_regs(&sp->mi->r4300->cp0);
-    sp->next_rsp_run += cp0_regs[CP0_COUNT_REG] - sp->last_cp0_count;
-    sp->last_cp0_count = cp0_regs[CP0_COUNT_REG];
     if (sp->regs[SP_STATUS_REG] & (SP_STATUS_HALT | SP_STATUS_BROKE))
         return;
     if (get_event(&sp->mi->r4300->cp0.q, SP_INT))
         return;
     if (sp->mi->regs[MI_INTR_REG] & MI_INTR_SP)
         return;
+    const uint32_t* cp0_regs = r4300_cp0_regs(&sp->mi->r4300->cp0);
+    sp->next_rsp_run += cp0_regs[CP0_COUNT_REG] - sp->last_cp0_count;
+    sp->last_cp0_count = cp0_regs[CP0_COUNT_REG];
     if (sp->next_rsp_run < 0)
         return;
 
