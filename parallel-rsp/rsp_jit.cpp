@@ -309,7 +309,8 @@ extern "C"
 	{
 		if (instruction_type == rsp->last_instruction_type)
 			++rsp->instruction_count;
-		rsp->last_instruction_type = instruction_type;
+		else
+			rsp->last_instruction_type = instruction_type;
 	}
 }
 
