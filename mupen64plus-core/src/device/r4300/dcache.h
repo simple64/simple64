@@ -35,9 +35,13 @@ struct datacache
     uint32_t words[4];
 };
 
+static osal_inline uint8_t dcache_hit(struct datacache *line, uint32_t address)
+{
+    return line->valid && line->tag == (address & ~UINT32_C(0xFFF));
+}
+
 void poweron_dcache(struct datacache *lines);
 void dcache_writeback(struct r4300_core* r4300, struct datacache *line);
-uint32_t dcache_hit(struct datacache *line, uint32_t address);
 void dcache_read32(struct r4300_core* r4300, uint32_t address, uint32_t *value);
 void dcache_write32(struct r4300_core* r4300, uint32_t address, uint32_t value, uint32_t mask);
 

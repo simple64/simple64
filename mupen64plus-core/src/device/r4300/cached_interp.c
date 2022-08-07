@@ -83,7 +83,7 @@ void cached_interp_##name(void) \
         (*r4300_pc_struct(r4300))++; \
         r4300->delay_slot=1; \
         UPDATE_DEBUGGER(); \
-        icache_fetch(r4300, (*r4300_pc_struct(r4300))->addr); \
+        icache_step(r4300, (*r4300_pc_struct(r4300))->addr); \
         (*r4300_pc_struct(r4300))->ops(); \
         r4300->delay_slot=0; \
         if (take_jump && !r4300->skip_jump) \
@@ -115,7 +115,7 @@ void cached_interp_##name##_OUT(void) \
         (*r4300_pc_struct(r4300))++; \
         r4300->delay_slot=1; \
         UPDATE_DEBUGGER(); \
-        icache_fetch(r4300, (*r4300_pc_struct(r4300))->addr); \
+        icache_step(r4300, (*r4300_pc_struct(r4300))->addr); \
         (*r4300_pc_struct(r4300))->ops(); \
         r4300->delay_slot=0; \
         if (take_jump && !r4300->skip_jump) \
@@ -1000,7 +1000,7 @@ void run_cached_interpreter(struct r4300_core* r4300)
 #ifdef DBG
         if (g_DebuggerActive) update_debugger((*r4300_pc_struct(r4300))->addr);
 #endif
-        icache_fetch(r4300, (*r4300_pc_struct(r4300))->addr);
+        icache_step(r4300, (*r4300_pc_struct(r4300))->addr);
         (*r4300_pc_struct(r4300))->ops();
     }
 }
