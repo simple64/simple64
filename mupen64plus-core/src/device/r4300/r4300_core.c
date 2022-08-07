@@ -65,6 +65,7 @@ void init_r4300(struct r4300_core* r4300, struct memory* mem, struct mi_controll
     r4300->randomize_interrupt = randomize_interrupt;
     r4300->start_address = start_address;
     r4300->clock_rate = 93750000 / 2;
+    r4300->cached = 0;
     srand((unsigned int) time(NULL));
 }
 
@@ -290,6 +291,8 @@ uint8_t r4300_translate_address(struct r4300_core* r4300, uint32_t* address, uin
             return 1;
     } else if (!(*address & UINT32_C(0x20000000)))
         *cached = 1;
+    else
+        *cached = 0;
 
     return 0;
 }
@@ -311,11 +314,10 @@ uint32_t *fast_mem_access(struct r4300_core* r4300, uint32_t address)
  */
 int r4300_read_aligned_word(struct r4300_core* r4300, uint32_t address, uint32_t* value)
 {
-    uint8_t cached = 0;
-    if (r4300_translate_address(r4300, &address, &cached, 0))
+    if (r4300_translate_address(r4300, &address, &r4300->cached, 0))
         return 0; // TLB exception
 
-    if (cached)
+    if (r4300->cached)
         dcache_read32(r4300, address & ~UINT32_C(3), value);
     else
     {
@@ -330,7 +332,6 @@ int r4300_read_aligned_word(struct r4300_core* r4300, uint32_t address, uint32_t
 int r4300_read_aligned_dword(struct r4300_core* r4300, uint32_t address, uint64_t* value)
 {
     uint32_t w[2];
-    uint8_t cached = 0;
 
     /* XXX: unaligned dword accesses should trigger a address error,
      * but inaccurate timing of the core can lead to unaligned address on reset
@@ -339,10 +340,10 @@ int r4300_read_aligned_dword(struct r4300_core* r4300, uint32_t address, uint64_
         DebugMessage(M64MSG_WARNING, "Unaligned dword read %08x", address);
     }
 
-    if (r4300_translate_address(r4300, &address, &cached, 0))
+    if (r4300_translate_address(r4300, &address, &r4300->cached, 0))
         return 0; // TLB exception
 
-    if (cached)
+    if (r4300->cached)
     {
         dcache_read32(r4300, address + 0, &w[0]);
         dcache_read32(r4300, address + 4, &w[1]);
@@ -366,17 +367,15 @@ int r4300_read_aligned_dword(struct r4300_core* r4300, uint32_t address, uint64_
  */
 int r4300_write_aligned_word(struct r4300_core* r4300, uint32_t address, uint32_t value, uint32_t mask)
 {
-    uint8_t cached = 0;
-
     if ((address & UINT32_C(0xc0000000)) != UINT32_C(0x80000000))
         invalidate_r4300_cached_code(r4300, address, 4);
 
-    if (r4300_translate_address(r4300, &address, &cached, 1))
+    if (r4300_translate_address(r4300, &address, &r4300->cached, 1))
         return 0; // TLB exception
 
     invalidate_r4300_cached_code(r4300, address, 4);
     invalidate_r4300_cached_code(r4300, address ^ UINT32_C(0x20000000), 4);
-    if (cached)
+    if (r4300->cached)
         dcache_write32(r4300, address & ~UINT32_C(3), value, mask);
     else
     {
@@ -390,8 +389,6 @@ int r4300_write_aligned_word(struct r4300_core* r4300, uint32_t address, uint32_
 /* Write aligned dword to memory */
 int r4300_write_aligned_dword(struct r4300_core* r4300, uint32_t address, uint64_t value, uint64_t mask)
 {
-    uint8_t cached = 0;
-
     if ((address & UINT32_C(0xc0000000)) != UINT32_C(0x80000000))
         invalidate_r4300_cached_code(r4300, address, 8);
 
@@ -402,12 +399,12 @@ int r4300_write_aligned_dword(struct r4300_core* r4300, uint32_t address, uint64
         DebugMessage(M64MSG_WARNING, "Unaligned dword write %08x", address);
     }
 
-    if (r4300_translate_address(r4300, &address, &cached, 1))
+    if (r4300_translate_address(r4300, &address, &r4300->cached, 1))
         return 0; // TLB exception
 
     invalidate_r4300_cached_code(r4300, address, 8);
     invalidate_r4300_cached_code(r4300, address ^ UINT32_C(0x20000000), 8);
-    if (cached)
+    if (r4300->cached)
     {
         dcache_write32(r4300, address + 0, value >> 32, mask >> 32);
         dcache_write32(r4300, address + 4, (uint32_t) value, (uint32_t) mask);

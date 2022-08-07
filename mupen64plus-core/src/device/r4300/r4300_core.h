@@ -201,6 +201,7 @@ struct r4300_core
 
     uint32_t start_address;
     uint32_t clock_rate;
+    uint8_t cached;
 
     struct datacache dcache[512];
     struct instcache icache[512];
