@@ -839,7 +839,6 @@ void cached_interp_free_block(struct precomp_block* block)
 
 void cached_interp_recompile_block(struct r4300_core* r4300, const uint32_t* iw, struct precomp_block* block, uint32_t func)
 {
-    const struct tlb* tlb = &r4300->cp0.tlb;
     int i, length, length2, finished;
     struct precomp_instr* inst;
     enum r4300_opcode opcode;
@@ -864,9 +863,8 @@ void cached_interp_recompile_block(struct r4300_core* r4300, const uint32_t* iw,
 
         if (block_start_in_tlb)
         {
-            uint32_t address2 = virtual_to_physical_address(r4300, inst->addr, 0, &(uint8_t){0});
+            uint32_t address2 = virtual_to_physical_address(r4300, inst->addr, 0, &inst->cached);
             inst->phys_addr = address2;
-            inst->cached = tlb->r_cached[inst->addr >> 12];
             if (r4300->cached_interp.blocks[address2>>12]->block[(address2&UINT32_C(0xFFF))/4].ops == cached_interp_NOTCOMPILED) {
                 r4300->cached_interp.blocks[address2>>12]->block[(address2&UINT32_C(0xFFF))/4].ops = cached_interp_NOTCOMPILED2;
             }
