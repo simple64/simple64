@@ -97,10 +97,7 @@ uint32_t* icache_fetch(struct r4300_core* r4300, uint32_t address)
     do_SP_Task(r4300->sp);
     cp0_base_cycle(r4300);
     if (r4300_translate_address(r4300, &address, &r4300->cached, 2))
-    {
-        cp0_itm_interlock(r4300);
         return NULL;
-    }
     if (r4300->cached)
     {
         struct instcache *line = &r4300->icache[(address >> 5) & UINT32_C(0x1FF)];
