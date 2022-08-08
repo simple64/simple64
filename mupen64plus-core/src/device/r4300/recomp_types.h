@@ -68,6 +68,8 @@ struct precomp_instr
         } cf;
     } f;
     uint32_t addr; /* word-aligned instruction address in r4300 address space */
+    uint32_t phys_addr;
+    uint8_t cached;
 
     /* these fields are recomp specific */
     unsigned int local_addr; /* byte offset to start of corresponding x86_64 instructions, from start of code block */
