@@ -547,7 +547,11 @@ void read_dd_rom(void* opaque, uint32_t address, uint32_t* value)
 
 void write_dd_rom(void* opaque, uint32_t address, uint32_t value, uint32_t mask)
 {
+    struct dd_controller* dd = (struct dd_controller*)opaque;
     DebugMessage(M64MSG_VERBOSE, "DD ROM: %08X <- %08x & %08x", address, value, mask);
+    /* Mark IO as busy */
+    dd->pi->regs[PI_STATUS_REG] |= PI_STATUS_IO_BUSY;
+    add_interrupt_event(&dd->r4300->cp0, PI_INT, pi_calculate_cycles(dd->pi, 1, 4) / 2);
 }
 
 uint32_t dd_dom_dma_read(void* opaque, const uint8_t* dram, uint32_t dram_addr, uint32_t cart_addr, uint32_t length)
