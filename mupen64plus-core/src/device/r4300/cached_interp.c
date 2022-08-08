@@ -205,6 +205,7 @@ void cached_interp_FIN_BLOCK(void)
 #endif
 Used by dynarec only, check should be unnecessary
 */
+        icache_step(r4300, (*r4300_pc_struct(r4300))->addr);
         (*r4300_pc_struct(r4300))->ops();
     }
     else
@@ -219,6 +220,7 @@ Used by dynarec only, check should be unnecessary
 #endif
 Used by dynarec only, check should be unnecessary
 */
+        icache_step(r4300, (*r4300_pc_struct(r4300))->addr);
         if (!r4300->skip_jump)
         {
             (*r4300_pc_struct(r4300))->ops();
