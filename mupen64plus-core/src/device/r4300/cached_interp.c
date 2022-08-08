@@ -738,6 +738,10 @@ static uint32_t update_invalid_addr(struct r4300_core* r4300, uint32_t addr)
                 invalid_code[(beg_paddr+0xffc)>>12] = 1;
             }
         }
+        else
+        {
+            cp0_itm_interlock(r4300);
+        }
         return paddr;
     }
 }
