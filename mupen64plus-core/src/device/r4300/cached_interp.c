@@ -83,7 +83,7 @@ void cached_interp_##name(void) \
         (*r4300_pc_struct(r4300))++; \
         r4300->delay_slot=1; \
         UPDATE_DEBUGGER(); \
-        icache_step(r4300, (*r4300_pc_struct(r4300))->addr); \
+        icache_step(r4300); \
         (*r4300_pc_struct(r4300))->ops(); \
         r4300->delay_slot=0; \
         if (take_jump && !r4300->skip_jump) \
@@ -115,7 +115,7 @@ void cached_interp_##name##_OUT(void) \
         (*r4300_pc_struct(r4300))++; \
         r4300->delay_slot=1; \
         UPDATE_DEBUGGER(); \
-        icache_step(r4300, (*r4300_pc_struct(r4300))->addr); \
+        icache_step(r4300); \
         (*r4300_pc_struct(r4300))->ops(); \
         r4300->delay_slot=0; \
         if (take_jump && !r4300->skip_jump) \
@@ -205,7 +205,7 @@ void cached_interp_FIN_BLOCK(void)
 #endif
 Used by dynarec only, check should be unnecessary
 */
-        icache_step(r4300, (*r4300_pc_struct(r4300))->addr);
+        icache_step(r4300);
         (*r4300_pc_struct(r4300))->ops();
     }
     else
@@ -220,7 +220,7 @@ Used by dynarec only, check should be unnecessary
 #endif
 Used by dynarec only, check should be unnecessary
 */
-        icache_step(r4300, (*r4300_pc_struct(r4300))->addr);
+        icache_step(r4300);
         if (!r4300->skip_jump)
         {
             (*r4300_pc_struct(r4300))->ops();
@@ -254,6 +254,7 @@ void cached_interp_NOTCOMPILED(void)
 The preceeding update_debugger SHOULD be unnecessary since it should have been
 called before NOTCOMPILED would have been executed
 */
+    icache_step(r4300);
     (*r4300_pc_struct(r4300))->ops();
 }
 
@@ -838,6 +839,7 @@ void cached_interp_free_block(struct precomp_block* block)
 
 void cached_interp_recompile_block(struct r4300_core* r4300, const uint32_t* iw, struct precomp_block* block, uint32_t func)
 {
+    const struct tlb* tlb = &r4300->cp0.tlb;
     int i, length, length2, finished;
     struct precomp_instr* inst;
     enum r4300_opcode opcode;
@@ -863,9 +865,16 @@ void cached_interp_recompile_block(struct r4300_core* r4300, const uint32_t* iw,
         if (block_start_in_tlb)
         {
             uint32_t address2 = virtual_to_physical_address(r4300, inst->addr, 0, &(uint8_t){0});
+            inst->phys_addr = address2;
+            inst->cached = tlb->r_cached[inst->addr >> 12];
             if (r4300->cached_interp.blocks[address2>>12]->block[(address2&UINT32_C(0xFFF))/4].ops == cached_interp_NOTCOMPILED) {
                 r4300->cached_interp.blocks[address2>>12]->block[(address2&UINT32_C(0xFFF))/4].ops = cached_interp_NOTCOMPILED2;
             }
+        }
+        else
+        {
+            inst->phys_addr = inst->addr;
+            inst->cached = (!(inst->addr & UINT32_C(0x20000000))) ? 1 : 0;
         }
 
         /* decode instruction */
@@ -1006,7 +1015,7 @@ void run_cached_interpreter(struct r4300_core* r4300)
 #ifdef DBG
         if (g_DebuggerActive) update_debugger((*r4300_pc_struct(r4300))->addr);
 #endif
-        icache_step(r4300, (*r4300_pc_struct(r4300))->addr);
+        icache_step(r4300);
         (*r4300_pc_struct(r4300))->ops();
     }
 }

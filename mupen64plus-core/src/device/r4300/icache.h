@@ -42,7 +42,7 @@ static osal_inline uint8_t icache_hit(struct instcache *line, uint32_t address)
 void poweron_icache(struct instcache *lines);
 void icache_writeback(struct r4300_core* r4300, struct instcache *line);
 void icache_fill(struct instcache *line, struct r4300_core* r4300, uint32_t address);
-void icache_step(struct r4300_core* r4300, uint32_t address);
+void icache_step(struct r4300_core* r4300);
 uint32_t* icache_fetch(struct r4300_core* r4300, uint32_t address);
 
 #endif
