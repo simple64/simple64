@@ -155,11 +155,6 @@ void cp0_mci_interlock(struct r4300_core* r4300, uint32_t cycles)
     cp0_add_cycles(r4300, cycles - 1);
 }
 
-void cp0_itm_interlock(struct r4300_core* r4300)
-{
-    cp0_add_cycles(r4300, 3);
-}
-
 void cp0_ram_interlock(struct r4300_core* r4300)
 {
     cp0_add_cycles(r4300, 7);
