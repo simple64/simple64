@@ -169,6 +169,7 @@ void read_cart_dom2(void* opaque, uint32_t address, uint32_t* value)
         cart->use_flashram = 1;
         read_flashram(&cart->flashram, address, value);
     }
+    cp0_rom_interlock(cart->cart_rom.r4300, pi_calculate_cycles(cart->cart_rom.pi, 2, 4));
 }
 
 void write_cart_dom2(void* opaque, uint32_t address, uint32_t value, uint32_t mask)
@@ -190,6 +191,9 @@ void write_cart_dom2(void* opaque, uint32_t address, uint32_t value, uint32_t ma
         cart->use_flashram = 1;
         write_flashram(&cart->flashram, address, value, mask);
     }
+    /* Mark IO as busy */
+    cart->cart_rom.pi->regs[PI_STATUS_REG] |= PI_STATUS_IO_BUSY;
+    add_interrupt_event(&cart->cart_rom.r4300->cp0, PI_INT, pi_calculate_cycles(cart->cart_rom.pi, 2, 4) / 2);
 }
 
 uint32_t cart_dom2_dma_read(void* opaque, const uint8_t* dram, uint32_t dram_addr, uint32_t cart_addr, uint32_t length)
