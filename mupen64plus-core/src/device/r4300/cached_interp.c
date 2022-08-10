@@ -488,20 +488,7 @@ enum r4300_opcode r4300_decode(struct precomp_instr* inst, struct r4300_core* r4
     case R4300_OP_ANDI:
     case R4300_OP_DADDI:
     case R4300_OP_DADDIU:
-    case R4300_OP_LB:
-    case R4300_OP_LBU:
-    case R4300_OP_LD:
-    case R4300_OP_LDL:
-    case R4300_OP_LDR:
-    case R4300_OP_LH:
-    case R4300_OP_LHU:
-    case R4300_OP_LL:
-    case R4300_OP_LLD:
     case R4300_OP_LUI:
-    case R4300_OP_LW:
-    case R4300_OP_LWL:
-    case R4300_OP_LWR:
-    case R4300_OP_LWU:
     case R4300_OP_ORI:
     case R4300_OP_SC:
     case R4300_OP_SLTI:
@@ -655,6 +642,19 @@ enum r4300_opcode r4300_decode(struct precomp_instr* inst, struct r4300_core* r4
 
     case R4300_OP_LDC2:
     case R4300_OP_LWC2:
+    case R4300_OP_LB:
+    case R4300_OP_LBU:
+    case R4300_OP_LD:
+    case R4300_OP_LDL:
+    case R4300_OP_LDR:
+    case R4300_OP_LH:
+    case R4300_OP_LHU:
+    case R4300_OP_LL:
+    case R4300_OP_LLD:
+    case R4300_OP_LW:
+    case R4300_OP_LWL:
+    case R4300_OP_LWR:
+    case R4300_OP_LWU:
     case R4300_OP_SB:
     case R4300_OP_SCD:
     case R4300_OP_SD:
