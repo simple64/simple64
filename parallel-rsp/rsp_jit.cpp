@@ -269,6 +269,19 @@ extern "C"
 		                          (dram[off1] << 0)));
 	}
 
+	static jit_word_t rsp_unaligned_lwu(const uint8_t *dram, jit_word_t addr)
+	{
+		auto off0 = BYTE_ENDIAN_FIXUP(addr, 0);
+		auto off1 = BYTE_ENDIAN_FIXUP(addr, 1);
+		auto off2 = BYTE_ENDIAN_FIXUP(addr, 2);
+		auto off3 = BYTE_ENDIAN_FIXUP(addr, 3);
+
+		return jit_word_t((uint32_t(dram[off0]) << 24) |
+		                  (uint32_t(dram[off1]) << 16) |
+		                  (uint32_t(dram[off2]) << 8) |
+		                  (uint32_t(dram[off3]) << 0));
+	}
+
 	static void rsp_unaligned_sh(uint8_t *dram, jit_word_t addr, jit_word_t data)
 	{
 		auto off0 = BYTE_ENDIAN_FIXUP(addr, 0);
@@ -924,7 +937,7 @@ void CPU::jit_instruction(jit_state_t *_jit, uint32_t pc, uint32_t instr,
 
 	uint32_t type = instr >> 26;
 
-#define NOP_IF_RD_ZERO() if (rd == 0) { break; }
+#define NOP_IF_RD_ZERO() //if (rd == 0) { break; }
 #define NOP_IF_RT_ZERO() if (rt == 0) { break; }
 
 	switch (type)
@@ -1613,6 +1626,16 @@ void CPU::jit_instruction(jit_state_t *_jit, uint32_t pc, uint32_t instr,
 		break;
 	}
 
+	case 047: // LWU
+	{
+		jit_emit_load_operation(_jit, pc, instr,
+		                        [](jit_state_t *_jit, unsigned a, unsigned b, unsigned c) { jit_ldxr_ui(a, b, c); },
+		                        "lwu",
+		                        reinterpret_cast<jit_pointer_t>(rsp_unaligned_lwu),
+		                        0, last_info);
+		break;
+	}
+
 	case 050: // SB
 	{
 		jit_emit_store_operation(_jit, pc, instr,
@@ -1952,6 +1975,7 @@ ReturnMode CPU::run()
 			return MODE_BREAK;
 
 		case MODE_CHECK_FLAGS:
+		case MODE_EXIT:
 		case MODE_DMA_READ:
 			return static_cast<ReturnMode>(ret);
 

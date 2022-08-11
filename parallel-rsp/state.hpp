@@ -165,7 +165,8 @@ enum ReturnMode
 	MODE_CONTINUE = 1,
 	MODE_BREAK = 2,
 	MODE_DMA_READ = 3,
-	MODE_CHECK_FLAGS = 4
+	MODE_CHECK_FLAGS = 4,
+	MODE_EXIT = 5
 };
 
 enum InstructionType

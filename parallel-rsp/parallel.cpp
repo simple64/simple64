@@ -98,6 +98,8 @@ extern "C"
 			auto mode = RSP::cpu.run();
 			if (mode == RSP::MODE_CHECK_FLAGS && (*RSP::cpu.get_state().cp0.irq & 1))
 				break;
+			if (mode == RSP::MODE_EXIT)
+				break;
 		}
 
 		*RSP::rsp.SP_PC_REG = (RSP::cpu.get_state().pc & 0xffc);
@@ -107,12 +109,6 @@ extern "C"
 			return RSP::cpu.get_state().instruction_count * 1.5; // Converting RCP clock rate to CPU clock rate
 		else if (*RSP::cpu.get_state().cp0.irq & 1)
 			RSP::rsp.CheckInterrupts();
-		else if (*RSP::rsp.SP_SEMAPHORE_REG != 0) // Semaphore lock fixes.
-		{
-		}
-
-		// CPU restarts with the correct SIGs.
-		*RSP::rsp.SP_STATUS_REG &= ~SP_STATUS_HALT;
 
 		return RSP::cpu.get_state().instruction_count * 1.5; // Converting RCP clock rate to CPU clock rate
 	}
