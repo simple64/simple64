@@ -334,12 +334,13 @@ void vk_process_commands()
 	if ((cmd_ptr + length) & ~(0x0003FFFF >> 3))
 		return;
 
+	*GET_GFX_INFO(DPC_STATUS_REG) |= DP_STATUS_PIPE_BUSY | DP_STATUS_START_GCLK;
+
 	uint32_t offset = DP_CURRENT;
 	if (*GET_GFX_INFO(DPC_STATUS_REG) & DP_STATUS_XBUS_DMA)
 	{
 		do
 		{
-			offset &= 0xFF8;
 			cmd_data[2 * cmd_ptr + 0] = *reinterpret_cast<const uint32_t *>(SP_DMEM + offset);
 			cmd_data[2 * cmd_ptr + 1] = *reinterpret_cast<const uint32_t *>(SP_DMEM + offset + 4);
 			offset += sizeof(uint64_t);
@@ -386,6 +387,7 @@ void vk_process_commands()
 			if (vk_synchronous && processor)
 				processor->wait_for_timeline(processor->signal_timeline());
 			*gfx.MI_INTR_REG |= DP_INTERRUPT;
+			*GET_GFX_INFO(DPC_STATUS_REG) &= ~(DP_STATUS_PIPE_BUSY | DP_STATUS_START_GCLK);
 			gfx.CheckInterrupts();
 		}
 
@@ -395,6 +397,7 @@ void vk_process_commands()
 	cmd_ptr = 0;
 	cmd_cur = 0;
 	*GET_GFX_INFO(DPC_START_REG) = *GET_GFX_INFO(DPC_CURRENT_REG) = *GET_GFX_INFO(DPC_END_REG);
+	*GET_GFX_INFO(DPC_STATUS_REG) |= DP_STATUS_CBUF_READY;
 }
 
 void vk_resize()
