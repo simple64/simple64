@@ -76,12 +76,16 @@ void cached_interp_##name(void) \
     if (cop1 && check_cop1_unusable(r4300)) return; \
     if (link_register != &r4300_regs(r4300)[0]) \
     { \
-        *link_register = SE32(*r4300_pc(r4300) + 8); \
+        if (r4300->delay_slot) \
+            *link_register = SE32(r4300->delay_slot + 4); \
+        else \
+            *link_register = SE32(*r4300_pc(r4300) + 8); \
     } \
     if (!likely || take_jump) \
     { \
         (*r4300_pc_struct(r4300))++; \
-        r4300->delay_slot=1; \
+        if (!r4300->delay_slot)	\
+            r4300->delay_slot=jump_target; \
         UPDATE_DEBUGGER(); \
         icache_step(r4300); \
         (*r4300_pc_struct(r4300))->ops(); \
@@ -108,12 +112,16 @@ void cached_interp_##name##_OUT(void) \
     if (cop1 && check_cop1_unusable(r4300)) return; \
     if (link_register != &r4300_regs(r4300)[0]) \
     { \
-        *link_register = SE32(*r4300_pc(r4300) + 8); \
+        if (r4300->delay_slot) \
+            *link_register = SE32(r4300->delay_slot + 4); \
+        else \
+            *link_register = SE32(*r4300_pc(r4300) + 8); \
     } \
     if (!likely || take_jump) \
     { \
         (*r4300_pc_struct(r4300))++; \
-        r4300->delay_slot=1; \
+        if (!r4300->delay_slot)	\
+            r4300->delay_slot=jump_target; \
         UPDATE_DEBUGGER(); \
         icache_step(r4300); \
         (*r4300_pc_struct(r4300))->ops(); \
@@ -288,14 +296,13 @@ void cached_interp_NOTCOMPILED2(void)
 #define cached_interp_BC2TL       cached_interp_NI
 #define cached_interp_BC2TL_IDLE  cached_interp_NI
 #define cached_interp_BC2TL_OUT   cached_interp_NI
-#define cached_interp_BREAK       cached_interp_NI
 #define cached_interp_CFC0        cached_interp_NI
 #define cached_interp_CFC2        cached_interp_NI
 #define cached_interp_CTC0        cached_interp_NI
 #define cached_interp_CTC2        cached_interp_NI
-#define cached_interp_DMFC0       cached_interp_NI
+#define cached_interp_DMFC0       cached_interp_MFC0
 #define cached_interp_DMFC2       cached_interp_NI
-#define cached_interp_DMTC0       cached_interp_NI
+#define cached_interp_DMTC0       cached_interp_MTC0
 #define cached_interp_DMTC2       cached_interp_NI
 #define cached_interp_LDC2        cached_interp_NI
 #define cached_interp_LWC2        cached_interp_NI

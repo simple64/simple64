@@ -52,6 +52,22 @@ static void update_dpc_status(struct rdp_core* dp, uint32_t w)
     if (w & DPC_CLR_FLUSH) dp->dpc_regs[DPC_STATUS_REG] &= ~DPC_STATUS_FLUSH;
     if (w & DPC_SET_FLUSH) dp->dpc_regs[DPC_STATUS_REG] |= DPC_STATUS_FLUSH;
 
+    if (w & DPC_CLR_TMEM_CTR)
+    {
+        dp->dpc_regs[DPC_STATUS_REG] &= ~DPC_STATUS_TMEM_BUSY;
+        dp->dpc_regs[DPC_TMEM_REG] = 0;
+    }
+    if (w & DPC_CLR_PIPE_CTR)
+    {
+        dp->dpc_regs[DPC_STATUS_REG] &= ~DPC_STATUS_PIPE_BUSY;
+        dp->dpc_regs[DPC_PIPEBUSY_REG] = 0;
+    }
+    if (w & DPC_CLR_CMD_CTR)
+    {
+        dp->dpc_regs[DPC_STATUS_REG] &= ~DPC_STATUS_CMD_BUSY;
+        dp->dpc_regs[DPC_BUFBUSY_REG] = 0;
+    }
+
     /* clear clock counter */
     if (w & DPC_CLR_CLOCK_CTR) dp->dpc_regs[DPC_CLOCK_REG] = 0;
 }
@@ -74,7 +90,7 @@ void poweron_rdp(struct rdp_core* dp)
 {
     memset(dp->dpc_regs, 0, DPC_REGS_COUNT*sizeof(uint32_t));
     memset(dp->dps_regs, 0, DPS_REGS_COUNT*sizeof(uint32_t));
-    dp->dpc_regs[DPC_STATUS_REG] |= DPC_STATUS_START_GCLK;
+    dp->dpc_regs[DPC_STATUS_REG] |= DPC_STATUS_START_GCLK | DPC_STATUS_PIPE_BUSY | DPC_STATUS_CBUF_READY;
 
     dp->do_on_unfreeze = 0;
 
@@ -107,14 +123,22 @@ void write_dpc_regs(void* opaque, uint32_t address, uint32_t value, uint32_t mas
         return;
     }
 
-    masked_write(&dp->dpc_regs[reg], value, mask);
-
     switch(reg)
     {
     case DPC_START_REG:
-        dp->dpc_regs[DPC_CURRENT_REG] = dp->dpc_regs[DPC_START_REG];
+        if (!(dp->dpc_regs[DPC_STATUS_REG] & DPC_STATUS_START_VALID))
+        {
+            masked_write(&dp->dpc_regs[reg], value & UINT32_C(0xFFFFF8), mask);
+        }
+        dp->dpc_regs[DPC_STATUS_REG] |= DPC_STATUS_START_VALID;
         break;
     case DPC_END_REG:
+        masked_write(&dp->dpc_regs[reg], value & UINT32_C(0xFFFFF8), mask);
+        if (dp->dpc_regs[DPC_STATUS_REG] & DPC_STATUS_START_VALID)
+        {
+            dp->dpc_regs[DPC_CURRENT_REG] = dp->dpc_regs[DPC_START_REG];
+            dp->dpc_regs[DPC_STATUS_REG] &= ~DPC_STATUS_START_VALID;
+        }
         unprotect_framebuffers(&dp->fb);
         gfx.processRDPList();
         protect_framebuffers(&dp->fb);
@@ -127,6 +151,9 @@ void write_dpc_regs(void* opaque, uint32_t address, uint32_t value, uint32_t mas
                 add_interrupt_event(&dp->mi->r4300->cp0, DP_INT, 8000);
             }
         }
+        break;
+    default:
+        masked_write(&dp->dpc_regs[reg], value, mask);
         break;
     }
 }

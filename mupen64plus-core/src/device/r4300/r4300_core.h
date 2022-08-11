@@ -81,7 +81,7 @@ struct r4300_core
 
     struct precomp_instr* pc;
 
-    unsigned int delay_slot;
+    uint32_t delay_slot;
     uint32_t skip_jump;
 
 #ifndef NEW_DYNAREC
