@@ -47,7 +47,7 @@ static void do_sp_dma(struct rsp_core* sp, const struct sp_dma* dma)
     unsigned int skip = ((l >> 20) & 0xff8);
 
     unsigned int memaddr = dma->memaddr & 0xff8;
-    unsigned int dramaddr = dma->dramaddr & 0xfffff8;
+    unsigned int dramaddr = dma->dramaddr;
 
     unsigned char *spmem = (unsigned char*)sp->mem + (dma->memaddr & 0x1000);
     unsigned char *dram = (unsigned char*)sp->ri->rdram->dram;
@@ -56,16 +56,13 @@ static void do_sp_dma(struct rsp_core* sp, const struct sp_dma* dma)
     {
         for(j=0; j<count; j++) {
             for(i=0; i<length; i++) {
-                dram[dramaddr^S8] = spmem[memaddr^S8];
+                dram[dramaddr^S8] = spmem[(memaddr & 0xfff)^S8];
                 memaddr++;
                 dramaddr++;
-                sp->regs[SP_MEM_ADDR_REG]++;
-                sp->regs[SP_DRAM_ADDR_REG]++;
             }
 
             post_framebuffer_write(&sp->dp->fb, dramaddr - length, length);
             dramaddr+=skip;
-            sp->regs[SP_DRAM_ADDR_REG]+=skip;
         }
     }
     else
@@ -74,16 +71,15 @@ static void do_sp_dma(struct rsp_core* sp, const struct sp_dma* dma)
             pre_framebuffer_read(&sp->dp->fb, dramaddr);
 
             for(i=0; i<length; i++) {
-                spmem[memaddr^S8] = dram[dramaddr^S8];
+                spmem[(memaddr & 0xfff)^S8] = dram[dramaddr^S8];
                 memaddr++;
                 dramaddr++;
-                sp->regs[SP_MEM_ADDR_REG]++;
-                sp->regs[SP_DRAM_ADDR_REG]++;
             }
             dramaddr+=skip;
-            sp->regs[SP_DRAM_ADDR_REG]+=skip;
         }
     }
+    sp->regs[SP_MEM_ADDR_REG] = (memaddr & 0xfff) + (dma->memaddr & 0x1000);
+    sp->regs[SP_DRAM_ADDR_REG] = dramaddr;
     /* schedule end of dma event */
     add_interrupt_event(&sp->mi->r4300->cp0, RSP_DMA_EVT, (count * length) / 8); // https://hcs64.com/dma.html
 }
@@ -141,8 +137,8 @@ static void fifo_pop(struct rsp_core* sp)
 static void update_sp_status(struct rsp_core* sp, uint32_t w)
 {
     /* clear / set halt */
-    if (w & 0x1) sp->regs[SP_STATUS_REG] &= ~SP_STATUS_HALT;
-    if (w & 0x2)
+    if ((w & SP_CLR_HALT) && !(w & SP_SET_HALT)) sp->regs[SP_STATUS_REG] &= ~SP_STATUS_HALT;
+    if ((w & SP_SET_HALT) && !(w & SP_CLR_HALT))
     {
         remove_event(&sp->mi->r4300->cp0.q, SP_INT);
         sp->rsp_status = 0;
@@ -152,58 +148,58 @@ static void update_sp_status(struct rsp_core* sp, uint32_t w)
     }
 
     /* clear broke */
-    if (w & 0x4) sp->regs[SP_STATUS_REG] &= ~SP_STATUS_BROKE;
+    if (w & SP_CLR_BROKE) sp->regs[SP_STATUS_REG] &= ~SP_STATUS_BROKE;
 
     /* clear SP interrupt */
-    if (w & 0x8)
+    if ((w & SP_CLR_INTR) && !(w & SP_SET_INTR))
     {
         clear_rcp_interrupt(sp->mi, MI_INTR_SP);
     }
     /* set SP interrupt */
-    if (w & 0x10)
+    if ((w & SP_SET_INTR) && !(w & SP_CLR_INTR))
     {
         signal_rcp_interrupt(sp->mi, MI_INTR_SP);
     }
 
     /* clear / set single step */
-    if (w & 0x20) sp->regs[SP_STATUS_REG] &= ~SP_STATUS_SSTEP;
-    if (w & 0x40) sp->regs[SP_STATUS_REG] |= SP_STATUS_SSTEP;
+    if ((w & SP_CLR_SSTEP) && !(w & SP_SET_SSTEP)) sp->regs[SP_STATUS_REG] &= ~SP_STATUS_SSTEP;
+    if ((w & SP_SET_SSTEP) && !(w & SP_CLR_SSTEP)) sp->regs[SP_STATUS_REG] |= SP_STATUS_SSTEP;
 
     /* clear / set interrupt on break */
-    if (w & 0x80) sp->regs[SP_STATUS_REG] &= ~SP_STATUS_INTR_BREAK;
-    if (w & 0x100) sp->regs[SP_STATUS_REG] |= SP_STATUS_INTR_BREAK;
+    if ((w & SP_CLR_INTR_BREAK) && !(w & SP_SET_INTR_BREAK)) sp->regs[SP_STATUS_REG] &= ~SP_STATUS_INTR_BREAK;
+    if ((w & SP_SET_INTR_BREAK) && !(w & SP_CLR_INTR_BREAK)) sp->regs[SP_STATUS_REG] |= SP_STATUS_INTR_BREAK;
 
     /* clear / set signal 0 */
-    if (w & 0x200) sp->regs[SP_STATUS_REG] &= ~SP_STATUS_SIG0;
-    if (w & 0x400) sp->regs[SP_STATUS_REG] |= SP_STATUS_SIG0;
+    if ((w & SP_CLR_SIG0) && !(w & SP_SET_SIG0)) sp->regs[SP_STATUS_REG] &= ~SP_STATUS_SIG0;
+    if ((w & SP_SET_SIG0) && !(w & SP_CLR_SIG0)) sp->regs[SP_STATUS_REG] |= SP_STATUS_SIG0;
 
     /* clear / set signal 1 */
-    if (w & 0x800) sp->regs[SP_STATUS_REG] &= ~SP_STATUS_SIG1;
-    if (w & 0x1000) sp->regs[SP_STATUS_REG] |= SP_STATUS_SIG1;
+    if ((w & SP_CLR_SIG1) && !(w & SP_SET_SIG1)) sp->regs[SP_STATUS_REG] &= ~SP_STATUS_SIG1;
+    if ((w & SP_SET_SIG1) && !(w & SP_CLR_SIG1)) sp->regs[SP_STATUS_REG] |= SP_STATUS_SIG1;
 
     /* clear / set signal 2 */
-    if (w & 0x2000) sp->regs[SP_STATUS_REG] &= ~SP_STATUS_SIG2;
-    if (w & 0x4000) sp->regs[SP_STATUS_REG] |= SP_STATUS_SIG2;
+    if ((w & SP_CLR_SIG2) && !(w & SP_SET_SIG2)) sp->regs[SP_STATUS_REG] &= ~SP_STATUS_SIG2;
+    if ((w & SP_SET_SIG2) && !(w & SP_CLR_SIG2)) sp->regs[SP_STATUS_REG] |= SP_STATUS_SIG2;
 
     /* clear / set signal 3 */
-    if (w & 0x8000) sp->regs[SP_STATUS_REG] &= ~SP_STATUS_SIG3;
-    if (w & 0x10000) sp->regs[SP_STATUS_REG] |= SP_STATUS_SIG3;
+    if ((w & SP_CLR_SIG3) && !(w & SP_SET_SIG3)) sp->regs[SP_STATUS_REG] &= ~SP_STATUS_SIG3;
+    if ((w & SP_SET_SIG3) && !(w & SP_CLR_SIG3)) sp->regs[SP_STATUS_REG] |= SP_STATUS_SIG3;
 
     /* clear / set signal 4 */
-    if (w & 0x20000) sp->regs[SP_STATUS_REG] &= ~SP_STATUS_SIG4;
-    if (w & 0x40000) sp->regs[SP_STATUS_REG] |= SP_STATUS_SIG4;
+    if ((w & SP_CLR_SIG4) && !(w & SP_SET_SIG4)) sp->regs[SP_STATUS_REG] &= ~SP_STATUS_SIG4;
+    if ((w & SP_SET_SIG4) && !(w & SP_CLR_SIG4)) sp->regs[SP_STATUS_REG] |= SP_STATUS_SIG4;
 
     /* clear / set signal 5 */
-    if (w & 0x80000) sp->regs[SP_STATUS_REG] &= ~SP_STATUS_SIG5;
-    if (w & 0x100000) sp->regs[SP_STATUS_REG] |= SP_STATUS_SIG5;
+    if ((w & SP_CLR_SIG5) && !(w & SP_SET_SIG5)) sp->regs[SP_STATUS_REG] &= ~SP_STATUS_SIG5;
+    if ((w & SP_SET_SIG5) && !(w & SP_CLR_SIG5)) sp->regs[SP_STATUS_REG] |= SP_STATUS_SIG5;
 
     /* clear / set signal 6 */
-    if (w & 0x200000) sp->regs[SP_STATUS_REG] &= ~SP_STATUS_SIG6;
-    if (w & 0x400000) sp->regs[SP_STATUS_REG] |= SP_STATUS_SIG6;
+    if ((w & SP_CLR_SIG6) && !(w & SP_SET_SIG6)) sp->regs[SP_STATUS_REG] &= ~SP_STATUS_SIG6;
+    if ((w & SP_SET_SIG6) && !(w & SP_CLR_SIG6)) sp->regs[SP_STATUS_REG] |= SP_STATUS_SIG6;
 
     /* clear / set signal 7 */
-    if (w & 0x800000) sp->regs[SP_STATUS_REG] &= ~SP_STATUS_SIG7;
-    if (w & 0x1000000) sp->regs[SP_STATUS_REG] |= SP_STATUS_SIG7;
+    if ((w & SP_CLR_SIG7) && !(w & SP_SET_SIG7)) sp->regs[SP_STATUS_REG] &= ~SP_STATUS_SIG7;
+    if ((w & SP_SET_SIG7) && !(w & SP_CLR_SIG7)) sp->regs[SP_STATUS_REG] |= SP_STATUS_SIG7;
 }
 
 void init_rsp(struct rsp_core* sp,
@@ -282,6 +278,12 @@ void write_rsp_regs(void* opaque, uint32_t address, uint32_t value, uint32_t mas
 
     switch(reg)
     {
+    case SP_MEM_ADDR_REG:
+        sp->regs[SP_MEM_ADDR_REG] &= 0x1ff8;
+        break;
+    case SP_DRAM_ADDR_REG:
+        sp->regs[SP_DRAM_ADDR_REG] &= 0xfffff8;
+        break;
     case SP_RD_LEN_REG:
         fifo_push(sp, SP_DMA_WRITE);
         break;
