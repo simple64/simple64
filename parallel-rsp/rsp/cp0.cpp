@@ -27,23 +27,22 @@ extern "C"
 		if (rt)
 			rsp->sr[rt] = res;
 
-			// CFG_MEND_SEMAPHORE_LOCK == 0 by default,
-			// so don't bother implementing semaphores.
-			// It makes Mario Golf run terribly for some reason.
-
 #ifdef PARALLEL_INTEGRATION
 		// WAIT_FOR_CPU_HOST. From CXD4.
 		if (rd == CP0_REGISTER_SP_STATUS)
 		{
 			--rsp->instruction_count; // Some games check the STATUS reg more than normal since we don't really yield properly
 			RSP::MFC0_count[rt] += 1;
-			//We don't return control to the CPU if the RDP FREEZE bit is set, doing so seems to cause flickering
-			if (RSP::MFC0_count[rt] >= RSP::SP_STATUS_TIMEOUT && (*rsp->cp0.cr[CP0_REGISTER_CMD_STATUS] & 0x2) == 0)
-			{
-				*RSP::rsp.SP_STATUS_REG |= SP_STATUS_HALT;
-				return MODE_CHECK_FLAGS;
-			}
+
 		}
+		else if (rd == CP0_REGISTER_SP_RESERVED)
+		{
+			rsp->instruction_count += 2; // Needed for DK64
+			RSP::MFC0_count[rt] += 1;
+			*rsp->cp0.cr[CP0_REGISTER_SP_RESERVED] = 1;
+		}
+		if (RSP::MFC0_count[rt] >= RSP::SP_STATUS_TIMEOUT)
+			return MODE_EXIT;
 #endif
 
 		//if (rd == 4) // SP_STATUS_REG
@@ -98,67 +97,67 @@ extern "C"
 
 		uint32_t status = *rsp->cp0.cr[CP0_REGISTER_SP_STATUS];
 
-		if (rt & SP_CLR_HALT)
+		if ((rt & SP_CLR_HALT) && !(rt & SP_SET_HALT))
 			status &= ~SP_STATUS_HALT;
-		else if (rt & SP_SET_HALT)
+		if ((rt & SP_SET_HALT) && !(rt & SP_CLR_HALT))
 			status |= SP_STATUS_HALT;
 
 		if (rt & SP_CLR_BROKE)
 			status &= ~SP_STATUS_BROKE;
 
-		if (rt & SP_CLR_INTR)
+		if ((rt & SP_CLR_INTR) && !(rt & SP_SET_INTR))
 			*rsp->cp0.irq &= ~1;
-		else if (rt & SP_SET_INTR)
+		if ((rt & SP_SET_INTR) && !(rt & SP_CLR_INTR))
 			*rsp->cp0.irq |= 1;
 
-		if (rt & SP_CLR_SSTEP)
+		if ((rt & SP_CLR_SSTEP) && !(rt & SP_SET_SSTEP))
 			status &= ~SP_STATUS_SSTEP;
-		else if (rt & SP_SET_SSTEP)
+		if ((rt & SP_SET_SSTEP) && !(rt & SP_CLR_SSTEP))
 			status |= SP_STATUS_SSTEP;
 
-		if (rt & SP_CLR_INTR_BREAK)
+		if ((rt & SP_CLR_INTR_BREAK) && !(rt & SP_SET_INTR_BREAK))
 			status &= ~SP_STATUS_INTR_BREAK;
-		else if (rt & SP_SET_INTR_BREAK)
+		if ((rt & SP_SET_INTR_BREAK) && !(rt & SP_CLR_INTR_BREAK))
 			status |= SP_STATUS_INTR_BREAK;
 
-		if (rt & SP_CLR_SIG0)
+		if ((rt & SP_CLR_SIG0) && !(rt & SP_SET_SIG0))
 			status &= ~SP_STATUS_SIG0;
-		else if (rt & SP_SET_SIG0)
+		if ((rt & SP_SET_SIG0) && !(rt & SP_CLR_SIG0))
 			status |= SP_STATUS_SIG0;
 
-		if (rt & SP_CLR_SIG1)
+		if ((rt & SP_CLR_SIG1) && !(rt & SP_SET_SIG1))
 			status &= ~SP_STATUS_SIG1;
-		else if (rt & SP_SET_SIG1)
+		if ((rt & SP_SET_SIG1) && !(rt & SP_CLR_SIG1))
 			status |= SP_STATUS_SIG1;
 
-		if (rt & SP_CLR_SIG2)
+		if ((rt & SP_CLR_SIG2) && !(rt & SP_SET_SIG2))
 			status &= ~SP_STATUS_SIG2;
-		else if (rt & SP_SET_SIG2)
+		if ((rt & SP_SET_SIG2) && !(rt & SP_CLR_SIG2))
 			status |= SP_STATUS_SIG2;
 
-		if (rt & SP_CLR_SIG3)
+		if ((rt & SP_CLR_SIG3) && !(rt & SP_SET_SIG3))
 			status &= ~SP_STATUS_SIG3;
-		else if (rt & SP_SET_SIG3)
+		if ((rt & SP_SET_SIG3) && !(rt & SP_CLR_SIG3))
 			status |= SP_STATUS_SIG3;
 
-		if (rt & SP_CLR_SIG4)
+		if ((rt & SP_CLR_SIG4) && !(rt & SP_SET_SIG4))
 			status &= ~SP_STATUS_SIG4;
-		else if (rt & SP_SET_SIG4)
+		if ((rt & SP_SET_SIG4) && !(rt & SP_CLR_SIG4))
 			status |= SP_STATUS_SIG4;
 
-		if (rt & SP_CLR_SIG5)
+		if ((rt & SP_CLR_SIG5) && !(rt & SP_SET_SIG5))
 			status &= ~SP_STATUS_SIG5;
-		else if (rt & SP_SET_SIG5)
+		if ((rt & SP_SET_SIG5) && !(rt & SP_CLR_SIG5))
 			status |= SP_STATUS_SIG5;
 
-		if (rt & SP_CLR_SIG6)
+		if ((rt & SP_CLR_SIG6) && !(rt & SP_SET_SIG6))
 			status &= ~SP_STATUS_SIG6;
-		else if (rt & SP_SET_SIG6)
+		if ((rt & SP_SET_SIG6) && !(rt & SP_CLR_SIG6))
 			status |= SP_STATUS_SIG6;
 
-		if (rt & SP_CLR_SIG7)
+		if ((rt & SP_CLR_SIG7) && !(rt & SP_SET_SIG7))
 			status &= ~SP_STATUS_SIG7;
-		else if (rt & SP_SET_SIG7)
+		if ((rt & SP_SET_SIG7) && !(rt & SP_CLR_SIG7))
 			status |= SP_STATUS_SIG7;
 
 		*rsp->cp0.cr[CP0_REGISTER_SP_STATUS] = status;
@@ -169,14 +168,9 @@ extern "C"
 	static int rsp_dma_read(RSP::CPUState *rsp)
 	{
 		uint32_t length_reg = *rsp->cp0.cr[CP0_REGISTER_DMA_READ_LENGTH];
-		uint32_t length = (length_reg & 0xFFF) + 1;
-		uint32_t skip = (length_reg >> 20) & 0xFFF;
-		unsigned count = (length_reg >> 12) & 0xFF;
-
-		// Force alignment.
-		length = (length + 0x7) & ~0x7;
-		*rsp->cp0.cr[CP0_REGISTER_DMA_CACHE] &= ~0x3;
-		*rsp->cp0.cr[CP0_REGISTER_DMA_DRAM] &= ~0x7;
+		uint32_t length = ((length_reg & 0xFFF) | 7) + 1;
+		uint32_t skip = (length_reg >> 20) & 0xFF8;
+		unsigned count = ((length_reg >> 12) & 0xFF) + 1;
 
 		// Check length.
 		if (((*rsp->cp0.cr[CP0_REGISTER_DMA_CACHE] & 0xFFF) + length) > 0x1000)
@@ -216,7 +210,7 @@ extern "C"
 
 			source += length + skip;
 			dest += length;
-		} while (++i <= count);
+		} while (++i < count);
 
 		*rsp->cp0.cr[CP0_REGISTER_DMA_DRAM] = source;
 		*rsp->cp0.cr[CP0_REGISTER_DMA_CACHE] = dest;
@@ -230,14 +224,9 @@ extern "C"
 	static void rsp_dma_write(RSP::CPUState *rsp)
 	{
 		uint32_t length_reg = *rsp->cp0.cr[CP0_REGISTER_DMA_WRITE_LENGTH];
-		uint32_t length = (length_reg & 0xFFF) + 1;
-		uint32_t skip = (length_reg >> 20) & 0xFFF;
-		unsigned count = (length_reg >> 12) & 0xFF;
-
-		// Force alignment.
-		length = (length + 0x7) & ~0x7;
-		*rsp->cp0.cr[CP0_REGISTER_DMA_CACHE] &= ~0x3;
-		*rsp->cp0.cr[CP0_REGISTER_DMA_DRAM] &= ~0x7;
+		uint32_t length = ((length_reg & 0xFFF) | 7) + 1;
+		uint32_t skip = (length_reg >> 20) & 0xFF8;
+		unsigned count = ((length_reg >> 12) & 0xFF) + 1;
 
 		// Check length.
 		if (((*rsp->cp0.cr[CP0_REGISTER_DMA_CACHE] & 0xFFF) + length) > 0x1000)
@@ -269,7 +258,7 @@ extern "C"
 
 			source += length;
 			dest += length + skip;
-		} while (++i <= count);
+		} while (++i < count);
 
 		*rsp->cp0.cr[CP0_REGISTER_DMA_CACHE] = source;
 		*rsp->cp0.cr[CP0_REGISTER_DMA_DRAM] = dest;
@@ -286,11 +275,11 @@ extern "C"
 		switch (static_cast<CP0Registers>(rd & 15))
 		{
 		case CP0_REGISTER_DMA_CACHE:
-			*rsp->cp0.cr[CP0_REGISTER_DMA_CACHE] = val & 0x1fff;
+			*rsp->cp0.cr[CP0_REGISTER_DMA_CACHE] = val & 0x1ff8;
 			break;
 
 		case CP0_REGISTER_DMA_DRAM:
-			*rsp->cp0.cr[CP0_REGISTER_DMA_DRAM] = val & 0xffffff;
+			*rsp->cp0.cr[CP0_REGISTER_DMA_DRAM] = val & 0xfffff8;
 			break;
 
 		case CP0_REGISTER_DMA_READ_LENGTH:
@@ -312,7 +301,6 @@ extern "C"
 			return rsp_status_write(rsp, val);
 
 		case CP0_REGISTER_SP_RESERVED:
-			// CXD4 forces this to 0.
 			*rsp->cp0.cr[CP0_REGISTER_SP_RESERVED] = 0;
 			break;
 
