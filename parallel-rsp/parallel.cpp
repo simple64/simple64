@@ -76,9 +76,6 @@ extern "C"
 
 	EXPORT unsigned int CALL DoRspCycles(unsigned int first_run)
 	{
-		if (*RSP::rsp.SP_STATUS_REG & (SP_STATUS_HALT | SP_STATUS_BROKE))
-			return 0;
-
 		// We don't know if Mupen from the outside invalidated our IMEM.
 		if (first_run)
 			RSP::cpu.invalidate_imem();
@@ -103,10 +100,7 @@ extern "C"
 				break;
 		}
 
-		*RSP::rsp.SP_PC_REG = 0x04001000 | (RSP::cpu.get_state().pc & 0xffc);
-		*RSP::rsp.SP_DMA_BUSY_REG = 0;
-		*RSP::rsp.SP_DMA_FULL_REG = 0;
-		*RSP::rsp.SP_STATUS_REG &= ~(SP_STATUS_DMA_BUSY | SP_STATUS_DMA_FULL);
+		*RSP::rsp.SP_PC_REG = (RSP::cpu.get_state().pc & 0xffc);
 
 		// From CXD4.
 		if (*RSP::rsp.SP_STATUS_REG & SP_STATUS_BROKE)

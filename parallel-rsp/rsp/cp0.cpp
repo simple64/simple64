@@ -52,6 +52,46 @@ extern "C"
 		return MODE_CONTINUE;
 	}
 
+	static inline void rdp_status_write(RSP::CPUState *rsp, uint32_t rt)
+	{
+		uint32_t status = *rsp->cp0.cr[CP0_REGISTER_CMD_STATUS];
+		if (rt & DPC_CLR_XBUS_DMEM_DMA)
+			status &= ~DPC_STATUS_XBUS_DMEM_DMA;
+		else if (rt & DPC_SET_XBUS_DMEM_DMA)
+			status |= DPC_STATUS_XBUS_DMEM_DMA;
+
+		if (rt & DPC_CLR_FREEZE)
+			status &= ~DPC_STATUS_FREEZE;
+		else if (rt & DPC_SET_FREEZE)
+			status |= DPC_STATUS_FREEZE;
+
+		if (rt & DPC_CLR_FLUSH)
+			status &= ~DPC_STATUS_FLUSH;
+		else if (rt & DPC_SET_FLUSH)
+			status |= DPC_STATUS_FLUSH;
+
+		if (rt & DPC_CLR_TMEM_CTR)
+		{
+			status &= ~DPC_STATUS_TMEM_BUSY;
+			*rsp->cp0.cr[CP0_REGISTER_CMD_TMEM_BUSY] = 0;
+		}
+		if (rt & DPC_CLR_PIPE_CTR)
+		{
+			status &= ~DPC_STATUS_PIPE_BUSY;
+			*rsp->cp0.cr[CP0_REGISTER_CMD_PIPE_BUSY] = 0;
+		}
+		if (rt & DPC_CLR_CMD_CTR)
+		{
+			status &= ~DPC_STATUS_CMD_BUSY;
+			*rsp->cp0.cr[CP0_REGISTER_CMD_BUSY] = 0;
+		}
+
+		if (rt & DPC_CLR_CLOCK_CTR)
+			*rsp->cp0.cr[CP0_REGISTER_CMD_CLOCK] = 0;
+
+		*rsp->cp0.cr[CP0_REGISTER_CMD_STATUS] = status;
+	}
+
 	static inline int rsp_status_write(RSP::CPUState *rsp, uint32_t rt)
 	{
 		//fprintf(stderr, "Writing 0x%x to status reg!\n", rt);
@@ -278,18 +318,25 @@ extern "C"
 
 		case CP0_REGISTER_CMD_START:
 #ifdef INTENSE_DEBUG
-			fprintf(stderr, "CMD_START 0x%x\n", val & 0xfffffff8u);
+			fprintf(stderr, "CMD_START 0x%x\n", val & 0xfffff8u);
 #endif
-			*rsp->cp0.cr[CP0_REGISTER_CMD_START] = *rsp->cp0.cr[CP0_REGISTER_CMD_CURRENT] =
-			    *rsp->cp0.cr[CP0_REGISTER_CMD_END] = val & 0xfffffff8u;
+			if (!(*rsp->cp0.cr[CP0_REGISTER_CMD_STATUS] & DPC_STATUS_START_VALID))
+			{
+				*rsp->cp0.cr[CP0_REGISTER_CMD_START] = val & 0xfffff8u;
+			}
+			*rsp->cp0.cr[CP0_REGISTER_CMD_STATUS] |= DPC_STATUS_START_VALID;
 			break;
 
 		case CP0_REGISTER_CMD_END:
 #ifdef INTENSE_DEBUG
-			fprintf(stderr, "CMD_END 0x%x\n", val & 0xfffffff8u);
+			fprintf(stderr, "CMD_END 0x%x\n", val & 0xfffff8u);
 #endif
-			*rsp->cp0.cr[CP0_REGISTER_CMD_END] = val & 0xfffffff8u;
-
+			*rsp->cp0.cr[CP0_REGISTER_CMD_END] = val & 0xfffff8u;
+			if (*rsp->cp0.cr[CP0_REGISTER_CMD_STATUS] & DPC_STATUS_START_VALID)
+			{
+				*rsp->cp0.cr[CP0_REGISTER_CMD_CURRENT] = *rsp->cp0.cr[CP0_REGISTER_CMD_START];
+				*rsp->cp0.cr[CP0_REGISTER_CMD_STATUS] &= ~DPC_STATUS_START_VALID;
+			}
 #ifdef PARALLEL_INTEGRATION
 			RSP::rsp.ProcessRdpList();
 #endif
@@ -300,14 +347,7 @@ extern "C"
 			break;
 
 		case CP0_REGISTER_CMD_STATUS:
-			*rsp->cp0.cr[CP0_REGISTER_CMD_STATUS] &= ~(!!(val & 0x1) << 0);
-			*rsp->cp0.cr[CP0_REGISTER_CMD_STATUS] |= (!!(val & 0x2) << 0);
-			*rsp->cp0.cr[CP0_REGISTER_CMD_STATUS] &= ~(!!(val & 0x4) << 1);
-			*rsp->cp0.cr[CP0_REGISTER_CMD_STATUS] |= (!!(val & 0x8) << 1);
-			*rsp->cp0.cr[CP0_REGISTER_CMD_STATUS] &= ~(!!(val & 0x10) << 2);
-			*rsp->cp0.cr[CP0_REGISTER_CMD_STATUS] |= (!!(val & 0x20) << 2);
-			*rsp->cp0.cr[CP0_REGISTER_CMD_TMEM_BUSY] &= !(val & 0x40) * -1;
-			*rsp->cp0.cr[CP0_REGISTER_CMD_CLOCK] &= !(val & 0x200) * -1;
+			rdp_status_write(rsp, val);
 			break;
 
 		case CP0_REGISTER_CMD_CURRENT:
