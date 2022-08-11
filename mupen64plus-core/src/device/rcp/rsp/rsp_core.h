@@ -55,6 +55,36 @@ enum
     SP_STATUS_SIG7       = 0x4000,
 };
 
+enum
+{
+    /* SP_STATUS - write */
+    SP_CLR_HALT       = 0x0000001,
+    SP_SET_HALT       = 0x0000002,
+    SP_CLR_BROKE      = 0x0000004,
+    SP_CLR_INTR       = 0x0000008,
+    SP_SET_INTR       = 0x0000010,
+    SP_CLR_SSTEP      = 0x0000020,
+    SP_SET_SSTEP      = 0x0000040,
+    SP_CLR_INTR_BREAK =	0x0000080,
+    SP_SET_INTR_BREAK = 0x0000100,
+    SP_CLR_SIG0       = 0x0000200,
+    SP_SET_SIG0       = 0x0000400,
+    SP_CLR_SIG1       = 0x0000800,
+    SP_SET_SIG1       = 0x0001000,
+    SP_CLR_SIG2       = 0x0002000,
+    SP_SET_SIG2       = 0x0004000,
+    SP_CLR_SIG3       = 0x0008000,
+    SP_SET_SIG3       = 0x0010000,
+    SP_CLR_SIG4       = 0x0020000,
+    SP_SET_SIG4       = 0x0040000,
+    SP_CLR_SIG5       = 0x0080000,
+    SP_SET_SIG5       = 0x0100000,
+    SP_CLR_SIG6       = 0x0200000,
+    SP_SET_SIG6       = 0x0400000,
+    SP_CLR_SIG7       = 0x0800000,
+    SP_SET_SIG7       = 0x1000000,
+};
+
 enum sp_registers
 {
     SP_MEM_ADDR_REG,
