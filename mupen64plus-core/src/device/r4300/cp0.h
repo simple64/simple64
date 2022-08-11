@@ -123,7 +123,9 @@ enum r4300_cp0_registers
     CP0_WATCHLO_REG,
     CP0_WATCHHI_REG,
     CP0_XCONTEXT_REG,
-    /* 21 - 27 are unused */
+    /* 21 - 25 are unused */
+    CP0_PERR_REG = 26,
+    /* 27 is unused */
     CP0_TAGLO_REG = 28,
     CP0_TAGHI_REG,
     CP0_ERROREPC_REG,
@@ -203,6 +205,7 @@ struct cp0
 
     struct tlb tlb;
     uint8_t half_count;
+    uint32_t latch;
 };
 
 #ifndef NEW_DYNAREC

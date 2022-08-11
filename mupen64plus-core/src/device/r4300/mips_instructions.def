@@ -114,8 +114,11 @@ DECLARE_INSTRUCTION(NI)
 DECLARE_INSTRUCTION(RESERVED)
 {
     DECLARE_R4300
+    uint32_t* cp0_regs = r4300_cp0_regs(&r4300->cp0);
     DebugMessage(M64MSG_ERROR, "reserved opcode: %" PRIX32 ":%" PRIX32, PCADDR, *fast_mem_access(r4300, PCADDR));
-    *r4300_stop(r4300) = 1;
+
+    cp0_regs[CP0_CAUSE_REG] = CP0_CAUSE_EXCCODE_RI;
+    exception_general(r4300);
 }
 
 /* Load instructions */
@@ -682,14 +685,14 @@ DECLARE_INSTRUCTION(DSRL32)
 DECLARE_INSTRUCTION(SRA)
 {
     DECLARE_R4300
-    rrd = SE32((int32_t) rrt32 >> rsa);
+    rrd = SE32(rrt >> rsa);
     ADD_TO_PC(1);
 }
 
 DECLARE_INSTRUCTION(SRAV)
 {
     DECLARE_R4300
-    rrd = SE32((int32_t) rrt32 >> (rrs32 & 0x1F));
+    rrd = SE32(rrt >> (rrs32 & 0x1F));
     ADD_TO_PC(1);
 }
 
@@ -1084,6 +1087,15 @@ DECLARE_INSTRUCTION(SYSCALL)
     exception_general(r4300);
 }
 
+DECLARE_INSTRUCTION(BREAK)
+{
+    DECLARE_R4300
+    uint32_t* cp0_regs = r4300_cp0_regs(&r4300->cp0);
+
+    cp0_regs[CP0_CAUSE_REG] = CP0_CAUSE_EXCCODE_BP;
+    exception_general(r4300);
+}
+
 /* Trap instructions */
 
 #define DECLARE_TRAP(name, cond) \
@@ -1299,14 +1311,20 @@ DECLARE_INSTRUCTION(MFC0)
 
     switch(rfs)
     {
+    case 7:
+    case 21 ... 25:
+    case 31:
+        rrt = SE32(r4300->cp0.latch);
+        break;
+    case 27: // Cache error
+        rrt = SE32(0);
     case CP0_RANDOM_REG:
         cp0_regs[CP0_RANDOM_REG] = (cp0_regs[CP0_COUNT_REG]/2 % (32 - cp0_regs[CP0_WIRED_REG]))
             + cp0_regs[CP0_WIRED_REG];
-        break;
-    case CP0_COUNT_REG:
+    default:
+        rrt = SE32(cp0_regs[rfs]);
         break;
     }
-    rrt = SE32(cp0_regs[rfs]);
     ADD_TO_PC(1);
 }
 
@@ -1316,6 +1334,7 @@ DECLARE_INSTRUCTION(MTC0)
     uint32_t* cp0_regs = r4300_cp0_regs(&r4300->cp0);
     int* cp0_cycle_count = r4300_cp0_cycle_count(&r4300->cp0);
 
+    r4300->cp0.latch = rrt32;
     switch(rfs)
     {
     case CP0_INDEX_REG:
@@ -1342,7 +1361,7 @@ DECLARE_INSTRUCTION(MTC0)
         cp0_regs[CP0_PAGEMASK_REG] = rrt32 & UINT32_C(0x01FFE000);
         break;
     case CP0_WIRED_REG:
-        cp0_regs[CP0_WIRED_REG] = rrt32;
+        cp0_regs[CP0_WIRED_REG] = rrt32 & UINT32_C(0x3F);
         cp0_regs[CP0_RANDOM_REG] = UINT32_C(31);
         break;
     case CP0_BADVADDR_REG:
@@ -1374,7 +1393,7 @@ DECLARE_INSTRUCTION(MTC0)
         if((rrt32 & CP0_STATUS_FR) != (cp0_regs[CP0_STATUS_REG] & CP0_STATUS_FR))
             set_fpr_pointers(&r4300->cp1, rrt32);
 
-        cp0_regs[CP0_STATUS_REG] = rrt32;
+        cp0_regs[CP0_STATUS_REG] = rrt32 & UINT32_C(0xFFF7FFFF);
         ADD_TO_PC(1);
         r4300_check_interrupt(r4300, CP0_CAUSE_IP2, r4300->mi->regs[MI_INTR_REG] & r4300->mi->regs[MI_INTR_MASK_REG]); // ???
         r4300->cp0.interrupt_unsafe_state |= INTR_UNSAFE_R4300;
@@ -1391,13 +1410,19 @@ DECLARE_INSTRUCTION(MTC0)
     case CP0_PREVID_REG:
         break;
     case CP0_CONFIG_REG:
-        cp0_regs[CP0_CONFIG_REG] = rrt32;
+        cp0_regs[CP0_CONFIG_REG] = (rrt32 & UINT32_C(0x7F00800F)) | UINT32_C(0x66460);
+        break;
+    case CP0_LLADDR_REG:
+        cp0_regs[CP0_LLADDR_REG] = rrt32;
         break;
     case CP0_WATCHLO_REG:
         cp0_regs[CP0_WATCHLO_REG] = rrt32;
         break;
     case CP0_WATCHHI_REG:
         cp0_regs[CP0_WATCHHI_REG] = rrt32;
+        break;
+    case CP0_PERR_REG:
+        cp0_regs[CP0_PERR_REG] = rrt32 & UINT32_C(0xFF);
         break;
     case CP0_TAGLO_REG:
         cp0_regs[CP0_TAGLO_REG] = rrt32 & UINT32_C(0x0FFFFFC0);
@@ -1409,8 +1434,7 @@ DECLARE_INSTRUCTION(MTC0)
         cp0_regs[CP0_ERROREPC_REG] = rrt32;
         break;
     default:
-        DebugMessage(M64MSG_ERROR, "Unknown MTC0 write: %d", rfs);
-        *r4300_stop(r4300)=1;
+        DebugMessage(M64MSG_WARNING, "Unknown MTC0 write: %d", rfs);
     }
     ADD_TO_PC(1);
 }

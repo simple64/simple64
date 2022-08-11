@@ -61,6 +61,12 @@ void read_cart_rom(void* opaque, uint32_t address, uint32_t* value)
     if (cart_rom->pi->regs[PI_STATUS_REG] & PI_STATUS_IO_BUSY)
     {
         *value = cart_rom->last_write;
+        cart_rom->pi->regs[PI_STATUS_REG] &= ~PI_STATUS_IO_BUSY;
+        remove_event(&cart_rom->r4300->cp0.q, PI_INT);
+    }
+    else if (addr > cart_rom->rom_size - 1)
+    {
+        *value = 0;
     }
     else
     {
@@ -72,10 +78,10 @@ void read_cart_rom(void* opaque, uint32_t address, uint32_t* value)
 void write_cart_rom(void* opaque, uint32_t address, uint32_t value, uint32_t mask)
 {
     struct cart_rom* cart_rom = (struct cart_rom*)opaque;
-    cart_rom->last_write = value & mask;
 
     if (!validate_pi_request(cart_rom->pi))
         return;
+    cart_rom->last_write = value & mask;
 
     /* Mark IO as busy */
     cart_rom->pi->regs[PI_STATUS_REG] |= PI_STATUS_IO_BUSY;

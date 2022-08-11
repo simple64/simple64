@@ -58,8 +58,8 @@ void poweron_cp0(struct cp0* cp0)
     memset(cp0_regs, 0, CP0_REGS_COUNT * sizeof(cp0_regs[0]));
     cp0_regs[CP0_RANDOM_REG] = UINT32_C(31);
     cp0_regs[CP0_STATUS_REG]= UINT32_C(0x34000000);
-    cp0_regs[CP0_CONFIG_REG]= UINT32_C(0x6e463);
-    cp0_regs[CP0_PREVID_REG] = UINT32_C(0xb00);
+    cp0_regs[CP0_CONFIG_REG]= UINT32_C(0x7006e463);
+    cp0_regs[CP0_PREVID_REG] = UINT32_C(0xb22);
     cp0_regs[CP0_COUNT_REG] = UINT32_C(0x5000);
     cp0_regs[CP0_CAUSE_REG] = UINT32_C(0x5c);
     cp0_regs[CP0_CONTEXT_REG] = UINT32_C(0x7ffff0);
@@ -73,6 +73,7 @@ void poweron_cp0(struct cp0* cp0)
     *cp0_cycle_count = 0;
     cp0->half_count = 0;
     cp0->last_addr = UINT32_C(0xbfc00000);
+    cp0->latch = 0;
 
     init_interrupt(cp0);
 
@@ -225,7 +226,7 @@ void TLB_refill_exception(struct r4300_core* r4300, uint32_t address, int w)
         generic_jump_to(r4300, UINT32_C(0x80000180));
 
 
-        if (r4300->delay_slot == 1 || r4300->delay_slot == 3) {
+        if (r4300->delay_slot) {
             cp0_regs[CP0_CAUSE_REG] |= CP0_CAUSE_BD;
         }
         else {
@@ -268,7 +269,7 @@ void TLB_refill_exception(struct r4300_core* r4300, uint32_t address, int w)
                 : UINT32_C(0x80000000));
     }
 
-    if (r4300->delay_slot == 1 || r4300->delay_slot == 3)
+    if (r4300->delay_slot)
     {
         cp0_regs[CP0_CAUSE_REG] |= CP0_CAUSE_BD;
         cp0_regs[CP0_EPC_REG] -= 4;
@@ -294,7 +295,7 @@ void exception_general(struct r4300_core* r4300)
 
     cp0_regs[CP0_EPC_REG] = *r4300_pc(r4300);
 
-    if (r4300->delay_slot == 1 || r4300->delay_slot == 3)
+    if (r4300->delay_slot)
     {
         cp0_regs[CP0_CAUSE_REG] |= CP0_CAUSE_BD;
         cp0_regs[CP0_EPC_REG] -= 4;
