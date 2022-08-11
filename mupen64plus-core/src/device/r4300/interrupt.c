@@ -457,7 +457,7 @@ void nmi_int_handler(void* opaque)
     // reset the r4300 internal state
     invalidate_r4300_cached_code(r4300, 0, 0);
     // adjust ErrorEPC if we were in a delay slot, and clear the r4300->delay_slot and r4300->recomp.dyna_interp flags
-    if(r4300->delay_slot==1 || r4300->delay_slot==3)
+    if(r4300->delay_slot)
     {
         cp0_regs[CP0_ERROREPC_REG]-=4;
     }

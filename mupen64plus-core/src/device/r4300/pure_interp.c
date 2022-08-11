@@ -53,12 +53,16 @@ static void InterpretOpcode(struct r4300_core* r4300);
       if (cop1 && check_cop1_unusable(r4300)) return; \
       if (link_register != &r4300_regs(r4300)[0]) \
       { \
+        if (r4300->delay_slot) \
+          *link_register = SE32(r4300->delay_slot + 4); \
+        else \
           *link_register = SE32(r4300->interp_PC.addr + 8); \
       } \
       if (!likely || take_jump) \
       { \
         r4300->interp_PC.addr += 4; \
-        r4300->delay_slot=1; \
+        if (!r4300->delay_slot)	\
+          r4300->delay_slot=jump_target; \
         InterpretOpcode(r4300); \
         r4300->delay_slot=0; \
         if (take_jump && !r4300->skip_jump) \
@@ -68,7 +72,7 @@ static void InterpretOpcode(struct r4300_core* r4300);
       } \
       else \
       { \
-         r4300->interp_PC.addr += 8; \
+        r4300->interp_PC.addr += 8; \
       } \
       r4300->cp0.last_addr = r4300->interp_PC.addr; \
       if (*r4300_cp0_cycle_count(&r4300->cp0) >= 0) gen_interrupt(r4300); \
@@ -207,9 +211,7 @@ void InterpretOpcode(struct r4300_core* r4300)
 			JALR(r4300, op);
 			break;
 		case 12: SYSCALL(r4300, op); break;
-		case 13: /* SPECIAL opcode 13: BREAK (Not implemented) */
-			NI(r4300, op);
-			break;
+		case 13: BREAK(r4300, op); break;
 		case 15: SYNC(r4300, op); break;
 		case 16: /* SPECIAL opcode 16: MFHI */
 			if (RD_OF(op) != 0) MFHI(r4300, op);
@@ -438,10 +440,13 @@ void InterpretOpcode(struct r4300_core* r4300)
 	case 16: /* Coprocessor 0 prefix */
 		switch ((op >> 21) & 0x1F) {
 		case 0: /* Coprocessor 0 opcode 0: MFC0 */
+		case 1: /* Coprocessor 0 opcode 1: DMFC0 */
 			if (RT_OF(op) != 0) MFC0(r4300, op);
 			else                NOP(r4300, 0);
 			break;
-		case 4: MTC0(r4300, op); break;
+		case 4: /* Coprocessor 0 opcode 4: MTC0 */
+		case 5: /* Coprocessor 0 opcode 5: DMTC0 */
+			MTC0(r4300, op); break;
 		case 16: /* Coprocessor 0 opcode 16: TLB */
 			switch (op & 0x3F) {
 			case 1: TLBR(r4300, op); break;
