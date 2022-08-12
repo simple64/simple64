@@ -937,7 +937,7 @@ void CPU::jit_instruction(jit_state_t *_jit, uint32_t pc, uint32_t instr,
 
 	uint32_t type = instr >> 26;
 
-#define NOP_IF_RD_ZERO() //if (rd == 0) { break; }
+#define NOP_IF_RD_ZERO() if (rd == 0) { break; }
 #define NOP_IF_RT_ZERO() if (rt == 0) { break; }
 
 	switch (type)
