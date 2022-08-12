@@ -33,7 +33,6 @@ extern "C"
 		{
 			--rsp->instruction_count; // Some games check the STATUS reg more than normal since we don't really yield properly
 			RSP::MFC0_count[rt] += 1;
-
 		}
 		else if (rd == CP0_REGISTER_SP_RESERVED)
 		{
