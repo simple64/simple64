@@ -1283,12 +1283,20 @@ static void TLBWrite(struct r4300_core* r4300, unsigned int idx)
     }
 }
 
+static uint32_t set_random_reg(struct r4300_core* r4300)
+{
+    uint32_t* cp0_regs = r4300_cp0_regs(&r4300->cp0);
+    if (cp0_regs[CP0_WIRED_REG] > 31)
+        return (UINT32_MAX - r4300->cp0.instruction_counter) & 0x3F;
+    else
+        return (UINT32_MAX - r4300->cp0.instruction_counter) % (32 - cp0_regs[CP0_WIRED_REG]) + cp0_regs[CP0_WIRED_REG];
+}
+
 DECLARE_INSTRUCTION(TLBWR)
 {
     DECLARE_R4300
     uint32_t* cp0_regs = r4300_cp0_regs(&r4300->cp0);
-    cp0_regs[CP0_RANDOM_REG] = (cp0_regs[CP0_COUNT_REG]/2 % (32 - cp0_regs[CP0_WIRED_REG]))
-        + cp0_regs[CP0_WIRED_REG];
+    cp0_regs[CP0_RANDOM_REG] = set_random_reg(r4300);
     TLBWrite(r4300, cp0_regs[CP0_RANDOM_REG]);
     ADD_TO_PC(1);
 }
@@ -1319,8 +1327,7 @@ DECLARE_INSTRUCTION(MFC0)
     case 27: // Cache error
         rrt = SE32(0);
     case CP0_RANDOM_REG:
-        cp0_regs[CP0_RANDOM_REG] = (cp0_regs[CP0_COUNT_REG]/2 % (32 - cp0_regs[CP0_WIRED_REG]))
-            + cp0_regs[CP0_WIRED_REG];
+        cp0_regs[CP0_RANDOM_REG] = set_random_reg(r4300);
     default:
         rrt = SE32(cp0_regs[rfs]);
         break;
@@ -1342,7 +1349,6 @@ DECLARE_INSTRUCTION(MTC0)
         if ((cp0_regs[CP0_INDEX_REG] & UINT32_C(0x3F)) > UINT32_C(31))
         {
             DebugMessage(M64MSG_ERROR, "MTC0 instruction writing Index register with TLB index > 31");
-            *r4300_stop(r4300)=1;
         }
         break;
     case CP0_RANDOM_REG:
@@ -1410,7 +1416,7 @@ DECLARE_INSTRUCTION(MTC0)
     case CP0_PREVID_REG:
         break;
     case CP0_CONFIG_REG:
-        cp0_regs[CP0_CONFIG_REG] = (rrt32 & UINT32_C(0x7F00800F)) | UINT32_C(0x66460);
+        cp0_regs[CP0_CONFIG_REG] = (rrt32 & UINT32_C(0xF00800F)) | UINT32_C(0x70066460);
         break;
     case CP0_LLADDR_REG:
         cp0_regs[CP0_LLADDR_REG] = rrt32;

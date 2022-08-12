@@ -206,6 +206,7 @@ struct cp0
     struct tlb tlb;
     uint8_t half_count;
     uint32_t latch;
+    uint32_t instruction_counter;
 };
 
 #ifndef NEW_DYNAREC
