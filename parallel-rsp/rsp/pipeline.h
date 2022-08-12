@@ -26,7 +26,8 @@ enum rsp_mem_request_type
 	RSP_MEM_REQUEST_PACK,
 	RSP_MEM_REQUEST_QUAD,
 	RSP_MEM_REQUEST_REST,
-	RSP_MEM_REQUEST_UPACK
+	RSP_MEM_REQUEST_UPACK,
+	RSP_MEM_REQUEST_TRANSPOSE,
 };
 
 struct rsp_int_mem_packet
@@ -36,6 +37,14 @@ struct rsp_int_mem_packet
 	uint32_t wdqm;
 
 	unsigned rshift;
+};
+
+struct rsp_transpose_mem_packet {
+  void (*transpose_func)(struct rsp *rsp, uint32_t addr, unsigned element,
+    unsigned vt);
+
+  unsigned element;
+  unsigned vt;
 };
 
 struct rsp_vect_mem_packet
