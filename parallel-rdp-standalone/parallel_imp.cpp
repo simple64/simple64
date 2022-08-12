@@ -341,6 +341,7 @@ void vk_process_commands()
 	{
 		do
 		{
+			offset &= 0xFF8;
 			cmd_data[2 * cmd_ptr + 0] = *reinterpret_cast<const uint32_t *>(SP_DMEM + offset);
 			cmd_data[2 * cmd_ptr + 1] = *reinterpret_cast<const uint32_t *>(SP_DMEM + offset + 4);
 			offset += sizeof(uint64_t);
