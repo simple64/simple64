@@ -74,7 +74,6 @@ void poweron_cp0(struct cp0* cp0)
     cp0->half_count = 0;
     cp0->last_addr = UINT32_C(0xbfc00000);
     cp0->latch = 0;
-    cp0->instruction_counter = 0;
 
     init_interrupt(cp0);
 
@@ -149,7 +148,6 @@ void cp0_startup_cycles(struct r4300_core* r4300)
 
 void cp0_base_cycle(struct r4300_core* r4300)
 {
-    ++r4300->cp0.instruction_counter;
     cp0_add_cycles(r4300, 1);
 }
 

@@ -1287,9 +1287,9 @@ static uint32_t set_random_reg(struct r4300_core* r4300)
 {
     uint32_t* cp0_regs = r4300_cp0_regs(&r4300->cp0);
     if (cp0_regs[CP0_WIRED_REG] > 31)
-        return (UINT32_MAX - r4300->cp0.instruction_counter) & 0x3F;
+        return (UINT32_MAX - cp0_regs[CP0_COUNT_REG]) & 0x3F;
     else
-        return (UINT32_MAX - r4300->cp0.instruction_counter) % (32 - cp0_regs[CP0_WIRED_REG]) + cp0_regs[CP0_WIRED_REG];
+        return (UINT32_MAX - cp0_regs[CP0_COUNT_REG]) % (32 - cp0_regs[CP0_WIRED_REG]) + cp0_regs[CP0_WIRED_REG];
 }
 
 DECLARE_INSTRUCTION(TLBWR)
