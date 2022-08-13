@@ -37,9 +37,8 @@ void icache_writeback(struct r4300_core* r4300, struct instcache *line)
 {
     cp0_dcb_interlock(r4300, 48);
     uint32_t cache_address = line->tag | line->index;
-    invalidate_r4300_cached_code(r4300, cache_address, 32);
-    invalidate_r4300_cached_code(r4300, cache_address ^ UINT32_C(0x20000000), 32);
-    cache_address &= UINT32_C(0x1ffffffc);
+    invalidate_r4300_cached_code(r4300, R4300_KSEG0 + cache_address, 32);
+    invalidate_r4300_cached_code(r4300, R4300_KSEG1 + cache_address, 32);
     const struct mem_handler* handler = mem_get_handler(r4300->mem, cache_address);
     mem_write32(handler, cache_address | UINT32_C(0x0), line->words[0], ~UINT32_C(0));
     mem_write32(handler, cache_address | UINT32_C(0x4), line->words[1], ~UINT32_C(0));
@@ -57,7 +56,6 @@ void icache_fill(struct instcache *line, struct r4300_core* r4300, uint32_t addr
     line->valid = 1;
     line->tag = address & ~UINT32_C(0xFFF);
     uint32_t cache_address = line->tag | line->index;
-    cache_address &= UINT32_C(0x1ffffffc);
     const struct mem_handler* handler = mem_get_handler(r4300->mem, cache_address);
     mem_read32(handler, cache_address | UINT32_C(0x0), &line->words[0]);
     mem_read32(handler, cache_address | UINT32_C(0x4), &line->words[1]);
@@ -87,7 +85,6 @@ void icache_step(struct r4300_core* r4300)
     }
     else
     {
-        address &= UINT32_C(0x1ffffffc);
         mem_read32(mem_get_handler(r4300->mem, address), address, &(uint32_t){0}); // Done in order to get correct cycle count
     }
 }
@@ -107,7 +104,6 @@ uint32_t* icache_fetch(struct r4300_core* r4300, uint32_t address)
     }
     else
     {
-        address &= UINT32_C(0x1ffffffc);
         mem_read32(mem_get_handler(r4300->mem, address), address, &(uint32_t){0}); // Done in order to get correct cycle count
         return mem_base_u32(r4300->mem->base, address);
     }

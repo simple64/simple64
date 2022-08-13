@@ -126,8 +126,8 @@ uint32_t cart_rom_dma_write(void* opaque, uint8_t* dram, uint32_t dram_addr, uin
     }
 
     /* invalidate cached code */
-    invalidate_r4300_cached_code(cart_rom->r4300, 0x80000000 + dram_addr, length);
-    invalidate_r4300_cached_code(cart_rom->r4300, 0xa0000000 + dram_addr, length);
+    invalidate_r4300_cached_code(cart_rom->r4300, R4300_KSEG0 + dram_addr, length);
+    invalidate_r4300_cached_code(cart_rom->r4300, R4300_KSEG1 + dram_addr, length);
     return pi_calculate_cycles(cart_rom->pi, 1, length);
 }
 
