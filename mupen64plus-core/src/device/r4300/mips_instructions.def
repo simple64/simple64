@@ -182,6 +182,7 @@ DECLARE_INSTRUCTION(LHU)
 DECLARE_INSTRUCTION(LL)
 {
     DECLARE_R4300
+    uint32_t* cp0_regs = r4300_cp0_regs(&r4300->cp0);
     const uint32_t lsaddr = (uint32_t) irs32 + (uint32_t) iimmediate;
     int64_t *lsrtp = &irt;
     ADD_TO_PC(1);
@@ -190,6 +191,23 @@ DECLARE_INSTRUCTION(LL)
     if (r4300_read_aligned_word(r4300, lsaddr, &value)) {
         *lsrtp = SE32(value);
         r4300->llbit = 1;
+        cp0_regs[CP0_LLADDR_REG] = (lsaddr & UINT32_C(0x1ffffffc)) >> 4;
+    }
+}
+
+DECLARE_INSTRUCTION(LLD)
+{
+    DECLARE_R4300
+    uint32_t* cp0_regs = r4300_cp0_regs(&r4300->cp0);
+    const uint32_t lsaddr = (uint32_t) irs32 + (uint32_t) iimmediate;
+    int64_t *lsrtp = &irt;
+    ADD_TO_PC(1);
+    uint64_t value;
+
+    if (r4300_read_aligned_dword(r4300, lsaddr, &value)) {
+        *lsrtp = value;
+        r4300->llbit = 1;
+        cp0_regs[CP0_LLADDR_REG] = (lsaddr & UINT32_C(0x1ffffffc)) >> 4;
     }
 }
 
@@ -336,6 +354,26 @@ DECLARE_INSTRUCTION(SC)
     if (r4300->llbit)
     {
         if (r4300_write_aligned_word(r4300, lsaddr, (uint32_t)*lsrtp, ~UINT32_C(0))) {
+            r4300->llbit = 0;
+            *lsrtp = 1;
+        }
+    }
+    else
+    {
+        *lsrtp = 0;
+    }
+}
+
+DECLARE_INSTRUCTION(SCD)
+{
+    DECLARE_R4300
+    const uint32_t lsaddr = (uint32_t) irs32 + (uint32_t) iimmediate;
+    int64_t *lsrtp = &irt;
+    ADD_TO_PC(1);
+
+    if (r4300->llbit)
+    {
+        if (r4300_write_aligned_dword(r4300, lsaddr, (uint64_t)*lsrtp, ~UINT32_C(0))) {
             r4300->llbit = 0;
             *lsrtp = 1;
         }
