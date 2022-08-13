@@ -639,16 +639,46 @@ void InterpretOpcode(struct r4300_core* r4300)
 		if (RT_OF(op) != 0) DADDIU(r4300, op);
 		else                NOP(r4300, 0);
 		break;
-	case 26: LDL(r4300, op); break;
-	case 27: LDR(r4300, op); break;
-	case 32: LB(r4300, op); break;
-	case 33: LH(r4300, op); break;
-	case 34: LWL(r4300, op); break;
-	case 35: LW(r4300, op); break;
-	case 36: LBU(r4300, op); break;
-	case 37: LHU(r4300, op); break;
-	case 38: LWR(r4300, op); break;
-	case 39: LWU(r4300, op); break;
+	case 26: /* Major opcode 26: LDL */
+		if (RT_OF(op) != 0) LDL(r4300, op);
+		else                NOP(r4300, 0);
+		break;
+	case 27: /* Major opcode 27: LDR */
+		if (RT_OF(op) != 0) LDR(r4300, op);
+		else                NOP(r4300, 0);
+		break;
+	case 32: /* Major opcode 32: LB */
+		if (RT_OF(op) != 0) LB(r4300, op);
+		else                NOP(r4300, 0);
+		break;
+	case 33: /* Major opcode 33: LH */
+		if (RT_OF(op) != 0) LH(r4300, op);
+		else                NOP(r4300, 0);
+		break;
+	case 34: /* Major opcode 34: LWL */
+		if (RT_OF(op) != 0) LWL(r4300, op);
+		else                NOP(r4300, 0);
+		break;
+	case 35: /* Major opcode 35: LW */
+		if (RT_OF(op) != 0) LW(r4300, op);
+		else                NOP(r4300, 0);
+		break;
+	case 36: /* Major opcode 36: LBU */
+		if (RT_OF(op) != 0) LBU(r4300, op);
+		else                NOP(r4300, 0);
+		break;
+	case 37: /* Major opcode 37: LHU */
+		if (RT_OF(op) != 0) LHU(r4300, op);
+		else                NOP(r4300, 0);
+		break;
+	case 38: /* Major opcode 38: LWR */
+		if (RT_OF(op) != 0) LWR(r4300, op);
+		else                NOP(r4300, 0);
+		break;
+	case 39: /* Major opcode 39: LWU */
+		if (RT_OF(op) != 0) LWU(r4300, op);
+		else                NOP(r4300, 0);
+		break;
 	case 40: SB(r4300, op); break;
 	case 41: SH(r4300, op); break;
 	case 42: SWL(r4300, op); break;
@@ -657,20 +687,28 @@ void InterpretOpcode(struct r4300_core* r4300)
 	case 45: SDR(r4300, op); break;
 	case 46: SWR(r4300, op); break;
 	case 47: CACHE(r4300, op); break;
-	case 48: LL(r4300, op); break;
+	case 48: /* Major opcode 48: LL */
+		if (RT_OF(op) != 0) LL(r4300, op);
+		else                NOP(r4300, 0);
+		break;
 	case 49: LWC1(r4300, op); break;
-	case 52: /* Major opcode 52: LLD (Not implemented) */
-		NI(r4300, op);
+	case 52: /* Major opcode 52: LLD */
+		if (RT_OF(op) != 0) LLD(r4300, op);
+		else                NOP(r4300, 0);
 		break;
 	case 53: LDC1(r4300, op); break;
-	case 55: LD(r4300, op); break;
+	case 55: /* Major opcode 55: LD */
+		if (RT_OF(op) != 0) LD(r4300, op);
+		else                NOP(r4300, 0);
+		break;
 	case 56: /* Major opcode 56: SC */
 		if (RT_OF(op) != 0) SC(r4300, op);
 		else                NOP(r4300, 0);
 		break;
 	case 57: SWC1(r4300, op); break;
-	case 60: /* Major opcode 60: SCD (Not implemented) */
-		NI(r4300, op);
+	case 60: /* Major opcode 60: SCD */
+		if (RT_OF(op) != 0) SCD(r4300, op);
+		else                NOP(r4300, 0);
 		break;
 	case 61: SDC1(r4300, op); break;
 	case 63: SD(r4300, op); break;
