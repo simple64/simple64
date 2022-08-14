@@ -84,9 +84,7 @@ void icache_step(struct r4300_core* r4300)
             icache_fill(line, r4300, address);
     }
     else
-    {
         mem_read32(mem_get_handler(r4300->mem, address), address, &(uint32_t){0}); // Done in order to get correct cycle count
-    }
 }
 
 uint32_t* icache_fetch(struct r4300_core* r4300, uint32_t address)

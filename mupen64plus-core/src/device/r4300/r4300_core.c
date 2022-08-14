@@ -374,9 +374,7 @@ int r4300_write_aligned_word(struct r4300_core* r4300, uint32_t address, uint32_
     if (r4300->cached)
         dcache_write32(r4300, address & ~UINT32_C(3), value, mask);
     else
-    {
         mem_write32(mem_get_handler(r4300->mem, address), address & ~UINT32_C(3), value, mask);
-    }
 
     return 1;
 }
