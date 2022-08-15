@@ -68,6 +68,13 @@ enum {
     EMUMODE_DYNAREC          = 2,
 };
 
+enum {
+    ACCESS_NONE   = 0,
+    ACCESS_WORD   = 4,
+    ACCESS_DWORD  = 8,
+    ACCESS_DCACHE = 16,
+    ACCESS_ICACHE = 32
+};
 
 struct r4300_core
 {
@@ -202,6 +209,7 @@ struct r4300_core
     uint32_t start_address;
     uint32_t clock_rate;
     uint8_t cached;
+    uint8_t current_access_size;
 
     struct datacache dcache[512];
     struct instcache icache[512];

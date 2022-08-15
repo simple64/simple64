@@ -80,4 +80,6 @@ void write_rdram_regs(void* opaque, uint32_t address, uint32_t value, uint32_t m
 void read_rdram_dram(void* opaque, uint32_t address, uint32_t* value);
 void write_rdram_dram(void* opaque, uint32_t address, uint32_t value, uint32_t mask);
 
+uint32_t rdram_calculate_cycles(uint32_t length);
+
 #endif

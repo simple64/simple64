@@ -81,7 +81,7 @@ static void do_sp_dma(struct rsp_core* sp, const struct sp_dma* dma)
     sp->regs[SP_MEM_ADDR_REG] = (memaddr & 0xfff) + (dma->memaddr & 0x1000);
     sp->regs[SP_DRAM_ADDR_REG] = dramaddr;
     /* schedule end of dma event */
-    add_interrupt_event(&sp->mi->r4300->cp0, RSP_DMA_EVT, (count * length) / 8); // https://hcs64.com/dma.html
+    add_interrupt_event(&sp->mi->r4300->cp0, RSP_DMA_EVT, (9 + rdram_calculate_cycles(count * length)) / 2);
 }
 
 static void fifo_push(struct rsp_core* sp, uint32_t dir)

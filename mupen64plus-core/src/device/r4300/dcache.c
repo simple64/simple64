@@ -33,7 +33,7 @@ void poweron_dcache(struct datacache *lines)
 
 void dcache_writeback(struct r4300_core* r4300, struct datacache *line)
 {
-    cp0_dcb_interlock(r4300, 24);
+    // cp0_dcb_interlock(r4300, 24);
     line->dirty = 0;
     uint32_t cache_address = line->tag | line->index;
     invalidate_r4300_cached_code(r4300, R4300_KSEG0 + cache_address, 16);
@@ -47,10 +47,11 @@ void dcache_writeback(struct r4300_core* r4300, struct datacache *line)
 
 static void dcache_fill(struct datacache *line, struct r4300_core* r4300, uint32_t address)
 {
-    cp0_dcb_interlock(r4300, 9);
+    cp0_dcb_interlock(r4300, 5);
     line->valid = 1;
     line->dirty = 0;
     line->tag = address & ~UINT32_C(0xFFF);
+    r4300->current_access_size = ACCESS_DCACHE;
     uint32_t cache_address = line->tag | line->index;
     const struct mem_handler* handler = mem_get_handler(r4300->mem, cache_address);
     mem_read32(handler, cache_address | UINT32_C(0x0), &line->words[0]);
@@ -80,8 +81,8 @@ void dcache_write32(struct r4300_core* r4300, uint32_t address, uint32_t value, 
             dcache_writeback(r4300, line);
         dcache_fill(line, r4300, address);
     }
-    else
-        cp0_dcb_interlock(r4300, 1);
+    //else
+    //    cp0_dcb_interlock(r4300, 1);
     masked_write(&line->words[(address >> 2) & UINT32_C(3)], value, mask);
     line->dirty = 1;
 }
