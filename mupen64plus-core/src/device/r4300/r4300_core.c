@@ -66,6 +66,7 @@ void init_r4300(struct r4300_core* r4300, struct memory* mem, struct mi_controll
     r4300->start_address = start_address;
     r4300->clock_rate = 93750000 / 2;
     r4300->cached = 0;
+    r4300->current_access_size = ACCESS_NONE;
     srand((unsigned int) time(NULL));
 }
 
@@ -320,7 +321,10 @@ int r4300_read_aligned_word(struct r4300_core* r4300, uint32_t address, uint32_t
     if (r4300->cached)
         dcache_read32(r4300, address & ~UINT32_C(3), value);
     else
+    {
+        r4300->current_access_size = ACCESS_WORD;
         mem_read32(mem_get_handler(r4300->mem, address), address & ~UINT32_C(3), value);
+    }
 
     return 1;
 }
@@ -347,6 +351,7 @@ int r4300_read_aligned_dword(struct r4300_core* r4300, uint32_t address, uint64_
     }
     else
     {
+        r4300->current_access_size = ACCESS_DWORD;
         const struct mem_handler* handler = mem_get_handler(r4300->mem, address);
         mem_read32(handler, address + 0, &w[0]);
         mem_read32(handler, address + 4, &w[1]);
