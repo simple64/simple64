@@ -24,6 +24,7 @@
 
 #include "cp0.h"
 #include "r4300_core.h"
+#include "device/rdram/rdram.h"
 #include "new_dynarec/new_dynarec.h"
 #include "recomp.h"
 
@@ -158,7 +159,7 @@ void cp0_mci_interlock(struct r4300_core* r4300, uint32_t cycles)
 
 void cp0_ram_interlock(struct r4300_core* r4300)
 {
-    cp0_add_cycles(r4300, 7);
+    cp0_add_cycles(r4300, rdram_calculate_cycles(r4300->current_access_size) / (r4300->current_access_size / 4));
 }
 
 void cp0_rom_interlock(struct r4300_core* r4300, uint32_t cycles)

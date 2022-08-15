@@ -35,7 +35,7 @@ void poweron_icache(struct instcache *lines)
 
 void icache_writeback(struct r4300_core* r4300, struct instcache *line)
 {
-    cp0_dcb_interlock(r4300, 48);
+    // cp0_icb_interlock(r4300, 48);
     uint32_t cache_address = line->tag | line->index;
     invalidate_r4300_cached_code(r4300, R4300_KSEG0 + cache_address, 32);
     invalidate_r4300_cached_code(r4300, R4300_KSEG1 + cache_address, 32);
@@ -52,9 +52,10 @@ void icache_writeback(struct r4300_core* r4300, struct instcache *line)
 
 void icache_fill(struct instcache *line, struct r4300_core* r4300, uint32_t address)
 {
-    cp0_icb_interlock(r4300, 15);
+    cp0_icb_interlock(r4300, 6);
     line->valid = 1;
     line->tag = address & ~UINT32_C(0xFFF);
+    r4300->current_access_size = ACCESS_ICACHE;
     uint32_t cache_address = line->tag | line->index;
     const struct mem_handler* handler = mem_get_handler(r4300->mem, cache_address);
     mem_read32(handler, cache_address | UINT32_C(0x0), &line->words[0]);
@@ -84,7 +85,10 @@ void icache_step(struct r4300_core* r4300)
             icache_fill(line, r4300, address);
     }
     else
+    {
+        r4300->current_access_size = ACCESS_WORD;
         mem_read32(mem_get_handler(r4300->mem, address), address, &(uint32_t){0}); // Done in order to get correct cycle count
+    }
 }
 
 uint32_t* icache_fetch(struct r4300_core* r4300, uint32_t address)
@@ -102,6 +106,7 @@ uint32_t* icache_fetch(struct r4300_core* r4300, uint32_t address)
     }
     else
     {
+        r4300->current_access_size = ACCESS_WORD;
         mem_read32(mem_get_handler(r4300->mem, address), address, &(uint32_t){0}); // Done in order to get correct cycle count
         return mem_base_u32(r4300->mem->base, address);
     }
