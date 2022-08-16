@@ -22,6 +22,7 @@
 #include <string.h>
 
 #include "device/r4300/r4300_core.h"
+#include "device/rdram/rdram.h"
 #include "device/memory/memory.h"
 
 void poweron_dcache(struct datacache *lines)
@@ -33,7 +34,7 @@ void poweron_dcache(struct datacache *lines)
 
 void dcache_writeback(struct r4300_core* r4300, struct datacache *line)
 {
-    // cp0_dcb_interlock(r4300, 24);
+    cp0_dcb_interlock(r4300, rdram_calculate_cycles(16));
     line->dirty = 0;
     uint32_t cache_address = line->tag | line->index;
     invalidate_r4300_cached_code(r4300, R4300_KSEG0 + cache_address, 16);
