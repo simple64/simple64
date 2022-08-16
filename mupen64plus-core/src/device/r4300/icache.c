@@ -22,6 +22,7 @@
 #include <string.h>
 
 #include "device/r4300/r4300_core.h"
+#include "device/rdram/rdram.h"
 #include "device/r4300/cached_interp.h"
 #include "device/memory/memory.h"
 #include "device/rcp/rsp/rsp_core.h"
@@ -35,7 +36,7 @@ void poweron_icache(struct instcache *lines)
 
 void icache_writeback(struct r4300_core* r4300, struct instcache *line)
 {
-    // cp0_icb_interlock(r4300, 48);
+    cp0_icb_interlock(r4300, rdram_calculate_cycles(32));
     uint32_t cache_address = line->tag | line->index;
     invalidate_r4300_cached_code(r4300, R4300_KSEG0 + cache_address, 32);
     invalidate_r4300_cached_code(r4300, R4300_KSEG1 + cache_address, 32);
