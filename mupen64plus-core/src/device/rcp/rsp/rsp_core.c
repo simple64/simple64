@@ -323,6 +323,8 @@ void do_SP_Task(struct rsp_core* sp)
         return;
     if (get_event(&sp->mi->r4300->cp0.q, SP_INT))
         return;
+    if (get_event(&sp->mi->r4300->cp0.q, DP_INT))
+        return;
     if (sp->mi->regs[MI_INTR_REG] & MI_INTR_SP)
         return;
     const uint32_t* cp0_regs = r4300_cp0_regs(&sp->mi->r4300->cp0);
