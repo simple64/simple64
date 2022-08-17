@@ -31,7 +31,7 @@ bool vk_vi_aa, vk_vi_scale, vk_dither_filter;
 bool vk_interlacing;
 bool skip_swap_clear;
 
-static uint64_t signal;
+static uint64_t rdp_sync_signal;
 
 static const unsigned cmd_len_lut[64] = {
 	1, 1, 1, 1, 1, 1, 1, 1, 4, 6, 12, 14, 12, 14, 20, 22,
@@ -388,7 +388,7 @@ void vk_process_commands()
 		{
 			// For synchronous RDP:
 			if (vk_synchronous && processor)
-				signal = processor->signal_timeline();
+				rdp_sync_signal = processor->signal_timeline();
 			*gfx.MI_INTR_REG |= DP_INTERRUPT;
 			*GET_GFX_INFO(DPC_STATUS_REG) &= ~(DP_STATUS_PIPE_BUSY | DP_STATUS_START_GCLK);
 			gfx.CheckInterrupts();
@@ -406,7 +406,7 @@ void vk_process_commands()
 void vk_full_sync()
 {
 	if (vk_synchronous && processor)
-		processor->wait_for_timeline(signal);
+		processor->wait_for_timeline(rdp_sync_signal);
 }
 
 void vk_resize()
