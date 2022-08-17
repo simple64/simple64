@@ -327,6 +327,8 @@ extern "C"
 			}
 #ifdef PARALLEL_INTEGRATION
 			RSP::rsp.ProcessRdpList();
+			if (*rsp->cp0.irq & 0x20)
+				return MODE_EXIT;
 #endif
 			break;
 
