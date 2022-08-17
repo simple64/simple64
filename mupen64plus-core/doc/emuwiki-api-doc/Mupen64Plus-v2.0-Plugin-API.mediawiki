@@ -95,6 +95,9 @@ These functions are present in all of the plugins.
 |<tt>void ResizeVideoOutput(int width, int height);</tt>
 |'''***new*** function added in video api v2.2.0'''  This function notifies the video plugin that the output video window has changed size.  If resizing is supported, the video plugin should update its internal state to reflect the new window size, and then call the ResizeWindow function in the Video Extension API.
 |-
+|<tt>void FullSync(void);</tt>
+|'''***new*** function added in video api v2.2.1'''  This function is called right before a DP interrupt.
+|-
 |<tt>void FBRead(unsigned int addr)</tt>
 |Read data from frame buffer into emulated RAM space
 |-

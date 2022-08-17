@@ -148,7 +148,7 @@ void write_dpc_regs(void* opaque, uint32_t address, uint32_t value, uint32_t mas
             if (dp->dpc_regs[DPC_STATUS_REG] & DPC_STATUS_FREEZE) {
                 dp->do_on_unfreeze |= DELAY_DP_INT;
             } else {
-                add_interrupt_event(&dp->mi->r4300->cp0, DP_INT, 8000);
+                add_interrupt_event(&dp->mi->r4300->cp0, DP_INT, 40000);
             }
         }
         break;
@@ -178,6 +178,8 @@ void write_dps_regs(void* opaque, uint32_t address, uint32_t value, uint32_t mas
 void rdp_interrupt_event(void* opaque)
 {
     struct rdp_core* dp = (struct rdp_core*)opaque;
+
+    gfx.fullSync();
 
     raise_rcp_interrupt(dp->mi, MI_INTR_DP);
 }
