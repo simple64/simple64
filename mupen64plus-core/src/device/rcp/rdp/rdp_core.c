@@ -93,6 +93,7 @@ void poweron_rdp(struct rdp_core* dp)
     dp->dpc_regs[DPC_STATUS_REG] |= DPC_STATUS_START_GCLK | DPC_STATUS_PIPE_BUSY | DPC_STATUS_CBUF_READY;
 
     dp->do_on_unfreeze = 0;
+    dp->mi->r4300->cp0.interrupt_unsafe_state &= ~INTR_UNSAFE_RDP;
 
     poweron_fb(&dp->fb);
 }
@@ -145,6 +146,7 @@ void write_dpc_regs(void* opaque, uint32_t address, uint32_t value, uint32_t mas
         if (dp->mi->regs[MI_INTR_REG] & MI_INTR_DP)
         {
             dp->mi->regs[MI_INTR_REG] &= ~MI_INTR_DP;
+            dp->mi->r4300->cp0.interrupt_unsafe_state |= INTR_UNSAFE_RDP;
             if (dp->dpc_regs[DPC_STATUS_REG] & DPC_STATUS_FREEZE) {
                 dp->do_on_unfreeze |= DELAY_DP_INT;
             } else {
@@ -181,6 +183,7 @@ void rdp_interrupt_event(void* opaque)
 
     gfx.fullSync();
 
+    dp->mi->r4300->cp0.interrupt_unsafe_state &= ~INTR_UNSAFE_RDP;
     raise_rcp_interrupt(dp->mi, MI_INTR_DP);
 }
 
