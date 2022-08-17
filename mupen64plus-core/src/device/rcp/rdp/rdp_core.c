@@ -41,7 +41,11 @@ static void update_dpc_status(struct rdp_core* dp, uint32_t w)
         dp->dpc_regs[DPC_STATUS_REG] &= ~DPC_STATUS_FREEZE;
 
         if (dp->do_on_unfreeze & DELAY_DP_INT)
+        {
+            gfx.fullSync();
+            dp->mi->r4300->cp0.interrupt_unsafe_state &= ~INTR_UNSAFE_RDP;
             signal_rcp_interrupt(dp->mi, MI_INTR_DP);
+        }
         if (dp->do_on_unfreeze & DELAY_UPDATESCREEN)
             gfx.updateScreen();
         dp->do_on_unfreeze = 0;
