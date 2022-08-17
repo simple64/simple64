@@ -172,7 +172,8 @@ enum { CP0_INTERRUPT_HANDLERS_COUNT = 13 };
 
 enum {
     INTR_UNSAFE_R4300 = 0x01,
-    INTR_UNSAFE_RSP = 0x02,
+    INTR_UNSAFE_RSP   = 0x02,
+    INTR_UNSAFE_RDP   = 0x04,
 };
 
 struct cp0
