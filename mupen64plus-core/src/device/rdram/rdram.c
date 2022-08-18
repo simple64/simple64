@@ -245,5 +245,5 @@ void write_rdram_dram(void* opaque, uint32_t address, uint32_t value, uint32_t m
 
 uint32_t rdram_calculate_cycles(uint32_t length)
 {
-    return 31 + (length * 0.27); // https://hcs64.com/dma.html, https://github.com/rasky/n64-systembench
+    return 31 + (length / 3); // https://hcs64.com/dma.html, https://github.com/rasky/n64-systembench
 }
