@@ -875,6 +875,7 @@ void cached_interp_recompile_block(struct r4300_core* r4300, const uint32_t* iw,
             inst->phys_addr = inst->addr;
             inst->cached = (!(inst->addr & UINT32_C(0x20000000))) ? 1 : 0;
         }
+        inst->icache_line = &r4300->icache[(inst->phys_addr >> 5) & UINT32_C(0x1FF)];
 
         /* decode instruction */
         opcode = r4300_decode(inst, r4300, r4300_get_idec(iw[i]), iw[i], iw[i+1], block);
