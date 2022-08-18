@@ -44,6 +44,7 @@ static void update_dpc_status(struct rdp_core* dp, uint32_t w)
         {
             gfx.fullSync();
             dp->mi->r4300->cp0.interrupt_unsafe_state &= ~INTR_UNSAFE_RDP;
+            dp->sp->rsp_wait &= ~WAIT_PENDING_DP_SYNC;
             signal_rcp_interrupt(dp->mi, MI_INTR_DP);
         }
         if (dp->do_on_unfreeze & DELAY_UPDATESCREEN)
@@ -188,6 +189,7 @@ void rdp_interrupt_event(void* opaque)
     gfx.fullSync();
 
     dp->mi->r4300->cp0.interrupt_unsafe_state &= ~INTR_UNSAFE_RDP;
+    dp->sp->rsp_wait &= ~WAIT_PENDING_DP_SYNC;
     raise_rcp_interrupt(dp->mi, MI_INTR_DP);
 }
 

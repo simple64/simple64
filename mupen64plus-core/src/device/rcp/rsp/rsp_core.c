@@ -137,13 +137,18 @@ static void fifo_pop(struct rsp_core* sp)
 static void update_sp_status(struct rsp_core* sp, uint32_t w)
 {
     /* clear / set halt */
-    if ((w & SP_CLR_HALT) && !(w & SP_SET_HALT)) sp->regs[SP_STATUS_REG] &= ~SP_STATUS_HALT;
+    if ((w & SP_CLR_HALT) && !(w & SP_SET_HALT))
+    {
+        sp->rsp_wait &= ~WAIT_HALTED;
+        sp->regs[SP_STATUS_REG] &= ~SP_STATUS_HALT;
+    }
     if ((w & SP_SET_HALT) && !(w & SP_CLR_HALT))
     {
         remove_event(&sp->mi->r4300->cp0.q, SP_INT);
         sp->rsp_status = 0;
         sp->first_run = 1;
         sp->next_rsp_run = 0;
+        sp->rsp_wait |= WAIT_HALTED;
         sp->regs[SP_STATUS_REG] |= SP_STATUS_HALT;
     }
 
@@ -154,6 +159,7 @@ static void update_sp_status(struct rsp_core* sp, uint32_t w)
     if ((w & SP_CLR_INTR) && !(w & SP_SET_INTR))
     {
         clear_rcp_interrupt(sp->mi, MI_INTR_SP);
+        sp->rsp_wait &= ~WAIT_PENDING_SP_INT;
     }
     /* set SP interrupt */
     if ((w & SP_SET_INTR) && !(w & SP_CLR_INTR))
@@ -225,6 +231,7 @@ void poweron_rsp(struct rsp_core* sp)
     sp->first_run = 1;
     sp->next_rsp_run = 0;
     sp->last_cp0_count = 0;
+    sp->rsp_wait = 0;
     sp->mi->r4300->cp0.interrupt_unsafe_state &= ~INTR_UNSAFE_RSP;
     sp->regs[SP_STATUS_REG] = 1;
 }
@@ -319,14 +326,6 @@ void write_rsp_regs2(void* opaque, uint32_t address, uint32_t value, uint32_t ma
 
 void do_SP_Task(struct rsp_core* sp)
 {
-    if (sp->regs[SP_STATUS_REG] & SP_STATUS_HALT)
-        return;
-    if (get_event(&sp->mi->r4300->cp0.q, SP_INT))
-        return;
-    if (get_event(&sp->mi->r4300->cp0.q, DP_INT))
-        return;
-    if (sp->mi->regs[MI_INTR_REG] & MI_INTR_SP)
-        return;
     const uint32_t* cp0_regs = r4300_cp0_regs(&sp->mi->r4300->cp0);
     sp->next_rsp_run += cp0_regs[CP0_COUNT_REG] - sp->last_cp0_count;
     sp->last_cp0_count = cp0_regs[CP0_COUNT_REG];
@@ -343,6 +342,7 @@ void do_SP_Task(struct rsp_core* sp)
     {
         sp->mi->regs[MI_INTR_REG] &= ~MI_INTR_DP;
         sp->mi->r4300->cp0.interrupt_unsafe_state |= INTR_UNSAFE_RDP;
+        sp->rsp_wait |= WAIT_PENDING_DP_SYNC;
         if (sp->dp->dpc_regs[DPC_STATUS_REG] & DPC_STATUS_FREEZE) {
             sp->dp->do_on_unfreeze |= DELAY_DP_INT;
         } else {
@@ -358,16 +358,19 @@ void do_SP_Task(struct rsp_core* sp)
     }
     else
     {
+        sp->rsp_wait |= WAIT_HALTED;
         sp->next_rsp_run = 0;
         sp->first_run = 1;
     }
     if ((sp->regs[SP_STATUS_REG] & SP_STATUS_BROKE) && (sp->regs[SP_STATUS_REG] & SP_STATUS_INTR_BREAK))
     {
+        sp->rsp_wait |= WAIT_PENDING_SP_INT;
         add_interrupt_event(&sp->mi->r4300->cp0, SP_INT, rsp_cycles);
         sp->regs[SP_STATUS_REG] = saved_status;
     }
     else if (sp->mi->regs[MI_INTR_REG] & MI_INTR_SP)
     {
+        sp->rsp_wait |= WAIT_PENDING_SP_INT;
         add_interrupt_event(&sp->mi->r4300->cp0, SP_INT, rsp_cycles);
     }
     sp->mi->r4300->cp0.interrupt_unsafe_state |= INTR_UNSAFE_RSP;
