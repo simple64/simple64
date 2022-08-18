@@ -111,6 +111,13 @@ enum sp_dma_dir
     SP_DMA_WRITE
 };
 
+enum sp_rsp_wait
+{
+    WAIT_PENDING_SP_INT  = 0x1,
+    WAIT_PENDING_DP_SYNC = 0x2,
+    WAIT_HALTED          = 0x4
+};
+
 enum { SP_DMA_FIFO_SIZE = 2} ;
 
 struct sp_dma
@@ -130,6 +137,7 @@ struct rsp_core
     uint32_t first_run;
     uint32_t last_cp0_count;
     int32_t next_rsp_run;
+    uint32_t rsp_wait;
 
     struct mi_controller* mi;
     struct rdp_core* dp;
