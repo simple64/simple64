@@ -76,7 +76,8 @@ void icache_step(struct r4300_core* r4300)
         (*r4300_pc_struct(r4300))->ops == cached_interp_NOTCOMPILED2 || \
         (*r4300_pc_struct(r4300))->ops == cached_interp_FIN_BLOCK)
         return;
-    do_SP_Task(r4300->sp);
+    if (!r4300->sp->rsp_wait)
+        do_SP_Task(r4300->sp);
     cp0_base_cycle(r4300);
     uint32_t address = (*r4300_pc_struct(r4300))->phys_addr;
     if ((*r4300_pc_struct(r4300))->cached)
@@ -94,7 +95,8 @@ void icache_step(struct r4300_core* r4300)
 
 uint32_t* icache_fetch(struct r4300_core* r4300, uint32_t address)
 {
-    do_SP_Task(r4300->sp);
+    if (!r4300->sp->rsp_wait)
+        do_SP_Task(r4300->sp);
     cp0_base_cycle(r4300);
     if (r4300_translate_address(r4300, &address, &r4300->cached, 2))
         return NULL;
