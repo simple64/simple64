@@ -29,7 +29,6 @@ bool vk_native_tex_rect;
 bool vk_synchronous, vk_divot_filter, vk_gamma_dither;
 bool vk_vi_aa, vk_vi_scale, vk_dither_filter;
 bool vk_interlacing;
-bool skip_swap_clear;
 
 static uint64_t rdp_sync_signal;
 
@@ -192,8 +191,6 @@ static void render_frame(Vulkan::Device &device)
 		opts.crop_rect.enable = true;
 	}
 	Vulkan::ImageHandle image = processor->scanout(opts);
-	if (image.get() == NULL && skip_swap_clear)
-		return;
 
 	// Normally reflection is automated.
 	Vulkan::ResourceLayout vertex_layout = {};
