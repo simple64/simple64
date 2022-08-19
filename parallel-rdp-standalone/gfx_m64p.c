@@ -288,15 +288,6 @@ EXPORT int CALL RomOpen(void)
     else
         vk_synchronous = ConfigGetParamBool(configVideoParallel, KEY_SYNCHRONOUS);
 
-    char romname[21];
-    for (int i = 0; i < 20; ++i)
-        romname[i] = gfx.HEADER[(32 + i) ^ 3];
-    romname[20] = 0;
-    if (strstr(romname, (const char *)"S.F. RUSH") != NULL)
-        skip_swap_clear = true;
-    else
-        skip_swap_clear = false;
-
     plugin_init();
     if (vk_init()) {
         vk_initialized = true;
