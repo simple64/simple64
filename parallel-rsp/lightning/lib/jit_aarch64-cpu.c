@@ -290,6 +290,7 @@ typedef union {
 #  define A64_CBNZ			0x35000000
 #  define A64_B_C			0x54000000
 #  define A64_CSINC			0x1a800400
+#  define A64_CSSEL			0x1a800000
 #  define A64_REV			0xdac00c00
 #  define A64_UDIV			0x1ac00800
 #  define A64_SDIV			0x1ac00c00
@@ -461,6 +462,7 @@ typedef union {
 #  define LDPI_PRE(Rt,Rt2,Rn,Simm7)	oxxx7(A64_LDP_PRE|XS,Rt,Rt2,Rn,Simm7)
 #  define STPI_POS(Rt,Rt2,Rn,Simm7)	oxxx7(A64_STP_POS|XS,Rt,Rt2,Rn,Simm7)
 #  define CSET(Rd,Cc)			CSINC(Rd,XZR_REGNO,XZR_REGNO,Cc)
+#  define CSEL(Rd,Rn,Rm,Cc)		oxxxc(A64_CSSEL|XS,Rd,Rn,Rm,Cc)
 #  define B(Simm26)			o26(A64_B,Simm26)
 #  define BL(Simm26)			o26(A64_BL,Simm26)
 #  define BR(Rn)			o_x_(A64_BR,Rn)
@@ -572,6 +574,10 @@ static void _rshi(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
 #  define rshr_u(r0,r1,r2)		LSR(r0,r1,r2)
 #  define rshi_u(r0,r1,i0)		_rshi_u(_jit,r0,r1,i0)
 static void _rshi_u(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
+#  define movnr(r0,r1,r2)		_movnr(_jit,r0,r1,r2)
+static void _movnr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define movzr(r0,r1,r2)		_movzr(_jit,r0,r1,r2)
+static void _movzr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
 #  define negr(r0,r1)			NEG(r0,r1)
 #  define comr(r0,r1)			MVN(r0,r1)
 #  define andr(r0,r1,r2)		AND(r0,r1,r2)
@@ -657,17 +663,11 @@ static void _stxi_i(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
 #  define stxr_l(r0,r1,r2)		STR(r2,r1,r0)
 #  define stxi_l(i0,r0,r1)		_stxi_l(_jit,i0,r0,r1)
 static void _stxi_l(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
-#  if __BYTE_ORDER == __LITTLE_ENDIAN
-#  define htonr_us(r0,r1)		_htonr_us(_jit,r0,r1)
-static void _htonr_us(jit_state_t*,jit_int32_t,jit_int32_t);
-#  define htonr_ui(r0,r1)		_htonr_ui(_jit,r0,r1)
-static void _htonr_ui(jit_state_t*,jit_int32_t,jit_int32_t);
-#    define htonr_ul(r0,r1)		REV(r0,r1)
-#  else
-#    define htonr_us(r0,r1)		extr_us(r0,r1)
-#    define htonr_ui(r0,r1)		extr_ui(r0,r1)
-#    define htonr_ul(r0,r1)		movr(r0,r1)
-#  endif
+#  define bswapr_us(r0,r1)		_bswapr_us(_jit,r0,r1)
+static void _bswapr_us(jit_state_t*,jit_int32_t,jit_int32_t);
+#  define bswapr_ui(r0,r1)		_bswapr_ui(_jit,r0,r1)
+static void _bswapr_ui(jit_state_t*,jit_int32_t,jit_int32_t);
+#  define bswapr_ul(r0,r1)		REV(r0,r1)
 #  define extr_c(r0,r1)			SXTB(r0,r1)
 #  define extr_uc(r0,r1)		UXTB(r0,r1)
 #  define extr_s(r0,r1)			SXTH(r0,r1)
@@ -1376,6 +1376,20 @@ _rshi_u(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 }
 
 static void
+_movnr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
+{
+	CMPI(r2, 0);
+	CSEL(r0, r0, r1, CC_NE);
+}
+
+static void
+_movzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
+{
+	CMPI(r2, 0);
+	CSEL(r0, r0, r1, CC_EQ);
+}
+
+static void
 _andi(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
     jit_int32_t		reg;
@@ -1441,21 +1455,19 @@ _xori(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
     }
 }
 
-#if __BYTE_ORDER == __LITTLE_ENDIAN
 static void
-_htonr_us(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+_bswapr_us(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
-    htonr_ul(r0, r1);
+    bswapr_ul(r0, r1);
     rshi_u(r0, r0, 48);
 }
 
 static void
-_htonr_ui(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+_bswapr_ui(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
-    htonr_ul(r0, r1);
+    bswapr_ul(r0, r1);
     rshi_u(r0, r0, 32);
 }
-#endif
 
 static void
 _ldi_c(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
@@ -1610,8 +1622,7 @@ static void
 _ldxi_s(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
     jit_int32_t		reg;
-    assert(!(i0 & 1));
-    if (i0 >= 0 && i0 <= 8191)
+    if (i0 >= 0 && i0 <= 8191 && !(i0 & 1))
 	LDRSHI(r0, r1, i0 >> 1);
     else if (i0 > -256 && i0 < 0)
 	LDURSH(r0, r1, i0 & 0x1ff);
@@ -1636,8 +1647,7 @@ static void
 _ldxi_us(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
     jit_int32_t		reg;
-    assert(!(i0 & 1));
-    if (i0 >= 0 && i0 <= 8191)
+    if (i0 >= 0 && i0 <= 8191 && !(i0 & 1))
 	LDRHI(r0, r1, i0 >> 1);
     else if (i0 > -256 && i0 < 0)
 	LDURH(r0, r1, i0 & 0x1ff);
@@ -1656,8 +1666,7 @@ static void
 _ldxi_i(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
     jit_int32_t		reg;
-    assert(!(i0 & 3));
-    if (i0 >= 0 && i0 <= 16383)
+    if (i0 >= 0 && i0 <= 16383 && !(i0 & 3))
 	LDRSWI(r0, r1, i0 >> 2);
     else if (i0 > -256 && i0 < 0)
 	LDURSW(r0, r1, i0 & 0x1ff);
@@ -1682,8 +1691,7 @@ static void
 _ldxi_ui(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
     jit_int32_t		reg;
-    assert(!(i0 & 3));
-    if (i0 >= 0 && i0 <= 16383)
+    if (i0 >= 0 && i0 <= 16383 && !(i0 & 3))
 	LDRWI(r0, r1, i0 >> 2);
     else if (i0 > -256 && i0 < 0)
 	LDURW(r0, r1, i0 & 0x1ff);
@@ -1702,8 +1710,7 @@ static void
 _ldxi_l(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
     jit_int32_t		reg;
-    assert(!(i0 & 7));
-    if (i0 >= 0 && i0 <= 32767)
+    if (i0 >= 0 && i0 <= 32767 && !(i0 & 7))
 	LDRI(r0, r1, i0 >> 3);
     else if (i0 > -256 && i0 < 0)
 	LDUR(r0, r1, i0 & 0x1ff);
@@ -1775,8 +1782,7 @@ static void
 _stxi_s(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
 {
     jit_int32_t		reg;
-    assert(!(i0 & 1));
-    if (i0 >= 0 && i0 <= 8191)
+    if (i0 >= 0 && i0 <= 8191 && !(i0 & 1))
 	STRHI(r1, r0, i0 >> 1);
     else if (i0 > -256 && i0 < 0)
 	STURH(r1, r0, i0 & 0x1ff);
@@ -1792,8 +1798,7 @@ static void
 _stxi_i(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
 {
     jit_int32_t		reg;
-    assert(!(i0 & 3));
-    if (i0 >= 0 && i0 <= 16383)
+    if (i0 >= 0 && i0 <= 16383 && !(i0 & 3))
 	STRWI(r1, r0, i0 >> 2);
     else if (i0 > -256 && i0 < 0)
 	STURW(r1, r0, i0 & 0x1ff);
@@ -1809,8 +1814,7 @@ static void
 _stxi_l(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
 {
     jit_int32_t		reg;
-    assert(!(i0 & 7));
-    if (i0 >= 0 && i0 <= 32767)
+    if (i0 >= 0 && i0 <= 32767 && !(i0 & 7))
 	STRI(r1, r0, i0 >> 3);
     else if (i0 > -256 && i0 < 0)
 	STUR(r1, r0, i0 & 0x1ff);

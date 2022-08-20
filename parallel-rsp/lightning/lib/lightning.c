@@ -19,7 +19,9 @@
 
 #include <lightning.h>
 #include <lightning/jit_private.h>
-#include <sys/mman.h>
+#if HAVE_MMAP
+#  include <sys/mman.h>
+#endif
 #if defined(__sgi)
 #  include <fcntl.h>
 #endif
@@ -956,10 +958,12 @@ _jit_destroy_state(jit_state_t *_jit)
 #if DEVEL_DISASSEMBLER
     jit_really_clear_state();
 #endif
+#if HAVE_MMAP
     if (!_jit->user_code)
 	munmap(_jit->code.ptr, _jit->code.length);
     if (!_jit->user_data)
 	munmap(_jit->data.ptr, _jit->data.length);
+#endif
     jit_free((jit_pointer_t *)&_jit);
 }
 
@@ -1380,6 +1384,7 @@ _jit_classify(jit_state_t *_jit, jit_code_t code)
 	case jit_code_truncr_f_i:			case jit_code_truncr_f_l:
 	case jit_code_truncr_d_i:			case jit_code_truncr_d_l:
 	case jit_code_htonr_us:	case jit_code_htonr_ui:	case jit_code_htonr_ul:
+	case jit_code_bswapr_us:	case jit_code_bswapr_ui:	case jit_code_bswapr_ul:
 	case jit_code_ldr_c:	case jit_code_ldr_uc:
 	case jit_code_ldr_s:	case jit_code_ldr_us:	case jit_code_ldr_i:
 	case jit_code_ldr_ui:	case jit_code_ldr_l:	case jit_code_negr_f:
@@ -1530,6 +1535,9 @@ _jit_classify(jit_state_t *_jit, jit_code_t code)
 	case jit_code_bxaddr_u:	case jit_code_bosubr:	case jit_code_bosubr_u:
 	case jit_code_bxsubr:	case jit_code_bxsubr_u:
 	    mask = jit_cc_a0_jmp|jit_cc_a1_reg|jit_cc_a1_chg|jit_cc_a2_reg;
+	    break;
+	case jit_code_movnr:	case jit_code_movzr:
+	    mask = jit_cc_a0_reg|jit_cc_a0_cnd|jit_cc_a1_reg|jit_cc_a2_reg;
 	    break;
 	default:
 	    abort();
@@ -1891,6 +1899,9 @@ _jit_dataset(jit_state_t *_jit)
 #endif
 
     assert(!_jitc->dataset);
+#if !HAVE_MMAP
+    assert(_jit->user_data);
+#else
     if (!_jit->user_data) {
 
 	/* create read only data buffer */
@@ -1908,6 +1919,7 @@ _jit_dataset(jit_state_t *_jit)
 	close(mmap_fd);
 #endif
     }
+#endif /* !HAVE_MMAP */
 
     if (!_jitc->no_data)
 	jit_memcpy(_jit->data.ptr, _jitc->data.ptr, _jitc->data.offset);
@@ -2022,6 +2034,9 @@ _jit_emit(jit_state_t *_jit)
 
     _jitc->emit = 1;
 
+#if !HAVE_MMAP
+    assert(_jit->user_code);
+#else
     if (!_jit->user_code) {
 #if defined(__sgi)
 	mmap_fd = open("/dev/zero", O_RDWR);
@@ -2031,6 +2046,7 @@ _jit_emit(jit_state_t *_jit)
 			      MAP_PRIVATE | MAP_ANON, mmap_fd, 0);
 	assert(_jit->code.ptr != MAP_FAILED);
     }
+#endif /* !HAVE_MMAP */
     _jitc->code.end = _jit->code.ptr + _jit->code.length -
 	jit_get_max_instr();
     _jit->pc.uc = _jit->code.ptr;
@@ -2044,6 +2060,9 @@ _jit_emit(jit_state_t *_jit)
 		     node->code == jit_code_epilog))
 		    node->flag &= ~jit_flag_patch;
 	    }
+#if !HAVE_MMAP
+	    assert(_jit->user_code);
+#else
 	    if (_jit->user_code)
 		goto fail;
 #if GET_JIT_SIZE
@@ -2077,6 +2096,7 @@ _jit_emit(jit_state_t *_jit)
 	    _jitc->code.end = _jit->code.ptr + _jit->code.length -
 		jit_get_max_instr();
 	    _jit->pc.uc = _jit->code.ptr;
+#endif /* !HAVE_MMAP */
 	}
 	else
 	    break;
@@ -2093,6 +2113,7 @@ _jit_emit(jit_state_t *_jit)
 
     if (_jit->user_data)
 	jit_free((jit_pointer_t *)&_jitc->data.ptr);
+#if HAVE_MMAP
     else {
 #ifdef _WIN32
 	result = _mprotect(_jit->data.ptr, _jit->data.length, PROT_READ);
@@ -2111,6 +2132,7 @@ _jit_emit(jit_state_t *_jit)
 #endif
 	assert(result == 0);
     }
+#endif /* HAVE_MMAP */
 
     return (_jit->code.ptr);
 fail:
@@ -3316,7 +3338,7 @@ _register_change_p(jit_state_t *_jit, jit_node_t *node, jit_node_t *link,
 	    default:
 		value = jit_classify(node->code);
 		/* lack of extra information */
-		if (value & jit_cc_a0_jmp)
+		if (value & (jit_cc_a0_jmp|jit_cc_a0_cnd))
 		    return (jit_reg_change);
 		else if ((value & (jit_cc_a0_reg|jit_cc_a0_chg)) ==
 			 (jit_cc_a0_reg|jit_cc_a0_chg) &&
@@ -3501,6 +3523,31 @@ _patch_register(jit_state_t *_jit, jit_node_t *node, jit_node_t *link,
     }
 }
 
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+#  define htonr_us(r0,r1)		bswapr_us(r0,r1)
+#  define htonr_ui(r0,r1)		bswapr_ui(r0,r1)
+#  if __WORDSIZE == 64
+#    define htonr_ul(r0,r1)		bswapr_ul(r0,r1)
+#  endif
+#else
+#  define htonr_us(r0,r1)		extr_us(r0,r1)
+#  if __WORDSIZE == 32
+#    define htonr_ui(r0,r1)		movr(r0,r1)
+#  else
+#    define htonr_ui(r0,r1)		extr_ui(r0,r1)
+#    define htonr_ul(r0,r1)		movr(r0,r1)
+#  endif
+#endif
+
+static maybe_unused void
+generic_bswapr_us(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1);
+static maybe_unused void
+generic_bswapr_ui(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1);
+#if __WORDSIZE == 64
+static maybe_unused void
+generic_bswapr_ul(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1);
+#endif
+
 #if defined(__i386__) || defined(__x86_64__)
 #  include "jit_x86.c"
 #elif defined(__mips__)
@@ -3523,4 +3570,48 @@ _patch_register(jit_state_t *_jit, jit_node_t *node, jit_node_t *link,
 #  include "jit_alpha.c"
 #elif defined(__riscv)
 #  include "jit_riscv.c"
+#endif
+
+static maybe_unused void
+generic_bswapr_us(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    jit_int32_t reg = jit_get_reg(jit_class_gpr);
+
+    rshi(rn(reg), r1, 8);
+    andi(r0, r1, 0xff);
+    andi(rn(reg), rn(reg), 0xff);
+    lshi(r0, r0, 8);
+    orr(r0, r0, rn(reg));
+
+    jit_unget_reg(reg);
+}
+
+static maybe_unused void
+generic_bswapr_ui(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    jit_int32_t reg = jit_get_reg(jit_class_gpr);
+
+	rshi(rn(reg), r1, 16);
+	bswapr_us(r0, r1);
+	bswapr_us(rn(reg), rn(reg));
+	lshi(r0, r0, 16);
+	orr(r0, r0, rn(reg));
+
+    jit_unget_reg(reg);
+}
+
+#if __WORDSIZE == 64
+static maybe_unused void
+generic_bswapr_ul(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    jit_int32_t reg = jit_get_reg(jit_class_gpr);
+
+    rshi_u(rn(reg), r1, 32);
+    bswapr_ui(r0, r1);
+    bswapr_ui(rn(reg), rn(reg));
+    lshi(r0, r0, 32);
+    orr(r0, r0, rn(reg));
+
+    jit_unget_reg(reg);
+}
 #endif

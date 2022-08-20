@@ -1,6 +1,6 @@
 
 #if __WORDSIZE == 32
-#define JIT_INSTR_MAX 104
+#define JIT_INSTR_MAX 128
     0,	/* data */
     0,	/* live */
     6,	/* align */
@@ -95,6 +95,8 @@
     24,	/* nei */
     4,	/* movr */
     16,	/* movi */
+    14, /* movnr */
+    14, /* movzr */
     4,	/* extr_c */
     4,	/* extr_uc */
     4,	/* extr_s */
@@ -399,10 +401,13 @@
     0,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
+    52,	/* bswapr_us */
+    128,	/* bswapr_ui */
+    0,	/* bswapr_ul */
 #endif /* __WORDSIZE */
 
 #if __WORDSIZE == 64
-#define JIT_INSTR_MAX 104
+#define JIT_INSTR_MAX 344
     0,	/* data */
     0,	/* live */
     6,	/* align */
@@ -497,6 +502,8 @@
     24,	/* nei */
     4,	/* movr */
     16,	/* movi */
+    14, /* movnr */
+    14, /* movzr */
     4,	/* extr_c */
     4,	/* extr_uc */
     4,	/* extr_s */
@@ -801,4 +808,7 @@
     0,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
+    68,	/* bswapr_us */
+    160,	/* bswapr_ui */
+    344,	/* bswapr_ul */
 #endif /* __WORDSIZE */
