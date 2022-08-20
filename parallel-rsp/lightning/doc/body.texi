@@ -30,6 +30,7 @@ dynamic code generation.
 * The instruction set::     The RISC instruction set used in GNU lightning
 * GNU lightning examples::  GNU lightning's examples
 * Reentrancy::              Re-entrant usage of GNU lightning
+* Registers::               Accessing the whole register file
 * Customizations::          Advanced code generation customizations
 * Acknowledgements::        Acknowledgements for GNU lightning
 @end menu
@@ -43,8 +44,8 @@ This document describes @value{TOPIC} the @lightning{} library for
 dynamic code generation.
 @end iftex
 
-Dynamic code generation is the generation of machine code 
-at runtime. It is typically used to strip a layer of interpretation 
+Dynamic code generation is the generation of machine code
+at runtime. It is typically used to strip a layer of interpretation
 by allowing compilation to occur at runtime.  One of the most
 well-known applications of dynamic code generation is perhaps that
 of interpreters that compile source code to an intermediate bytecode
@@ -53,7 +54,7 @@ approach effectively combines the portability of bytecode
 representations with the speed of machine code.  Another common
 application of dynamic code generation is in the field of hardware
 simulators and binary emulators, which can use the same techniques
-to translate simulated instructions to the instructions of the 
+to translate simulated instructions to the instructions of the
 underlying machine.
 
 Yet other applications come to mind: for example, windowing
@@ -68,7 +69,7 @@ retargeted for each machine; in addition, coding a run-time code
 generator is a tedious and error-prone task more than a difficult one.
 
 @lightning{} provides a portable, fast and easily retargetable dynamic
-code generation system. 
+code generation system.
 
 To be portable, @lightning{} abstracts over current architectures'
 quirks and unorthogonalities.  The interface that it exposes to is that
@@ -88,7 +89,11 @@ assembles machine instructions without further tests.
 @node Installation
 @chapter Configuring and installing @lightning{}
 
-The first thing to do to use @lightning{} is to configure the
+Here we will assume that your system already has the dependencies
+necessary to build @lightning{}. For more on dependencies, see
+@lightning{}'s @file{README-hacking} file.
+
+The first thing to do to build @lightning{} is to configure the
 program, picking the set of macros to be used on the host
 architecture; this configuration is automatically performed by
 the @file{configure} shell script; to run it, merely type:
@@ -243,6 +248,8 @@ lshr                 O1 = O2 << O3
 lshi                 O1 = O2 << O3
 rshr     _u          O1 = O2 >> O3@footnote{The sign bit is propagated unless using the @code{_u} modifier.}
 rshi     _u          O1 = O2 >> O3@footnote{The sign bit is propagated unless using the @code{_u} modifier.}
+movzr                O1 = O3 ? O1 : O2
+movnr                O1 = O3 ? O2 : O1
 @end example
 
 @item Four operand binary ALU operations
@@ -363,6 +370,14 @@ The @code{_ul} variant is only available in 64-bit architectures.
 @example
 htonr    _us _ui _ul @r{Host-to-network (big endian) order}
 ntohr    _us _ui _ul @r{Network-to-host order }
+@end example
+
+@code{bswapr} can be used to unconditionally byte-swap an operand.
+On little-endian architectures, @code{htonr} and @code{ntohr} resolve
+to this.
+The @code{_ul} variant is only available in 64-bit architectures.
+@example
+bswapr    _us _ui _ul  01 = byte_swap(02)
 @end example
 
 @item Load operations
@@ -582,6 +597,12 @@ forward   (not specified)                @r{forward label}
 indirect  (not specified)                @r{special simple label}
 @end example
 
+The following instruction is used to specify a minimal alignment for
+the next instruction, usually with a label:
+@example
+align     (not specified)                @r{align code}
+@end example
+
 @code{label} is normally used as @code{patch_at} argument for backward
 jumps.
 
@@ -633,6 +654,38 @@ addr  = jit_movi(JIT_R0, 0);             @rem{/* immediate is ignored */}
 that automatically binds the implicit label added by @code{patch} with
 the @code{movi}, but on some special conditions it is required to create
 an "unbound" label.
+
+@code{align} is useful for creating multiple entry points to a
+(trampoline) function that are all accessible through a single
+function pointer.  @code{align} receives an integer argument that
+defines the minimal alignment of the address of a label directly
+following the @code{align} instruction.  The integer argument must be
+a power of two and the effective alignment will be a power of two no
+less than the argument to @code{align}.  If the argument to
+@code{align} is 16 or more, the effective alignment will match the
+specified minimal alignment exactly.
+
+@example
+          jit_node_t *forward, *label1, *label2, *jump;
+          unsigned char *addr1, *addr2;
+forward = jit_forward();
+          jit_align(16);
+label1  = jit_indirect();                @rem{/* first entry point */}
+jump    = jit_jmpi();                    @rem{/* jump to first handler */}
+          jit_patch_at(jump, forward);
+          jit_align(16);
+label2  = jit_indirect();                @rem{/* second entry point */}
+          ...                            @rem{/* second handler */}
+          jit_jmpr(...);
+          jit_link(forward);
+          ...                            @rem{/* first handler /*}
+          jit_jmpr(...);
+          ...
+          jit_emit();
+          addr1 = jit_address(label1);
+          addr2 = jit_address(label2);
+          assert(addr2 - addr1 == 16);   @rem{/* only one of the addresses needs to be remembered */}
+@end example
 
 @item Function prolog
 
@@ -694,6 +747,51 @@ in = arg                     @rem{! Same as above}
      finishi   printf        @rem{! Call printf}
      ret                     @rem{! Return to caller}
 @end example
+
+@item Register liveness
+
+During code generation, @lightning{} occasionally needs scratch registers
+or needs to use architecture-defined registers.  For that, @lightning{}
+internally maintains register liveness information.
+
+In the following example, @code{qdivr} will need special registers like
+@code{R0} on some architectures.  As @lightning{} understands that
+@code{R0} is used in the subsequent instruction, it will create
+save/restore code for @code{R0} in case.
+
+@example
+...
+qdivr V0, V1, V2, V3
+movr  V3, R0
+...
+@end example
+
+The same is not true in the example that follows.  Here, @code{R0} is
+not alive after the division operation because @code{R0} is neither an
+argument register nor a callee-save register.  Thus, no save/restore
+code for @code{R0} will be created in case.
+
+@example
+...
+qdivr V0, V1, V2, V3
+jmpr  R1
+...
+@end example
+
+The @code{live} instruction can be used to mark a register as live after
+it as in the following example.  Here, @code{R0} will be preserved
+across the division.
+
+@example
+...
+qdivr V0, V1, V2, V3
+live R0
+jmpr R1
+...
+@end example
+
+The @code{live} instruction is useful at code entry and exit points,
+like after and before a @code{callr} instruction.
 
 @item Trampolines, continuations and tail call optimization
 
@@ -1005,9 +1103,9 @@ programmer would write):
       mov  %i0, %g2                 retl
       inc  %g2                      inc %o0
       mov  %g2, %i0
-      restore 
-      retl 
-      nop 
+      restore
+      retl
+      nop
 @end example
 In this case, @lightning{} introduces overhead to create a register
 window (not knowing that the procedure is a leaf procedure) and to
@@ -1480,7 +1578,7 @@ implementation and to avoid needing the user to keep adding an extra
 argument to every call, as multiple jit states generating code in
 paralell should be very uncommon.
 
-@section Registers
+@node Registers
 @chapter Accessing the whole register file
 
 As mentioned earlier in this chapter, all @lightning{} back-ends are
@@ -1495,6 +1593,33 @@ and @code{JIT_F_NUM} respectively; the number need not be
 constant.  Of course, expressions like @code{JIT_R0} and
 @code{JIT_R(0)} denote the same register, and likewise for
 integer callee-saved, or floating-point, registers.
+
+@section Scratch registers
+
+For operations, @lightning{} does not support directly, like storing
+a literal in memory, @code{jit_get_reg} and @code{jit_unget_reg} can be used to
+acquire and release a scratch register as in the following pattern:
+
+@example
+    jit_int32_t reg = jit_get_reg (jit_class_gpr);
+    jit_movi (reg, immediate);
+    jit_stxi (offsetof (some_struct, some_field), JIT_V0, reg);
+    jit_unget_reg (reg);
+@end example
+
+As @code{jit_get_reg} and @code{jit_unget_reg} may generate spills and
+reloads but don't follow branches, the code between both must be in
+the same basic block and must not contain any branches as in the
+following (bad) example.
+
+@example
+    jit_int32_t reg = jit_get_reg (jit_class_gpr);
+    jit_ldxi (reg, JIT_V0, offset);
+    jump = jit_bnei (reg, V0);
+    jit_movr (JIT_V1, reg);
+    jit_patch (jump);
+    jit_unget_reg (reg);
+@end example
 
 @node Customizations
 @chapter Customizations

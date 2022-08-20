@@ -123,6 +123,11 @@ typedef jit_int32_t		jit_bool_t;
 typedef jit_int32_t		jit_gpr_t;
 typedef jit_int32_t		jit_fpr_t;
 
+#if !defined(__powerpc__) && \
+	(defined(__POWERPC__) || defined(__ppc__) || defined(__PPC__))
+#define __powerpc__ 1
+#endif
+
 #if defined(__i386__) || defined(__x86_64__)
 #  include <lightning/jit_x86.h>
 #elif defined(__mips__)
@@ -339,6 +344,11 @@ typedef enum {
 #define jit_movr(u,v)		jit_new_node_ww(jit_code_movr,u,v)
 #define jit_movi(u,v)		jit_new_node_ww(jit_code_movi,u,v)
     jit_code_movr,		jit_code_movi,
+
+#define jit_movnr(u,v,w)	jit_new_node_www(jit_code_movnr,u,v,w)
+#define jit_movzr(u,v,w)	jit_new_node_www(jit_code_movzr,u,v,w)
+    jit_code_movnr,		jit_code_movzr,
+
 #define jit_extr_c(u,v)		jit_new_node_ww(jit_code_extr_c,u,v)
 #define jit_extr_uc(u,v)	jit_new_node_ww(jit_code_extr_uc,u,v)
     jit_code_extr_c,		jit_code_extr_uc,
@@ -891,6 +901,18 @@ typedef enum {
 #define jit_movr_d_w(u, v)	jit_new_node_ww(jit_code_movr_d_w, u, v)
 #define jit_movi_d_w(u, v)	jit_new_node_wd(jit_code_movi_d_w, u, v)
 
+#define jit_bswapr_us(u,v)	jit_new_node_ww(jit_code_bswapr_us,u,v)
+    jit_code_bswapr_us,
+#define jit_bswapr_ui(u,v)	jit_new_node_ww(jit_code_bswapr_ui,u,v)
+    jit_code_bswapr_ui,
+#define jit_bswapr_ul(u,v)	jit_new_node_ww(jit_code_bswapr_ul,u,v)
+    jit_code_bswapr_ul,
+#if __WORDSIZE == 32
+#define jit_bswapr(u,v)		jit_new_node_ww(jit_code_bswapr_ui,u,v)
+#else
+#define jit_bswapr(u,v)		jit_new_node_ww(jit_code_bswapr_ul,u,v)
+#endif
+
     jit_code_last_code
 } jit_code_t;
 
@@ -1010,6 +1032,12 @@ extern void _jit_pushargi_d(jit_state_t*, jit_float64_t);
 extern void _jit_retr_d(jit_state_t*, jit_fpr_t);
 extern void _jit_reti_d(jit_state_t*, jit_float64_t);
 extern void _jit_retval_d(jit_state_t*, jit_fpr_t);
+
+#define jit_get_reg(s)		_jit_get_reg(_jit,s)
+extern jit_int32_t _jit_get_reg(jit_state_t*, jit_int32_t);
+
+#define jit_unget_reg(r)	_jit_unget_reg(_jit,r)
+extern void _jit_unget_reg(jit_state_t*, jit_int32_t);
 
 #define jit_new_node(c)		_jit_new_node(_jit,c)
 extern jit_node_t *_jit_new_node(jit_state_t*, jit_code_t);

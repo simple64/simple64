@@ -511,7 +511,11 @@ _truncr_d_i(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     FCTIWZ(rn(reg), r1);
     /* use reserved 8 bytes area */
     stxi_d(alloca_offset - 8, _FP_REGNO, rn(reg));
+#  if __BYTE_ORDER == __BIG_ENDIAN
     ldxi_i(r0, _FP_REGNO, alloca_offset - 4);
+#  else
+    ldxi_i(r0, _FP_REGNO, alloca_offset - 8);
+#  endif
     jit_unget_reg(reg);
 }
 

@@ -1152,6 +1152,11 @@ _emit_code(jit_state_t *_jit)
 #if __WORDSIZE == 64
 		case_rr(hton, _ul);
 #endif
+		case_rr(bswap, _us);
+		case_rr(bswap, _ui);
+#if __WORDSIZE == 64
+		case_rr(bswap, _ul);
+#endif
 		case_rr(ext, _c);
 		case_rr(ext, _uc);
 		case_rr(ext, _s);
@@ -1160,6 +1165,8 @@ _emit_code(jit_state_t *_jit)
 		case_rr(ext, _i);
 		case_rr(ext, _ui);
 #endif
+		case_rrr(movn,);
+		case_rrr(movz,);
 		case_rr(mov,);
 	    case jit_code_movi:
 		if (node->flag & jit_flag_node) {

@@ -545,6 +545,13 @@ static void _movr(jit_state_t*, jit_int32_t, jit_int32_t);
 static void _movi(jit_state_t*, jit_int32_t, jit_word_t);
 #  define movi_p(r0, i0)		_movi_p(_jit, r0, i0)
 static jit_word_t _movi_p(jit_state_t*, jit_int32_t, jit_word_t);
+#  define bswapr_us(r0, r1)		generic_bswapr_us(_jit, r0, r1)
+#  define bswapr_ui(r0, r1)		generic_bswapr_ui(_jit, r0, r1)
+#  define bswapr_ul(r0, r1)		generic_bswapr_ul(_jit, r0, r1)
+#  define movnr(r0,r1,r2)		_movnr(_jit,r0,r1,r2)
+static void _movnr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define movzr(r0,r1,r2)		_movzr(_jit,r0,r1,r2)
+static void _movzr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
 #  define comr(r0, r1)			XNOR(r1, 0, r0)
 #  define negr(r0, r1)			NEG(r1, r0)
 #  define addr(r0, r1, r2)		ADD(r1, r2, r0)
@@ -669,7 +676,6 @@ static void _xori(jit_state_t*, jit_int32_t, jit_int32_t, jit_word_t);
 #    define rshr_u(r0, r1, r2)		SRLX(r1, r2, r0)
 #    define rshi_u(r0, r1, i0)		SRLXI(r1, i0, r0)
 #  endif
-#  define htonr_us(r0,r1)		extr_us(r0,r1)
 #  define extr_c(r0,r1)			_extr_c(_jit,r0,r1)
 static void _extr_c(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define extr_uc(r0,r1)		andi(r0, r1, 0xff)
@@ -677,11 +683,7 @@ static void _extr_c(jit_state_t*,jit_int32_t,jit_int32_t);
 static void _extr_s(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define extr_us(r0,r1)		_extr_us(_jit,r0,r1)
 static void _extr_us(jit_state_t*,jit_int32_t,jit_int32_t);
-#  if __WORDSIZE == 32
-#    define htonr_ui(r0,r1)		movr(r0,r1)
-#  else
-#    define htonr_ui(r0,r1)		extr_ui(r0,r1)
-#    define htonr_ul(r0,r1)		movr(r0,r1)
+#  if __WORDSIZE == 64
 #    define extr_i(r0,r1)		_extr_i(_jit,r0,r1)
 static void _extr_i(jit_state_t*,jit_int32_t,jit_int32_t);
 #    define extr_ui(r0,r1)		_extr_ui(_jit,r0,r1)
@@ -1211,6 +1213,24 @@ _movi_p(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
     ORI(r0, LO(i0), r0);
 #  endif
     return (w);
+}
+
+static void
+_movnr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
+{
+    jit_word_t	w;
+    w = beqi(_jit->pc.w, r2, 0);
+    ORI(r1, 0, r0);
+    patch_at(w, _jit->pc.w);
+}
+
+static void
+_movzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
+{
+    jit_word_t	w;
+    w = bnei(_jit->pc.w, r2, 0);
+    ORI(r1, 0, r0);
+    patch_at(w, _jit->pc.w);
 }
 
 static void

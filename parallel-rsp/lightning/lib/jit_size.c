@@ -105,7 +105,7 @@ _jit_get_size(jit_state_t *_jit)
     for (size = JIT_INSTR_MAX, node = _jitc->head; node; node = node->next)
 	size += _szs[node->code];
 
-    return ((size + 4095) & -4096);
+    return size;
 }
 #endif
 

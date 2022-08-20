@@ -1026,6 +1026,8 @@ _emit_code(jit_state_t *_jit)
 		case_rrw(rsh,);
 		case_rrr(rsh, _u);
 		case_rrw(rsh, _u);
+		case_rrr(movn,);
+		case_rrr(movz,);
 		case_rr(mov,);
 	    case jit_code_movi:
 		if (node->flag & jit_flag_node) {
@@ -1052,6 +1054,8 @@ _emit_code(jit_state_t *_jit)
 		case_rr(ext, _us);
 		case_rr(hton, _us);
 		case_rr(hton, _ui);
+		case_rr(bswap, _us);
+		case_rr(bswap, _ui);
 		case_rrr(lt,);
 		case_rrw(lt,);
 		case_rrr(lt, _u);
