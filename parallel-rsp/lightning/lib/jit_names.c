@@ -69,6 +69,7 @@ static char *code_name[] = {
     "gtr_u",		"gti_u",
     "ner",		"nei",
     "movr",		"movi",
+    "movnr",		"movzr",
     "extr_c",		"extr_uc",
     "extr_s",		"extr_us",
     "extr_i",		"extr_ui",
@@ -227,4 +228,6 @@ static char *code_name[] = {
     "movr_f_w",		"movi_f_w",
     "movr_d_ww",	"movi_d_ww",
     "movr_d_w",		"movi_d_w",
+    "bswapr_us",
+    "bswapr_ui",		"bswapr_ul",
 };

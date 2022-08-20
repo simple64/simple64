@@ -1128,6 +1128,9 @@ _emit_code(jit_state_t *_jit)
 		case_rr(hton, _us);
 		case_rr(hton, _ui);
 		case_rr(hton, _ul);
+		case_rr(bswap, _us);
+		case_rr(bswap, _ui);
+		case_rr(bswap, _ul);
 		case_rr(ext, _c);
 		case_rr(ext, _uc);
 		case_rr(ext, _s);
@@ -1135,6 +1138,8 @@ _emit_code(jit_state_t *_jit)
 		case_rr(ext, _i);
 		case_rr(ext, _ui);
 		case_rr(mov,);
+		case_rrr(movn,);
+		case_rrr(movz,);
 	    case jit_code_movi:
 		if (node->flag & jit_flag_node) {
 		    temp = node->v.n;

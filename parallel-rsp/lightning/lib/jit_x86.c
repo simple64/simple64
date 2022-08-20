@@ -1674,6 +1674,8 @@ _emit_code(jit_state_t *_jit)
 		case_rrw(gt, _u);
 		case_rrr(ne,);
 		case_rrw(ne,);
+		case_rrr(movn,);
+		case_rrr(movz,);
 		case_rr(mov,);
 	    case jit_code_movi:
 		if (node->flag & jit_flag_node) {
@@ -1696,6 +1698,11 @@ _emit_code(jit_state_t *_jit)
 		case_rr(hton, _ui);
 #if __X64 && !__X64_32
 		case_rr(hton, _ul);
+#endif
+		case_rr(bswap, _us);
+		case_rr(bswap, _ui);
+#if __X64 && !__X64_32
+		case_rr(bswap, _ul);
 #endif
 		case_rr(ext, _c);
 		case_rr(ext, _uc);
@@ -2012,7 +2019,7 @@ _emit_code(jit_state_t *_jit)
 		    if (temp->flag & jit_flag_patch)
 			jmpi(temp->u.w);
 		    else {
-			word = jmpi(_jit->pc.w);
+			word = jmpi_p(_jit->pc.w);
 			patch(word, node);
 		    }
 		}
@@ -2027,9 +2034,12 @@ _emit_code(jit_state_t *_jit)
 		    temp = node->u.n;
 		    assert(temp->code == jit_code_label ||
 			   temp->code == jit_code_epilog);
-		    word = calli(temp->u.w);
-		    if (!(temp->flag & jit_flag_patch))
+		    if (temp->flag & jit_flag_patch)
+			calli(temp->u.w);
+		    else {
+			word = calli_p(_jit->pc.w);
 			patch(word, node);
+		    }
 		}
 		else
 		    calli(node->u.w);

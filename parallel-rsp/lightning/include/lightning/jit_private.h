@@ -264,8 +264,9 @@ extern jit_node_t *_jit_data(jit_state_t*, const void*,
 #define jit_cc_a0_flt		0x00000020	/* arg0 is immediate float */
 #define jit_cc_a0_dbl		0x00000040	/* arg0 is immediate double */
 #define jit_cc_a0_arg		0x00000080	/* arg1 is an argument int id */
-#define jit_cc_a1_reg		0x00000100	/* arg1 is a register */
-#define jit_cc_a1_chg		0x00000200	/* arg1 is modified */
+#define jit_cc_a0_cnd		0x00000100	/* arg1 is a conditinally set register */
+#define jit_cc_a1_reg		0x00000200	/* arg1 is a register */
+#define jit_cc_a1_chg		0x00000400	/* arg1 is modified */
 #define jit_cc_a1_int		0x00001000	/* arg1 is immediate word */
 #define jit_cc_a1_flt		0x00002000	/* arg1 is immediate float */
 #define jit_cc_a1_dbl		0x00004000	/* arg1 is immediate double */
@@ -672,14 +673,6 @@ _jit_regarg_set(jit_state_t*, jit_node_t*, jit_int32_t);
 extern void
 _jit_regarg_clr(jit_state_t*, jit_node_t*, jit_int32_t);
 
-#define jit_get_reg(s)		_jit_get_reg(_jit,s)
-extern jit_int32_t
-_jit_get_reg(jit_state_t*, jit_int32_t);
-
-#define jit_unget_reg(r)	_jit_unget_reg(_jit,r)
-extern void
-_jit_unget_reg(jit_state_t*, jit_int32_t);
-
 #define jit_save(reg)		_jit_save(_jit, reg)
 extern void
 _jit_save(jit_state_t*, jit_int32_t);
@@ -726,6 +719,7 @@ _emit_ldxi_d(jit_state_t*, jit_int32_t, jit_int32_t, jit_word_t);
 extern void
 _emit_stxi_d(jit_state_t*, jit_word_t, jit_int32_t, jit_int32_t);
 
+extern void jit_init_print(void);
 extern void jit_init_debug(const char*);
 extern void jit_finish_debug(void);
 

@@ -1,3 +1,64 @@
+2022-08-12  Marc Nieper-Wißkirchen  <marc@nieper-wisskirchen.de>
+
+	Document jit_align.
+	* doc/body.texi: Add documentation for jit_align.
+
+2022-05-14 Paulo Andrade <pcpa@gnu.org>
+
+	* include/lightning.h.in: Reorder jit_mov{n,z}r in instruction list.
+	* lib/jit_alpha.c, lib/jit_alpha-cpu.c, lib/jit_hppa.c,
+	lib/jit_hppa-cpu.c, lib/jit_ia64.c, lib/jit_ia64-cpu.c,
+	lib/jit_riscv.c, lib/jit_riscv-cpu.c, lib/jit_s390.c,
+	lib/jit_s390-cpu.c, lib/jit_sparc.c, lib/jit_sparc-cpu.c:
+	Implement fallback jit_mov{n,z}r. These are a somewhat cheap
+	implementation, but should be reviewed for the arches that already
+	have a proper conditional move.
+	* lib/jit_arm-sz.c, lib/jit_mips-sz.c: Add missing maximum size
+	estimative and reorder.
+	* lib/jit_aarch64-sz.c, lib/jit_x86-sz.c, lib/jit_ppc-sz.c:
+	Reorder entry to match definition order.
+	* lib/jit_aarch64-sz.c, lib/jit_alpha-sz.c, lib/jit_hppa-sz.c,
+	lib/jit_ia64-sz.c, lib/jit_riscv-sz.c, lib/jit_s390-sz.c,
+	lib/jit_sparc-sz.c: Add heuristic value, basically the sum of
+	the cost of a movr + beqr.
+	* lib/jit_names.c: Add entries for debug output of mov{n,z}r.
+	* lib/lightning.c: Use proper bitmask in jit_classify.
+
+2021-04-03  Marc Nieper-Wißkirchen  <marc@nieper-wisskirchen.de>
+
+	* check/Makefile.am: Add test for the live instruction.
+	* check/live.ok: New file.
+	* check/live.tst: New file.
+	* doc/body.texi: Add documentation for the live instruction and
+	for jit_get_reg/jit_get_unreg.  Fix menu entries.
+	* include/lightning.h.in (jit_get_reg, jit_unget_reg): Expose the
+	macros in the public header file.
+	* include/lightning/jit_private.h (jit_get_reg, jit_unget_reg):
+	Remove the macros from the private header file.
+
+2021-04-03  Marc Nieper-Wißkirchen  <marc@nieper-wisskirchen.de>
+
+	* Makefile.am, check/Makefile.am, doc/Makefile.am,
+	lib/Makefile.am: Include $(top_builddir)/include in include paths
+	for the autoconf-generated header file lightning.h.
+
+2021-04-03  Marc Nieper-Wißkirchen  <marc@nieper-wisskirchen.de>
+
+	* doc/.gitignore: Add version.texi to list of ignored files.
+	* doc/version.texi: Remove file from version control.
+
+2020-18-04 Paulo Andrade <pcpa@gnu.org>
+
+	* lib/jit_x86-cpu.c, lib/jit_x86.c: Implement %rip relative
+	calls and jumps on x86_64. Currently very conservative, assuming
+	a jit block can be larger than 2G, so, if a jump or call is in
+	the same jit generation, but target is unknown, use an indirect
+	branch (could have an option to assume a jit code block is
+	never larger than 2G). Also a deoptimization is that now does
+	not always generate ip relative jmpi; previously implicitly
+	assumed jmpi would never be larger than 2G. Overall still an
+	optimization.
+
 2020-23-01 Paulo Andrade <pcpa@gnu.org>
 
 	* lib/lightning.c: Add a proper fix to the condition of considering
@@ -26,7 +87,7 @@
 	to the set of registers to scan for live range, what might
 	consume a lot of cpu time, doing nothing.
 
-2019-09-16 Marc Nieper-Wi�kirchen <marc@nieper-wisskirchen.de>
+2019-09-16 Marc Nieper-Wißkirchen <marc@nieper-wisskirchen.de>
 
 	* include/lightning/jit_x86.h, lib/jit_x86.c: Correct x86_64
 	backend, made %r12 a callee-save register as dictated by the
@@ -65,7 +126,7 @@
 	https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=925129
 	* THANKS: update.
 
-2019-08-29 Marc Nieper-Wi�kirchen <marc@nieper-wisskirchen.de>
+2019-08-29 Marc Nieper-Wißkirchen <marc@nieper-wisskirchen.de>
 
 	* include/lightning/jit_private.h: Move definition of offsetof
 	from the public header file here.
@@ -1415,7 +1476,7 @@
 	* include/lightning/jit_arm.h: Correct wrong jit_f macro
 	definition.
 
-	* include/lightning/jit_ia64.h, include/lightning/jit_ppc.h: 
+	* include/lightning/jit_ia64.h, include/lightning/jit_ppc.h:
 	Correct wrong jit_r macro definition.
 
 	* lib/jit_x86-x87.c, lib/jit_x86.c: Actually use the
@@ -1884,7 +1945,7 @@
 	divr_f and divrd_d implementation.
 
 	* check/lightning.c: Add __ia64__ preprocessor define
-	on Itanium. 
+	on Itanium.
 
 	* check/alu.inc, check/clobber.tst, check/float.tst: Define
 	several macros conditionally to __ia64__. This is required
@@ -2991,7 +3052,7 @@
 	* include/lightning/jit_x86.h: Correct typo in macro name.
 
 	* lib/jit_arm.c, lib/jit_arm-cpu.c, lib/jit_mips.c,
-	lib/jit_mips-cpu.c, lib/jit_ppc.c, lib/jit_ppc-cpu.c, 
+	lib/jit_mips-cpu.c, lib/jit_ppc.c, lib/jit_ppc-cpu.c,
 	lib/jit_x86.c, lib/jit_x86-cpu.c: Correct wrong code to get
 	current jit function pointer.
 
@@ -3225,7 +3286,7 @@
 	* lightning/i386/core.h (jit_ldr_c, jit_ldxr_c, jit_ldr_s,
 	jit_ldxr_s): Move...
 	* lightning/i386/core-32.h: ... here.
-	* lightning/i386/core-64.h (jit_ldr_c, jit_ldxr_c, jit_ldr_s,
+	* lightning/i386/core-64.h (jit_ldr_c, jit_ldxr_c, jit_ldr_s):
 	Use movsbq and movswq.
 
 2010-08-10  Paulo César Pereira de Andrade <pcpa@mandriva.com.br>
@@ -3306,11 +3367,11 @@
 
 	* lightning/ppc/funcs.h (jit_flush_code): modified the computation
 	of start/end. The pointer arithmetic was done without casting. It
-	prevented compilation with recent gcc versions. 
+	prevented compilation with recent gcc versions.
 	* lightning/ppc/core.h (jit_pushr_i): The offset for the store was
 	incorrect. Should have been 4 bytes below SP (not above).
-	* lightning/ppc/core.h (jit_popr_i): The offset for the load was 
-	incorrect. Should have been 0 (not +8). 
+	* lightning/ppc/core.h (jit_popr_i): The offset for the load was
+	incorrect. Should have been 0 (not +8).
 
 2008-06-17  Paolo Bonzini  <bonzini@gnu.org>
 
@@ -3589,7 +3650,7 @@
 	* lightning/i386/fp-32.h: ... here.
 	* lightning/i386/fp-64.h: Write the code.
 	* lightning/sparc/fp.h: Fix jit_extr_{f_d,d_f} register order.
-	
+
 2006-11-22  Paolo Bonzini  <bonzini@gnu.org>
 
 	* lightning/i386/asm-i386.h: Move x86-64 instructions...
@@ -3803,7 +3864,7 @@
 2006-01-23  Paolo Bonzini  <bonzini@gnu.org>
 
 	* configure.ac: Fix comments in config.h.in.
-	
+
 2005-11-25  Paolo Bonzini  <bonzini@gnu.org>
 
 	* lightning/sparc/fp.h: Fix header comment.
@@ -4123,7 +4184,7 @@
 	* lightning/ppc/funcs.h: correctly align stack pointer
 
 No changelogs for the assemblers (lightning directory) until 1.0
-	
+
 2003-03-27  Paolo Bonzini  <bonzini@gnu.org>
 
 	* tests/printf2.c: new test
@@ -4135,7 +4196,7 @@ No changelogs for the assemblers (lightning directory) until 1.0
 2001-01-19  Paolo Bonzini  <bonzini@gnu.org>
 
 	* configure.in: support cross-assembling
-	
+
 	* disass/bfd.h, disass/dis-asm.h, disass/dis-buf.c,
 	disass/i386-dis.c, disass/i386.h, disass/ppc-dis.c,
 	disass/ppc.h, disass/ppc-opc.c, disass/sparc-dis.c,

@@ -311,6 +311,10 @@ static void _movr(jit_state_t*,jit_int32_t,jit_int32_t);
 static void _movi(jit_state_t*,jit_int32_t,jit_word_t);
 #  define movi_p(r0,i0)			_movi_p(_jit,r0,i0)
 static jit_word_t _movi_p(jit_state_t*,jit_int32_t,jit_word_t);
+#  define movnr(r0,r1,r2)		_movnr(_jit,r0,r1,r2)
+static void _movnr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define movzr(r0,r1,r2)		_movzr(_jit,r0,r1,r2)
+static void _movzr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
 #  define negr(r0,r1)			NEGQ(r1,r0)
 #  define comr(r0,r1)			NOT(r1,r0)
 #  define addr(r0,r1,r2)		ADDQ(r1,r2,r0)
@@ -622,18 +626,12 @@ static void _extr_us(jit_state_t*,jit_int32_t,jit_int32_t);
 static void _extr_i(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define extr_ui(r0,r1)		_extr_ui(_jit,r0,r1)
 static void _extr_ui(jit_state_t*,jit_int32_t,jit_int32_t);
-#  if __BYTE_ORDER == __LITTLE_ENDIAN
-#    define htonr_us(r0,r1)		_htonr_us(_jit,r0,r1)
-static void _htonr_us(jit_state_t*,jit_int32_t,jit_int32_t);
-#    define htonr_ui(r0,r1)		_htonr_ui(_jit,r0,r1)
-static void _htonr_ui(jit_state_t*,jit_int32_t,jit_int32_t);
-#    define htonr_ul(r0,r1)		_htonr_ul(_jit,r0,r1)
-static void _htonr_ul(jit_state_t*,jit_int32_t,jit_int32_t);
-#  else
-#    define htonr_us(r0,r1)		extr_us(r0,r1)
-#    define htonr_ui(r0,r1)		extr_ui(r0,r1)
-#    define htonr_ul(r0,r1)		movr(r0,r1)
-#  endif
+#  define bswapr_us(r0,r1)		_bswapr_us(_jit,r0,r1)
+static void _bswapr_us(jit_state_t*,jit_int32_t,jit_int32_t);
+#  define bswapr_ui(r0,r1)		_bswapr_ui(_jit,r0,r1)
+static void _bswapr_ui(jit_state_t*,jit_int32_t,jit_int32_t);
+#  define bswapr_ul(r0,r1)		_bswapr_ul(_jit,r0,r1)
+static void _bswapr_ul(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define jmpr(r0)			JMP(_R31_REGNO,r0,0)
 #  define jmpi(i0)			_jmpi(_jit,i0)
 static void _jmpi(jit_state_t*, jit_word_t);
@@ -809,6 +807,24 @@ _movi_p(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
     orr(r0, r0, rn(reg));
     jit_unget_reg(reg);
     return (w);
+}
+
+static void
+_movnr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
+{
+    jit_word_t	w;
+    w = beqi(_jit->pc.w, r2, 0);
+    MOV(r1, r0);
+    patch_at(w, _jit->pc.w);
+}
+
+static void
+_movzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
+{
+    jit_word_t	w;
+    w = bnei(_jit->pc.w, r2, 0);
+    MOV(r1, r0);
+    patch_at(w, _jit->pc.w);
 }
 
 static void
@@ -2453,7 +2469,7 @@ _extr_ui(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 }
 
 static void
-_htonr_us(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+_bswapr_us(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
     jit_int32_t		t0;
     t0 = jit_get_reg(jit_class_gpr);
@@ -2465,7 +2481,7 @@ _htonr_us(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 }
 
 static void
-_htonr_ui(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+_bswapr_ui(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
     jit_int32_t		t0;
     jit_int32_t		t1;
@@ -2491,7 +2507,7 @@ _htonr_ui(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 }
 
 static void
-_htonr_ul(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+_bswapr_ul(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
     jit_int32_t		t0;
     jit_int32_t		t1;

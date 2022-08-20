@@ -20,12 +20,12 @@
 #include <lightning.h>
 #include <lightning/jit_private.h>
 
-#define print_chr(value)		fputc(value, stdout)
-#define print_hex(value)		fprintf(stdout, "0x%lx", value)
-#define print_dec(value)		fprintf(stdout, "%ld", value)
-#define print_flt(value)		fprintf(stdout, "%g", value)
-#define print_str(value)		fprintf(stdout, "%s", value)
-#define print_ptr(value)		fprintf(stdout, "%p", value)
+#define print_chr(value)		fputc(value, print_stream)
+#define print_hex(value)		fprintf(print_stream, "0x%lx", value)
+#define print_dec(value)		fprintf(print_stream, "%ld", value)
+#define print_flt(value)		fprintf(print_stream, "%g", value)
+#define print_str(value)		fprintf(print_stream, "%s", value)
+#define print_ptr(value)		fprintf(print_stream, "%p", value)
 #define print_reg(value)						\
     do {								\
 	if ((value) & jit_regno_patch)					\
@@ -45,10 +45,22 @@
  * Initialization
  */
 #include "jit_names.c"
+/*
+ * Initialization
+ */
+static FILE	*print_stream;
+
 
 /*
  * Implementation
  */
+void
+jit_init_print(void)
+{
+    if (!print_stream)
+	print_stream = stderr;
+}
+
 void
 _jit_print(jit_state_t *_jit)
 {

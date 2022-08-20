@@ -14,7 +14,8 @@
 # License for more details.
 #
 
-AM_CFLAGS = -I$(top_srcdir)/include -D_GNU_SOURCE $(LIGHTNING_CFLAGS)
+AM_CFLAGS = -I$(top_builddir)/include -I$(top_srcdir)/include	\
+	-D_GNU_SOURCE $(LIGHTNING_CFLAGS)
 liblightning_LTLIBRARIES = liblightning.la
 liblightning_la_LDFLAGS = -version-info 1:0:0
 
