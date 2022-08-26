@@ -8,7 +8,7 @@
 
 #### Linux: **https://flathub.org/apps/details/io.github.m64p.m64p**
 
-#### Mac OS: No releases currently, require a maintainer. Please contact Logan for details if you wish to do this.
+#### Mac OS: No releases currently, requires a maintainer. See also https://github.com/Themaister/parallel-rdp/issues/20
 
 # Wiki
 
