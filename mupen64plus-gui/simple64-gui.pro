@@ -6,12 +6,12 @@
 
 QT       += widgets websockets
 
-TARGET = mupen64plus-gui
+TARGET = simple64-gui
 TEMPLATE = app
 
-RC_ICONS = mupen64plus.ico
-ICON = mupen64plus.icns
-RESOURCES = mupen64plus-gui.qrc
+RC_ICONS = simple64.ico
+ICON = simple64.icns
+RESOURCES = simple64-gui.qrc
 
 DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x0602ff
 
