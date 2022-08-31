@@ -8,9 +8,9 @@ int main(int argc, char *argv[])
     srand (time(NULL));
 
     QApplication a(argc, argv);
-    a.setWindowIcon(QIcon(":/mupen64plus.svg"));
+    a.setWindowIcon(QIcon(":/simple64.svg"));
 
-    QCoreApplication::setApplicationName("mupen64plus-gui");
+    QCoreApplication::setApplicationName("simple64-gui");
 
     QCommandLineParser parser;
     parser.addHelpOption();

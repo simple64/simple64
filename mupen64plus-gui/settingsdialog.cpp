@@ -34,7 +34,7 @@ void SettingsDialog::initStuff()
 {
     layout = new QGridLayout(this);
 
-    QLabel *note = new QLabel("Note: If you change the Config Path, you need to close and re-open mupen64plus-gui before it will take effect.", this);
+    QLabel *note = new QLabel("Note: If you change the Config Path, you need to close and re-open simple64-gui before it will take effect.", this);
     QLabel *configLabel = new QLabel("Config Dir Path", this);
     configPath = new QLineEdit(this);
     configPath->setText(w->getSettings()->value("configDirPath").toString());
@@ -68,7 +68,7 @@ void SettingsDialog::initStuff()
     QLabel *inputLabel = new QLabel("Input Plugin", this);
     layout->addWidget(inputLabel,5,0);
     QComboBox *inputChoice = new QComboBox(this);
-    Filter.replace(0,"mupen64plus-input*");
+    Filter.replace(0,"*-input-*");
     current = PluginDir.entryList(Filter);
     inputChoice->addItems(current);
     QString qtInputPlugin = w->getSettings()->value("inputPlugin").toString();

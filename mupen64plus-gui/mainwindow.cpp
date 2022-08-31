@@ -55,9 +55,9 @@ void MainWindow::updatePlugins()
     QString default_value;
 
     if (!settings->contains("inputPlugin")) {
-        Filter.replace(0,"mupen64plus-input*");
+        Filter.replace(0,"*-input-*");
         current = PluginDir.entryList(Filter);
-        default_value = "mupen64plus-input-qt";
+        default_value = "simple64-input-qt";
         default_value += OSAL_DLL_EXTENSION;
         if (current.isEmpty())
             settings->setValue("inputPlugin", "dummy");
@@ -325,11 +325,11 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     this->setWindowTitle("m64p    build: " + QStringLiteral(GUI_VERSION).mid(0,7));
 
-    QString ini_path = QDir(QCoreApplication::applicationDirPath()).filePath("mupen64plus-gui.ini");
+    QString ini_path = QDir(QCoreApplication::applicationDirPath()).filePath("simple64-gui.ini");
     settings = new QSettings(ini_path, QSettings::IniFormat, this);
 
     if (!settings->isWritable())
-        settings = new QSettings("mupen64plus", "gui", this);
+        settings = new QSettings("simple64", "gui", this);
 
     if (!settings->contains("version") || settings->value("version").toInt() != SETTINGS_VER)
     {
@@ -1085,7 +1085,7 @@ void MainWindow::loadPlugins()
     PluginStartup = (ptr_PluginStartup) osal_dynlib_getproc(gfxPlugin, "PluginStartup");
     (*PluginStartup)(coreLib, (char*)"Video", DebugCallback);
 
-    file_path = "mupen64plus-audio-sdl2";
+    file_path = "simple64-audio-sdl2";
     file_path += OSAL_DLL_EXTENSION;
     plugin_path = QDir(pluginPath).filePath(file_path);
 
@@ -1099,7 +1099,7 @@ void MainWindow::loadPlugins()
 
     PluginGetVersion = (ptr_PluginGetVersion) osal_dynlib_getproc(audioPlugin, "PluginGetVersion");
     (*PluginGetVersion)(NULL, NULL, NULL, &pluginName, NULL);
-    if (strcmp("Mupen64Plus SDL2 Audio Plugin", pluginName))
+    if (strcmp("simple64 SDL2 Audio Plugin", pluginName))
     {
         osal_dynlib_close(audioPlugin);
         audioPlugin = nullptr;
