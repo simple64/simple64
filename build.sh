@@ -19,7 +19,7 @@ else
   suffix=".so"
 fi
 
-install_dir=$PWD/mupen64plus
+install_dir=$PWD/simple64
 mkdir -p $install_dir
 base_dir=$PWD
 
@@ -34,22 +34,22 @@ cd $base_dir/mupen64plus-input-raphnetraw/projects/unix
 make V=1 -j4 all
 cp $base_dir/mupen64plus-input-raphnetraw/projects/unix/*$suffix $install_dir
 
-mkdir -p $base_dir/mupen64plus-input-qt/build
-cd $base_dir/mupen64plus-input-qt/build
-qmake6 ../mupen64plus-input-qt.pro
+mkdir -p $base_dir/simple64-input-qt/build
+cd $base_dir/simple64-input-qt/build
+qmake6 ../simple64-input-qt.pro
 make -j4
 if [[ $UNAME == *"MINGW"* ]]; then
-  cp $base_dir/mupen64plus-input-qt/build/release/mupen64plus-input-qt.dll $install_dir
+  cp $base_dir/simple64-input-qt/build/release/simple64-input-qt.dll $install_dir
 else
-  cp $base_dir/mupen64plus-input-qt/build/libmupen64plus-input-qt$suffix $install_dir/mupen64plus-input-qt$suffix
+  cp $base_dir/simple64-input-qt/build/libsimple64-input-qt$suffix $install_dir/simple64-input-qt$suffix
 fi
 
-cd $base_dir/mupen64plus-audio-sdl2/projects/unix
+cd $base_dir/simple64-audio-sdl2/projects/unix
 make V=1 -j4 all
-cp $base_dir/mupen64plus-audio-sdl2/projects/unix/*$suffix $install_dir
+cp $base_dir/simple64-audio-sdl2/projects/unix/*$suffix $install_dir
 
 cd $base_dir
-GUI_DIRECTORY=$base_dir/mupen64plus-gui
+GUI_DIRECTORY=$base_dir/simple64-gui
 rev=\"`git rev-parse HEAD`\"
 lastrev=$(head -n 1 $GUI_DIRECTORY/version.h | awk -F'GUI_VERSION ' {'print $2'})
 
@@ -61,17 +61,17 @@ then
    echo "#define GUI_VERSION $rev" > $GUI_DIRECTORY/version.h
 fi
 
-mkdir -p $base_dir/mupen64plus-gui/build
-cd $base_dir/mupen64plus-gui/build
-qmake6 ../mupen64plus-gui.pro
+mkdir -p $base_dir/simple64-gui/build
+cd $base_dir/simple64-gui/build
+qmake6 ../simple64-gui.pro
 make -j4
 if [[ $UNAME == *"MINGW"* ]]; then
-  cp $base_dir/mupen64plus-gui/build/release/mupen64plus-gui.exe $install_dir
+  cp $base_dir/simple64-gui/build/release/simple64-gui.exe $install_dir
 elif [[ $UNAME == *"Darwin"* ]]; then
-  /usr/local/Cellar/qt@5/$qt_version/bin/macdeployqt $base_dir/mupen64plus-gui/build/mupen64plus-gui.app
-  cp -a $base_dir/mupen64plus-gui/build/mupen64plus-gui.app $install_dir
+  /usr/local/Cellar/qt@5/$qt_version/bin/macdeployqt $base_dir/simple64-gui/build/simple64-gui.app
+  cp -a $base_dir/simple64-gui/build/simple64-gui.app $install_dir
 else
-  cp $base_dir/mupen64plus-gui/build/mupen64plus-gui $install_dir
+  cp $base_dir/simple64-gui/build/simple64-gui $install_dir
 fi
 
 mkdir -p $base_dir/parallel-rsp/build
@@ -96,7 +96,7 @@ cp mupen64plus-video-parallel.* $install_dir
 
 if [[ $UNAME == *"MINGW"* ]]; then
   cd $install_dir
-  windeployqt-qt6.exe --no-translations mupen64plus-gui.exe
+  windeployqt-qt6.exe --no-translations simple64-gui.exe
 
   if [[ $UNAME == *"MINGW64"* ]]; then
     my_os=win64
@@ -105,7 +105,7 @@ if [[ $UNAME == *"MINGW"* ]]; then
     my_os=win32
     cp /$mingw_prefix/bin/libgcc_s_dw2-1.dll $install_dir
   fi
-# WINEDEBUG=+loaddll wine ./mupen64plus-gui.exe 2> out.txt
+# WINEDEBUG=+loaddll wine ./simple64-gui.exe 2> out.txt
 # cat out.txt | grep found
   cp -v /$mingw_prefix/bin/libwinpthread-1.dll $install_dir
   cp -v /$mingw_prefix/bin/libstdc++-6.dll $install_dir
@@ -132,10 +132,10 @@ if [[ $UNAME == *"MINGW"* ]]; then
   cp -v /$mingw_prefix/bin/libiconv-2.dll $install_dir
   cp -v /$mingw_prefix/bin/libhidapi-0.dll $install_dir
   cp -v $base_dir/7za.exe $install_dir
-  cp -v $base_dir/mupen64plus-gui/discord/discord_game_sdk.dll $install_dir
-  cp -v $base_dir/mupen64plus-input-qt/vosk/vosk.dll $install_dir
+  cp -v $base_dir/simple64-gui/discord/discord_game_sdk.dll $install_dir
+  cp -v $base_dir/simple64-input-qt/vosk/vosk.dll $install_dir
 elif [[ $UNAME == *"Darwin"* ]]; then
-  cp $base_dir/mupen64plus-gui/discord/discord_game_sdk.dylib $install_dir
+  cp $base_dir/simple64-gui/discord/discord_game_sdk.dylib $install_dir
   cd $base_dir
   sh ./link-mac.sh
 else
@@ -144,8 +144,8 @@ else
   else
     my_os=linux64
   fi
-  cp $base_dir/mupen64plus-gui/discord/libdiscord_game_sdk.so $install_dir
-  cp $base_dir/mupen64plus-input-qt/vosk/libvosk.so $install_dir
+  cp $base_dir/simple64-gui/discord/libdiscord_game_sdk.so $install_dir
+  cp $base_dir/simple64-input-qt/vosk/libvosk.so $install_dir
 fi
 
 if [[ "$1" != "nozip" ]]; then
@@ -153,6 +153,6 @@ if [[ "$1" != "nozip" ]]; then
     cd $base_dir
     rm -f $base_dir/*.zip
     HASH=$(git rev-parse --short HEAD)
-    zip --symlinks -r m64p-$my_os-$HASH.zip mupen64plus
+    zip --symlinks -r m64p-$my_os-$HASH.zip simple64
   fi
 fi

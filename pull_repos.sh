@@ -3,19 +3,19 @@ git fetch mupen64plus-core
 git merge -s subtree mupen64plus-core/m64p --allow-unrelated-histories --squash
 git commit -m "update core"
 
-git remote add mupen64plus-gui https://github.com/m64p/mupen64plus-gui.git
-git fetch mupen64plus-gui
-git merge -s subtree mupen64plus-gui/main --allow-unrelated-histories --squash
+git remote add simple64-gui https://github.com/simple64/simple64-gui.git
+git fetch simple64-gui
+git merge -s subtree simple64-gui/main --allow-unrelated-histories --squash
 git commit -m "update gui"
 
-git remote add mupen64plus-audio-sdl2 https://github.com/m64p/mupen64plus-audio-sdl2.git
-git fetch mupen64plus-audio-sdl2
-git merge -s subtree mupen64plus-audio-sdl2/main --allow-unrelated-histories --squash
+git remote add simple64-audio-sdl2 https://github.com/m64p/simple64-audio-sdl2.git
+git fetch simple64-audio-sdl2
+git merge -s subtree simple64-audio-sdl2/main --allow-unrelated-histories --squash
 git commit -m "update audio"
 
-git remote add mupen64plus-input-qt https://github.com/m64p/mupen64plus-input-qt.git
-git fetch mupen64plus-input-qt
-git merge -s subtree mupen64plus-input-qt/main --allow-unrelated-histories --squash
+git remote add simple64-input-qt https://github.com/m64p/simple64-input-qt.git
+git fetch simple64-input-qt
+git merge -s subtree simple64-input-qt/main --allow-unrelated-histories --squash
 git commit -m "update input qt"
 
 git remote add mupen64plus-input-raphnetraw https://github.com/loganmc10/mupen64plus-input-raphnetraw.git

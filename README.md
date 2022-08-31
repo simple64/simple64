@@ -1,15 +1,15 @@
-# m64p website
+# simple64 website
 
-**https://m64p.github.io**
+**https://simple64.github.io**
 
 # Downloads
 
-#### Windows: **https://github.com/m64p/m64p/releases**
+#### Windows: **https://github.com/simple64/simple64/releases**
 
-#### Linux: **https://flathub.org/apps/details/io.github.m64p.m64p**
+#### Linux: **https://flathub.org/apps/details/io.github.simple64.simple64**
 
 #### Mac OS: No releases currently, requires a maintainer. See also https://github.com/Themaister/parallel-rdp/issues/20
 
 # Wiki
 
-**https://github.com/m64p/m64p/wiki**
+**https://github.com/simple64/simple64/wiki**
