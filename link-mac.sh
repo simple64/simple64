@@ -80,8 +80,8 @@ otool -L $contents/MacOS/mupen64plus-video-parallel.dylib
 # Time to create the DMG
 
 # 1. Create symlink to Applications folder
-ln -s /Applications mupen64plus/Applications
+ln -s /Applications simple64/Applications
 
 # 2. Create DMG
 HASH=$(git rev-parse --short HEAD)
-hdiutil create -volname m64p -srcfolder mupen64plus -ov -format UDZO mupen64plus/m64p-osx-$HASH.dmg
+hdiutil create -volname simple64 -srcfolder simple64 -ov -format UDZO simple64/simple64-osx-$HASH.dmg

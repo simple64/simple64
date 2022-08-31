@@ -153,6 +153,6 @@ if [[ "$1" != "nozip" ]]; then
     cd $base_dir
     rm -f $base_dir/*.zip
     HASH=$(git rev-parse --short HEAD)
-    zip --symlinks -r m64p-$my_os-$HASH.zip simple64
+    zip --symlinks -r simple64-$my_os-$HASH.zip simple64
   fi
 fi
