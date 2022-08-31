@@ -63,7 +63,7 @@ EXPORT m64p_error CALL PluginGetVersion(m64p_plugin_type *PluginType, int *Plugi
         *APIVersion = AUDIO_PLUGIN_API_VERSION;
 
     if (PluginNamePtr != NULL)
-        *PluginNamePtr = "Mupen64Plus SDL2 Audio Plugin";
+        *PluginNamePtr = "simple64 SDL2 Audio Plugin";
 
     if (Capabilities != NULL)
     {
