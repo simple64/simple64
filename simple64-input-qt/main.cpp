@@ -1,5 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- *   Mupen64plus-input-qt - main.cpp                                       *
+ *   simple64-input-qt - main.cpp                                       *
  *   Mupen64Plus homepage: https://mupen64plus.org/                        *
  *   Copyright (C) 2008-2011 Richard Goedeken                              *
  *   Copyright (C) 2008 Tillin9                                            *
@@ -304,7 +304,7 @@ EXPORT m64p_error CALL PluginGetVersion(m64p_plugin_type *PluginType, int *Plugi
         *APIVersion = INPUT_PLUGIN_API_VERSION;
 
     if (PluginNamePtr != NULL)
-        *PluginNamePtr = "Mupen64Plus Qt Input Plugin";
+        *PluginNamePtr = "simple64 Qt Input Plugin";
 
     if (Capabilities != NULL)
     {
