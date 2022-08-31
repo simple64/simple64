@@ -323,7 +323,7 @@ MainWindow::MainWindow(QWidget *parent) :
     verbose = 0;
     nogui = 0;
     ui->setupUi(this);
-    this->setWindowTitle("m64p    build: " + QStringLiteral(GUI_VERSION).mid(0,7));
+    this->setWindowTitle("simple64    build: " + QStringLiteral(GUI_VERSION).mid(0,7));
 
     QString ini_path = QDir(QCoreApplication::applicationDirPath()).filePath("simple64-gui.ini");
     settings = new QSettings(ini_path, QSettings::IniFormat, this);
@@ -418,7 +418,7 @@ MainWindow::~MainWindow()
 void MainWindow::updateApp()
 {
 #ifdef _AUTOUPDATE
-    QString disable_update = qEnvironmentVariable("M64P_DISABLE_UPDATER");
+    QString disable_update = qEnvironmentVariable("SIMPLE64_DISABLE_UPDATER");
     if (!disable_update.isEmpty())
         return;
 #ifndef __APPLE__
@@ -426,7 +426,7 @@ void MainWindow::updateApp()
     connect(updateManager, &QNetworkAccessManager::finished,
         this, &MainWindow::updateReplyFinished);
 
-    updateManager->get(QNetworkRequest(QUrl("https://api.github.com/repos/m64p/m64p/releases/latest")));
+    updateManager->get(QNetworkRequest(QUrl("https://api.github.com/repos/simple64/simple64/releases/latest")));
 #endif
 #endif
 }
@@ -526,9 +526,9 @@ void MainWindow::updateReplyFinished(QNetworkReply *reply)
                 connect(updateManager, &QNetworkAccessManager::finished,
                     this, &MainWindow::updateDownloadFinished);
 #ifdef _WIN32
-                QNetworkRequest req(QUrl("https://github.com/m64p/m64p-updater/releases/latest/download/m64p-updater.exe"));
+                QNetworkRequest req(QUrl("https://github.com/simple64/simple64-updater/releases/latest/download/simple64-updater.exe"));
 #else
-                QNetworkRequest req(QUrl("https://github.com/m64p/m64p-updater/releases/latest/download/m64p-updater"));
+                QNetworkRequest req(QUrl("https://github.com/simple64/simple64-updater/releases/latest/download/simple64-updater"));
 #endif
                 req.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
                 updateManager->get(req);
