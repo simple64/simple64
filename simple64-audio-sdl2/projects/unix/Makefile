@@ -1,5 +1,5 @@
 #/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-# *   Mupen64plus-audio-sdl2 - Makefile                                     *
+# *   simple64-audio-sdl2 - Makefile                                     *
 # *   Mupen64Plus homepage: http://code.google.com/p/mupen64plus/           *
 # *   Copyright (C) 2007-2009 Richard Goedeken                              *
 # *   Copyright (C) 2007-2008 Tillin9                                       *
@@ -19,7 +19,7 @@
 # *   Free Software Foundation, Inc.,                                       *
 # *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
 # * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-# Makefile for SDL2 Audio plugin in Mupen64plus
+# Makefile for SDL2 Audio plugin in simple64
 
 # detect operation system
 UNAME ?= $(shell uname -s)
@@ -234,16 +234,16 @@ OBJDIRS = $(dir $(OBJECTS))
 $(shell $(MKDIR) $(OBJDIRS))
 
 # build targets
-TARGET = mupen64plus-audio-sdl2$(POSTFIX).$(SO_EXTENSION)
+TARGET = simple64-audio-sdl2$(POSTFIX).$(SO_EXTENSION)
 
 targets:
-	@echo "Mupen64Plus-audio-sdl2 makefile. "
+	@echo "simple64-audio-sdl2 makefile. "
 	@echo "  Targets:"
-	@echo "    all           == Build Mupen64Plus SDL2 audio plugin"
+	@echo "    all           == Build simple64 SDL2 audio plugin"
 	@echo "    clean         == remove object files"
 	@echo "    rebuild       == clean and re-build all"
-	@echo "    install       == Install Mupen64Plus SDL2 audio plugin"
-	@echo "    uninstall     == Uninstall Mupen64Plus SDL2 audio plugin"
+	@echo "    install       == Install simple64 SDL2 audio plugin"
+	@echo "    uninstall     == Uninstall simple64 SDL2 audio plugin"
 	@echo "  Options:"
 	@echo "    BITS=32       == build 32-bit binaries on 64-bit machine"
 	@echo "    APIDIR=path   == path to find Mupen64Plus Core headers"
