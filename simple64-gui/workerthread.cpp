@@ -57,7 +57,7 @@ void WorkerThread::run()
         QDateTime current = QDateTime::currentDateTimeUtc();
         timestamps.start = current.currentSecsSinceEpoch();
         strcpy(assets.large_image, "6205049");
-        strcpy(assets.large_text, "https://m64p.github.io");
+        strcpy(assets.large_text, "https://simple64.github.io");
         activity.assets = assets;
         activity.timestamps = timestamps;
         strncpy(activity.details, rom_settings.goodname, 128);

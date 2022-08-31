@@ -103,7 +103,7 @@ WaitRoom::WaitRoom(QString filename, QJsonObject room, QWebSocket *socket, QWidg
     memset(&activity, 0, sizeof(activity));
     memset(&assets, 0, sizeof(assets));
     strcpy(assets.large_image, "6205049");
-    strcpy(assets.large_text, "https://m64p.github.io");
+    strcpy(assets.large_text, "https://simple64.github.io");
     activity.assets = assets;
     strncpy(activity.details, room.value("game_name").toString().toUtf8().constData(), 128);
     strcpy(activity.state, "Netplay waiting room");
