@@ -8,12 +8,12 @@ git fetch simple64-gui
 git merge -s subtree simple64-gui/main --allow-unrelated-histories --squash
 git commit -m "update gui"
 
-git remote add simple64-audio-sdl2 https://github.com/m64p/simple64-audio-sdl2.git
+git remote add simple64-audio-sdl2 https://github.com/simple64/simple64-audio-sdl2.git
 git fetch simple64-audio-sdl2
 git merge -s subtree simple64-audio-sdl2/main --allow-unrelated-histories --squash
 git commit -m "update audio"
 
-git remote add simple64-input-qt https://github.com/m64p/simple64-input-qt.git
+git remote add simple64-input-qt https://github.com/simple64/simple64-input-qt.git
 git fetch simple64-input-qt
 git merge -s subtree simple64-input-qt/main --allow-unrelated-histories --squash
 git commit -m "update input qt"
