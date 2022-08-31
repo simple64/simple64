@@ -17,7 +17,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Run build script
         run: |
-          git config --global --add safe.directory /__w/m64p/m64p
+          git config --global --add safe.directory /__w/simple64/simple64
           ./build.sh
   build-windows:
     runs-on: windows-2022
@@ -45,12 +45,12 @@ jobs:
             git
             zip
       - name: Run build script
-        run: msys2 -c 'export M64P_AUTOUPDATE=1; ./build.sh'
+        run: msys2 -c 'export SIMPLE64_AUTOUPDATE=1; ./build.sh'
       - name: Upload zip
         uses: actions/upload-artifact@v3
         with:
-          name: m64p-win64-${{ steps.slug.outputs.sha7 }}.zip
-          path: m64p-*.zip
+          name: simple64-win64-${{ steps.slug.outputs.sha7 }}.zip
+          path: simple64-*.zip
 #  build-mac:
 #    runs-on: macos-10.15
 #    steps:
@@ -73,5 +73,5 @@ jobs:
 #      - name: Upload dmg
 #        uses: actions/upload-artifact@v3
 #        with:
-#          name: m64p-osx-${{ steps.slug.outputs.sha7 }}.dmg
-#          path: mupen64plus/m64p-*.dmg
+#          name: simple64-osx-${{ steps.slug.outputs.sha7 }}.dmg
+#          path: simple64/simple64-*.dmg
