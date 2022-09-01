@@ -6,5 +6,5 @@ If you'd like to contribute to one of the folders listed below, you'll need to m
 * simple64-input-qt - https://github.com/simple64/simple64-input-qt
 * mupen64plus-input-raphnetraw - https://github.com/raphnet/mupen64plus-input-raphnetraw
 * simple64-audio-sdl2 - https://github.com/simple64/simple64-audio-sdl2
-* parallel-rsp - https://github.com/loganmc10/parallel-rsp
-* parallel-rdp - https://github.com/loganmc10/parallel-rdp-standalone
+* parallel-rsp - https://github.com/simple64/parallel-rsp
+* parallel-rdp - https://github.com/simple64/parallel-rdp-standalone
