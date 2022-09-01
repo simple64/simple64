@@ -23,7 +23,7 @@ git fetch simple64-input-raphnetraw
 git merge -s subtree simple64-input-raphnetraw/simple64 --allow-unrelated-histories --squash
 git commit -m "update raphnet"
 
-git remote add parallel-rsp https://github.com/loganmc10/parallel-rsp.git
+git remote add parallel-rsp https://github.com/simple64/parallel-rsp.git
 git fetch parallel-rsp
 git merge -s subtree parallel-rsp/simple64 --allow-unrelated-histories --squash
 git commit -m "update parallel rsp"
