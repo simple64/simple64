@@ -22,15 +22,10 @@
 #include "gcn64_priv.h"
 #include "gcn64lib.h"
 #include "requests.h"
-#define XXH_INLINE_ALL
-#include "xxhash.h"
 
 #include "hidapi.h"
 
 static int dusbr_verbose = 0;
-uint32_t input_counter = 0;
-static unsigned char temp_buf[64][63];
-static uint64_t xxhash[64];
 
 #define IS_VERBOSE()	(dusbr_verbose)
 
@@ -349,23 +344,8 @@ int gcn64_poll_result(gcn64_hdl_t hdl, unsigned char *cmd, int cmd_maxlen)
 
 int gcn64_exchange(gcn64_hdl_t hdl, unsigned char *outcmd, int outlen, unsigned char *result, int result_max)
 {
-	int n, i;
-	if (input_counter > 0)
-	{
-		uint64_t current_hash = XXH3_64bits(outcmd, outlen);
-		for (i = 0; xxhash[i] != 0; ++i)
-		{
-			if (current_hash == xxhash[i])
-			{
-				memcpy(result, &temp_buf[i][0], outlen);
-				return outlen;
-			}
-		}
-	}
-	else
-		memset(xxhash, 0, sizeof(xxhash));
+	int n;
 
-	xxhash[input_counter] = XXH3_64bits(outcmd, outlen);
 	n = gcn64_send_cmd(hdl, outcmd, outlen);
 	if (n<0) {
 		fprintf(stderr, "Error sending command\n");
@@ -386,8 +366,6 @@ int gcn64_exchange(gcn64_hdl_t hdl, unsigned char *outcmd, int outlen, unsigned 
 
 	} while (n==0);
 
-	memcpy(&temp_buf[input_counter][0], result, n);
-	++input_counter;
 	return n;
 }
 
