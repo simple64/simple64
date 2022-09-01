@@ -252,16 +252,16 @@ OBJDIRS = $(dir $(OBJECTS))
 $(shell $(MKDIR) $(OBJDIRS))
 
 # build targets
-TARGET = mupen64plus-input-raphnetraw$(POSTFIX).$(SO_EXTENSION)
+TARGET = simple64-input-raphnetraw$(POSTFIX).$(SO_EXTENSION)
 
 targets:
-	@echo "Mupen64Plus-input-raphnetraw makefile. "
+	@echo "simple64-input-raphnetraw makefile. "
 	@echo "  Targets:"
 	@echo "    all           == Build Mupen64Plus raphnetraw input plugin"
 	@echo "    clean         == remove object files"
 	@echo "    rebuild       == clean and re-build all"
-	@echo "    install       == Install Mupen64Plus raphnetraw input plugin"
-	@echo "    uninstall     == Uninstall Mupen64Plus raphnetraw input plugin"
+	@echo "    install       == Install simple64 raphnetraw input plugin"
+	@echo "    uninstall     == Uninstall simple64 raphnetraw input plugin"
 	@echo "  Options:"
 	@echo "    BITS=32       == build 32-bit binaries on 64-bit machine"
 	@echo "    APIDIR=path   == path to find Mupen64Plus Core headers"
