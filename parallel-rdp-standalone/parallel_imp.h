@@ -1,6 +1,6 @@
 #pragma once
 
-#include "gfx_m64p.h"
+#include "gfx_simple64.h"
 #include "gfxstructdefs.h"
 #include <stdbool.h>
 

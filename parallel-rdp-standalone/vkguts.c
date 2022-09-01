@@ -1,5 +1,5 @@
 #include "vkguts.h"
-#include "gfx_m64p.h"
+#include "gfx_simple64.h"
 #include <stddef.h>
 #include <stdbool.h>
 
@@ -29,7 +29,7 @@ void screen_init()
     CoreVideo_SwapCounter = (ptr_VidExt_GL_SwapBuffers)DLSYM(CoreLibHandle, "VidExt_GL_SwapBuffers");
 
     CoreVideo_Init();
-    CoreVideo_SetCaption("Mupen64Plus-Parallel");
+    CoreVideo_SetCaption("Simple64-Parallel");
 }
 
 void screen_set_mode(bool fullscreen)
