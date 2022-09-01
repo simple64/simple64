@@ -49,7 +49,7 @@
 #include <ctype.h>
 #include <stdarg.h>
 
-#include "gfx_m64p.h"
+#include "gfx_simple64.h"
 #include "vkguts.h"
 #include "parallel_imp.h"
 
