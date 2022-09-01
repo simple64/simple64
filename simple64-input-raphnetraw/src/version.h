@@ -26,7 +26,7 @@
 #if !defined(VERSION_H)
 #define VERSION_H
 
-#define PLUGIN_NAME    "Mupen64Plus raphnetraw Input Plugin"
+#define PLUGIN_NAME    "simple64 raphnetraw Input Plugin"
 #define PLUGIN_VERSION           0x010100
 //#define INPUT_PLUGIN_API_VERSION 0x020000
 #define INPUT_PLUGIN_API_VERSION 0x020100
