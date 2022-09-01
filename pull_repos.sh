@@ -18,7 +18,7 @@ git fetch simple64-input-qt
 git merge -s subtree simple64-input-qt/main --allow-unrelated-histories --squash
 git commit -m "update input qt"
 
-git remote add simple64-input-raphnetraw https://github.com/loganmc10/simple64-input-raphnetraw.git
+git remote add simple64-input-raphnetraw https://github.com/simple64/simple64-input-raphnetraw.git
 git fetch simple64-input-raphnetraw
 git merge -s subtree simple64-input-raphnetraw/simple64 --allow-unrelated-histories --squash
 git commit -m "update raphnet"
