@@ -17,7 +17,7 @@ jobs:
         with:
           repository: loganmc10/mupen64plus-core
           path: mupen64plus-core
-          ref: m64p
+          ref: simple64
       - name: Update and install packages
         run: |
           dnf -y update
@@ -38,7 +38,7 @@ jobs:
         with:
           repository: loganmc10/mupen64plus-core
           path: mupen64plus-core
-          ref: m64p
+          ref: simple64
       - uses: msys2/setup-msys2@v2
         with:
           update: true

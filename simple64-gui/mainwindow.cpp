@@ -1058,7 +1058,7 @@ void MainWindow::loadPlugins()
     QString file_path;
     QString plugin_path;
 
-    file_path = "mupen64plus-video-parallel";
+    file_path = "simple64-video-parallel";
     file_path += OSAL_DLL_EXTENSION;
     plugin_path = QDir(pluginPath).filePath(file_path);
 
@@ -1130,7 +1130,7 @@ void MainWindow::loadPlugins()
         (*PluginStartup)(coreLib, (char*)"Input", DebugCallback);
 
 
-    file_path = "mupen64plus-rsp-parallel";
+    file_path = "simple64-rsp-parallel";
     file_path += OSAL_DLL_EXTENSION;
     plugin_path = QDir(pluginPath).filePath(file_path);
 
