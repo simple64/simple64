@@ -30,9 +30,9 @@ make NETPLAY=1 NO_ASM=1 OSD=0 V=1 -j4 all
 cp -P $base_dir/mupen64plus-core/projects/unix/*$suffix* $install_dir
 cp $base_dir/mupen64plus-core/data/* $install_dir
 
-cd $base_dir/mupen64plus-input-raphnetraw/projects/unix
+cd $base_dir/simple64-input-raphnetraw/projects/unix
 make V=1 -j4 all
-cp $base_dir/mupen64plus-input-raphnetraw/projects/unix/*$suffix $install_dir
+cp $base_dir/simple64-input-raphnetraw/projects/unix/*$suffix $install_dir
 
 mkdir -p $base_dir/simple64-input-qt/build
 cd $base_dir/simple64-input-qt/build
@@ -82,7 +82,7 @@ else
   cmake -DCMAKE_BUILD_TYPE=Release ..
 fi
 VERBOSE=1 cmake --build .
-cp mupen64plus-rsp-parallel.* $install_dir
+cp simple64-rsp-parallel.* $install_dir
 
 mkdir -p $base_dir/parallel-rdp-standalone/build
 cd $base_dir/parallel-rdp-standalone/build
@@ -92,7 +92,7 @@ else
   cmake -DCMAKE_BUILD_TYPE=Release ..
 fi
 VERBOSE=1 cmake --build .
-cp mupen64plus-video-parallel.* $install_dir
+cp simple64-video-parallel.* $install_dir
 
 if [[ $UNAME == *"MINGW"* ]]; then
   cd $install_dir
