@@ -4,7 +4,7 @@ set(CMAKE_C_STANDARD 99)
 project(parallel-rsp LANGUAGES CXX C)
 
 
-set(NAME_PLUGIN_M64P "mupen64plus-rsp-parallel")
+set(NAME_PLUGIN_SIMPLE64 "simple64-rsp-parallel")
 
 include_directories(../mupen64plus-core/src/api)
 add_definitions(-DM64P_PLUGIN_API)
@@ -31,7 +31,7 @@ elseif (MSVC)
     set(PARALLEL_RSP_CXX_FLAGS /D_CRT_SECURE_NO_WARNINGS /wd4267 /wd4244 /wd4309 /wd4005 /MP /DNOMINMAX)
 endif()
 
-add_library(${NAME_PLUGIN_M64P} SHARED
+add_library(${NAME_PLUGIN_SIMPLE64} SHARED
 		parallel.cpp
 		rsp/vfunctions.cpp
 		rsp_jit.cpp rsp_jit.hpp
@@ -72,15 +72,15 @@ add_library(${NAME_PLUGIN_M64P} SHARED
 		arch/simd/rsp/vxor.h
 		arch/simd/rsp/vmulm.h)
 
-set_target_properties(${NAME_PLUGIN_M64P} PROPERTIES PREFIX "")
-target_include_directories(${NAME_PLUGIN_M64P} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_include_directories(${NAME_PLUGIN_M64P} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/arch/simd/rsp)
-target_include_directories(${NAME_PLUGIN_M64P} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/api)
-target_compile_options(${NAME_PLUGIN_M64P} PRIVATE ${PARALLEL_RSP_CXX_FLAGS} -march=x86-64-v3)
+set_target_properties(${NAME_PLUGIN_SIMPLE64} PROPERTIES PREFIX "")
+target_include_directories(${NAME_PLUGIN_SIMPLE64} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(${NAME_PLUGIN_SIMPLE64} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/arch/simd/rsp)
+target_include_directories(${NAME_PLUGIN_SIMPLE64} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/api)
+target_compile_options(${NAME_PLUGIN_SIMPLE64} PRIVATE ${PARALLEL_RSP_CXX_FLAGS} -march=x86-64-v3)
 
 option(PARALLEL_RSP_BAKED_LIGHTNING "Use built-in Lightning." ON)
 
-target_compile_definitions(${NAME_PLUGIN_M64P} PUBLIC PARALLEL_RSP_LIGHTNING)
+target_compile_definitions(${NAME_PLUGIN_SIMPLE64} PUBLIC PARALLEL_RSP_LIGHTNING)
 if (PARALLEL_RSP_BAKED_LIGHTNING)
 	add_library(lightning STATIC
 			lightning/lib/jit_disasm.c
@@ -100,5 +100,5 @@ if (PARALLEL_RSP_BAKED_LIGHTNING)
 	target_compile_options(lightning PRIVATE -march=x86-64-v3 -DHAVE_MMAP)
 	target_link_options(lightning PRIVATE -march=x86-64-v3 -DHAVE_MMAP)
 endif()
-target_link_options(${NAME_PLUGIN_M64P} PRIVATE -march=x86-64-v3)
-target_link_libraries(${NAME_PLUGIN_M64P} PUBLIC lightning)
+target_link_options(${NAME_PLUGIN_SIMPLE64} PRIVATE -march=x86-64-v3)
+target_link_libraries(${NAME_PLUGIN_SIMPLE64} PUBLIC lightning)
