@@ -28,7 +28,7 @@ git fetch parallel-rsp
 git merge -s subtree parallel-rsp/simple64 --allow-unrelated-histories --squash
 git commit -m "update parallel rsp"
 
-git remote add parallel-rdp-standalone https://github.com/loganmc10/parallel-rdp-standalone.git
+git remote add parallel-rdp-standalone https://github.com/simple64/parallel-rdp-standalone.git
 git fetch parallel-rdp-standalone
 git merge -s subtree parallel-rdp-standalone/simple64 --allow-unrelated-histories --squash
 git commit -m "update parallel rdp"
