@@ -1,6 +1,6 @@
 #include "wsi_platform.h"
 #include "vkguts.h"
-#include "gfx_m64p.h"
+#include "gfx_simple64.h"
 
 VkSurfaceKHR QT_WSIPlatform::create_surface(VkInstance instance, VkPhysicalDevice gpu)
 {

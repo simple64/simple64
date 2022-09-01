@@ -3,7 +3,7 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_C_STANDARD 99)
 project(parallel-rdp LANGUAGES CXX C)
 
-set(NAME_PLUGIN_M64P "mupen64plus-video-parallel")
+set(NAME_PLUGIN_SIMPLE64 "simple64-video-parallel")
 include_directories(../mupen64plus-core/src/api)
 add_definitions(-DM64P_PLUGIN_API -DGRANITE_VULKAN_MT)
 
@@ -28,7 +28,7 @@ endif()
 
 FILE(GLOB RDPSources parallel-rdp/*.cpp)
 
-add_library(${NAME_PLUGIN_M64P} SHARED
+add_library(${NAME_PLUGIN_SIMPLE64} SHARED
     ${RDPSources}
     vulkan/buffer.cpp
     vulkan/buffer_pool.cpp
@@ -60,12 +60,12 @@ add_library(${NAME_PLUGIN_M64P} SHARED
     util/timeline_trace_file.cpp
     util/thread_name.cpp
     volk/volk.c
-    gfx_m64p.c
+    gfx_simple64.c
     vkguts.c
     parallel_imp.cpp
     wsi_platform.cpp)
 
-target_include_directories(${NAME_PLUGIN_M64P} PUBLIC
+target_include_directories(${NAME_PLUGIN_SIMPLE64} PUBLIC
     parallel-rdp
     volk
     vulkan
@@ -73,9 +73,9 @@ target_include_directories(${NAME_PLUGIN_M64P} PUBLIC
     util)
 
 if(WIN32)
-    target_link_libraries(${NAME_PLUGIN_M64P} -lwinmm)
+    target_link_libraries(${NAME_PLUGIN_SIMPLE64} -lwinmm)
 endif()
 
-target_compile_options(${NAME_PLUGIN_M64P} PRIVATE -march=x86-64-v3)
-target_link_options(${NAME_PLUGIN_M64P} PRIVATE -march=x86-64-v3)
-set_target_properties(${NAME_PLUGIN_M64P} PROPERTIES PREFIX "")
+target_compile_options(${NAME_PLUGIN_SIMPLE64} PRIVATE -march=x86-64-v3)
+target_link_options(${NAME_PLUGIN_SIMPLE64} PRIVATE -march=x86-64-v3)
+set_target_properties(${NAME_PLUGIN_SIMPLE64} PROPERTIES PREFIX "")
