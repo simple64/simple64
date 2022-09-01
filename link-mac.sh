@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
 
-contents=mupen64plus/mupen64plus-gui.app/Contents
+contents=simple64/simple64-gui.app/Contents
 
 # Get files in correct directories
-mv mupen64plus/font.ttf $contents/MacOS
-mv mupen64plus/libmupen64plus.dylib $contents/MacOS
-mv mupen64plus/mupen64plus-audio-sdl2.dylib $contents/MacOS
-mv mupen64plus/mupen64plus-input-qt.dylib $contents/MacOS
-mv mupen64plus/mupen64plus-input-raphnetraw.dylib $contents/MacOS
-mv mupen64plus/mupen64plus-rsp-parallel.dylib $contents/MacOS
-mv mupen64plus/mupen64plus-video-parallel.dylib $contents/MacOS
-mv mupen64plus/mupen64plus.ini $contents/MacOS
-mv mupen64plus/mupencheat.txt $contents/MacOS
-mv mupen64plus/discord_game_sdk.dylib $contents/MacOS
+mv simple64/font.ttf $contents/MacOS
+mv simple64/libmupen64plus.dylib $contents/MacOS
+mv simple64/simple64-audio-sdl2.dylib $contents/MacOS
+mv simple64/simple64-input-qt.dylib $contents/MacOS
+mv simple64/simple64-input-raphnetraw.dylib $contents/MacOS
+mv simple64/simple64-rsp-parallel.dylib $contents/MacOS
+mv simple64/simple64-video-parallel.dylib $contents/MacOS
+mv simple64/mupen64plus.ini $contents/MacOS
+mv simple64/mupencheat.txt $contents/MacOS
+mv simple64/discord_game_sdk.dylib $contents/MacOS
 
 # SDL
 cp /usr/local/opt/sdl2_net/lib/libSDL2-2.0.0.dylib $contents/Frameworks
@@ -40,9 +40,9 @@ install_name_tool -change /usr/local/opt/libpng/lib/libpng16.16.dylib @executabl
 
 otool -L $contents/Frameworks/libfreetype.6.dylib
 
-# mupen64plus-gui
+# simple64-gui
 # nothing to link
-otool -L $contents/MacOS/mupen64plus-gui
+otool -L $contents/MacOS/simple64-gui
 
 # libmupen64plus.dylib
 install_name_tool -change /usr/local/opt/sdl2/lib/libSDL2-2.0.0.dylib @executable_path/../Frameworks/libSDL2-2.0.0.dylib $contents/MacOS/libmupen64plus.dylib
@@ -51,31 +51,31 @@ install_name_tool -change /usr/local/opt/libpng/lib/libpng16.16.dylib @executabl
 
 otool -L $contents/MacOS/libmupen64plus.dylib
 
-# mupen64plus-audio-sdl2.dylib
-install_name_tool -change /usr/local/opt/sdl2/lib/libSDL2-2.0.0.dylib @executable_path/../Frameworks/libSDL2-2.0.0.dylib $contents/MacOS/mupen64plus-audio-sdl2.dylib
+# simple64-audio-sdl2.dylib
+install_name_tool -change /usr/local/opt/sdl2/lib/libSDL2-2.0.0.dylib @executable_path/../Frameworks/libSDL2-2.0.0.dylib $contents/MacOS/simple64-audio-sdl2.dylib
 
-otool -L $contents/MacOS/mupen64plus-audio-sdl2.dylib
+otool -L $contents/MacOS/simple64-audio-sdl2.dylib
 
-# mupen64plus-input-qt.dylib
-install_name_tool -change /usr/local/opt/sdl2/lib/libSDL2-2.0.0.dylib @executable_path/../Frameworks/libSDL2-2.0.0.dylib $contents/MacOS/mupen64plus-input-qt.dylib
-install_name_tool -change /usr/local/opt/qt/lib/QtWidgets.framework/Versions/5/QtWidgets @executable_path/../Frameworks/QtWidgets.framework/Versions/5/QtWidgets $contents/MacOS/mupen64plus-input-qt.dylib
-install_name_tool -change /usr/local/opt/qt/lib/QtGui.framework/Versions/5/QtGui @executable_path/../Frameworks/QtGui.framework/Versions/5/QtGui $contents/MacOS/mupen64plus-input-qt.dylib
-install_name_tool -change /usr/local/opt/qt/lib/QtCore.framework/Versions/5/QtCore @executable_path/../Frameworks/QtCore.framework/Versions/5/QtCore $contents/MacOS/mupen64plus-input-qt.dylib
+# simple64-input-qt.dylib
+install_name_tool -change /usr/local/opt/sdl2/lib/libSDL2-2.0.0.dylib @executable_path/../Frameworks/libSDL2-2.0.0.dylib $contents/MacOS/simple64-input-qt.dylib
+install_name_tool -change /usr/local/opt/qt/lib/QtWidgets.framework/Versions/5/QtWidgets @executable_path/../Frameworks/QtWidgets.framework/Versions/5/QtWidgets $contents/MacOS/simple64-input-qt.dylib
+install_name_tool -change /usr/local/opt/qt/lib/QtGui.framework/Versions/5/QtGui @executable_path/../Frameworks/QtGui.framework/Versions/5/QtGui $contents/MacOS/simple64-input-qt.dylib
+install_name_tool -change /usr/local/opt/qt/lib/QtCore.framework/Versions/5/QtCore @executable_path/../Frameworks/QtCore.framework/Versions/5/QtCore $contents/MacOS/simple64-input-qt.dylib
 
-otool -L $contents/MacOS/mupen64plus-input-qt.dylib
+otool -L $contents/MacOS/simple64-input-qt.dylib
 
-# mupen64plus-input-raphnetraw.dylib
-install_name_tool -change /usr/local/opt/hidapi/lib/libhidapi.0.dylib @executable_path/../Frameworks/libhidapi.0.dylib $contents/MacOS/mupen64plus-input-raphnetraw.dylib
+# simple64-input-raphnetraw.dylib
+install_name_tool -change /usr/local/opt/hidapi/lib/libhidapi.0.dylib @executable_path/../Frameworks/libhidapi.0.dylib $contents/MacOS/simple64-input-raphnetraw.dylib
 
-otool -L $contents/MacOS/mupen64plus-input-raphnetraw.dylib
+otool -L $contents/MacOS/simple64-input-raphnetraw.dylib
 
-# mupen64plus-rsp-parallel.dylib
+# simple64-rsp-parallel.dylib
 
-otool -L $contents/MacOS/mupen64plus-rsp-parallel.dylib
+otool -L $contents/MacOS/simple64-rsp-parallel.dylib
 
-# mupen64plus-video-parallel.dylib
+# simple64-video-parallel.dylib
 
-otool -L $contents/MacOS/mupen64plus-video-parallel.dylib
+otool -L $contents/MacOS/simple64-video-parallel.dylib
 
 # Time to create the DMG
 
