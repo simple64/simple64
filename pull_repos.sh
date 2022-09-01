@@ -1,4 +1,4 @@
-git remote add mupen64plus-core https://github.com/loganmc10/mupen64plus-core.git
+git remote add mupen64plus-core https://github.com/simple64/mupen64plus-core.git
 git fetch mupen64plus-core
 git merge -s subtree mupen64plus-core/simple64 --allow-unrelated-histories --squash
 git commit -m "update core"
