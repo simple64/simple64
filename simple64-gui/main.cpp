@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
     srand (time(NULL));
 
     QApplication a(argc, argv);
-    a.setWindowIcon(QIcon(":/simple64.svg"));
+    a.setWindowIcon(QIcon(":/icons/simple64.png"));
 
     QCoreApplication::setApplicationName("simple64-gui");
 
