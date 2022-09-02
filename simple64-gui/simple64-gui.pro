@@ -9,7 +9,7 @@ QT       += widgets websockets
 TARGET = simple64-gui
 TEMPLATE = app
 
-RC_ICONS = simple64.ico
+RC_ICONS = icons/simple64.ico
 
 RESOURCES = simple64-gui.qrc
 
