@@ -131,7 +131,7 @@ void init_device(struct device* dev,
     void* jbds[PIF_CHANNELS_COUNT],
     const struct joybus_device_interface* ijbds[PIF_CHANNELS_COUNT],
     /* vi */
-    unsigned int vi_clock, unsigned int expected_refresh_rate,
+    unsigned int vi_clock,
     /* cart */
     void* af_rtc_clock, const struct clock_backend_interface* iaf_rtc_clock,
     size_t rom_size,
