@@ -24,11 +24,31 @@
 #include <string.h>
 
 #include "api/m64p_types.h"
+#include "api/callbacks.h"
 #include "device/memory/memory.h"
 #include "device/r4300/r4300_core.h"
 #include "device/rcp/mi/mi_controller.h"
 #include "main/main.h"
 #include "plugin/plugin.h"
+
+static void set_vi_vertical_interrupt(struct vi_controller* vi)
+{
+    if (!get_event(&vi->mi->r4300->cp0.q, VI_INT) && (vi->regs[VI_V_INTR_REG] < vi->regs[VI_V_SYNC_REG]))
+    {
+        add_interrupt_event(&vi->mi->r4300->cp0, VI_INT, vi->delay);
+    }
+}
+
+void set_vi_expected_refresh_rate(struct vi_controller* vi)
+{
+    if (vi->regs[VI_V_SYNC_REG] == 0 || vi->regs[VI_H_SYNC_REG] == 0)
+        return;
+    vi->expected_refresh_rate = (double)vi->clock / (vi->regs[VI_V_SYNC_REG] + 1) / ((vi->regs[VI_H_SYNC_REG] & 0xFFF) + 1) * 2;
+    vi->delay = vi->mi->r4300->clock_rate / vi->expected_refresh_rate;
+    vi->count_per_scanline = vi->delay / (vi->regs[VI_V_SYNC_REG] + 1);
+    set_vi_vertical_interrupt(vi);
+    // DebugMessage(M64MSG_INFO, "VI: targeting refresh rate of %0.3f", vi->expected_refresh_rate);
+}
 
 unsigned int vi_clock_from_tv_standard(m64p_system_type tv_standard)
 {
@@ -44,32 +64,10 @@ unsigned int vi_clock_from_tv_standard(m64p_system_type tv_standard)
     }
 }
 
-unsigned int vi_expected_refresh_rate_from_tv_standard(m64p_system_type tv_standard)
-{
-    switch (tv_standard)
-    {
-    case SYSTEM_PAL:
-        return 50;
-    case SYSTEM_NTSC:
-    case SYSTEM_MPAL:
-    default:
-        return 60;
-    }
-}
-
-void set_vi_vertical_interrupt(struct vi_controller* vi)
-{
-    if (!get_event(&vi->mi->r4300->cp0.q, VI_INT) && (vi->regs[VI_V_INTR_REG] < vi->regs[VI_V_SYNC_REG]))
-    {
-        add_interrupt_event(&vi->mi->r4300->cp0, VI_INT, vi->delay);
-    }
-}
-
-void init_vi(struct vi_controller* vi, unsigned int clock, unsigned int expected_refresh_rate,
+void init_vi(struct vi_controller* vi, unsigned int clock,
              struct mi_controller* mi, struct rdp_core* dp)
 {
     vi->clock = clock;
-    vi->expected_refresh_rate = expected_refresh_rate;
     vi->mi = mi;
     vi->dp = dp;
 }
@@ -78,7 +76,8 @@ void poweron_vi(struct vi_controller* vi)
 {
     memset(vi->regs, 0, VI_REGS_COUNT*sizeof(uint32_t));
     vi->field = 0;
-    vi->delay = vi->mi->r4300->clock_rate / vi->expected_refresh_rate;
+    vi->expected_refresh_rate = 0;
+    vi->delay = 0;
     vi->count_per_scanline = 0;
 }
 
@@ -133,12 +132,19 @@ void write_vi_regs(void* opaque, uint32_t address, uint32_t value, uint32_t mask
         clear_rcp_interrupt(vi->mi, MI_INTR_VI);
         return;
 
+    case VI_H_SYNC_REG:
+        if ((vi->regs[VI_H_SYNC_REG] & mask) != (value & mask))
+        {
+            masked_write(&vi->regs[VI_H_SYNC_REG], value, mask);
+            set_vi_expected_refresh_rate(vi);
+        }
+        return;
+
     case VI_V_SYNC_REG:
         if ((vi->regs[VI_V_SYNC_REG] & mask) != (value & mask))
         {
             masked_write(&vi->regs[VI_V_SYNC_REG], value, mask);
-            vi->count_per_scanline = vi->delay / (vi->regs[VI_V_SYNC_REG] + 1);
-            set_vi_vertical_interrupt(vi);
+            set_vi_expected_refresh_rate(vi);
         }
         return;
 
