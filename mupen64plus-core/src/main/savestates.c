@@ -205,7 +205,7 @@ static int savestates_load_m64p(struct device* dev, char *filepath)
     char queue[1024];
     unsigned char using_tlb_data[4];
     unsigned char data_0001_0200[4096]; // 4k for extra state from v1.2
-    unsigned char data_0001_0900[2129940]; // extra state from v1.9
+    unsigned char data_0001_0900[2129944]; // extra state from v1.9
 
     uint32_t* cp0_regs = r4300_cp0_regs(&dev->r4300.cp0);
 
@@ -914,6 +914,9 @@ static int savestates_load_m64p(struct device* dev, char *filepath)
             dev->sp.last_cp0_count = GETDATA(curr, uint32_t);
             dev->sp.next_rsp_run = GETDATA(curr, int32_t);
             dev->sp.rsp_wait = GETDATA(curr, uint32_t);
+
+            /* extra fpu state */
+            dev->r4300.current_rounding_mode = GETDATA(curr, uint32_t);
         }
     }
     else
@@ -1576,7 +1579,7 @@ static int savestates_save_m64p(const struct device* dev, char *filepath)
     save_eventqueue_infos(&dev->r4300.cp0, queue);
 
     // Allocate memory for the save state data
-    save->size = 16788288 + sizeof(queue) + 4 + 4096 + 2129940;
+    save->size = 16788288 + sizeof(queue) + 4 + 4096 + 2129944;
     save->data = curr = malloc(save->size);
     if (save->data == NULL)
     {
@@ -1967,6 +1970,9 @@ static int savestates_save_m64p(const struct device* dev, char *filepath)
     PUTDATA(curr, uint32_t, dev->sp.last_cp0_count);
     PUTDATA(curr, int32_t, dev->sp.next_rsp_run);
     PUTDATA(curr, uint32_t, dev->sp.rsp_wait);
+
+    /* extra fpu state */
+    PUTDATA(curr, uint32_t, dev->r4300.current_rounding_mode);
 
     init_work(&save->work, savestates_save_m64p_work);
     queue_work(&save->work);
