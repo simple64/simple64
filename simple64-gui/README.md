@@ -1,6 +1,6 @@
 # simple64-gui
 
-![simple64](http://i.imgur.com/NIa5Btx.png)
+<img src="https://raw.githubusercontent.com/flathub/io.github.simple64.simple64/master/simple64.png" width="323" height="280">
 
 simple64-gui is written in Qt6.
 
@@ -17,8 +17,6 @@ Enjoy and happy hacking!
 - 7za binary must be installed on your system for 7z/zip support
 
 ## Building (tested on GNU/Linux and MinGW)
-
-On Debian and Ubuntu, you'll want to install ```qt5-default```.
 ```
 git clone https://github.com/simple64/simple64-gui.git
 cd simple64-gui
