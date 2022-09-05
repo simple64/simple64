@@ -78,12 +78,14 @@ extern "C"
 	{
 		// We don't know if Mupen from the outside invalidated our IMEM.
 		if (first_run)
+		{
+			RSP::cpu.get_state().last_instruction_type = RSP::VU_INSTRUCTION;
 			RSP::cpu.invalidate_imem();
+		}
 
 		// Run CPU until we either break or we need to fire an IRQ.
 		RSP::cpu.get_state().pc = *RSP::rsp.SP_PC_REG & 0xfff;
 		RSP::cpu.get_state().instruction_count = 0;
-		RSP::cpu.get_state().last_instruction_type = RSP::VU_INSTRUCTION;
 
 #ifdef INTENSE_DEBUG
 		fprintf(stderr, "RUN TASK: %u\n", RSP::cpu.get_state().pc);
