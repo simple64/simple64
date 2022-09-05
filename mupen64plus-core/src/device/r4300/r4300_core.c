@@ -67,6 +67,7 @@ void init_r4300(struct r4300_core* r4300, struct memory* mem, struct mi_controll
     r4300->clock_rate = 93750000 / 2;
     r4300->cached = 0;
     r4300->current_access_size = ACCESS_NONE;
+    r4300->current_rounding_mode = 0;
     srand((unsigned int) time(NULL));
 }
 

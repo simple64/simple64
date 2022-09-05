@@ -206,6 +206,7 @@ struct r4300_core
 
     uint32_t randomize_interrupt;
 
+    uint32_t current_rounding_mode;
     uint32_t start_address;
     uint32_t clock_rate;
     uint8_t cached;
