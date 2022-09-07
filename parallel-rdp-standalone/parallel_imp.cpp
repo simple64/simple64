@@ -390,10 +390,14 @@ void vk_process_commands()
 			if (vk_synchronous)
 			{
 				if (frame_counter != last_frame_counter) // Only sync once per frame
+				{
 					rdp_sync_signal = processor->signal_timeline();
+					last_frame_counter = frame_counter;
+				}
 				else
+				{
 					rdp_sync_signal = 0;
-				last_frame_counter = frame_counter;
+				}
 			}
 			*gfx.MI_INTR_REG |= DP_INTERRUPT;
 			*GET_GFX_INFO(DPC_STATUS_REG) &= ~(DP_STATUS_PIPE_BUSY | DP_STATUS_START_GCLK);
