@@ -31,6 +31,9 @@ bool vk_vi_aa, vk_vi_scale, vk_dither_filter;
 bool vk_interlacing;
 
 static uint64_t rdp_sync_signal;
+static uint64_t last_frame_counter;
+
+uint64_t frame_counter;
 
 static const unsigned cmd_len_lut[64] = {
 	1, 1, 1, 1, 1, 1, 1, 1, 4, 6, 12, 14, 12, 14, 20, 22,
@@ -378,14 +381,20 @@ void vk_process_commands()
 			return;
 		}
 
-		if (command >= 8 && processor)
+		if (command >= 8)
 			processor->enqueue_command(cmd_length * 2, &cmd_data[2 * cmd_cur]);
 
 		if (RDP::Op(command) == RDP::Op::SyncFull)
 		{
 			// For synchronous RDP:
-			if (vk_synchronous && processor)
-				rdp_sync_signal = processor->signal_timeline();
+			if (vk_synchronous)
+			{
+				if (frame_counter != last_frame_counter) // Only sync once per frame
+					rdp_sync_signal = processor->signal_timeline();
+				else
+					rdp_sync_signal = 0;
+				last_frame_counter = frame_counter;
+			}
 			*gfx.MI_INTR_REG |= DP_INTERRUPT;
 			*GET_GFX_INFO(DPC_STATUS_REG) &= ~(DP_STATUS_PIPE_BUSY | DP_STATUS_START_GCLK);
 			gfx.CheckInterrupts();
@@ -402,7 +411,7 @@ void vk_process_commands()
 
 void vk_full_sync()
 {
-	if (vk_synchronous && processor)
+	if (vk_synchronous && rdp_sync_signal)
 		processor->wait_for_timeline(rdp_sync_signal);
 }
 
@@ -502,5 +511,8 @@ bool vk_init()
 
 	screen_set_mode(window_fullscreen);
 	wsi->begin_frame();
+
+	last_frame_counter = 0;
+	frame_counter = 0;
 	return true;
 }

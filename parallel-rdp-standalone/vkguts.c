@@ -60,4 +60,5 @@ m64p_error screen_get_instance_extensions(const char ** ext[], uint32_t* ext_num
 void screen_frame_count()
 {
     CoreVideo_SwapCounter();
+    ++frame_counter;
 }

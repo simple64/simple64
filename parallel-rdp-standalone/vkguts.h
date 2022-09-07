@@ -21,6 +21,7 @@ extern "C"
     extern uint32_t window_width;
     extern uint32_t window_height;
     extern bool window_vsync;
+    extern uint64_t frame_counter;
 
 #ifdef __cplusplus
 }
