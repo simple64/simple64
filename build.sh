@@ -3,12 +3,11 @@
 set -e
 
 UNAME=$(uname -s)
-if [[ $UNAME == *"MINGW"* ]]; then
-  suffix=".dll"
-  if [[ $UNAME == *"MINGW64"* ]]; then
-    mingw_prefix="mingw64"
+if [[ $UNAME == *"MINGW"* ]]; then suffix=".dll"
+if [[ $UNAME == *"MINGW64"* ]]; then mingw_prefix="mingw64"
   else
     mingw_prefix="mingw32"
+  fi
 else
   suffix=".so"
 fi
