@@ -2,10 +2,6 @@
 
 set -e
 
-TARGET = simple64
-
-all: $(TARGET)
-
 UNAME=$(uname -s)
 if [[ $UNAME == *"MINGW"* ]]; then
   suffix=".dll"
