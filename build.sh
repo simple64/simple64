@@ -2,6 +2,10 @@
 
 set -e
 
+TARGET = simple64
+
+all: $(TARGET)
+
 UNAME=$(uname -s)
 if [[ $UNAME == *"MINGW"* ]]; then
   suffix=".dll"
@@ -9,12 +13,6 @@ if [[ $UNAME == *"MINGW"* ]]; then
     mingw_prefix="mingw64"
   else
     mingw_prefix="mingw32"
-  fi
-elif [[ $UNAME == *"Darwin"* ]]; then
-  suffix=".dylib"
-  qt_version=$(ls /usr/local/Cellar/qt@5)
-  export CXXFLAGS='-stdlib=libc++'
-  export LDFLAGS='-mmacosx-version-min=10.7'
 else
   suffix=".so"
 fi
@@ -67,9 +65,6 @@ qmake6 ../simple64-gui.pro
 make -j4
 if [[ $UNAME == *"MINGW"* ]]; then
   cp $base_dir/simple64-gui/build/release/simple64-gui.exe $install_dir
-elif [[ $UNAME == *"Darwin"* ]]; then
-  /usr/local/Cellar/qt@5/$qt_version/bin/macdeployqt $base_dir/simple64-gui/build/simple64-gui.app
-  cp -a $base_dir/simple64-gui/build/simple64-gui.app $install_dir
 else
   cp $base_dir/simple64-gui/build/simple64-gui $install_dir
 fi
@@ -134,10 +129,6 @@ if [[ $UNAME == *"MINGW"* ]]; then
   cp -v $base_dir/7za.exe $install_dir
   cp -v $base_dir/simple64-gui/discord/discord_game_sdk.dll $install_dir
   cp -v $base_dir/simple64-input-qt/vosk/vosk.dll $install_dir
-elif [[ $UNAME == *"Darwin"* ]]; then
-  cp $base_dir/simple64-gui/discord/discord_game_sdk.dylib $install_dir
-  cd $base_dir
-  sh ./link-mac.sh
 else
   if [[ $HOST_CPU == "i686" ]]; then
     my_os=linux32
@@ -146,13 +137,4 @@ else
   fi
   cp $base_dir/simple64-gui/discord/libdiscord_game_sdk.so $install_dir
   cp $base_dir/simple64-input-qt/vosk/libvosk.so $install_dir
-fi
-
-if [[ "$1" != "nozip" ]]; then
-  if [[ $UNAME != *"Darwin"* ]]; then
-    cd $base_dir
-    rm -f $base_dir/*.zip
-    HASH=$(git rev-parse --short HEAD)
-    zip --symlinks -r simple64-$my_os-$HASH.zip simple64
-  fi
 fi
