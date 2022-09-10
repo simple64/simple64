@@ -40,7 +40,7 @@
 #define KEY_DOWNSCALE "DownScale"
 #define KEY_NATIVETEXTRECT "NativeTextRECT"
 #define KEY_NATIVETEXTLOD "NativeTextLOD"
-#define KEY_DEINTERLACE "DeinterlaceMode"
+#define KEY_DEINTERLACE "DeinterlaceWeave"
 #define KEY_SYNCHRONOUS "SynchronousRDP"
 #define KEY_VSYNC "VSync"
 
