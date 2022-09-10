@@ -213,7 +213,6 @@ void cached_interp_FIN_BLOCK(void)
 #endif
 Used by dynarec only, check should be unnecessary
 */
-        icache_step(r4300);
         (*r4300_pc_struct(r4300))->ops();
     }
     else
@@ -228,7 +227,6 @@ Used by dynarec only, check should be unnecessary
 #endif
 Used by dynarec only, check should be unnecessary
 */
-        icache_step(r4300);
         if (!r4300->skip_jump)
         {
             (*r4300_pc_struct(r4300))->ops();
@@ -262,7 +260,6 @@ void cached_interp_NOTCOMPILED(void)
 The preceeding update_debugger SHOULD be unnecessary since it should have been
 called before NOTCOMPILED would have been executed
 */
-    icache_step(r4300);
     (*r4300_pc_struct(r4300))->ops();
 }
 
