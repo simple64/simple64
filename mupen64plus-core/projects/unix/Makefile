@@ -600,7 +600,7 @@ CFLAGS += -I$(SUBDIR)/md5
 CFLAGS += -I$(SUBDIR)/xxhash
 
 # xdelta
-CFLAGS += -I$(SUBDIR)/xdelta -DSIZEOF_SIZE_T=8 -DSIZEOF_UNSIGNED_LONG_LONG=8
+CFLAGS += -I$(SUBDIR)/xdelta
 
 ifeq ("$(OS)","MINGW")
 SOURCE += \
