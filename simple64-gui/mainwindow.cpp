@@ -367,7 +367,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     updateOpenRecent();
     updateGB(ui);
-    updateDD(ui);
+    // updateDD(ui);
     updatePIF(ui);
 
     if (!settings->contains("configDirPath"))
