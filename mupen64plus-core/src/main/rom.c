@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
@@ -44,11 +45,16 @@
 #include "rom.h"
 #include "util.h"
 
+#include "xdelta3.h"
+#include "xdelta3.c"
+
 #define CHUNKSIZE 1024*128 /* Read files 128KB at a time. */
 
 static romdatabase_entry* ini_search_by_md5(md5_byte_t* md5);
 
 static _romdatabase g_romdatabase;
+
+static uint8_t* rom_copy;
 
 /* Global loaded rom size. */
 int g_rom_size = 0;
@@ -121,6 +127,11 @@ static void swap_copy_rom(void* dst, const void* src, size_t len, unsigned char*
         *imagetype = Z64IMAGE;
         memcpy(dst, src, len);
     }
+}
+
+static char *get_romsave_path(void)
+{
+    return formatstr("%s%s.romsave", get_savesrampath(), ROM_SETTINGS.goodname);
 }
 
 m64p_error open_rom(const unsigned char* romimage, unsigned int size)
@@ -217,11 +228,112 @@ m64p_error open_rom(const unsigned char* romimage, unsigned int size)
     DebugMessage(M64MSG_VERBOSE, "PC = %" PRIX32, tohl(ROM_HEADER.PC));
     DebugMessage(M64MSG_VERBOSE, "Save type: %d", ROM_SETTINGS.savetype);
 
+    rom_copy = malloc(g_rom_size); // Make a copy of the ROM so it can be compared when the ROM is closed
+    memcpy(rom_copy, (uint8_t*)mem_base_u32(g_mem_base, MM_CART_ROM), g_rom_size);
+
+    // Apply existing delta save here
+    FILE* InFile = fopen(get_romsave_path(), "rb");
+    if (InFile != NULL)
+    {
+        DebugMessage(M64MSG_INFO, "Applying cartridge ROM save");
+
+        xd3_config config;
+        xd3_source source;
+        xd3_stream stream;
+        memset (&stream, 0, sizeof (stream));
+        memset (&source, 0, sizeof (source));
+        xd3_init_config(&config, XD3_ADLER32);
+        xd3_config_stream(&stream, &config);
+        source.blksize  = g_rom_size;
+        source.onblk    = g_rom_size;
+        source.curblk   = rom_copy;
+        source.curblkno = 0;
+        xd3_set_source_and_size(&stream, &source, g_rom_size);
+
+        // Read the delta file into memory
+        fseek(InFile, 0L, SEEK_END);
+        size_t sz = ftell(InFile);
+        uint8_t* file_buffer = malloc(sz);
+        fseek(InFile, 0L, SEEK_SET);
+        fread(file_buffer, 1, sz, InFile);
+        fclose(InFile);
+
+        // Apply the delta on to the ROM in memory
+        xd3_avail_input(&stream, file_buffer, sz);
+        int ret = 0;
+        size_t offset = 0;
+        while (ret != XD3_INPUT)
+        {
+            ret = xd3_decode_input(&stream);
+            if (ret == XD3_OUTPUT)
+            {
+                memcpy((uint8_t*)mem_base_u32(g_mem_base, MM_CART_ROM) + offset, stream.next_out, stream.avail_out);
+                offset += stream.avail_out;
+                xd3_consume_output(&stream);
+            }
+        }
+
+        xd3_close_stream(&stream);
+        xd3_free_stream(&stream);
+        free(file_buffer);
+    }
+
     return M64ERR_SUCCESS;
 }
 
 m64p_error close_rom(void)
 {
+    md5_state_t state;
+    md5_byte_t digest[16];
+    char buffer[256];
+    int i;
+
+    if (g_RomWordsLittleEndian) // swap back to native byte order
+        swap_buffer((uint8_t*)mem_base_u32(g_mem_base, MM_CART_ROM), 4, g_rom_size/4);
+    /* Calculate MD5 hash  */
+    md5_init(&state);
+    md5_append(&state, (const md5_byte_t*)((uint8_t*)mem_base_u32(g_mem_base, MM_CART_ROM)), g_rom_size);
+    md5_finish(&state, digest);
+    for ( i = 0; i < 16; ++i )
+        sprintf(buffer+i*2, "%02X", digest[i]);
+    buffer[32] = '\0';
+
+    if (strcmp(ROM_SETTINGS.MD5, buffer) != 0) // Check if ROM data is different from original
+    {
+        DebugMessage(M64MSG_INFO, "Saving cartridge ROM delta to file");
+        // Source is the ROM copy
+        xd3_config config;
+        xd3_source source;
+        xd3_stream stream;
+        memset (&stream, 0, sizeof (stream));
+        memset (&source, 0, sizeof (source));
+        xd3_init_config(&config, XD3_ADLER32);
+        xd3_config_stream(&stream, &config);
+        source.blksize  = g_rom_size;
+        source.onblk    = g_rom_size;
+        source.curblk   = rom_copy;
+        source.curblkno = 0;
+        xd3_set_source_and_size(&stream, &source, g_rom_size);
+
+        // Calculate delta based on original ROM
+        FILE* OutFile = fopen(get_romsave_path(), "wb");
+        xd3_avail_input(&stream, (uint8_t*)mem_base_u32(g_mem_base, MM_CART_ROM), g_rom_size);
+        int ret = 0;
+        while (ret != XD3_INPUT)
+        {
+            ret = xd3_encode_input(&stream);
+            if (ret == XD3_OUTPUT)
+            {
+                fwrite(stream.next_out, 1, stream.avail_out, OutFile);
+                xd3_consume_output(&stream);
+            }
+        }
+        fclose(OutFile);
+        xd3_close_stream(&stream);
+        xd3_free_stream(&stream);
+    }
+    free(rom_copy);
+
     /* Clear Byte-swapped flag, since ROM is now deleted. */
     g_RomWordsLittleEndian = 0;
     DebugMessage(M64MSG_STATUS, "Rom closed.");

@@ -90,10 +90,16 @@ void write_cart_rom(void* opaque, uint32_t address, uint32_t value, uint32_t mas
 
 uint32_t cart_rom_dma_read(void* opaque, const uint8_t* dram, uint32_t dram_addr, uint32_t cart_addr, uint32_t length)
 {
+    size_t i;
     struct cart_rom* cart_rom = (struct cart_rom*)opaque;
-    cart_addr &= CART_ROM_ADDR_MASK;
+    uint8_t* mem = cart_rom->rom;
 
-    DebugMessage(M64MSG_WARNING, "DMA Writing to CART_ROM: 0x%" PRIX32 " -> 0x%" PRIX32 " (0x%" PRIX32 ")", dram_addr, cart_addr, length);
+    cart_addr &= CART_ROM_ADDR_MASK;
+    DebugMessage(M64MSG_INFO, "DMA Writing to CART_ROM: 0x%" PRIX32 " -> 0x%" PRIX32 " (0x%" PRIX32 ")", dram_addr, cart_addr, length);
+
+    for (i = 0; i < length; ++i)
+        mem[(cart_addr+i)^S8] = dram[(dram_addr+i)^S8];
+
     return pi_calculate_cycles(cart_rom->pi, 1, length);
 }
 
