@@ -45,6 +45,9 @@
 #include "rom.h"
 #include "util.h"
 
+#define SIZEOF_SIZE_T 8
+#define SIZEOF_UNSIGNED_LONG_LONG 8
+#define HAVE_ALIGNED_ACCESS_REQUIRED
 #include "xdelta3.h"
 #include "xdelta3.c"
 
