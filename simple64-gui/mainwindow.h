@@ -70,6 +70,8 @@ public slots:
     void addFrameCount();
 
 private slots:
+    void killThread();
+
     void updateFrameCount();
 
     void discordCallback();
@@ -149,6 +151,7 @@ private:
     KeyPressFilter keyPressFilter;
     QTimer *frame_timer = nullptr;
     QLabel *FPSLabel = nullptr;
+    QTimer *kill_timer = nullptr;
 
     m64p_dynlib_handle coreLib;
     m64p_dynlib_handle rspPlugin;
