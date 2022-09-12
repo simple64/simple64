@@ -335,6 +335,12 @@ m64p_error close_rom(void)
         xd3_close_stream(&stream);
         xd3_free_stream(&stream);
     }
+    else
+    {
+        // If there is no delta, make sure no .romsave file exists
+        // This deals with a situation where there was a delta, but there isn't anymore
+        remove(get_romsave_path());
+    }
     free(rom_copy);
 
     /* Clear Byte-swapped flag, since ROM is now deleted. */
