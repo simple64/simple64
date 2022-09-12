@@ -127,6 +127,7 @@ static char* media_loader_get_gb_cart_ram(void*, int control_id)
     }
 }
 
+/*
 static char* media_loader_get_dd_rom(void*)
 {
     QString pathname = w->getSettings()->value("DD_ROM").toString();
@@ -151,6 +152,7 @@ static char* media_loader_get_dd_disk(void*)
     }
 
 }
+*/
 
 static m64p_media_loader media_loader =
 {
@@ -158,8 +160,8 @@ static m64p_media_loader media_loader =
     media_loader_get_gb_cart_rom,
     media_loader_get_gb_cart_ram,
     NULL,
-    media_loader_get_dd_rom,
-    media_loader_get_dd_disk
+    NULL,
+    NULL
 };
 
 m64p_error loadROM(QString filename)
