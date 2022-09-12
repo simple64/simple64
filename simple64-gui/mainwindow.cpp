@@ -694,6 +694,12 @@ void MainWindow::deleteVkWindow()
     FPSLabel->clear();
 }
 
+void MainWindow::killThread()
+{
+    printf("Application hung, exiting\n");
+    exit(1); // Force kill the application, it's stuck
+}
+
 void MainWindow::stopGame()
 {
     if (!coreLib) return;
@@ -703,8 +709,15 @@ void MainWindow::stopGame()
     if (response != M64EMU_STOPPED)
     {
         (*CoreDoCommand)(M64CMD_STOP, 0, NULL);
+        kill_timer = new QTimer(this);
+        kill_timer->setInterval(5000);
+        kill_timer->setSingleShot(true);
+        connect(kill_timer, &QTimer::timeout, this, &MainWindow::killThread);
+        kill_timer->start();
         while (workerThread->isRunning())
             QCoreApplication::processEvents();
+        kill_timer->stop();
+        kill_timer->deleteLater();
     }
 }
 
