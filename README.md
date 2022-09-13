@@ -13,3 +13,6 @@
 # Wiki
 
 **https://github.com/simple64/simple64/wiki**
+
+Check the Wiki page Simple64 FAQ for CPU and GPU requirements. 
+**Do this before asking for help!**
