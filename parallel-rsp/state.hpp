@@ -144,6 +144,7 @@ struct CPUState
 	uint32_t pc = 0;
 	uint32_t instruction_count = 0;
 	uint32_t last_instruction_type = 0;
+	uint32_t did_mfc0 = 0;
 	uint32_t dirty_blocks = 0;
 	static_assert(CODE_BLOCKS <= 32, "Code blocks must fit in 32-bit register.");
 

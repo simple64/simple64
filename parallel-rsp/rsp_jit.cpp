@@ -909,7 +909,11 @@ void CPU::jit_instruction(jit_state_t *_jit, uint32_t pc, uint32_t instr,
 
 		auto *vuop = ops[op];
 		if (!vuop)
+		{
+			printf("UNKNOWN RSP VU COMMAND %u\n", op);
+			exit(1);
 			vuop = RSP_RESERVED;
+		}
 
 		regs.flush_caller_save_registers(_jit);
 		jit_begin_call(_jit);
@@ -1731,6 +1735,8 @@ void CPU::jit_instruction(jit_state_t *_jit, uint32_t pc, uint32_t instr,
 	}
 
 	default:
+		printf("UNKNOWN RSP SU COMMAND %o\n", type);
+		exit(1);
 		break;
 	}
 }
@@ -1967,8 +1973,6 @@ ReturnMode CPU::run()
 		{
 		case MODE_BREAK:
 			*state.cp0.cr[CP0_REGISTER_SP_STATUS] |= SP_STATUS_BROKE | SP_STATUS_HALT;
-			if (*state.cp0.cr[CP0_REGISTER_SP_STATUS] & SP_STATUS_INTR_BREAK)
-				*state.cp0.irq |= 1;
 #ifndef PARALLEL_INTEGRATION
 			print_registers();
 #endif
@@ -1980,7 +1984,10 @@ ReturnMode CPU::run()
 			return static_cast<ReturnMode>(ret);
 
 		default:
-			break;
+			if (state.did_mfc0)
+				return static_cast<ReturnMode>(MODE_EXIT);
+			else
+				break;
 		}
 	}
 }

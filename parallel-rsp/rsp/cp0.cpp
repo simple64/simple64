@@ -6,8 +6,6 @@
 namespace RSP
 {
 extern RSP_INFO rsp;
-extern uint32_t MFC0_count[32];
-extern uint32_t SP_STATUS_TIMEOUT;
 } // namespace RSP
 #endif
 
@@ -29,20 +27,19 @@ extern "C"
 
 #ifdef PARALLEL_INTEGRATION
 		// WAIT_FOR_CPU_HOST. From CXD4.
-		if (rd == CP0_REGISTER_SP_STATUS)
+		if (rd == CP0_REGISTER_SP_RESERVED)
 		{
-			--rsp->instruction_count; // Some games check the STATUS reg more than normal since we don't really yield properly
-			RSP::MFC0_count[rt] += 1;
-		}
-		else if (rd == CP0_REGISTER_SP_RESERVED)
-		{
-			rsp->instruction_count += 2; // Needed for DK64
-			RSP::MFC0_count[rt] += 1;
+			rsp->instruction_count += 4; // Needed for DK64
 			*rsp->cp0.cr[CP0_REGISTER_SP_RESERVED] = 1;
+			rsp->did_mfc0 = 1;
+			return MODE_EXIT;
 		}
 		// We don't return control to the CPU if the RDP FREEZE bit is set, doing so seems to cause flickering
-		if (RSP::MFC0_count[rt] >= RSP::SP_STATUS_TIMEOUT && (*rsp->cp0.cr[CP0_REGISTER_CMD_STATUS] & DPC_STATUS_FREEZE) == 0)
+		else if (rd == CP0_REGISTER_SP_STATUS && (*rsp->cp0.cr[CP0_REGISTER_CMD_STATUS] & DPC_STATUS_FREEZE) == 0)
+		{
+			rsp->did_mfc0 = 1;
 			return MODE_EXIT;
+		}
 #endif
 
 		//if (rd == 4) // SP_STATUS_REG
