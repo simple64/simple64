@@ -159,7 +159,6 @@ static void update_sp_status(struct rsp_core* sp, uint32_t w)
     if ((w & SP_CLR_INTR) && !(w & SP_SET_INTR))
     {
         clear_rcp_interrupt(sp->mi, MI_INTR_SP);
-        sp->rsp_wait &= ~WAIT_PENDING_SP_INT;
     }
     /* set SP interrupt */
     if ((w & SP_SET_INTR) && !(w & SP_CLR_INTR))
@@ -172,7 +171,19 @@ static void update_sp_status(struct rsp_core* sp, uint32_t w)
     if ((w & SP_SET_SSTEP) && !(w & SP_CLR_SSTEP)) sp->regs[SP_STATUS_REG] |= SP_STATUS_SSTEP;
 
     /* clear / set interrupt on break */
-    if ((w & SP_CLR_INTR_BREAK) && !(w & SP_SET_INTR_BREAK)) sp->regs[SP_STATUS_REG] &= ~SP_STATUS_INTR_BREAK;
+    if ((w & SP_CLR_INTR_BREAK) && !(w & SP_SET_INTR_BREAK))
+    {
+        if (sp->rsp_wait & WAIT_PENDING_SP_INT_BROKE)
+        {
+            // If a game clears SP_SET_INTR_BREAK before the interrupt happens,
+            // that means it would have been cleared before the BREAK command
+            remove_event(&sp->mi->r4300->cp0.q, SP_INT);
+            sp->rsp_wait &= ~WAIT_PENDING_SP_INT_BROKE;
+            sp->regs[SP_STATUS_REG] = sp->rsp_status;
+            sp->rsp_status = 0;
+        }
+        sp->regs[SP_STATUS_REG] &= ~SP_STATUS_INTR_BREAK;
+    }
     if ((w & SP_SET_INTR_BREAK) && !(w & SP_CLR_INTR_BREAK)) sp->regs[SP_STATUS_REG] |= SP_STATUS_INTR_BREAK;
 
     /* clear / set signal 0 */
@@ -333,12 +344,14 @@ void do_SP_Task(struct rsp_core* sp)
         return;
 
     uint32_t saved_status = sp->regs[SP_STATUS_REG];
+    uint32_t sp_bit_set = sp->mi->regs[MI_INTR_REG] & MI_INTR_SP;
+    uint32_t dp_bit_set = sp->mi->regs[MI_INTR_REG] & MI_INTR_DP;
 
     unprotect_framebuffers(&sp->dp->fb);
     uint32_t rsp_cycles = rsp.doRspCycles(sp->first_run) / 2;
     protect_framebuffers(&sp->dp->fb);
 
-    if (sp->mi->regs[MI_INTR_REG] & MI_INTR_DP)
+    if (sp->mi->regs[MI_INTR_REG] & MI_INTR_DP && !dp_bit_set)
     {
         sp->mi->regs[MI_INTR_REG] &= ~MI_INTR_DP;
         sp->mi->r4300->cp0.interrupt_unsafe_state |= INTR_UNSAFE_RDP;
@@ -364,17 +377,18 @@ void do_SP_Task(struct rsp_core* sp)
     }
     if ((sp->regs[SP_STATUS_REG] & SP_STATUS_BROKE) && (sp->regs[SP_STATUS_REG] & SP_STATUS_INTR_BREAK))
     {
-        sp->rsp_wait |= WAIT_PENDING_SP_INT;
+        sp->rsp_wait |= WAIT_PENDING_SP_INT_BROKE;
         add_interrupt_event(&sp->mi->r4300->cp0, SP_INT, rsp_cycles);
         sp->regs[SP_STATUS_REG] = saved_status;
     }
-    else if (sp->mi->regs[MI_INTR_REG] & MI_INTR_SP)
+    else if (sp->mi->regs[MI_INTR_REG] & MI_INTR_SP && !sp_bit_set)
     {
         sp->rsp_wait |= WAIT_PENDING_SP_INT;
         add_interrupt_event(&sp->mi->r4300->cp0, SP_INT, rsp_cycles);
     }
     sp->mi->r4300->cp0.interrupt_unsafe_state |= INTR_UNSAFE_RSP;
-    sp->mi->regs[MI_INTR_REG] &= ~MI_INTR_SP;
+    if (!sp_bit_set)
+        sp->mi->regs[MI_INTR_REG] &= ~MI_INTR_SP;
 }
 
 void rsp_interrupt_event(void* opaque)
@@ -385,6 +399,7 @@ void rsp_interrupt_event(void* opaque)
     sp->rsp_status = 0;
     sp->mi->r4300->cp0.interrupt_unsafe_state &= ~INTR_UNSAFE_RSP;
     raise_rcp_interrupt(sp->mi, MI_INTR_SP);
+    sp->rsp_wait &= ~(WAIT_PENDING_SP_INT | WAIT_PENDING_SP_INT_BROKE);
 }
 
 void rsp_end_of_dma_event(void* opaque)

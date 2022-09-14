@@ -113,9 +113,10 @@ enum sp_dma_dir
 
 enum sp_rsp_wait
 {
-    WAIT_PENDING_SP_INT  = 0x1,
-    WAIT_PENDING_DP_SYNC = 0x2,
-    WAIT_HALTED          = 0x4
+    WAIT_PENDING_SP_INT_BROKE = 0x1,
+    WAIT_PENDING_SP_INT       = 0x2,
+    WAIT_PENDING_DP_SYNC      = 0x4,
+    WAIT_HALTED               = 0x8
 };
 
 enum { SP_DMA_FIFO_SIZE = 2} ;
