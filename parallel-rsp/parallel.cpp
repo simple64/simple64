@@ -43,8 +43,6 @@ RSP::CPU cpu;
 #else
 RSP::JIT::CPU cpu;
 #endif
-uint32_t MFC0_count[32];
-uint32_t SP_STATUS_TIMEOUT;
 } // namespace RSP
 
 extern "C"
@@ -86,14 +84,12 @@ extern "C"
 		// Run CPU until we either break or we need to fire an IRQ.
 		RSP::cpu.get_state().pc = *RSP::rsp.SP_PC_REG & 0xfff;
 		RSP::cpu.get_state().instruction_count = 0;
+		RSP::cpu.get_state().did_mfc0 = 0;
 
 #ifdef INTENSE_DEBUG
 		fprintf(stderr, "RUN TASK: %u\n", RSP::cpu.get_state().pc);
 		log_rsp_mem_parallel();
 #endif
-
-		for (auto &count : RSP::MFC0_count)
-			count = 0;
 
 		while (!(*RSP::rsp.SP_STATUS_REG & SP_STATUS_HALT))
 		{
@@ -105,12 +101,6 @@ extern "C"
 		}
 
 		*RSP::rsp.SP_PC_REG = (RSP::cpu.get_state().pc & 0xffc);
-
-		// From CXD4.
-		if (*RSP::rsp.SP_STATUS_REG & SP_STATUS_BROKE)
-			return RSP::cpu.get_state().instruction_count * 1.5; // Converting RCP clock rate to CPU clock rate
-		else if (*RSP::cpu.get_state().cp0.irq & 1)
-			RSP::rsp.CheckInterrupts();
 
 		return RSP::cpu.get_state().instruction_count * 1.5; // Converting RCP clock rate to CPU clock rate
 	}
@@ -173,9 +163,6 @@ extern "C"
 
 		*cr[RSP::CP0_REGISTER_SP_STATUS] = SP_STATUS_HALT;
 		RSP::cpu.get_state().cp0.irq = RSP::rsp.MI_INTR_REG;
-
-		// From CXD4.
-		RSP::SP_STATUS_TIMEOUT = 256;
 
 		RSP::cpu.set_dmem(reinterpret_cast<uint32_t *>(Rsp_Info.DMEM));
 		RSP::cpu.set_imem(reinterpret_cast<uint32_t *>(Rsp_Info.IMEM));
