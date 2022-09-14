@@ -217,7 +217,6 @@ Used by dynarec only, check should be unnecessary
     }
     else
     {
-        struct precomp_block *blk = r4300->cached_interp.actual;
         struct precomp_instr *inst = (*r4300_pc_struct(r4300));
         generic_jump_to(r4300, ((*r4300_pc_struct(r4300))-1)->addr+4);
 
@@ -230,8 +229,7 @@ Used by dynarec only, check should be unnecessary
         if (!r4300->skip_jump)
         {
             (*r4300_pc_struct(r4300))->ops();
-            r4300->cached_interp.actual = blk;
-            (*r4300_pc_struct(r4300)) = inst+1;
+            generic_jump_to(r4300, inst->addr+4);
         }
         else
             (*r4300_pc_struct(r4300))->ops();
@@ -364,7 +362,7 @@ static int infer_jump_sub_type(uint32_t target, uint32_t pc, uint32_t next_iw, c
     }
     else {
         /* test if target is outside of block, or if we're at the end of block */
-        if (target < block->start || target >= block->end || (pc == (block->end - 4))) {
+        if (target < block->start || target >= block->end || (pc >= (block->end - 4))) {
             return 2;
         }
     }
