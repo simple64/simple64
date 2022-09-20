@@ -37,7 +37,7 @@ void poweron_icache(struct instcache *lines)
 void icache_writeback(struct r4300_core* r4300, struct instcache *line)
 {
     cp0_icb_interlock(r4300, rdram_calculate_cycles(32));
-    uint32_t cache_address = line->tag | line->index;
+    uint32_t cache_address = (line->tag | line->index) & UINT32_C(0x1ffffffc);
     invalidate_r4300_cached_code(r4300, R4300_KSEG0 + cache_address, 32);
     invalidate_r4300_cached_code(r4300, R4300_KSEG1 + cache_address, 32);
     const struct mem_handler* handler = mem_get_handler(r4300->mem, cache_address);
@@ -57,7 +57,7 @@ void icache_fill(struct instcache *line, struct r4300_core* r4300, uint32_t addr
     line->valid = 1;
     line->tag = address & ~UINT32_C(0xFFF);
     r4300->current_access_size = ACCESS_ICACHE;
-    uint32_t cache_address = line->tag | line->index;
+    uint32_t cache_address = (line->tag | line->index) & UINT32_C(0x1ffffffc);
     const struct mem_handler* handler = mem_get_handler(r4300->mem, cache_address);
     mem_read32(handler, cache_address | UINT32_C(0x0), &line->words[0]);
     mem_read32(handler, cache_address | UINT32_C(0x4), &line->words[1]);
