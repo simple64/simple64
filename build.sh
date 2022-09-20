@@ -128,7 +128,6 @@ if [[ $UNAME == *"MINGW"* ]]; then
   cp -v /$mingw_prefix/bin/libbz2-1.dll $install_dir
   cp -v /$mingw_prefix/bin/libgraphite2.dll $install_dir
   cp -v /$mingw_prefix/bin/libintl-8.dll $install_dir
-  cp -v /$mingw_prefix/bin/libpcre-1.dll $install_dir
   cp -v /$mingw_prefix/bin/libiconv-2.dll $install_dir
   cp -v /$mingw_prefix/bin/libhidapi-0.dll $install_dir
   cp -v $base_dir/7za.exe $install_dir
