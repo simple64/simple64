@@ -37,7 +37,7 @@ struct datacache
 
 static osal_inline uint8_t dcache_hit(struct datacache *line, uint32_t address)
 {
-    return line->valid && line->tag == (address & ~UINT32_C(0xFFF));
+    return line->valid && (line->tag & UINT32_C(0x1ffffffc)) == (address & ~UINT32_C(0xFFF));
 }
 
 void poweron_dcache(struct datacache *lines);
