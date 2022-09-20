@@ -117,6 +117,7 @@ if [[ $UNAME == *"MINGW"* ]]; then
   cp -v /$mingw_prefix/bin/libbrotlidec.dll $install_dir
   cp -v /$mingw_prefix/bin/libbrotlicommon.dll $install_dir
   cp -v /$mingw_prefix/bin/libpcre2-16-0.dll $install_dir
+  cp -v /$mingw_prefix/bin/libpcre2-8-0.dll $install_dir
   cp -v /$mingw_prefix/bin/libharfbuzz-0.dll $install_dir
   cp -v /$mingw_prefix/bin/libb2-1.dll $install_dir
   cp -v /$mingw_prefix/bin/libmd4c.dll $install_dir
