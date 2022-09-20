@@ -860,14 +860,14 @@ void cached_interp_recompile_block(struct r4300_core* r4300, const uint32_t* iw,
         if (block_start_in_tlb)
         {
             uint32_t address2 = virtual_to_physical_address(r4300, inst->addr, 0, &inst->cached);
-            inst->phys_addr = address2;
+            inst->phys_addr = address2 & UINT32_C(0x1ffffffc);
             if (r4300->cached_interp.blocks[address2>>12]->block[(address2&UINT32_C(0xFFF))/4].ops == cached_interp_NOTCOMPILED) {
                 r4300->cached_interp.blocks[address2>>12]->block[(address2&UINT32_C(0xFFF))/4].ops = cached_interp_NOTCOMPILED2;
             }
         }
         else
         {
-            inst->phys_addr = inst->addr;
+            inst->phys_addr = inst->addr & UINT32_C(0x1ffffffc);
             inst->cached = (!(inst->addr & UINT32_C(0x20000000))) ? 1 : 0;
         }
         inst->icache_line = &r4300->icache[(inst->phys_addr >> 5) & UINT32_C(0x1FF)];
