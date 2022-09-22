@@ -176,15 +176,15 @@ void MainWindow::updateGB(Ui::MainWindow *ui)
 
     QAction *fileSelect2 = new QAction(this);
     current = settings->value("Player1GBRAM").toString();
-    fileSelect2->setText("Player 1 RAM: " + current);
+    fileSelect2->setText("Player 1 SAV: " + current);
     GB->addAction(fileSelect2);
     connect(fileSelect2, &QAction::triggered,[=](){
         QString filename = QFileDialog::getOpenFileName(this,
-            tr("GB RAM File"), NULL, tr("GB RAM Files (*.sav)"));
+            tr("GB RAM File"), NULL, tr("GB SAV Files (*.sav)"));
         if (!filename.isNull()) {
             settings->setValue("Player1GBRAM", filename);
             QString current = filename;
-            fileSelect2->setText("Player 1 RAM: " + current);
+            fileSelect2->setText("Player 1 SAV: " + current);
         }
     });
 
@@ -195,7 +195,7 @@ void MainWindow::updateGB(Ui::MainWindow *ui)
         settings->remove("Player1GBROM");
         settings->remove("Player1GBRAM");
         fileSelect->setText("Player 1 ROM: ");
-        fileSelect2->setText("Player 1 RAM: ");
+        fileSelect2->setText("Player 1 SAV: ");
     });
     GB->addSeparator();
 
@@ -215,15 +215,15 @@ void MainWindow::updateGB(Ui::MainWindow *ui)
 
     fileSelect2 = new QAction(this);
     current = settings->value("Player2GBRAM").toString();
-    fileSelect2->setText("Player 2 RAM: " + current);
+    fileSelect2->setText("Player 2 SAV: " + current);
     GB->addAction(fileSelect2);
     connect(fileSelect2, &QAction::triggered,[=](){
         QString filename = QFileDialog::getOpenFileName(this,
-            tr("GB RAM File"), NULL, tr("GB RAM Files (*.sav)"));
+            tr("GB RAM File"), NULL, tr("GB SAV Files (*.sav)"));
         if (!filename.isNull()) {
             settings->setValue("Player2GBRAM", filename);
             QString current = filename;
-            fileSelect2->setText("Player 2 RAM: " + current);
+            fileSelect2->setText("Player 2 SAV: " + current);
         }
     });
 
@@ -234,7 +234,7 @@ void MainWindow::updateGB(Ui::MainWindow *ui)
         settings->remove("Player2GBROM");
         settings->remove("Player2GBRAM");
         fileSelect->setText("Player 2 ROM: ");
-        fileSelect2->setText("Player 2 RAM: ");
+        fileSelect2->setText("Player 2 SAV: ");
     });
     GB->addSeparator();
 
@@ -254,15 +254,15 @@ void MainWindow::updateGB(Ui::MainWindow *ui)
 
     fileSelect2 = new QAction(this);
     current = settings->value("Player3GBRAM").toString();
-    fileSelect2->setText("Player 3 RAM: " + current);
+    fileSelect2->setText("Player 3 SAV: " + current);
     GB->addAction(fileSelect2);
     connect(fileSelect2, &QAction::triggered,[=](){
         QString filename = QFileDialog::getOpenFileName(this,
-            tr("GB RAM File"), NULL, tr("GB RAM Files (*.sav)"));
+            tr("GB RAM File"), NULL, tr("GB SAV Files (*.sav)"));
         if (!filename.isNull()) {
             settings->setValue("Player3GBRAM", filename);
             QString current = filename;
-            fileSelect2->setText("Player 3 RAM: " + current);
+            fileSelect2->setText("Player 3 SAV: " + current);
         }
     });
 
@@ -273,7 +273,7 @@ void MainWindow::updateGB(Ui::MainWindow *ui)
         settings->remove("Player3GBROM");
         settings->remove("Player3GBRAM");
         fileSelect->setText("Player 3 ROM: ");
-        fileSelect2->setText("Player 3 RAM: ");
+        fileSelect2->setText("Player 3 SAV: ");
     });
     GB->addSeparator();
 
@@ -293,15 +293,15 @@ void MainWindow::updateGB(Ui::MainWindow *ui)
 
     fileSelect2 = new QAction(this);
     current = settings->value("Player4GBRAM").toString();
-    fileSelect2->setText("Player 4 RAM: " + current);
+    fileSelect2->setText("Player 4 SAV: " + current);
     GB->addAction(fileSelect2);
     connect(fileSelect2, &QAction::triggered,[=](){
         QString filename = QFileDialog::getOpenFileName(this,
-            tr("GB RAM File"), NULL, tr("GB RAM Files (*.sav)"));
+            tr("GB RAM File"), NULL, tr("GB SAV Files (*.sav)"));
         if (!filename.isNull()) {
             settings->setValue("Player4GBRAM", filename);
             QString current = filename;
-            fileSelect2->setText("Player 4 RAM: " + current);
+            fileSelect2->setText("Player 4 SAV: " + current);
         }
     });
 
@@ -312,7 +312,7 @@ void MainWindow::updateGB(Ui::MainWindow *ui)
         settings->remove("Player4GBROM");
         settings->remove("Player4GBRAM");
         fileSelect->setText("Player 4 ROM: ");
-        fileSelect2->setText("Player 4 RAM: ");
+        fileSelect2->setText("Player 4 SAV: ");
     });
 }
 
@@ -910,6 +910,11 @@ void MainWindow::on_actionJoin_Room_triggered()
 void MainWindow::on_actionSupport_on_Patreon_triggered()
 {
     QDesktopServices::openUrl(QUrl("https://www.patreon.com/loganmc10"));
+}
+
+void MainWindow::on_actionSupport_on_GithubSponser_triggered()
+{
+    QDesktopServices::openUrl(QUrl("https://github.com/sponsors/loganmc10"));
 }
 
 void MainWindow::on_actionOpen_Discord_Channel_triggered()
