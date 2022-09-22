@@ -70,13 +70,20 @@
     </property>
     <addaction name="actionCreate_Room"/>
     <addaction name="actionJoin_Room"/>
+   </widget>
+   <widget class="QMenu" name="menuCommunity">
+    <property name="title">
+     <string>Community</string>
+    </property>
     <addaction name="actionOpen_Discord_Channel"/>
     <addaction name="actionSupport_on_Patreon"/>
+    <addaction name="actionSupport_on_GithubSponser"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEmulation"/>
    <addaction name="menuSettings"/>
    <addaction name="menuNetplay"/>
+   <addaction name="menuCommunity"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionOpen_ROM">
@@ -91,12 +98,12 @@
   </action>
   <action name="actionPlugin_Paths">
    <property name="text">
-    <string>Plugin and Path Selection</string>
+    <string>Input Plugin and Config Path Selection</string>
    </property>
   </action>
   <action name="actionStop_Game">
    <property name="text">
-    <string>Stop Game (Escape)</string>
+    <string>Stop Emulation (Escape)</string>
    </property>
   </action>
   <action name="actionPlugin_Settings">
@@ -194,9 +201,14 @@
     <string>Support on Patreon</string>
    </property>
   </action>
+  <action name="actionSupport_on_GithubSponser">
+   <property name="text">
+    <string>Support on GitHub</string>
+   </property>
+  </action>
   <action name="actionOpen_Discord_Channel">
    <property name="text">
-    <string>Join Discord Channel</string>
+    <string>Join Discord Server</string>
    </property>
   </action>
  </widget>
