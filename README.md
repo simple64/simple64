@@ -8,7 +8,7 @@
 
 #### Linux: **https://flathub.org/apps/details/io.github.simple64.simple64**
 
-#### Mac OS: No releases currently, requires a maintainer. See also https://github.com/Themaister/parallel-rdp/issues/20
+#### Mac OS: No releases currently, requires a maintainer.
 
 # Wiki
 
