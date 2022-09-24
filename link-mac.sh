@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 contents=simple64/simple64-gui.app/Contents
 
 # Get files in correct directories
