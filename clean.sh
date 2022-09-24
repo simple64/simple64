@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 rm -rf simple64
 rm -rf simple64-audio-sdl2/projects/unix/_obj
 rm -rf simple64-audio-sdl2/projects/unix/simple64-audio-sdl2.dylib
