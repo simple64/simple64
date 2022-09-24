@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-linux:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     container: registry.fedoraproject.org/fedora:latest
     steps:
       - uses: actions/checkout@v3
