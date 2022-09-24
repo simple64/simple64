@@ -14,7 +14,7 @@ elif [[ $UNAME == *"Darwin"* ]]; then
   suffix=".dylib"
   qt_version=$(ls /usr/local/Cellar/qt@5)
   export CXXFLAGS='-stdlib=libc++'
-  export LDFLAGS='-mmacosx-version-min=10.7'
+  export LDFLAGS='-mmacosx-version-min=11.0'
 else
   suffix=".so"
 fi
