@@ -79,7 +79,7 @@ void InitAudio()
     if(hardware_spec != NULL) free(hardware_spec);
     desired = malloc(sizeof(SDL_AudioSpec));
     obtained = malloc(sizeof(SDL_AudioSpec));
-    desired->freq = 44100;
+    desired->freq = 48000;
     desired->format = AUDIO_S16SYS;
     desired->channels = 2;
     desired->samples = 16;
