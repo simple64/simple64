@@ -15,6 +15,7 @@ mv simple64/simple64-video-parallel.dylib $contents/MacOS
 mv simple64/mupen64plus.ini $contents/MacOS
 mv simple64/mupencheat.txt $contents/MacOS
 mv simple64/discord_game_sdk.dylib $contents/MacOS
+mv simple64/libvosk.dylib $contents/MacOS
 
 # SDL
 cp /usr/local/opt/sdl2_net/lib/libSDL2-2.0.0.dylib $contents/Frameworks
