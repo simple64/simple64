@@ -12,7 +12,7 @@ if [[ $UNAME == *"MINGW"* ]]; then
   fi
 elif [[ $UNAME == *"Darwin"* ]]; then
   suffix=".dylib"
-  qt_version=$(ls /usr/local/Cellar/qt@5)
+  qt_version=$(ls /usr/local/Cellar/qt)
   export CXXFLAGS='-stdlib=libc++'
   export LDFLAGS='-mmacosx-version-min=11.0'
 else
@@ -68,7 +68,7 @@ make -j4
 if [[ $UNAME == *"MINGW"* ]]; then
   cp $base_dir/simple64-gui/build/release/simple64-gui.exe $install_dir
 elif [[ $UNAME == *"Darwin"* ]]; then
-  /usr/local/Cellar/qt@5/$qt_version/bin/macdeployqt $base_dir/simple64-gui/build/simple64-gui.app
+  /usr/local/Cellar/qt/$qt_version/bin/macdeployqt $base_dir/simple64-gui/build/simple64-gui.app
   cp -a $base_dir/simple64-gui/build/simple64-gui.app $install_dir
 else
   cp $base_dir/simple64-gui/build/simple64-gui $install_dir
