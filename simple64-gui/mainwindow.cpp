@@ -180,7 +180,7 @@ void MainWindow::updateGB(Ui::MainWindow *ui)
     GB->addAction(fileSelect2);
     connect(fileSelect2, &QAction::triggered,[=](){
         QString filename = QFileDialog::getOpenFileName(this,
-            tr("GB RAM File"), NULL, tr("GB SAV Files (*.sav)"));
+            tr("GB RAM File"), NULL, tr("GB SAV Files (*.sav *.ram)"));
         if (!filename.isNull()) {
             settings->setValue("Player1GBRAM", filename);
             QString current = filename;
@@ -219,7 +219,7 @@ void MainWindow::updateGB(Ui::MainWindow *ui)
     GB->addAction(fileSelect2);
     connect(fileSelect2, &QAction::triggered,[=](){
         QString filename = QFileDialog::getOpenFileName(this,
-            tr("GB RAM File"), NULL, tr("GB SAV Files (*.sav)"));
+            tr("GB RAM File"), NULL, tr("GB SAV Files (*.sav *.ram)"));
         if (!filename.isNull()) {
             settings->setValue("Player2GBRAM", filename);
             QString current = filename;
@@ -258,7 +258,7 @@ void MainWindow::updateGB(Ui::MainWindow *ui)
     GB->addAction(fileSelect2);
     connect(fileSelect2, &QAction::triggered,[=](){
         QString filename = QFileDialog::getOpenFileName(this,
-            tr("GB RAM File"), NULL, tr("GB SAV Files (*.sav)"));
+            tr("GB RAM File"), NULL, tr("GB SAV Files (*.sav *.ram)"));
         if (!filename.isNull()) {
             settings->setValue("Player3GBRAM", filename);
             QString current = filename;
@@ -297,7 +297,7 @@ void MainWindow::updateGB(Ui::MainWindow *ui)
     GB->addAction(fileSelect2);
     connect(fileSelect2, &QAction::triggered,[=](){
         QString filename = QFileDialog::getOpenFileName(this,
-            tr("GB RAM File"), NULL, tr("GB SAV Files (*.sav)"));
+            tr("GB RAM File"), NULL, tr("GB SAV Files (*.sav *.ram)"));
         if (!filename.isNull()) {
             settings->setValue("Player4GBRAM", filename);
             QString current = filename;
