@@ -1,0 +1,7 @@
+{
+    "shellcheck.enable": true,
+    "shellcheck.customArgs": [
+        "-o",
+        "all"
+    ],
+}
