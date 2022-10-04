@@ -50,16 +50,20 @@ make V=1 -j4 all
 cp "${base_dir}/simple64-audio-sdl2/projects/unix/"*"${suffix}" "${install_dir}"
 
 cd "${base_dir}"
-GUI_DIRECTORY=${base_dir}/simple64-gui
+GUI_VERSION_FILE=${base_dir}/simple64-gui/version.h
 rev=\"$(git rev-parse HEAD)\"
-lastrev=$(head -n 1 "${GUI_DIRECTORY}/version.h" | cut -d " " -f 3)
+if [[ -f ${GUI_VERSION_FILE} ]]; then
+  lastrev=$(head -n 1 "${GUI_VERSION_FILE}" | cut -d " " -f 3)
+else
+  lastrev=""
+fi
 
 echo current revision "${rev}"
 echo last build revision "${lastrev}"
 
 if [[ "${lastrev}" != "${rev}" ]]
 then
-   echo "#define GUI_VERSION ${rev}" > "${GUI_DIRECTORY}/version.h"
+   echo "#define GUI_VERSION ${rev}" > "${GUI_VERSION_FILE}"
 fi
 
 mkdir -p "${base_dir}/simple64-gui/build"
