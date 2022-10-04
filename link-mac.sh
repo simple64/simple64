@@ -87,4 +87,4 @@ ln -s /Applications simple64/Applications
 
 # 2. Create DMG
 HASH=$(git rev-parse --short HEAD)
-hdiutil create -volname simple64 -srcfolder simple64 -ov -format UDZO simple64/simple64-osx-$HASH.dmg
+hdiutil create -volname simple64 -srcfolder simple64 -ov -format UDZO "simple64/simple64-osx-$HASH.dmg"
