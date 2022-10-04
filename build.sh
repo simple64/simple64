@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -e
+set -o pipefail
 
 UNAME=$(uname -s)
 if [[ ${UNAME} == *"MINGW"* ]]; then
