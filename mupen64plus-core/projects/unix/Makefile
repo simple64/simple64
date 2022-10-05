@@ -236,9 +236,9 @@ ifeq ($(OS), OSX)
   CXXFLAGS += '-stdlib=libc++'
   ifeq ($(CPU), X86)
     ifeq ($(ARCH_DETECTED), 64BITS)
-      CFLAGS += -pipe -arch x86_64 -mmacosx-version-min=11.0 -isysroot $(OSX_SDK_PATH)
+      CFLAGS += -pipe -arch x86_64 -mmacosx-version-min=10.7 -isysroot $(OSX_SDK_PATH)
     else
-      CFLAGS += -pipe -mmmx -msse -arch i686 -mmacosx-version-min=11.0 -isysroot $(OSX_SDK_PATH)
+      CFLAGS += -pipe -mmmx -msse -arch i686 -mmacosx-version-min=10.7 -isysroot $(OSX_SDK_PATH)
       ifneq ($(PROFILE), 1)
         CFLAGS += -fomit-frame-pointer
       endif
@@ -248,7 +248,7 @@ ifeq ($(OS), OSX)
   ifeq ($(CPU), ARM)
     # assembly compilation not yet supported on macOS with Apple Silicon
     NO_ASM = 1
-    CFLAGS += -pipe -arch arm64 -mmacosx-version-min=11.0 -isysroot $(OSX_SDK_PATH)
+    CFLAGS += -pipe -arch arm64 -mmacosx-version-min=10.16 -isysroot $(OSX_SDK_PATH)
   endif
 endif
 ifeq ($(OS), MINGW)
@@ -561,8 +561,6 @@ SOURCE = \
     $(SRCDIR)/device/r4300/interrupt.c \
     $(SRCDIR)/device/r4300/pure_interp.c \
     $(SRCDIR)/device/r4300/r4300_core.c \
-    $(SRCDIR)/device/r4300/dcache.c \
-    $(SRCDIR)/device/r4300/icache.c \
     $(SRCDIR)/device/r4300/tlb.c \
     $(SRCDIR)/device/rcp/ai/ai_controller.c \
     $(SRCDIR)/device/rcp/mi/mi_controller.c \
@@ -599,8 +597,6 @@ CFLAGS += -I$(SUBDIR)/md5
 # xxhash
 CFLAGS += -I$(SUBDIR)/xxhash
 
-# xdelta
-CFLAGS += -I$(SUBDIR)/xdelta
 
 ifeq ("$(OS)","MINGW")
 SOURCE += \
