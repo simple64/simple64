@@ -2,4 +2,4 @@
 *.so
 *.o
 *.swp
-/projects/unix/_obj*/
+build/
