@@ -3,7 +3,7 @@
 
 #include <QCloseEvent>
 #include <QWindow>
-#include "common.h"
+#include "interface/common.h"
 
 class VkWindow : public QWindow
 {

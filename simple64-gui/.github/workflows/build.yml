@@ -21,14 +21,14 @@ jobs:
       - name: Update and install packages
         run: |
           dnf -y update
-          dnf -y install qt6-qtwebsockets-devel SDL2-devel zlib-devel
+          dnf -y install qt6-qtwebsockets-devel SDL2-devel zlib-devel cmake ninja-build
       - name: Run build script
         run: |
           echo "#define GUI_VERSION \"a12345\"" > version.h
           mkdir build
           cd build
-          qmake6 ..
-          make
+          cmake -G Ninja -DCMAKE_BUILD_TYPE=Release ..
+          VERBOSE=1 cmake --build .
   build-windows:
     runs-on: windows-2022
     steps:
@@ -43,7 +43,7 @@ jobs:
         with:
           update: true
           install: >-
-            make
+            mingw-w64-x86_64-cmake
             mingw-w64-x86_64-SDL2
             mingw-w64-x86_64-qt6
             mingw-w64-x86_64-gcc
@@ -52,5 +52,5 @@ jobs:
           echo '#define GUI_VERSION "a12345"' > version.h
           mkdir build
           cd build
-          msys2 -c 'qmake6 ..'
-          msys2 -c 'make'
+          msys2 -c 'cmake -G Ninja -DCMAKE_BUILD_TYPE=Release ..'
+          msys2 -c 'VERBOSE=1 cmake --build .'

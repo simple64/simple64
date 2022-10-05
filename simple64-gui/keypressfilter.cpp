@@ -1,6 +1,6 @@
 #include "keypressfilter.h"
 #include "interface/core_commands.h"
-#include "common.h"
+#include "interface/common.h"
 #include "mainwindow.h"
 #include <QKeyEvent>
 #include <QMessageBox>

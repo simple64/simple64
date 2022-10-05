@@ -1,8 +1,8 @@
-#include "mainwindow.h"
+#include "../mainwindow.h"
 #include "createroom.h"
 #include "waitroom.h"
-#include "version.h"
-#include "interface/core_commands.h"
+#include "../version.h"
+#include "../interface/core_commands.h"
 #include <QGridLayout>
 #include <QLabel>
 #include <QCheckBox>
