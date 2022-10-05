@@ -61,9 +61,8 @@ fi
 echo current revision "${rev}"
 echo last build revision "${lastrev}"
 
-if [[ "${lastrev}" != "${rev}" ]]
-then
-   echo "#define GUI_VERSION ${rev}" > "${GUI_VERSION_FILE}"
+if [[ "${lastrev}" != "${rev}" ]]; then
+  echo "#define GUI_VERSION ${rev}" >"${GUI_VERSION_FILE}"
 fi
 
 mkdir -p "${base_dir}/simple64-gui/build"
@@ -110,8 +109,8 @@ if [[ ${UNAME} == *"MINGW"* ]]; then
     my_os=win32
     cp "/${mingw_prefix}/bin/libgcc_s_dw2-1.dll" "${install_dir}"
   fi
-# WINEDEBUG=+loaddll wine ./simple64-gui.exe 2> out.txt
-# cat out.txt | grep found
+  # WINEDEBUG=+loaddll wine ./simple64-gui.exe 2> out.txt
+  # cat out.txt | grep found
   cp -v "/${mingw_prefix}/bin/libwinpthread-1.dll" "${install_dir}"
   cp -v "/${mingw_prefix}/bin/libstdc++-6.dll" "${install_dir}"
   cp -v "/${mingw_prefix}/bin/libdouble-conversion.dll" "${install_dir}"
