@@ -31,23 +31,23 @@ make NETPLAY=1 NO_ASM=1 OSD=0 V=1 -j4 all
 cp -P "${base_dir}/mupen64plus-core/projects/unix/"*"${suffix}"* "${install_dir}"
 cp "${base_dir}/mupen64plus-core/data/"* "${install_dir}"
 
-cd "${base_dir}/simple64-input-raphnetraw/projects/unix"
-make V=1 -j4 all
-cp "${base_dir}/simple64-input-raphnetraw/projects/unix/"*"${suffix}" "${install_dir}"
+mkdir -p "${base_dir}/simple64-input-raphnetraw/build"
+cd "${base_dir}/simple64-input-raphnetraw/build"
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Release ..
+VERBOSE=1 cmake --build .
+cp simple64-input-raphnetraw.* "${install_dir}"
 
 mkdir -p "${base_dir}/simple64-input-qt/build"
 cd "${base_dir}/simple64-input-qt/build"
-qmake6 ../simple64-input-qt.pro
-make -j4
-if [[ ${UNAME} == *"MINGW"* ]]; then
-  cp "${base_dir}/simple64-input-qt/build/release/simple64-input-qt.dll" "${install_dir}"
-else
-  cp "${base_dir}/simple64-input-qt/build/libsimple64-input-qt${suffix}" "${install_dir}/simple64-input-qt${suffix}"
-fi
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Release ..
+VERBOSE=1 cmake --build .
+cp simple64-input-qt.* "${install_dir}"
 
-cd "${base_dir}/simple64-audio-sdl2/projects/unix"
-make V=1 -j4 all
-cp "${base_dir}/simple64-audio-sdl2/projects/unix/"*"${suffix}" "${install_dir}"
+mkdir -p "${base_dir}/simple64-audio-sdl2/build"
+cd "${base_dir}/simple64-audio-sdl2/build"
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Release ..
+VERBOSE=1 cmake --build .
+cp simple64-audio-sdl2.* "${install_dir}"
 
 cd "${base_dir}"
 GUI_VERSION_FILE=${base_dir}/simple64-gui/version.h
@@ -67,11 +67,10 @@ fi
 
 mkdir -p "${base_dir}/simple64-gui/build"
 cd "${base_dir}/simple64-gui/build"
-qmake6 ../simple64-gui.pro
-make -j4
-if [[ ${UNAME} == *"MINGW"* ]]; then
-  cp "${base_dir}/simple64-gui/build/release/simple64-gui.exe" "${install_dir}"
-elif [[ ${UNAME} == *"Darwin"* ]]; then
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Release ..
+VERBOSE=1 cmake --build .
+
+if [[ ${UNAME} == *"Darwin"* ]]; then
   "/usr/local/Cellar/qt/${qt_version}/bin/macdeployqt" "${base_dir}/simple64-gui/build/simple64-gui.app"
   cp -a "${base_dir}/simple64-gui/build/simple64-gui.app" "${install_dir}"
 else
@@ -80,21 +79,13 @@ fi
 
 mkdir -p "${base_dir}/parallel-rsp/build"
 cd "${base_dir}/parallel-rsp/build"
-if [[ ${UNAME} == *"MINGW"* ]]; then
-  cmake -G "MSYS Makefiles" -DCMAKE_BUILD_TYPE=Release ..
-else
-  cmake -DCMAKE_BUILD_TYPE=Release ..
-fi
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Release ..
 VERBOSE=1 cmake --build .
 cp simple64-rsp-parallel.* "${install_dir}"
 
 mkdir -p "${base_dir}/parallel-rdp-standalone/build"
 cd "${base_dir}/parallel-rdp-standalone/build"
-if [[ ${UNAME} == *"MINGW"* ]]; then
-  cmake -G "MSYS Makefiles" -DCMAKE_BUILD_TYPE=Release ..
-else
-  cmake -DCMAKE_BUILD_TYPE=Release ..
-fi
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Release ..
 VERBOSE=1 cmake --build .
 cp simple64-video-parallel.* "${install_dir}"
 
