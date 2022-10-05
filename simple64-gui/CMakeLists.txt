@@ -41,6 +41,7 @@ qt_add_resources(simple64-gui imageresources
 )
 
 add_executable(simple64-gui
+    mainwindow.ui
     main.cpp
     mainwindow.cpp
     vidext.cpp
@@ -77,3 +78,8 @@ endif (UNIX)
 target_compile_options(simple64-gui PRIVATE -march=x86-64-v3)
 target_link_options(simple64-gui PRIVATE -march=x86-64-v3)
 target_link_libraries(simple64-gui PRIVATE Qt6::Widgets Qt6::WebSockets)
+
+set_target_properties(simple64-gui PROPERTIES
+    WIN32_EXECUTABLE ON
+    MACOSX_BUNDLE ON
+)
