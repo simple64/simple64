@@ -7,7 +7,7 @@
 #include <QWebSocket>
 #include <QComboBox>
 #include <QtNetwork>
-#include "interface/common.h"
+#include "../interface/common.h"
 #include <QLabel>
 
 class CreateRoom : public QDialog

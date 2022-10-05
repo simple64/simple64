@@ -5,7 +5,7 @@
 #include <QApplication>
 #include <QString>
 #include <QVulkanInstance>
-#include "common.h"
+#include "interface/common.h"
 #include "discord/discord_game_sdk.h"
 
 class WorkerThread

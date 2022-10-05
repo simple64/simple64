@@ -1,5 +1,5 @@
 #include "vidext.h"
-#include "common.h"
+#include "interface/common.h"
 #include "workerthread.h"
 #include "mainwindow.h"
 #include "interface/core_commands.h"
