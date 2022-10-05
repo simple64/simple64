@@ -22,7 +22,7 @@ git clone https://github.com/simple64/simple64-gui.git
 cd simple64-gui
 mkdir build
 cd build
-qmake ../simple64-gui.pro
-make -j`nproc`
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Release ..
+VERBOSE=1 cmake --build .
 ```
 Then you can run ```./simple64-gui```.

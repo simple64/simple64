@@ -1,6 +1,6 @@
 #include "waitroom.h"
-#include "mainwindow.h"
-#include "interface/core_commands.h"
+#include "../mainwindow.h"
+#include "../interface/core_commands.h"
 #include <QGridLayout>
 #include <QMessageBox>
 

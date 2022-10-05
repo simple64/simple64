@@ -7,7 +7,7 @@
 #include "plugindialog.h"
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "common.h"
+#include "interface/common.h"
 #include "vidext.h"
 #include "netplay/createroom.h"
 #include "netplay/joinroom.h"

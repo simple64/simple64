@@ -1,5 +1,5 @@
 #include "settingclasses.h"
-#include "common.h"
+#include "interface/common.h"
 #include "interface/core_commands.h"
 #include <SDL.h>
 #include <QLabel>
