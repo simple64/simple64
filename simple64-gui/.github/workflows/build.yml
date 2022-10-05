@@ -12,10 +12,12 @@ jobs:
     container: registry.fedoraproject.org/fedora:latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          path: simple64-gui
       - name: Checkout core repo
         uses: actions/checkout@v3
         with:
-          repository: loganmc10/mupen64plus-core
+          repository: simple64/mupen64plus-core
           path: mupen64plus-core
           ref: simple64
       - name: Update and install packages
@@ -24,6 +26,7 @@ jobs:
           dnf -y install qt6-qtwebsockets-devel SDL2-devel zlib-devel cmake ninja-build
       - name: Run build script
         run: |
+          cd simple64-gui
           echo "#define GUI_VERSION \"a12345\"" > version.h
           mkdir build
           cd build
@@ -33,10 +36,12 @@ jobs:
     runs-on: windows-2022
     steps:
       - uses: actions/checkout@v3
+        with:
+          path: simple64-gui
       - name: Checkout core repo
         uses: actions/checkout@v3
         with:
-          repository: loganmc10/mupen64plus-core
+          repository: simple64/mupen64plus-core
           path: mupen64plus-core
           ref: simple64
       - uses: msys2/setup-msys2@v2
@@ -49,6 +54,7 @@ jobs:
             mingw-w64-x86_64-gcc
       - name: Run build script
         run: |
+          cd simple64-gui
           echo '#define GUI_VERSION "a12345"' > version.h
           mkdir build
           cd build

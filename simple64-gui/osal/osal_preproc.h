@@ -33,7 +33,7 @@
   #ifndef PATH_MAX
     #define PATH_MAX 2048
   #endif
-  #define OSAL_DEFAULT_DYNLIB_FILENAME "mupen64plus.dll"
+  #define OSAL_DEFAULT_DYNLIB_FILENAME "libmupen64plus.dll"
   #define OSAL_DIR_SEPARATOR           '\\'
   #define OSAL_CURRENT_DIR             ".\\"
   #define OSAL_DLL_EXTENSION           ".dll"
@@ -59,7 +59,7 @@
 
   #include <limits.h>  // for PATH_MAX
 
-  #define OSAL_DEFAULT_DYNLIB_FILENAME "libmupen64plus.so.2"
+  #define OSAL_DEFAULT_DYNLIB_FILENAME "libmupen64plus.so"
   #define OSAL_DIR_SEPARATOR           '/'
   #define OSAL_CURRENT_DIR             "./"
   #define OSAL_DLL_EXTENSION           ".so"
