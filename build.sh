@@ -24,11 +24,11 @@ install_dir=${PWD}/simple64
 mkdir -p "${install_dir}"
 base_dir=${PWD}
 
-export OPTFLAGS="-O3 -flto -march=x86-64-v3"
-
-cd "${base_dir}/mupen64plus-core/projects/unix"
-make NETPLAY=1 NO_ASM=1 OSD=0 V=1 -j4 all
-cp -P "${base_dir}/mupen64plus-core/projects/unix/"*"${suffix}"* "${install_dir}"
+mkdir -p "${base_dir}/mupen64plus-core/build"
+cd "${base_dir}/mupen64plus-core/build"
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Release ..
+VERBOSE=1 cmake --build .
+cp ./*mupen64plus"${suffix}" "${install_dir}"
 cp "${base_dir}/mupen64plus-core/data/"* "${install_dir}"
 
 mkdir -p "${base_dir}/simple64-input-raphnetraw/build"
@@ -126,6 +126,8 @@ if [[ ${UNAME} == *"MINGW"* ]]; then
   cp -v "/${mingw_prefix}/bin/libintl-8.dll" "${install_dir}"
   cp -v "/${mingw_prefix}/bin/libiconv-2.dll" "${install_dir}"
   cp -v "/${mingw_prefix}/bin/libhidapi-0.dll" "${install_dir}"
+  cp -v "/${mingw_prefix}/bin/libcrypto-1_1-x64.dll" "${install_dir}" # used by Qt at runtime
+  cp -v "/${mingw_prefix}/bin/libssl-1_1-x64.dll" "${install_dir}" # used by Qt at runtime
   cp -v "${base_dir}/7za.exe" "${install_dir}"
   cp -v "${base_dir}/simple64-gui/discord/discord_game_sdk.dll" "${install_dir}"
   cp -v "${base_dir}/simple64-input-qt/vosk/vosk.dll" "${install_dir}"
