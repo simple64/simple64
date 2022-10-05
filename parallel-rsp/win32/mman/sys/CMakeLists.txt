@@ -1,6 +1,6 @@
 project (mman-win32 C)
 
-cmake_minimum_required (VERSION 2.8)
+cmake_minimum_required (VERSION 3.20)
 
 option (BUILD_SHARED_LIBS "shared/static libs" ON) 
 option (BUILD_TESTS "tests?" OFF)
