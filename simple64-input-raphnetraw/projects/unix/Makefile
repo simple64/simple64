@@ -128,10 +128,10 @@ ifeq ($(OS), OSX)
 
   ifeq ($(CPU), X86)
     ifeq ($(ARCH_DETECTED), 64BITS)
-      CFLAGS += -arch x86_64 -mmacosx-version-min=11.0 -isysroot $(OSX_SDK_PATH)
+      CFLAGS += -arch x86_64 -mmacosx-version-min=10.5 -isysroot $(OSX_SDK_PATH)
       LDLIBS += -ldl
     else
-      CFLAGS += -mmmx -msse -fomit-frame-pointer -arch i686 -mmacosx-version-min=11.0 -isysroot $(OSX_SDK_PATH)
+      CFLAGS += -mmmx -msse -fomit-frame-pointer -arch i686 -mmacosx-version-min=10.5 -isysroot $(OSX_SDK_PATH)
       LDLIBS += -ldl -read_only_relocs suppress
     endif
   endif
@@ -252,16 +252,16 @@ OBJDIRS = $(dir $(OBJECTS))
 $(shell $(MKDIR) $(OBJDIRS))
 
 # build targets
-TARGET = simple64-input-raphnetraw$(POSTFIX).$(SO_EXTENSION)
+TARGET = mupen64plus-input-raphnetraw$(POSTFIX).$(SO_EXTENSION)
 
 targets:
-	@echo "simple64-input-raphnetraw makefile. "
+	@echo "Mupen64Plus-input-raphnetraw makefile. "
 	@echo "  Targets:"
 	@echo "    all           == Build Mupen64Plus raphnetraw input plugin"
 	@echo "    clean         == remove object files"
 	@echo "    rebuild       == clean and re-build all"
-	@echo "    install       == Install simple64 raphnetraw input plugin"
-	@echo "    uninstall     == Uninstall simple64 raphnetraw input plugin"
+	@echo "    install       == Install Mupen64Plus raphnetraw input plugin"
+	@echo "    uninstall     == Uninstall Mupen64Plus raphnetraw input plugin"
 	@echo "  Options:"
 	@echo "    BITS=32       == build 32-bit binaries on 64-bit machine"
 	@echo "    APIDIR=path   == path to find Mupen64Plus Core headers"
