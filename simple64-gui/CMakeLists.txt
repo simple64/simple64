@@ -80,7 +80,7 @@ set_property(TARGET simple64-gui PROPERTY CXX_VISIBILITY_PRESET hidden)
 set_property(TARGET simple64-gui PROPERTY VISIBILITY_INLINES_HIDDEN ON)
 target_compile_options(simple64-gui PRIVATE -march=x86-64-v3)
 target_link_options(simple64-gui PRIVATE -march=x86-64-v3)
-target_link_libraries(simple64-gui PRIVATE Qt6::Widgets Qt6::WebSockets)
+target_link_libraries(simple64-gui PRIVATE Qt6::Widgets Qt6::WebSockets ${CMAKE_DL_LIBS})
 
 set_target_properties(simple64-gui PROPERTIES
     WIN32_EXECUTABLE ON
