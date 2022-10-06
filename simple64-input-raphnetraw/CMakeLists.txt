@@ -47,4 +47,5 @@ set_property(TARGET simple64-input-raphnetraw PROPERTY VISIBILITY_INLINES_HIDDEN
 set_target_properties(simple64-input-raphnetraw PROPERTIES PREFIX "")
 target_compile_options(simple64-input-raphnetraw PRIVATE -march=x86-64-v3 ${HIDAPI_CFLAGS})
 target_link_options(simple64-input-raphnetraw PRIVATE -march=x86-64-v3)
+target_link_directories(simple64-input-raphnetraw PRIVATE ${HIDAPI_LIBRARY_DIRS})
 target_link_libraries(simple64-input-raphnetraw PRIVATE ${HIDAPI_LIBRARIES})
