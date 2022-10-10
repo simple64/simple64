@@ -199,9 +199,9 @@ EXPORT m64p_error CALL CoreDoCommand(m64p_command Command, int ParamInt, void *P
         case M64CMD_PIF_OPEN:
             if (g_EmulatorRunning)
                 return M64ERR_INVALID_STATE;
-            if (ParamPtr == NULL || ParamInt != 2048)
+            if (ParamPtr == NULL || ParamInt < 1984)
                 return M64ERR_INPUT_ASSERT;
-            return open_pif((const unsigned char *) ParamPtr, ParamInt);
+            return open_pif((const unsigned char *) ParamPtr);
         case M64CMD_ROM_GET_HEADER:
             if (!l_ROMOpen)
                 return M64ERR_INVALID_STATE;
