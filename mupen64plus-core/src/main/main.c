@@ -1468,12 +1468,12 @@ static const char* get_pif_path(m64p_system_type systemtype)
     switch(systemtype)
     {
     case SYSTEM_PAL:
-        filename = "pifdata_pal.bin";
+        filename = "pif.pal.rom";
         break;
     case SYSTEM_MPAL:
     case SYSTEM_NTSC:
     default:
-        filename = "pifdata_ntsc.bin";
+        filename = "pif.ntsc.rom";
         break;
     }
     return ConfigGetSharedDataFilepath(filename);
