@@ -222,35 +222,8 @@ m64p_error loadROM(QString filename)
     return M64ERR_SUCCESS;
 }
 
-static void loadPif()
-{
-    /* Try to load the PIF image into the core */
-    if (!w->getSettings()->value("PIF_ROM").toString().isEmpty()) {
-        QFile pifFile(w->getSettings()->value("PIF_ROM").toString());
-        if (pifFile.open(QIODevice::ReadOnly)) {
-            QDataStream inPif(&pifFile);
-            char *PIF_buffer = (char *) malloc(2048);
-            if (inPif.readRawData(PIF_buffer, 2048) == 2048) {
-                if ((*CoreDoCommand)(M64CMD_PIF_OPEN, 2048, PIF_buffer) != M64ERR_SUCCESS)
-                {
-                    DebugMessage(M64MSG_ERROR, "core failed to open PIF image file.");
-                }
-            }
-            else
-            {
-                DebugMessage(M64MSG_ERROR, "core failed to open PIF image file.");
-            }
-            free(PIF_buffer);
-            pifFile.close();
-        }
-    }
-}
-
 m64p_error launchGame(QString netplay_ip, int netplay_port, int netplay_player)
 {
-    if (!netplay_port)
-        loadPif();
-
     /* attach plugins to core */
     (*CoreAttachPlugin)(M64PLUGIN_GFX, w->getGfxPlugin());
     (*CoreAttachPlugin)(M64PLUGIN_AUDIO, w->getAudioPlugin());

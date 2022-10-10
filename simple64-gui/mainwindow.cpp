@@ -70,90 +70,6 @@ void MainWindow::updatePlugins()
     ui->actionController_Configuration->setEnabled(settings->value("inputPlugin").toString().contains("-qt"));
 }
 
-void MainWindow::updatePIF(Ui::MainWindow *ui)
-{
-    QMenu *PIF = new QMenu(this);
-    PIF->setTitle("PIF ROM");
-    ui->menuFile->insertMenu(ui->actionTake_Screenshot, PIF);
-    ui->menuFile->insertSeparator(ui->actionTake_Screenshot);
-
-    QAction *fileSelect = new QAction(this);
-    QString current = settings->value("PIF_ROM").toString();
-    fileSelect->setText("PIF ROM: " + current);
-    PIF->addAction(fileSelect);
-    connect(fileSelect, &QAction::triggered, [=](){
-        QString filename = QFileDialog::getOpenFileName(this,
-            tr("PIF ROM"), NULL, tr("PIF ROM File (*.bin)"));
-        if (!filename.isNull()) {
-            settings->setValue("PIF_ROM", filename);
-            QString current = filename;
-            fileSelect->setText("PIF ROM: " + current);
-        }
-    });
-
-    QAction *clearSelect = new QAction(this);
-    clearSelect->setText("Clear PIF ROM Selection");
-    PIF->addAction(clearSelect);
-    connect(clearSelect, &QAction::triggered,[=](){
-        settings->remove("PIF_ROM");
-        fileSelect->setText("PIF ROM: ");
-    });
-}
-
-void MainWindow::updateDD(Ui::MainWindow *ui)
-{
-    QMenu *DD = new QMenu(this);
-    DD->setTitle("64DD");
-    ui->menuFile->insertMenu(ui->actionTake_Screenshot, DD);
-
-    QAction *fileSelect = new QAction(this);
-    QString current = settings->value("DD_ROM").toString();
-    fileSelect->setText("64DD IPL ROM: " + current);
-    DD->addAction(fileSelect);
-    connect(fileSelect, &QAction::triggered, [=](){
-        QString filename = QFileDialog::getOpenFileName(this,
-            tr("64DD IPL ROM"), NULL, tr("64DD ROM File (*.n64)"));
-        if (!filename.isNull()) {
-            settings->setValue("DD_ROM", filename);
-            QString current = filename;
-            fileSelect->setText("64DD IPL ROM: " + current);
-        }
-    });
-
-    QAction *fileSelect2 = new QAction(this);
-    current = settings->value("DD_DISK").toString();
-    fileSelect2->setText("64DD Disk: " + current);
-    DD->addAction(fileSelect2);
-    connect(fileSelect2, &QAction::triggered,[=](){
-        QString filename = QFileDialog::getOpenFileName(this,
-            tr("64DD Disk File"), NULL, tr("64DD Disk File (*.ndd)"));
-        if (!filename.isNull()) {
-            settings->setValue("DD_DISK", filename);
-            QString current = filename;
-            fileSelect2->setText("64DD Disk: " + current);
-        }
-    });
-
-    QAction *clearSelect = new QAction(this);
-    clearSelect->setText("Clear 64DD Selections");
-    DD->addAction(clearSelect);
-    connect(clearSelect, &QAction::triggered,[=](){
-        settings->remove("DD_ROM");
-        settings->remove("DD_DISK");
-        fileSelect->setText("64DD IPL ROM: ");
-        fileSelect2->setText("64DD Disk: ");
-    });
-
-    //DD->addSeparator();
-
-    //QAction *startGame = new QAction(this);
-    //startGame->setText("Start 64DD");
-    //DD->addAction(startGame);
-    //connect(startGame, &QAction::triggered,[=](){
-    //    openROM("");
-    //});
-}
-
 void MainWindow::updateGB(Ui::MainWindow *ui)
 {
     QMenu *GB = new QMenu(this);
@@ -367,8 +283,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     updateOpenRecent();
     updateGB(ui);
-    // updateDD(ui);
-    updatePIF(ui);
 
     if (!settings->contains("configDirPath"))
         settings->setValue("configDirPath", "$CONFIG_PATH$");
