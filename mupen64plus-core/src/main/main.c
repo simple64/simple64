@@ -1462,6 +1462,22 @@ void main_change_gb_cart(int control_id)
     }
 }
 
+static const char* get_pif_path(m64p_system_type systemtype)
+{
+    const char *filename;
+    switch(systemtype)
+    {
+    case SYSTEM_PAL:
+        filename = "pifdata_pal.bin";
+        break;
+    case SYSTEM_MPAL:
+    case SYSTEM_NTSC:
+    default:
+        filename = "pifdata_ntsc.bin";
+        break;
+    }
+    return ConfigGetSharedDataFilepath(filename);
+}
 
 /*********************************************************************************************************
 * emulation thread - runs the core
@@ -1502,6 +1518,17 @@ m64p_error main_run(void)
         case SAVETYPE_EEPROM_16K:
             eeprom_type = JDT_EEPROM_16K;
             break;
+    }
+
+    /* Load PIF */
+    FILE* PifFile = fopen(get_pif_path(ROM_PARAMS.systemtype), "rb");
+    if (PifFile != NULL)
+    {
+        unsigned char* pif_buffer = malloc(2048);
+        size_t file_size = fread(pif_buffer, 1, 2048, PifFile);
+        fclose(PifFile);
+        open_pif(pif_buffer, file_size);
+        free(pif_buffer);
     }
 
     /* Seed MPK ID gen using current time */
