@@ -443,25 +443,25 @@ M64P_FPU_INLINE void c_ule_d(uint32_t* fcr31, const double* source, const double
 
 M64P_FPU_INLINE void c_sf_d(uint32_t* fcr31, const double* source, const double* target)
 {
-    //if (isnan(*source) || isnan(*target)) // FIXME - exception
+    if (isnan(*source) || isnan(*target)) { *fcr31 &= ~FCR31_CMP_BIT; return; }
     *fcr31 &= ~FCR31_CMP_BIT;
 }
 M64P_FPU_INLINE void c_ngle_d(uint32_t* fcr31, const double* source, const double* target)
 {
-    //if (isnan(*source) || isnan(*target)) // FIXME - exception
+    if (isnan(*source) || isnan(*target)) { *fcr31 &= ~FCR31_CMP_BIT; return; }
     *fcr31 &= ~FCR31_CMP_BIT;
 }
 
 M64P_FPU_INLINE void c_seq_d(uint32_t* fcr31, const double* source, const double* target)
 {
-    //if (isnan(*source) || isnan(*target)) // FIXME - exception
+    if (isnan(*source) || isnan(*target)) { *fcr31 &= ~FCR31_CMP_BIT; return; }
     *fcr31 = (*source == *target)
         ? (*fcr31 |  FCR31_CMP_BIT)
         : (*fcr31 & ~FCR31_CMP_BIT);
 }
 M64P_FPU_INLINE void c_ngl_d(uint32_t* fcr31, const double* source, const double* target)
 {
-    //if (isnan(*source) || isnan(*target)) // FIXME - exception
+    if (isnan(*source) || isnan(*target)) { *fcr31 &= ~FCR31_CMP_BIT; return; }
     *fcr31 = (*source == *target)
         ? (*fcr31 |  FCR31_CMP_BIT)
         : (*fcr31 & ~FCR31_CMP_BIT);
@@ -469,14 +469,14 @@ M64P_FPU_INLINE void c_ngl_d(uint32_t* fcr31, const double* source, const double
 
 M64P_FPU_INLINE void c_lt_d(uint32_t* fcr31, const double* source, const double* target)
 {
-    //if (isnan(*source) || isnan(*target)) // FIXME - exception
+    if (isnan(*source) || isnan(*target)) { *fcr31 &= ~FCR31_CMP_BIT; return; }
     *fcr31 = (*source < *target)
         ? (*fcr31 |  FCR31_CMP_BIT)
         : (*fcr31 & ~FCR31_CMP_BIT);
 }
 M64P_FPU_INLINE void c_nge_d(uint32_t* fcr31, const double* source, const double* target)
 {
-    //if (isnan(*source) || isnan(*target)) // FIXME - exception
+    if (isnan(*source) || isnan(*target)) { *fcr31 &= ~FCR31_CMP_BIT; return; }
     *fcr31 = (*source < *target)
         ? (*fcr31 |  FCR31_CMP_BIT)
         : (*fcr31 & ~FCR31_CMP_BIT);
@@ -484,14 +484,14 @@ M64P_FPU_INLINE void c_nge_d(uint32_t* fcr31, const double* source, const double
 
 M64P_FPU_INLINE void c_le_d(uint32_t* fcr31, const double* source, const double* target)
 {
-    //if (isnan(*source) || isnan(*target)) // FIXME - exception
+    if (isnan(*source) || isnan(*target)) { *fcr31 &= ~FCR31_CMP_BIT; return; }
     *fcr31 = (*source <= *target)
         ? (*fcr31 |  FCR31_CMP_BIT)
         : (*fcr31 & ~FCR31_CMP_BIT);
 }
 M64P_FPU_INLINE void c_ngt_d(uint32_t* fcr31, const double* source, const double* target)
 {
-    //if (isnan(*source) || isnan(*target)) // FIXME - exception
+    if (isnan(*source) || isnan(*target)) { *fcr31 &= ~FCR31_CMP_BIT; return; }
     *fcr31 = (*source <= *target)
         ? (*fcr31 |  FCR31_CMP_BIT)
         : (*fcr31 & ~FCR31_CMP_BIT);
