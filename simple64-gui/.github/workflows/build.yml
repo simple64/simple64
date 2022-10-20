@@ -11,6 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     container: registry.fedoraproject.org/fedora:latest
     steps:
+      - name: Update and install packages
+        run: |
+          dnf -y update
+          dnf -y install qt6-qtwebsockets-devel SDL2-devel zlib-devel cmake ninja-build git
       - uses: actions/checkout@v3
         with:
           path: simple64-gui
@@ -20,10 +24,6 @@ jobs:
           repository: simple64/mupen64plus-core
           path: mupen64plus-core
           ref: simple64
-      - name: Update and install packages
-        run: |
-          dnf -y update
-          dnf -y install qt6-qtwebsockets-devel SDL2-devel zlib-devel cmake ninja-build
       - name: Run build script
         run: |
           cd simple64-gui
