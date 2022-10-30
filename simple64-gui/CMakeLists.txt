@@ -37,7 +37,7 @@ endif (UNIX)
 qt_standard_project_setup()
 
 qt_add_resources(simple64-gui imageresources
-    FILES icons/simple64.png
+    FILES icons/simple64.svg
 )
 
 add_executable(simple64-gui
