@@ -26,9 +26,6 @@ jobs:
     runs-on: windows-2022
     steps:
       - uses: actions/checkout@v3
-      - name: Get short SHA
-        id: slug
-        run: echo "sha7=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
       - uses: msys2/setup-msys2@v2
         with:
           update: true
@@ -52,15 +49,12 @@ jobs:
       - name: Upload zip
         uses: actions/upload-artifact@v3
         with:
-          name: simple64-win64-${{ steps.slug.outputs.sha7 }}.zip
+          name: simple64-win64
           path: simple64-*.zip
 #  build-mac:
 #    runs-on: macos-10.15
 #    steps:
 #      - uses: actions/checkout@v3
-#      - name: Get short SHA
-#        id: slug
-#        run: echo "sha7=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 #      - name: brew update
 #        run: |
 #          brew update
@@ -76,5 +70,5 @@ jobs:
 #      - name: Upload dmg
 #        uses: actions/upload-artifact@v3
 #        with:
-#          name: simple64-osx-${{ steps.slug.outputs.sha7 }}.dmg
+#          name: simple64-osx
 #          path: simple64/simple64-*.dmg
