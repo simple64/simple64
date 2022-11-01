@@ -75,10 +75,11 @@ void icache_step(struct r4300_core* r4300)
     if (!r4300->sp->rsp_wait)
         do_SP_Task(r4300->sp);
     cp0_base_cycle(r4300);
-    uint32_t address = (*r4300_pc_struct(r4300))->phys_addr;
-    if ((*r4300_pc_struct(r4300))->cached)
+    struct precomp_instr *inst = (*r4300_pc_struct(r4300));
+    uint32_t address = inst->phys_addr;
+    if (inst->cached)
     {
-        struct instcache *line = (*r4300_pc_struct(r4300))->icache_line;
+        struct instcache *line = inst->icache_line;
         if(!icache_hit(line, address))
             icache_fill(line, r4300, address);
     }
