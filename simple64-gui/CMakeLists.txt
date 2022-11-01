@@ -78,8 +78,8 @@ endif (UNIX)
 set_property(TARGET simple64-gui PROPERTY C_VISIBILITY_PRESET hidden)
 set_property(TARGET simple64-gui PROPERTY CXX_VISIBILITY_PRESET hidden)
 set_property(TARGET simple64-gui PROPERTY VISIBILITY_INLINES_HIDDEN ON)
-target_compile_options(simple64-gui PRIVATE -march=x86-64-v3 -fno-semantic-interposition)
-target_link_options(simple64-gui PRIVATE -march=x86-64-v3 -fno-semantic-interposition -Wl,-Bsymbolic -Wl,-Bsymbolic-functions)
+target_compile_options(simple64-gui PRIVATE -march=x86-64-v3 -Ofast)
+target_link_options(simple64-gui PRIVATE -march=x86-64-v3 -Ofast -Wl,-Bsymbolic -Wl,-Bsymbolic-functions)
 target_link_libraries(simple64-gui PRIVATE Qt6::Widgets Qt6::WebSockets ${CMAKE_DL_LIBS})
 
 set_target_properties(simple64-gui PROPERTIES
