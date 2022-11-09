@@ -589,14 +589,19 @@ void netplay_read_registration(struct controller_input_compat* cin_compats)
         if (reg_id == 0) //No one registered to control this player
         {
             Controls[i].Present = 0;
-            Controls[i].Plugin = 1;
+            Controls[i].Plugin = PLUGIN_NONE;
             Controls[i].RawData = 0;
             curr += 2;
         }
         else
         {
             Controls[i].Present = 1;
-            Controls[i].Plugin = input_data[curr];
+            if (i > 0 && input_data[curr] == PLUGIN_MEMPAK) // only P1 can use mempak
+                Controls[i].Plugin = PLUGIN_NONE;
+            else if (input_data[curr] == PLUGIN_TRANSFER_PAK) // Transferpak not supported during netplay
+                Controls[i].Plugin = PLUGIN_NONE;
+            else
+                Controls[i].Plugin = input_data[curr];
             l_plugin[i] = Controls[i].Plugin;
             ++curr;
             Controls[i].RawData = input_data[curr];
@@ -661,12 +666,6 @@ void netplay_update_input(struct pif* pif)
         netplay_send_raw_input(pif);
         netplay_get_raw_input(pif);
     }
-}
-
-void netplay_set_plugin(uint8_t control_id, uint8_t plugin)
-{
-    if (!(control_id > 0 && plugin == 2)) //Only P1 can use mempak
-        l_plugin[control_id] = plugin;
 }
 
 m64p_error netplay_send_config(char* data, int size)
