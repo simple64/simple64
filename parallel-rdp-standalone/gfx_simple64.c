@@ -157,7 +157,7 @@ EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle _CoreLibHandle, void *Co
 
     ConfigOpenSection("Video-Parallel", &configVideoParallel);
     ConfigSetDefaultBool(configVideoParallel, KEY_FULLSCREEN, 0, "Use fullscreen mode if True, or windowed mode if False");
-    ConfigSetDefaultInt(configVideoParallel, KEY_UPSCALING, 1, "Amount of rescaling: 1=None, 2=2x, 4=4x, 8=8x");
+    ConfigSetDefaultInt(configVideoParallel, KEY_UPSCALING, 1, "Amount of rescaling: 1=None, 2=2x, 4=4x");
     ConfigSetDefaultBool(configVideoParallel, KEY_VSYNC, 0, "Enable VSync");
     ConfigSetDefaultInt(configVideoParallel, KEY_SCREEN_WIDTH, 640, "Screen width");
     ConfigSetDefaultInt(configVideoParallel, KEY_SCREEN_HEIGHT, 480, "Screen height");
@@ -268,9 +268,14 @@ EXPORT int CALL RomOpen(void)
     else
         window_vsync = ConfigGetParamBool(configVideoParallel, KEY_VSYNC);
     vk_rescaling = ConfigGetParamInt(configVideoParallel, KEY_UPSCALING);
+    if (vk_rescaling > 4 )
+        vk_rescaling = 4;
+    else if (vk_rescaling == 3)
+        vk_rescaling = 2;
+    else if (vk_rescaling < 1)
+        vk_rescaling = 1;
     vk_ssreadbacks = ConfigGetParamBool(configVideoParallel, KEY_SSREADBACKS);
     vk_ssdither = ConfigGetParamBool(configVideoParallel, KEY_SSDITHER);
-
     vk_divot_filter = ConfigGetParamBool(configVideoParallel, KEY_DIVOT);
     vk_gamma_dither = ConfigGetParamBool(configVideoParallel, KEY_GAMMADITHER);
     vk_vi_scale = ConfigGetParamBool(configVideoParallel, KEY_VIBILERP);
