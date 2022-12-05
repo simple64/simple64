@@ -487,10 +487,6 @@ bool vk_init()
 	case 4:
 		flags |= RDP::COMMAND_PROCESSOR_FLAG_UPSCALING_4X_BIT;
 		break;
-	case 8:
-		flags |= RDP::COMMAND_PROCESSOR_FLAG_UPSCALING_8X_BIT;
-		break;
-
 	default:
 		break;
 	}
