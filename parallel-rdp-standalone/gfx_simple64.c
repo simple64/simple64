@@ -268,7 +268,7 @@ EXPORT int CALL RomOpen(void)
     else
         window_vsync = ConfigGetParamBool(configVideoParallel, KEY_VSYNC);
     vk_rescaling = ConfigGetParamInt(configVideoParallel, KEY_UPSCALING);
-    if (vk_rescaling > 4 )
+    if (vk_rescaling > 4)
         vk_rescaling = 4;
     else if (vk_rescaling == 3)
         vk_rescaling = 2;
