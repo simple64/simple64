@@ -47,7 +47,7 @@ add_library(${NAME_PLUGIN_SIMPLE64} SHARED
     vulkan/shader.cpp
     vulkan/texture_format.cpp
     vulkan/wsi.cpp
-    vulkan/wsi_timing.cpp
+    util/arena_allocator.cpp
     util/logging.cpp
     util/thread_id.cpp
     util/aligned_alloc.cpp
