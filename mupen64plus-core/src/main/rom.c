@@ -136,7 +136,18 @@ static void swap_copy_rom(void* dst, const void* src, size_t len, unsigned char*
 
 static char *get_romsave_path(void)
 {
-    return formatstr("%s%s.romsave", get_savesrampath(), ROM_SETTINGS.goodname);
+    char *path;
+    size_t size = 0;
+
+    /* check if old file path exists, if it does then use that */
+    path = formatstr("%s%s.romsave", get_savesrampath(), ROM_SETTINGS.goodname);
+    if (get_file_size(path, &size) == file_ok && size > 0)
+    {
+        return path;
+    }
+
+    /* else use new path */
+    return formatstr("%s%s.romsave", get_savesrampath(), get_savestatefilename());
 }
 
 m64p_error open_rom(const unsigned char* romimage, unsigned int size)
