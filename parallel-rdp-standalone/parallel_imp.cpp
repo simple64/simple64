@@ -1,4 +1,5 @@
 // Adapted from https://github.com/Themaister/parallel-rdp/blob/master/integration_example.cpp
+#include "vulkan_headers.hpp"
 #include "parallel_imp.h"
 #include "vkguts.h"
 #include <memory>
