@@ -146,6 +146,15 @@ VoskRecognizer *vosk_recognizer_new_grm(VoskModel *model, float sample_rate, con
 void vosk_recognizer_set_spk_model(VoskRecognizer *recognizer, VoskSpkModel *spk_model);
 
 
+/** Reconfigures recognizer to use grammar
+ *
+ * @param recognizer   Already running VoskRecognizer
+ * @param grammar      Set of phrases in JSON array of strings or "[]" to use default model graph.
+ *                     See also vosk_recognizer_new_grm
+ */
+void vosk_recognizer_set_grm(VoskRecognizer *recognizer, char const *grammar);
+
+
 /** Configures recognizer to output n-best results
  *
  * <pre>
@@ -243,7 +252,7 @@ int vosk_recognizer_accept_waveform_f(VoskRecognizer *recognizer, const float *d
  *  }
  * </pre>
  *
- * If alternatives enabled it returns result with alternatives, see also vosk_recognizer_set_alternatives().
+ * If alternatives enabled it returns result with alternatives, see also vosk_recognizer_set_max_alternatives().
  *
  * If word times enabled returns word time, see also vosk_recognizer_set_word_times().
  */
@@ -310,7 +319,7 @@ void vosk_gpu_thread_init();
 /** Creates the batch recognizer object
  *
  *  @returns model object or NULL if problem occured */
-VoskBatchModel *vosk_batch_model_new();
+VoskBatchModel *vosk_batch_model_new(const char *model_path);
 
 /** Releases batch model object */
 void vosk_batch_model_free(VoskBatchModel *model);
