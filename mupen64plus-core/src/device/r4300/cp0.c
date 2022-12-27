@@ -130,12 +130,12 @@ static osal_inline void cp0_add_cycles(struct r4300_core* r4300, uint32_t cycles
 {
     struct cp0* cp0 = &r4300->cp0;
     uint32_t* cp0_regs = r4300_cp0_regs(cp0);
+    uint32_t count = cycles / 2;
     if (cycles & 1)
     {
+        count += cp0->half_count;
         cp0->half_count ^= 1;
-        cycles &= ~1;
     }
-    uint32_t count = (cycles / 2) + cp0->half_count;
     cp0_regs[CP0_COUNT_REG] += count;
     *r4300_cp0_cycle_count(cp0) += count;
 }
