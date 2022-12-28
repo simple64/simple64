@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.24)
+set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0")
 
 project(simple64-input-raphnetraw LANGUAGES C)
 
@@ -32,20 +33,26 @@ if (WIN32)
         src/osal_dynamiclib_win32.c
     )
     pkg_check_modules(HIDAPI REQUIRED hidapi)
-endif (WIN32)
-
-if (UNIX)
+elseif (APPLE)
+    target_sources(simple64-input-raphnetraw PRIVATE
+        src/osal_dynamiclib_unix.c
+    )
+    pkg_check_modules(HIDAPI REQUIRED hidapi)
+elseif (UNIX)
     target_sources(simple64-input-raphnetraw PRIVATE
         src/osal_dynamiclib_unix.c
     )
     pkg_check_modules(HIDAPI REQUIRED hidapi-hidraw)
-endif (UNIX)
+endif ()
 
 set_property(TARGET simple64-input-raphnetraw PROPERTY C_VISIBILITY_PRESET hidden)
 set_property(TARGET simple64-input-raphnetraw PROPERTY CXX_VISIBILITY_PRESET hidden)
 set_property(TARGET simple64-input-raphnetraw PROPERTY VISIBILITY_INLINES_HIDDEN ON)
 set_target_properties(simple64-input-raphnetraw PROPERTIES PREFIX "")
 target_compile_options(simple64-input-raphnetraw PRIVATE -march=x86-64-v3 ${HIDAPI_CFLAGS} -Ofast)
-target_link_options(simple64-input-raphnetraw PRIVATE -march=x86-64-v3 -Ofast -Wl,-Bsymbolic -Wl,-Bsymbolic-functions)
+target_link_options(simple64-input-raphnetraw PRIVATE -march=x86-64-v3 -Ofast)
+if (NOT APPLE)
+    target_link_options(simple64-input-raphnetraw PRIVATE -Wl,-Bsymbolic -Wl,-Bsymbolic-functions)
+endif (NOT APPLE)
 target_link_directories(simple64-input-raphnetraw PRIVATE ${HIDAPI_LIBRARY_DIRS})
 target_link_libraries(simple64-input-raphnetraw PRIVATE ${HIDAPI_LIBRARIES})
