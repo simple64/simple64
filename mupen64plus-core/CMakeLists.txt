@@ -116,14 +116,17 @@ if (WIN32)
         src/osal/dynamiclib_win32.c
         src/osal/files_win32.c
     )
-endif (WIN32)
-
-if (UNIX)
+elseif (APPLE)
+    target_sources(mupen64plus PRIVATE
+        src/osal/dynamiclib_unix.c
+        src/osal/files_macos.c
+    )
+elseif (UNIX)
     target_sources(mupen64plus PRIVATE
         src/osal/dynamiclib_unix.c
         src/osal/files_unix.c
     )
-endif (UNIX)
+endif ()
 
 set_property(TARGET mupen64plus PROPERTY C_VISIBILITY_PRESET hidden)
 set_property(TARGET mupen64plus PROPERTY CXX_VISIBILITY_PRESET hidden)
@@ -135,3 +138,6 @@ if (NOT APPLE)
 endif (NOT APPLE)
 target_link_directories(mupen64plus PRIVATE ${SDL_NET_LIBRARY_DIRS})
 target_link_libraries(mupen64plus PRIVATE SDL2::SDL2 ${SDL_NET_LIBRARIES} ZLIB::ZLIB PNG::PNG)
+if (APPLE)
+    target_link_libraries(mupen64plus PRIVATE "-framework CoreFoundation")
+endif (APPLE)
