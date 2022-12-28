@@ -17,11 +17,10 @@ mv simple64/mupencheat.txt "${contents}/MacOS"
 mv simple64/pif.ntsc.rom "${contents}/MacOS"
 mv simple64/pif.pal.rom "${contents}/MacOS"
 mv simple64/discord_game_sdk.dylib "${contents}/MacOS"
-mv simple64/libvosk.dylib "${contents}/MacOS"
 
 # SDL
-cp /usr/local/opt/sdl2_net/lib/libSDL2-2.0.0.dylib "${contents}/Frameworks"
-otool -L "${contents}/Frameworks/libSDL2_net-2.0.0.dylib"
+cp /usr/local/opt/sdl2/lib/libSDL2-2.0.0.dylib "${contents}/Frameworks"
+otool -L "${contents}/Frameworks/libSDL2-2.0.0.dylib"
 
 cp /usr/local/opt/sdl2_net/lib/libSDL2_net-2.0.0.dylib "${contents}/Frameworks"
 install_name_tool -change /usr/local/opt/sdl2/lib/libSDL2-2.0.0.dylib @executable_path/../Frameworks/libSDL2-2.0.0.dylib "${contents}/Frameworks/libSDL2_net-2.0.0.dylib"
