@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.24)
+set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0")
 
 project(mupen64plus LANGUAGES C)
 
@@ -128,6 +129,9 @@ set_property(TARGET mupen64plus PROPERTY C_VISIBILITY_PRESET hidden)
 set_property(TARGET mupen64plus PROPERTY CXX_VISIBILITY_PRESET hidden)
 set_property(TARGET mupen64plus PROPERTY VISIBILITY_INLINES_HIDDEN ON)
 target_compile_options(mupen64plus PRIVATE -march=x86-64-v3 -Ofast)
-target_link_options(mupen64plus PRIVATE -march=x86-64-v3 -Ofast -Wl,-Bsymbolic -Wl,-Bsymbolic-functions)
+target_link_options(mupen64plus PRIVATE -march=x86-64-v3 -Ofast)
+if (NOT APPLE)
+    target_link_options(mupen64plus PRIVATE -Wl,-Bsymbolic -Wl,-Bsymbolic-functions)
+endif (NOT APPLE)
 target_link_directories(mupen64plus PRIVATE ${SDL_NET_LIBRARY_DIRS})
 target_link_libraries(mupen64plus PRIVATE SDL2::SDL2 ${SDL_NET_LIBRARIES} ZLIB::ZLIB PNG::PNG)
