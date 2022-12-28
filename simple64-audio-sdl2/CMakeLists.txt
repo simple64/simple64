@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.24)
+set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0")
 
 project(simple64-audio-sdl2 LANGUAGES C)
 
@@ -29,5 +30,8 @@ set_property(TARGET simple64-audio-sdl2 PROPERTY CXX_VISIBILITY_PRESET hidden)
 set_property(TARGET simple64-audio-sdl2 PROPERTY VISIBILITY_INLINES_HIDDEN ON)
 set_target_properties(simple64-audio-sdl2 PROPERTIES PREFIX "")
 target_compile_options(simple64-audio-sdl2 PRIVATE -march=x86-64-v3 -Ofast)
-target_link_options(simple64-audio-sdl2 PRIVATE -march=x86-64-v3 -Ofast -Wl,-Bsymbolic -Wl,-Bsymbolic-functions)
+target_link_options(simple64-audio-sdl2 PRIVATE -march=x86-64-v3 -Ofast)
+if (NOT APPLE)
+    target_link_options(simple64-audio-sdl2 PRIVATE -Wl,-Bsymbolic -Wl,-Bsymbolic-functions)
+endif (NOT APPLE)
 target_link_libraries(simple64-audio-sdl2 PRIVATE SDL2::SDL2)
