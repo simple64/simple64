@@ -133,7 +133,6 @@ if [[ ${UNAME} == *"MINGW"* ]]; then
   cp -v "${base_dir}/simple64-input-qt/vosk/vosk.dll" "${install_dir}"
 elif [[ ${UNAME} == *"Darwin"* ]]; then
   cp "${base_dir}/simple64-gui/discord/discord_game_sdk.dylib" "${install_dir}"
-  cp "${base_dir}/simple64-input-qt/vosk/libvosk.dylib" "${install_dir}"
   cd "${base_dir}"
   sh ./link-mac.sh
 else
