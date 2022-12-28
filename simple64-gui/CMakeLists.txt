@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.24)
+set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0")
 
 project(simple64-gui LANGUAGES CXX C)
 
@@ -79,7 +80,10 @@ set_property(TARGET simple64-gui PROPERTY C_VISIBILITY_PRESET hidden)
 set_property(TARGET simple64-gui PROPERTY CXX_VISIBILITY_PRESET hidden)
 set_property(TARGET simple64-gui PROPERTY VISIBILITY_INLINES_HIDDEN ON)
 target_compile_options(simple64-gui PRIVATE -march=x86-64-v3 -Ofast)
-target_link_options(simple64-gui PRIVATE -march=x86-64-v3 -Ofast -Wl,-Bsymbolic -Wl,-Bsymbolic-functions)
+target_link_options(simple64-gui PRIVATE -march=x86-64-v3 -Ofast)
+if (NOT APPLE)
+    target_link_options(simple64-gui PRIVATE -Wl,-Bsymbolic -Wl,-Bsymbolic-functions)
+endif (NOT APPLE)
 target_link_libraries(simple64-gui PRIVATE Qt6::Widgets Qt6::WebSockets ${CMAKE_DL_LIBS})
 
 set_target_properties(simple64-gui PROPERTIES
