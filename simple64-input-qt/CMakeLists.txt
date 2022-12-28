@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.24)
+set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0")
 
 project(simple64-input-qt LANGUAGES CXX C)
 
@@ -19,6 +20,7 @@ include_directories(../mupen64plus-core/src/api)
 
 add_definitions(-DQT_DISABLE_DEPRECATED_BEFORE=0x0602ff)
 
+find_package(SDL2 REQUIRED)
 find_package(Qt6 REQUIRED COMPONENTS Widgets Network)
 qt_standard_project_setup()
 
@@ -45,5 +47,8 @@ set_property(TARGET simple64-input-qt PROPERTY CXX_VISIBILITY_PRESET hidden)
 set_property(TARGET simple64-input-qt PROPERTY VISIBILITY_INLINES_HIDDEN ON)
 set_target_properties(simple64-input-qt PROPERTIES PREFIX "")
 target_compile_options(simple64-input-qt PRIVATE -march=x86-64-v3 -Ofast)
-target_link_options(simple64-input-qt PRIVATE -march=x86-64-v3 -Ofast -Wl,-Bsymbolic -Wl,-Bsymbolic-functions)
-target_link_libraries(simple64-input-qt PRIVATE Qt6::Widgets Qt6::Network SDL2)
+target_link_options(simple64-input-qt PRIVATE -march=x86-64-v3 -Ofast)
+if (NOT APPLE)
+    target_link_options(simple64-input-qt PRIVATE -Wl,-Bsymbolic -Wl,-Bsymbolic-functions)
+endif (NOT APPLE)
+target_link_libraries(simple64-input-qt PRIVATE Qt6::Widgets Qt6::Network SDL2::SDL2)
