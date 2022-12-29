@@ -18,6 +18,10 @@ mv simple64/pif.ntsc.rom "${contents}/MacOS"
 mv simple64/pif.pal.rom "${contents}/MacOS"
 mv simple64/discord_game_sdk.dylib "${contents}/MacOS"
 
+# macdeployqt sometimes doesn't include all of the necessary dependencies
+# https://bugreports.qt.io/browse/QTBUG-100686?focusedCommentId=683436&page=com.atlassian.jira.plugin.system.issuetabpanels%3Acomment-tabpanel#comment-683436
+cp `brew --prefix brotli`/lib/libbrotlicommon.1.dylib "${contents}/Frameworks"
+
 # SDL
 cp /usr/local/opt/sdl2/lib/libSDL2-2.0.0.dylib "${contents}/Frameworks"
 otool -L "${contents}/Frameworks/libSDL2-2.0.0.dylib"
