@@ -34,6 +34,7 @@
 #include "device/r4300/r4300_core.h"
 #include "device/rcp/si/si_controller.h"
 #include "plugin/plugin.h"
+#include "main/main.h"
 #include "main/netplay.h"
 
 #define __STDC_FORMAT_MACROS
@@ -370,6 +371,8 @@ uint32_t update_pif_ram(struct pif* pif)
 {
     size_t k;
     uint32_t dma_duration = 0;
+
+    main_check_inputs();
 
     /* perform PIF/Channel communications */
     for (k = 0; k < PIF_CHANNELS_COUNT; ++k) {
