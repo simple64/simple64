@@ -30,6 +30,7 @@ jobs:
         id: build_image
         with:
           base_image: raspios_lite_arm64:latest
+          image_additional_mb: 300
           commands: |
             sudo apt-get update
             sudo apt-get -y dist-upgrade
