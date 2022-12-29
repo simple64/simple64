@@ -365,7 +365,7 @@ void main_message(m64p_msg_level level, unsigned int corner, const char *format,
     DebugMessage(level, "%s", buffer);
 }
 
-static void main_check_inputs(void)
+void main_check_inputs(void)
 {
 #ifdef WITH_LIRC
     lircCheckInput();
@@ -1024,7 +1024,6 @@ void new_vi(void)
     gs_apply_cheats(&g_cheat_ctx);
 
     apply_speed_limiter();
-    main_check_inputs();
 
     pause_loop();
 
