@@ -131,7 +131,7 @@ if [[ ${UNAME} == *"MINGW"* ]]; then
   cp -v "/${mingw_prefix}/bin/libssl-1_1-x64.dll" "${install_dir}" # used by Qt at runtime
   cp -v "${base_dir}/7za.exe" "${install_dir}"
   cp -v "${base_dir}/simple64-gui/discord/discord_game_sdk.dll" "${install_dir}"
-  cp -v "${base_dir}/simple64-input-qt/vosk/vosk.dll" "${install_dir}"
+  cp -v "${base_dir}/simple64-input-qt/vosk/x86_64/vosk.dll" "${install_dir}"
 elif [[ ${UNAME} == *"Darwin"* ]]; then
   cp "${base_dir}/simple64-gui/discord/discord_game_sdk.dylib" "${install_dir}"
   cd "${base_dir}"
