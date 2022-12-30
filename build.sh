@@ -4,6 +4,7 @@ set -e
 set -o pipefail
 
 UNAME=$(uname -s)
+PLATFORM=$(uname -m)
 if [[ ${UNAME} == *"MINGW"* ]]; then
   suffix=".dll"
   if [[ ${UNAME} == *"MINGW64"* ]]; then
@@ -136,9 +137,14 @@ elif [[ ${UNAME} == *"Darwin"* ]]; then
   cd "${base_dir}"
   sh ./link-mac.sh
 else
-  my_os=linux64
-  cp "${base_dir}/simple64-gui/discord/libdiscord_game_sdk.so" "${install_dir}"
-  cp "${base_dir}/simple64-input-qt/vosk/libvosk.so" "${install_dir}"
+  if [[ "${PLATFORM}" == "aarch64" ]]; then
+    my_os=linux_aarch64
+    cp "${base_dir}/simple64-input-qt/vosk/aarch64/libvosk.so" "${install_dir}"
+  else
+    my_os=linux_x86_64
+    cp "${base_dir}/simple64-gui/discord/libdiscord_game_sdk.so" "${install_dir}"
+    cp "${base_dir}/simple64-input-qt/vosk/x86_64/libvosk.so" "${install_dir}"
+  fi
 fi
 
 if [[ "$1" != "nozip" ]]; then
