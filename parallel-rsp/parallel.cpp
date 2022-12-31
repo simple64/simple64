@@ -78,6 +78,7 @@ extern "C"
 		if (first_run)
 		{
 			RSP::cpu.get_state().last_instruction_type = RSP::VU_INSTRUCTION;
+			RSP::cpu.get_state().instruction_pipeline = 0;
 			RSP::cpu.invalidate_imem();
 		}
 
