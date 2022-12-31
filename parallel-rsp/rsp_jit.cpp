@@ -321,9 +321,21 @@ extern "C"
 	static void add_instruction_count(CPUState *rsp, uint32_t instruction_type)
 	{
 		if (instruction_type == rsp->last_instruction_type)
+		{
 			++rsp->instruction_count;
+			rsp->instruction_pipeline = 0;
+		}
 		else
+		{
 			rsp->last_instruction_type = instruction_type;
+			if (rsp->instruction_pipeline)
+			{
+				++rsp->instruction_count;
+				rsp->instruction_pipeline = 0;
+			}
+			else
+				rsp->instruction_pipeline = 1;
+		}
 	}
 }
 
