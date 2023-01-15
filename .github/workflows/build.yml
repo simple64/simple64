@@ -13,7 +13,7 @@ jobs:
       - name: Update and install packages
         run: |
           dnf -y update
-          dnf -y install pkgconf-pkg-config which cmake ninja-build make nasm qt6-qtwebsockets-devel hidapi-devel zlib-devel libpng-devel SDL2_net-devel wget zip git ShellCheck
+          dnf -y install pkgconf-pkg-config which cmake ninja-build make qt6-qtwebsockets-devel hidapi-devel zlib-devel libpng-devel SDL2_net-devel wget zip git ShellCheck
       - uses: actions/checkout@v3
       - name: Check shell scripts
         run: |
@@ -39,9 +39,6 @@ jobs:
             mingw-w64-x86_64-SDL2
             mingw-w64-x86_64-SDL2_net
             mingw-w64-x86_64-qt6
-            mingw-w64-x86_64-python3-pip
-            mingw-w64-x86_64-python3-pyopenssl
-            mingw-w64-x86_64-nasm
             git
             zip
       - name: Run build script
