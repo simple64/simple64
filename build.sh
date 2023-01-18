@@ -127,8 +127,8 @@ if [[ ${UNAME} == *"MINGW"* ]]; then
   cp -v "/${mingw_prefix}/bin/libintl-8.dll" "${install_dir}"
   cp -v "/${mingw_prefix}/bin/libiconv-2.dll" "${install_dir}"
   cp -v "/${mingw_prefix}/bin/libhidapi-0.dll" "${install_dir}"
-  cp -v "/${mingw_prefix}/bin/libcrypto-1_1-x64.dll" "${install_dir}" # used by Qt at runtime
-  cp -v "/${mingw_prefix}/bin/libssl-1_1-x64.dll" "${install_dir}" # used by Qt at runtime
+  cp -v "/${mingw_prefix}/bin/libcrypto-3-x64.dll" "${install_dir}" # used by Qt at runtime
+  cp -v "/${mingw_prefix}/bin/libssl-3-x64.dll" "${install_dir}" # used by Qt at runtime
   cp -v "${base_dir}/7za.exe" "${install_dir}"
   cp -v "${base_dir}/simple64-gui/discord/discord_game_sdk.dll" "${install_dir}"
   cp -v "${base_dir}/simple64-input-qt/vosk/x86_64/vosk.dll" "${install_dir}"
