@@ -99,6 +99,7 @@ void poweron_rdp(struct rdp_core* dp)
 
     dp->do_on_unfreeze = 0;
     dp->mi->r4300->cp0.interrupt_unsafe_state &= ~INTR_UNSAFE_RDP;
+    dp->sync_duration = 80000;
 
     poweron_fb(&dp->fb);
 }
@@ -155,7 +156,7 @@ void write_dpc_regs(void* opaque, uint32_t address, uint32_t value, uint32_t mas
             if (dp->dpc_regs[DPC_STATUS_REG] & DPC_STATUS_FREEZE) {
                 dp->do_on_unfreeze |= DELAY_DP_INT;
             } else {
-                add_interrupt_event(&dp->mi->r4300->cp0, DP_INT, 40000);
+                add_interrupt_event(&dp->mi->r4300->cp0, DP_INT, dp->sync_duration);
             }
         }
         break;
