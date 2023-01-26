@@ -91,7 +91,7 @@ static void poweron_vru_controller(void* jbd)
     cont->flavor->reset(cont);
 }
 
-static uint32_t process_vru_command(void* jbd,
+static void process_vru_command(void* jbd,
     const uint8_t* tx, const uint8_t* tx_buf,
     uint8_t* rx, uint8_t* rx_buf)
 {
@@ -102,7 +102,7 @@ static uint32_t process_vru_command(void* jbd,
     /* if controller can't successfully be polled, consider it to be absent */
     if (cont->icin->get_input(cont->cin, &input_) != M64ERR_SUCCESS) {
         *rx |= 0x80;
-        return 0;
+        return;
     }
 
     switch (cmd)
@@ -244,7 +244,6 @@ static uint32_t process_vru_command(void* jbd,
         DebugMessage(M64MSG_WARNING, "cont: Unknown command %02x %02x %02x",
             *tx, *rx, cmd);
     }
-    return 0;
 }
 
 const struct joybus_device_interface g_ijoybus_vru_controller =
