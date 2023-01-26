@@ -237,6 +237,7 @@ void cp0_base_cycle(struct r4300_core* r4300);
 void cp0_mci_interlock(struct r4300_core* r4300, uint32_t cycles);
 void cp0_dcb_interlock(struct r4300_core* r4300, uint32_t cycles);
 void cp0_icb_interlock(struct r4300_core* r4300, uint32_t cycles);
+void cp0_pif_interlock(struct r4300_core* r4300, uint32_t cycles);
 void cp0_ram_interlock(struct r4300_core* r4300);
 void cp0_rom_interlock(struct r4300_core* r4300, uint32_t cycles);
 void cp0_startup_cycles(struct r4300_core* r4300);
