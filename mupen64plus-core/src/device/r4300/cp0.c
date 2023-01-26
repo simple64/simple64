@@ -175,6 +175,11 @@ void cp0_icb_interlock(struct r4300_core* r4300, uint32_t cycles)
     cp0_add_cycles(r4300, cycles);
 }
 
+void cp0_pif_interlock(struct r4300_core* r4300, uint32_t cycles)
+{
+    cp0_add_cycles(r4300, cycles);
+}
+
 static void exception_epilog(struct r4300_core* r4300)
 {
     cp0_add_cycles(r4300, 2);

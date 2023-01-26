@@ -81,9 +81,10 @@ static uint32_t process_channel(struct pif_channel* channel)
     }
 
     /* do device processing */
-    return channel->ijbd->process(channel->jbd,
+    channel->ijbd->process(channel->jbd,
         channel->tx, channel->tx_buf,
         channel->rx, channel->rx_buf);
+    return 1;
 }
 
 static void post_setup_channel(struct pif_channel* channel)
@@ -292,6 +293,7 @@ void read_pif_mem(void* opaque, uint32_t address, uint32_t* value)
     memcpy(value, pif->base + addr, sizeof(*value));
     if (addr >= PIF_ROM_SIZE)
         *value = tohl(*value);
+    cp0_pif_interlock(pif->r4300, 3000); //based on https://github.com/rasky/n64-systembench
 }
 
 void write_pif_mem(void* opaque, uint32_t address, uint32_t value, uint32_t mask)
@@ -310,7 +312,7 @@ void write_pif_mem(void* opaque, uint32_t address, uint32_t value, uint32_t mask
     pif->si->dma_dir = SI_DMA_WRITE;
 
     pif->si->regs[SI_STATUS_REG] |= (SI_STATUS_DMA_BUSY | SI_STATUS_IO_BUSY);
-    add_interrupt_event(&pif->r4300->cp0, SI_INT, pif->si->dma_duration);
+    add_interrupt_event(&pif->r4300->cp0, SI_INT, 1600); //based on https://github.com/rasky/n64-systembench
 }
 
 
@@ -370,13 +372,13 @@ void process_pif_ram(struct pif* pif)
 uint32_t update_pif_ram(struct pif* pif)
 {
     size_t k;
-    uint32_t dma_duration = 0;
+    uint32_t active_channels = 0;
 
     main_check_inputs();
 
     /* perform PIF/Channel communications */
     for (k = 0; k < PIF_CHANNELS_COUNT; ++k) {
-        dma_duration += process_channel(&pif->channels[k]);
+        active_channels += process_channel(&pif->channels[k]);
     }
 
     /* Zilmar-Spec plugin expect a call with control_id = -1 when RAM processing is done */
@@ -390,9 +392,7 @@ uint32_t update_pif_ram(struct pif* pif)
     DebugMessage(M64MSG_INFO, "PIF post read");
     print_pif(pif);
 #endif
-    if (dma_duration == 0)
-        dma_duration = pif->si->dma_duration;
-    return dma_duration;
+    return 12000 + (active_channels * 14000); //based on https://github.com/rasky/n64-systembench
 }
 
 void hw2_int_handler(void* opaque)

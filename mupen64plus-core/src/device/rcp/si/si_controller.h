@@ -63,8 +63,6 @@ struct si_controller
     uint32_t regs[SI_REGS_COUNT];
     unsigned char dma_dir;
 
-    unsigned int dma_duration;
-
     struct mi_controller* mi;
     struct pif* pif;
     struct ri_controller* ri;

@@ -82,7 +82,7 @@ static void dma_si_write(struct si_controller* si)
     copy_pif_rdram(si);
 
     si->regs[SI_STATUS_REG] |= SI_STATUS_DMA_BUSY;
-    add_interrupt_event(&si->mi->r4300->cp0, SI_INT, si->dma_duration + add_random_interrupt_time(si->mi->r4300));
+    add_interrupt_event(&si->mi->r4300->cp0, SI_INT, 3000 + add_random_interrupt_time(si->mi->r4300)); //based on https://github.com/rasky/n64-systembench
 }
 
 static void dma_si_read(struct si_controller* si)
@@ -103,7 +103,6 @@ void init_si(struct si_controller* si,
              struct pif* pif,
              struct ri_controller* ri)
 {
-    si->dma_duration = 8000;
     si->mi = mi;
     si->pif = pif;
     si->ri = ri;
