@@ -99,7 +99,7 @@ void poweron_rdp(struct rdp_core* dp)
 
     dp->do_on_unfreeze = 0;
     dp->mi->r4300->cp0.interrupt_unsafe_state &= ~INTR_UNSAFE_RDP;
-    dp->sync_duration = 80000; //this number is made up, needs to be confirmed at some point
+    dp->sync_duration = 63000; //this number is made up, needs to be confirmed at some point
 
     poweron_fb(&dp->fb);
 }
