@@ -676,7 +676,6 @@ void write_dd_regs(void* opaque, uint32_t address, uint32_t value, uint32_t mask
         }
 
         /* Signal a MECHA interrupt */
-        cp0_update_count(dd->r4300);
         add_interrupt_event(&dd->r4300->cp0, DD_MC_INT, cycles);
         break;
 
