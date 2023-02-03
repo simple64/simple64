@@ -526,6 +526,9 @@ static void main_set_speedlimiter(int enable)
 
 void main_speedlimiter_toggle(void)
 {
+    if (netplay_is_init())
+        return;
+
     l_MainSpeedLimit = !l_MainSpeedLimit;
     main_set_speedlimiter(l_MainSpeedLimit);
 
