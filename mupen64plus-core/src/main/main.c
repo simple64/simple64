@@ -172,6 +172,9 @@ static char *get_save_filename(void)
         snprintf(filename, 256, "unknown-%.8s", ROM_SETTINGS.MD5);
     }
 
+    /* sanitize filename */
+    string_replace_chars(filename, ":<>\"/\\|?*", '_');
+
     return filename;
 }
 
@@ -519,6 +522,23 @@ static void main_set_speedlimiter(int enable)
         return;
 
     l_MainSpeedLimit = enable ? 1 : 0;
+}
+
+void main_speedlimiter_toggle(void)
+{
+    l_MainSpeedLimit = !l_MainSpeedLimit;
+    main_set_speedlimiter(l_MainSpeedLimit);
+
+    if (l_MainSpeedLimit) /* fix naturally occuring audio desync */
+    {
+        main_toggle_pause();
+        SDL_Delay(1000);
+        main_toggle_pause();
+        main_message(M64MSG_STATUS, OSD_BOTTOM_LEFT, "Speed limiter enabled");
+    }
+
+    else
+        main_message(M64MSG_STATUS, OSD_BOTTOM_LEFT, "Speed limiter disabled");
 }
 
 static int main_is_paused(void)
@@ -870,25 +890,31 @@ m64p_error main_reset(int do_hard_reset)
 
 static void video_plugin_render_callback(int bScreenRedrawn)
 {
+#ifdef M64P_OSD
     int bOSD = ConfigGetParamBool(g_CoreConfig, "OnScreenDisplay");
+#endif /* M64P_OSD */
 
     // if the flag is set to take a screenshot, then grab it now
     if (l_TakeScreenshot != 0)
     {
         // if the OSD is enabled, and the screen has not been recently redrawn, then we cannot take a screenshot now because
         // it contains the OSD text.  Wait until the next redraw
+#ifdef M64P_OSD
         if (!bOSD || bScreenRedrawn)
+#endif /* M64P_OSD */
         {
             TakeScreenshot(l_TakeScreenshot - 1);  // current frame number +1 is in l_TakeScreenshot
             l_TakeScreenshot = 0; // reset flag
         }
     }
 
+#ifdef M64P_OSD
     // if the OSD is enabled, then draw it now
     if (bOSD)
     {
         osd_render();
     }
+#endif /* M64P_OSD */
 
     // if the input plugin specified a render callback, call it now
     if(input.renderCallback)
