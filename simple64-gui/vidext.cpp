@@ -118,9 +118,12 @@ uint32_t qtVidExtFuncGLGetDefaultFramebuffer(void)
 
 void* qtVidExtFuncGetVkSurface(void* instance)
 {
-    vulkan_inst.setVkInstance((VkInstance)instance);
-    vulkan_inst.create();
-    w->getWorkerThread()->createVkWindow(&vulkan_inst);
+    if (!vulkan_inst.vkInstance())
+    {
+        vulkan_inst.setVkInstance((VkInstance)instance);
+        vulkan_inst.create();
+        w->getWorkerThread()->createVkWindow(&vulkan_inst);
+    }
     VkSurfaceKHR surface = nullptr;
     while (surface == nullptr)
         surface = QVulkanInstance::surfaceForWindow(w->getVkWindow());
