@@ -9,6 +9,7 @@ VkSurfaceKHR QT_WSIPlatform::create_surface(VkInstance instance, VkPhysicalDevic
 
 void QT_WSIPlatform::destroy_surface(VkInstance instance, VkSurfaceKHR surface)
 {
+    screen_close();
 }
 
 std::vector<const char *> QT_WSIPlatform::get_instance_extensions()
