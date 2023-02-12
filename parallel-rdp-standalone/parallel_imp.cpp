@@ -429,7 +429,7 @@ void vk_resize()
 void vk_destroy()
 {
 	wsi->end_frame();
-	screen_close();
+
 	if (processor)
 	{
 		delete processor;
