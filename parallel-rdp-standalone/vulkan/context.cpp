@@ -1161,7 +1161,7 @@ bool Context::create_device(VkPhysicalDevice gpu_, VkSurfaceKHR surface,
 		ppNext = &ext.astc_hdr_features.pNext;
 	}
 
-	if (has_extension(VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME))
+	if (false && has_extension(VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME))
 	{
 		ext.supports_sync2 = true;
 		enabled_extensions.push_back(VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME);
