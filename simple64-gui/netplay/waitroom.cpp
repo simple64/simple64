@@ -66,23 +66,18 @@ WaitRoom::WaitRoom(QString filename, QJsonObject room, QWebSocket *socket, QWidg
     connect(chatEdit, &QLineEdit::returnPressed, this, &WaitRoom::sendChat);
     layout->addWidget(chatEdit, 10, 0, 1, 2);
 
-    discordCheckbox = new QCheckBox("Join Discord Voice Chat (must have Discord App running)", this);
-    discordCheckbox->setEnabled(false);
-    layout->addWidget(discordCheckbox, 11, 0, 1, 2);
-    connect(discordCheckbox, &QCheckBox::stateChanged, this, &WaitRoom::discordCheck);
-
     startGameButton = new QPushButton(this);
     startGameButton->setText("Start Game");
     startGameButton->setAutoDefault(0);
     connect(startGameButton, &QPushButton::released, this, &WaitRoom::startGame);
-    layout->addWidget(startGameButton, 12, 0, 1, 2);
+    layout->addWidget(startGameButton, 11, 0, 1, 2);
 
     motd = new QLabel(this);
     motd->setTextFormat(Qt::RichText);
     motd->setTextInteractionFlags(Qt::TextBrowserInteraction);
     motd->setOpenExternalLinks(true);
     motd->setAlignment(Qt::AlignCenter);
-    layout->addWidget(motd, 13, 0, 1, 2);
+    layout->addWidget(motd, 12, 0, 1, 2);
 
     setLayout(layout);
 
@@ -110,29 +105,6 @@ WaitRoom::WaitRoom(QString filename, QJsonObject room, QWebSocket *socket, QWidg
     w->updateDiscordActivity(activity);
 }
 
-static void discordConnectCallback(void*, enum EDiscordResult result, struct DiscordLobby* lobby)
-{
-    if (result == DiscordResult_Ok)
-        w->getDiscordApp()->lobbies->connect_voice(w->getDiscordApp()->lobbies, lobby->id, w->getDiscordApp(), nullptr);
-}
-
-static void discordDisconnectCallback(void* _discord_id, enum EDiscordResult)
-{
-    QString* id = (QString*) _discord_id;
-    w->getDiscordApp()->lobbies->disconnect_lobby(w->getDiscordApp()->lobbies, id->toLongLong(), w->getDiscordApp(), nullptr);
-}
-
-void WaitRoom::discordCheck(int state)
-{
-    if (!w->getDiscordApp()->lobbies)
-        return;
-
-    if (state == Qt::Checked)
-        w->getDiscordApp()->lobbies->connect_lobby(w->getDiscordApp()->lobbies, discord_id.toLongLong(), discord_secret.toUtf8().data(), w->getDiscordApp(), discordConnectCallback);
-    else if (state == Qt::Unchecked)
-        w->getDiscordApp()->lobbies->disconnect_voice(w->getDiscordApp()->lobbies, discord_id.toLongLong(), &discord_id, discordDisconnectCallback);
-}
-
 void WaitRoom::sendPing()
 {
     if (motd->text().isEmpty())
@@ -140,14 +112,6 @@ void WaitRoom::sendPing()
         QJsonObject json;
         json.insert("type", "get_motd");
         json.insert("room_name", room_name);
-        QJsonDocument json_doc = QJsonDocument(json);
-        webSocket->sendBinaryMessage(json_doc.toJson());
-    }
-    if (!discordCheckbox->isEnabled() && w->getDiscordApp()->lobbies)
-    {
-        QJsonObject json;
-        json.insert("type", "get_discord_lobby");
-        json.insert("port", room_port);
         QJsonDocument json_doc = QJsonDocument(json);
         webSocket->sendBinaryMessage(json_doc.toJson());
     }
@@ -234,11 +198,5 @@ void WaitRoom::processBinaryMessage(QByteArray message)
     {
         QString message = json.value("message").toString();
         motd->setText(message);
-    }
-    else if (json.value("type").toString() == "discord_lobby")
-    {
-        discord_id = json.value("id").toString();
-        discord_secret = json.value("secret").toString();
-        discordCheckbox->setEnabled(true);
     }
 }
