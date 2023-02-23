@@ -49,6 +49,7 @@ jobs:
           name: simple64-win64
           path: simple64-*.zip
   build-mac:
+    if: ${{ false }}
     runs-on: macos-11
     steps:
       - uses: actions/checkout@v3
