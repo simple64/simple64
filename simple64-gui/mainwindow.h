@@ -25,7 +25,6 @@ class MainWindow;
 struct Discord_Application {
     struct IDiscordCore* core;
     struct IDiscordActivityManager* activities;
-    struct IDiscordLobbyManager* lobbies;
 };
 
 class MainWindow : public QMainWindow

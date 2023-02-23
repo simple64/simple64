@@ -24,7 +24,6 @@ private slots:
     void startGame();
     void updatePing(quint64 elapsedTime, const QByteArray &payload);
     void sendPing();
-    void discordCheck(int state);
 private:
     QWebSocket *webSocket = nullptr;
     QLabel *pName[4];
@@ -39,9 +38,6 @@ private:
     QLabel *pingValue;
     QLabel *motd;
     QTimer *timer;
-    QCheckBox *discordCheckbox;
-    QString discord_id;
-    QString discord_secret;
     int started;
 };
 

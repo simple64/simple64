@@ -365,7 +365,6 @@ void MainWindow::setupDiscord()
     if (discord_app.core)
     {
         discord_app.activities = discord_app.core->get_activity_manager(discord_app.core);
-        discord_app.lobbies = discord_app.core->get_lobby_manager(discord_app.core);
 
         QTimer *timer = new QTimer(this);
         connect(timer, &QTimer::timeout, this, &MainWindow::discordCallback);
