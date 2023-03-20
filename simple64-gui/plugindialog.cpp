@@ -27,6 +27,7 @@ static void paramListCallback(void *context, const char *ParamName, m64p_type Pa
         else if (strcmp((char*)ParamName, "EnableDebugger") == 0) return;
         else if (strcmp((char*)ParamName, "GbCameraVideoCaptureBackend1") == 0) return;
         else if (strcmp((char*)ParamName, "SaveDiskFormat") == 0) return;
+        else if (strcmp((char*)ParamName, "SaveFilenameFormat") == 0) return;
     }
 
     QGridLayout *my_layout = nullptr;
