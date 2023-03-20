@@ -164,12 +164,18 @@ static char *get_save_filename(void)
 {
     static char filename[256];
 
-    if (strstr(ROM_SETTINGS.goodname, "(unknown rom)") == NULL) {
-        snprintf(filename, 256, "%.32s-%.8s", ROM_SETTINGS.goodname, ROM_SETTINGS.MD5);
-    } else if (ROM_HEADER.Name[0] != 0) {
-        snprintf(filename, 256, "%s-%.8s", ROM_PARAMS.headername, ROM_SETTINGS.MD5);
-    } else {
-        snprintf(filename, 256, "unknown-%.8s", ROM_SETTINGS.MD5);
+    int format = ConfigGetParamInt(g_CoreConfig, "SaveFilenameFormat");
+
+    if (format == 0) {
+        snprintf(filename, 256, "%s", ROM_PARAMS.headername);
+    } else /* if (format == 1) */ {
+        if (strstr(ROM_SETTINGS.goodname, "(unknown rom)") == NULL) {
+            snprintf(filename, 256, "%.32s-%.8s", ROM_SETTINGS.goodname, ROM_SETTINGS.MD5);
+        } else if (ROM_HEADER.Name[0] != 0) {
+            snprintf(filename, 256, "%s-%.8s", ROM_PARAMS.headername, ROM_SETTINGS.MD5);
+        } else {
+            snprintf(filename, 256, "unknown-%.8s", ROM_SETTINGS.MD5);
+        }
     }
 
     /* sanitize filename */
@@ -420,6 +426,7 @@ int main_set_core_defaults(void)
     ConfigSetDefaultBool(g_CoreConfig, "RandomizeInterrupt", 1, "Randomize PI/SI Interrupt Timing");
     ConfigSetDefaultString(g_CoreConfig, "GbCameraVideoCaptureBackend1", DEFAULT_VIDEO_CAPTURE_BACKEND, "Gameboy Camera Video Capture backend");
     ConfigSetDefaultInt(g_CoreConfig, "SaveDiskFormat", 1, "Disk Save Format (0: Full Disk Copy (*.ndr/*.d6r), 1: RAM Area Only (*.ram))");
+    ConfigSetDefaultInt(g_CoreConfig, "SaveFilenameFormat", 1, "Save (SRAM/State) Filename Format (0: ROM Header Name, 1: Automatic (including partial MD5 hash))");
 
     /* handle upgrades */
     if (bUpgrade)
