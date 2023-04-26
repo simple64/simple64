@@ -178,7 +178,7 @@
   </action>
   <action name="actionToggle_Speed_Limiter">
    <property name="text">
-    <string>Toggle Speed Limiter</string>
+    <string>Toggle Speed Limiter (y)</string>
    </property>
   </action>
   <action name="actionView_Log">
