@@ -2,7 +2,7 @@
 #ifndef VRUWORDS_H
 #define VRUWORDS_H
 
-const char * vruwords = "{\"03A50024000303CF00A80003036000EA\": [\"pikachu\"], \
+QString vruwords = "{\"03A50024000303CF00A80003036000EA\": [\"pikachu\"], \
 \"03A50045000303CF00A80003036000EA\": [\"pikachu\"], \
 \"03A50024000303C900450003036000EA\": [\"pikachu\"], \
 \"03A8018F000303CF00A80003036000EA\": [\"pikachu\"], \

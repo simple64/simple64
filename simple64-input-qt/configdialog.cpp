@@ -85,7 +85,8 @@ ControllerTab::ControllerTab(unsigned int controller, QSettings* settings, QSett
 
     gamepadSelect->insertItem(0, "Auto");
     gamepadSelect->addItem("Keyboard");
-    gamepadSelect->addItem("Emulate VRU");
+    if (controller == 4)
+        gamepadSelect->addItem("Emulate VRU");
     gamepadSelect->addItem("None");
     gamepadSelect->setCurrentText(controllerSettings->value("Controller" + QString::number(controller) + "/Gamepad").toString());
     connect(gamepadSelect, &QComboBox::currentTextChanged, [=](QString text) {
