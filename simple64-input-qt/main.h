@@ -9,6 +9,7 @@ typedef struct
     CONTROL *control;               // pointer to CONTROL struct in Core library
     SDL_GameController *gamepad;
     SDL_Joystick *joystick;
+    QString device_path;
     QString profile;
     int deadzone;
     int range;
