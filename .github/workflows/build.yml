@@ -13,7 +13,7 @@ jobs:
       - name: Update and install packages
         run: |
           dnf -y update
-          dnf -y install pkgconf-pkg-config which cmake ninja-build make qt6-qtwebsockets-devel hidapi-devel zlib-devel libpng-devel SDL2_net-devel wget zip git ShellCheck
+          dnf -y install pkgconf-pkg-config which cmake ninja-build make qt6-qtwebsockets-devel hidapi-devel zlib-devel libpng-devel SDL2_net-devel lightning-devel wget zip git ShellCheck
       - uses: actions/checkout@v3
       - name: Check shell scripts
         run: |
