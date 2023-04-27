@@ -86,7 +86,7 @@ set_property(TARGET ${NAME_PLUGIN_SIMPLE64} PROPERTY VISIBILITY_INLINES_HIDDEN O
 set_target_properties(${NAME_PLUGIN_SIMPLE64} PROPERTIES PREFIX "")
 target_include_directories(${NAME_PLUGIN_SIMPLE64} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(${NAME_PLUGIN_SIMPLE64} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/arch/simd/rsp)
-target_include_directories(${NAME_PLUGIN_SIMPLE64} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/api)
+target_include_directories(${NAME_PLUGIN_SIMPLE64} PUBLIC /usr/include/lightning)
 target_compile_options(${NAME_PLUGIN_SIMPLE64} PRIVATE ${PARALLEL_RSP_CXX_FLAGS} -Ofast)
 if (CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
 	target_compile_options(${NAME_PLUGIN_SIMPLE64} PRIVATE -march=armv8-a)
