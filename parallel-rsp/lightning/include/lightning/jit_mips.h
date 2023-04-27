@@ -34,9 +34,9 @@
 typedef enum {
 #define jit_r(i)		(_V0 + (i))
 #if NEW_ABI
-#  define jit_r_num()		8
+#  define jit_r_num()		7
 #else
-#  define jit_r_num()		12
+#  define jit_r_num()		11
 #endif
 #define jit_v(i)		(_S0 + (i))
 #define jit_v_num()		8
@@ -55,7 +55,6 @@ typedef enum {
 #  define JIT_R4		_T6
 #  define JIT_R5		_T7
 #  define JIT_R6		_T8
-#  define JIT_R7		_T9
 #else
 #  define JIT_R2		_T0
 #  define JIT_R3		_T1
@@ -66,7 +65,6 @@ typedef enum {
 #  define JIT_R8		_T6
 #  define JIT_R9		_T7
 #  define JIT_R10		_T8
-#  define JIT_R11		_T9
 #endif
     _V0, _V1,
 #if !NEW_ABI

@@ -14,7 +14,7 @@
 # License for more details.
 #
 
-AM_CFLAGS = -I $(top_builddir)/include -I$(top_srcdir)/include -D_GNU_SOURCE
+AM_CFLAGS = -I$(top_srcdir)/include -D_GNU_SOURCE
 
 info_TEXINFOS = lightning.texi
 MOSTLYCLEANFILES = lightning.tmp
