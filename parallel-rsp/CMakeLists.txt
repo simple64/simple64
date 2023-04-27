@@ -69,6 +69,17 @@ add_library(${NAME_PLUGIN_SIMPLE64} SHARED
 		arch/simd/rsp/vxor.h
 		arch/simd/rsp/vmulm.h)
 
+option(PARALLEL_RSP_DEBUG_JIT "Enable the debug JIT." OFF)
+
+if (PARALLEL_RSP_DEBUG_JIT)
+	if (ANDROID)
+		message("Android does not support debug JIT. Disabling it.")
+	elseif (NOT WIN32)
+		target_sources(parallel-rsp PRIVATE debug_rsp.cpp debug_rsp.hpp debug_jit.cpp debug_jit.hpp)
+		target_compile_definitions(parallel-rsp PUBLIC PARALLEL_RSP_DEBUG_JIT)
+	endif()
+endif()
+
 set_property(TARGET ${NAME_PLUGIN_SIMPLE64} PROPERTY C_VISIBILITY_PRESET hidden)
 set_property(TARGET ${NAME_PLUGIN_SIMPLE64} PROPERTY CXX_VISIBILITY_PRESET hidden)
 set_property(TARGET ${NAME_PLUGIN_SIMPLE64} PROPERTY VISIBILITY_INLINES_HIDDEN ON)
@@ -83,9 +94,9 @@ else()
 	target_compile_options(${NAME_PLUGIN_SIMPLE64} PRIVATE -march=x86-64-v3)
 endif()
 
-option(PARALLEL_RSP_BAKED_LIGHTNING "Use built-in Lightning." ON)
+option(PARALLEL_RSP_BAKED_LIGHTNING "Use built-in Lightning." OFF)
 
-target_compile_definitions(${NAME_PLUGIN_SIMPLE64} PUBLIC PARALLEL_RSP_LIGHTNING)
+target_compile_definitions(parallel-rsp PUBLIC PARALLEL_RSP_LIGHTNING)
 if (PARALLEL_RSP_BAKED_LIGHTNING)
 	add_library(lightning STATIC
 			lightning/lib/jit_disasm.c
@@ -95,29 +106,15 @@ if (PARALLEL_RSP_BAKED_LIGHTNING)
 			lightning/lib/jit_print.c
 			lightning/lib/jit_size.c
 			lightning/lib/lightning.c)
-	set_property(TARGET lightning PROPERTY POSITION_INDEPENDENT_CODE ON)
 	target_include_directories(lightning PUBLIC
 			${CMAKE_CURRENT_SOURCE_DIR}/lightning/include)
 	if (WIN32)
 		target_sources(lightning PRIVATE win32/mman/sys/mman.c)
 		target_include_directories(lightning PRIVATE win32/mman)
 	endif()
-	set_property(TARGET lightning PROPERTY C_VISIBILITY_PRESET hidden)
-	set_property(TARGET lightning PROPERTY CXX_VISIBILITY_PRESET hidden)
-	set_property(TARGET lightning PROPERTY VISIBILITY_INLINES_HIDDEN ON)
-	target_compile_options(lightning PRIVATE -DHAVE_MMAP -Ofast)
-	target_link_options(lightning PRIVATE -DHAVE_MMAP -Ofast)
-	if (CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
-		target_compile_options(lightning PRIVATE -march=armv8-a)
-		target_link_options(lightning PRIVATE -march=armv8-a)
-	else()
-		target_compile_options(lightning PRIVATE -march=x86-64-v3)
-		target_link_options(lightning PRIVATE -march=x86-64-v3)
-	endif()
-	if (NOT APPLE)
-		target_link_options(lightning PRIVATE -Wl,-Bsymbolic -Wl,-Bsymbolic-functions)
-	endif (NOT APPLE)
 endif()
+target_link_libraries(${NAME_PLUGIN_SIMPLE64} PUBLIC lightning)
+
 target_link_options(${NAME_PLUGIN_SIMPLE64} PRIVATE -Ofast)
 if (CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
 	target_link_options(${NAME_PLUGIN_SIMPLE64} PRIVATE -march=armv8-a)
@@ -127,4 +124,102 @@ endif()
 if (NOT APPLE)
 	target_link_options(${NAME_PLUGIN_SIMPLE64} PRIVATE -Wl,-Bsymbolic -Wl,-Bsymbolic-functions)
 endif (NOT APPLE)
-target_link_libraries(${NAME_PLUGIN_SIMPLE64} PUBLIC lightning)
+
+option(PARALLEL_RSP_TESTS "Enable unit tests for Lightning CPU." OFF)
+
+if (PARALLEL_RSP_TESTS)
+	enable_testing()
+
+	if (ANDROID)
+		add_test(NAME rsp-vu-fuzz
+				COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/android_fuzz_runner.sh
+				${CMAKE_CURRENT_BINARY_DIR}/rsp-vu-fuzzer)
+	else()
+		add_test(NAME rsp-vu-fuzz COMMAND $<TARGET_FILE:rsp-vu-fuzzer>)
+	endif()
+	add_custom_target(rsp-tests ALL)
+
+	add_custom_target(rsp-test-crt
+			COMMAND ${CMAKE_MAKE_PROGRAM} crt-obj -j1
+			WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/debug-toolchain)
+
+	function(rsp_add_test NAME)
+		add_custom_target(rsp-test-binary-${NAME}
+				COMMAND ${CMAKE_MAKE_PROGRAM} RSP_TEST=${NAME} -j1
+				WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/debug-toolchain
+				DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/debug-toolchain/${NAME}.s)
+		add_dependencies(rsp-test-binary-${NAME} rsp-test-crt)
+		add_dependencies(rsp-tests rsp-test-binary-${NAME})
+
+		if (ANDROID)
+			add_test(NAME rsp-test-${NAME}
+					COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/android_test_runner.sh
+					${CMAKE_CURRENT_BINARY_DIR}/rsp-runner
+					${CMAKE_CURRENT_SOURCE_DIR}/debug-toolchain ${NAME})
+		else()
+			add_test(NAME rsp-test-${NAME}
+					COMMAND $<TARGET_FILE:rsp-runner>
+					${CMAKE_CURRENT_SOURCE_DIR}/debug-toolchain/${NAME}.global.bin
+					${CMAKE_CURRENT_SOURCE_DIR}/debug-toolchain/${NAME}.bin)
+		endif()
+	endfunction()
+
+	rsp_add_test(sll)
+	rsp_add_test(srl)
+	rsp_add_test(sra)
+	rsp_add_test(sllv)
+	rsp_add_test(srlv)
+	rsp_add_test(srav)
+	rsp_add_test(add)
+	rsp_add_test(sub)
+	rsp_add_test(or)
+	rsp_add_test(and)
+	rsp_add_test(xor)
+	rsp_add_test(nor)
+	rsp_add_test(slt)
+	rsp_add_test(sltu)
+	rsp_add_test(addi)
+	rsp_add_test(slti)
+	rsp_add_test(sltiu)
+	rsp_add_test(andi)
+	rsp_add_test(ori)
+	rsp_add_test(xori)
+	rsp_add_test(lui)
+	rsp_add_test(lb)
+	rsp_add_test(lbu)
+	rsp_add_test(lh)
+	rsp_add_test(lhu)
+	rsp_add_test(lh-unaligned)
+	rsp_add_test(lhu-unaligned)
+	rsp_add_test(lw)
+	rsp_add_test(lw-unaligned)
+	rsp_add_test(sb)
+	rsp_add_test(sh)
+	rsp_add_test(sw)
+	rsp_add_test(sh-unaligned)
+	rsp_add_test(sw-unaligned)
+	rsp_add_test(beq-impossible-delay-slot-second-taken)
+	rsp_add_test(beq-impossible-delay-slot-first-taken)
+	#rsp_add_test(beq-impossible-delay-slot-both-taken) Hangs the reference implementation :D
+	rsp_add_test(bne)
+	rsp_add_test(blez)
+	rsp_add_test(bltz)
+	rsp_add_test(bltzal)
+	rsp_add_test(bgtz)
+	rsp_add_test(bgezal)
+	rsp_add_test(j)
+	rsp_add_test(jal)
+	rsp_add_test(jr)
+	rsp_add_test(jalr)
+	rsp_add_test(lw-unaligned-in-branch-delay)
+	rsp_add_test(delay-slot-before-break)
+	rsp_add_test(delay-slot-before-new-block)
+	rsp_add_test(delay-slot-before-new-block-illegal)
+	rsp_add_test(delay-slot-before-new-block-not-taken)
+	rsp_add_test(unconditional-delay-slot-before-break)
+	rsp_add_test(cop0)
+	rsp_add_test(cop2-basic)
+	rsp_add_test(cop2-ls)
+	rsp_add_test(cop2-vector)
+	rsp_add_test(bug-shl-into-branch)
+endif()
