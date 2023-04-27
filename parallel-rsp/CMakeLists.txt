@@ -96,7 +96,6 @@ endif()
 
 option(PARALLEL_RSP_BAKED_LIGHTNING "Use built-in Lightning." OFF)
 
-target_compile_definitions(parallel-rsp PUBLIC PARALLEL_RSP_LIGHTNING)
 if (PARALLEL_RSP_BAKED_LIGHTNING)
 	add_library(lightning STATIC
 			lightning/lib/jit_disasm.c
