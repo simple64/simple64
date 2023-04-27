@@ -7,29 +7,26 @@ dnl GNU lightning is free software; you can redistribute it and/or modify it
 dnl under the terms of the GNU Lesser General Public License as published
 dnl by the Free Software Foundation; either version 3, or (at your option)
 dnl any later version.
-dnl
+dnl 
 dnl GNU lightning is distributed in the hope that it will be useful, but
 dnl WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 dnl or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
 dnl License for more details.
 dnl
 
-AC_PREREQ(2.64)
+AC_PREREQ(2.57)
 AC_INIT([GNU lightning], 2.1.3, pcpa@gnu.org, lightning)
-AC_CONFIG_AUX_DIR([build-aux])
 AC_CANONICAL_TARGET
 AC_CONFIG_SRCDIR([Makefile.am])
 AM_INIT_AUTOMAKE([dist-bzip2])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
-AC_CONFIG_MACRO_DIR([m4])
+AC_CONFIG_MACRO_DIR(m4)
 
-AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_HEADERS(config.h)
 
 AC_PROG_CC
-gl_EARLY
-AM_PROG_AR
-LT_INIT
-gl_INIT
+AC_PROG_INSTALL
+AC_PROG_LIBTOOL
 
 case "$target_cpu" in
     ia64)
@@ -63,7 +60,7 @@ case "$target_cpu" in
     *)						;;
 esac
 
-AC_CHECK_FUNCS(mmap mremap ffsl getopt_long_only isnan isinf,,)
+AC_CHECK_FUNCS(mremap ffsl getopt_long_only isnan isinf,,)
 
 AC_CHECK_HEADERS([getopt.h stdint.h],,,)
 
@@ -72,7 +69,7 @@ AC_ARG_ENABLE(disassembler,
 			     [Enable jit disassembler using binutils]),
 	      [DISASSEMBLER=$enableval], [DISASSEMBLER=auto])
 if test "x$DISASSEMBLER" != "xno"; then
-
+    # FIXME need to check for libiberty first or will fail to link
     AC_CHECK_LIB(iberty, htab_try_create, ,
 		 [HAVE_IBERTY="no"])
     AC_CHECK_LIB(bfd, bfd_init, ,
@@ -81,43 +78,17 @@ if test "x$DISASSEMBLER" != "xno"; then
 		 [HAVE_Z="no"])
     AC_CHECK_LIB(opcodes, init_disassemble_info, ,
 		 [HAVE_OPCODES="no"])
-
-    if test "x$HAVE_IBERTY" = "xno"; then
-        if test "x$DISASSEMBLER" = "xyes"; then
-            AC_MSG_ERROR([libiberty not found])
-        else
-            AC_MSG_WARN([libiberty not found])
-            DISASSEMBLER="no"
-        fi
+    if test "x$HAVE_IBERTY"  = "xno" -o \
+	    "x$HAVE_BFD"     = "xno" -o \
+	    "x$HAVE_Z"       = "xno" -o \
+	    "x$HAVE_OPCODES" = "xno"; then
+	if test "x$DISASSEMBLER" != "xauto"; then
+	    AC_MSG_ERROR([binutils not found, see http://www.gnu.org/software/binutils/])
+	else
+	    AC_MSG_WARN([binutils not found, see http://www.gnu.org/software/binutils/])
+	    DISASSEMBLER="no"
+	fi
     fi
-
-    if test "x$HAVE_BFD" = "xno"; then
-        if test "x$DISASSEMBLER" = "xyes"; then
-            AC_MSG_ERROR([binutils BFD not found, see http://www.gnu.org/software/binutils/])
-        else
-            AC_MSG_WARN([binutils BFD not found, see http://www.gnu.org/software/binutils/])
-            DISASSEMBLER="no"
-        fi
-    fi
-
-    if test "x$HAVE_Z" = "xno"; then
-        if test "x$DISASSEMBLER" = "xyes"; then
-            AC_MSG_ERROR([zlib not found, see https://zlib.net/])
-        else
-            AC_MSG_WARN([zlib not found, see https://zlib.net/])
-            DISASSEMBLER="no"
-        fi
-    fi
-
-    if test "x$HAVE_OPCODES" = "xno"; then
-        if test "x$DISASSEMBLER" = "xyes"; then
-            AC_MSG_ERROR([binutils opcodes not found, see https://www.gnu.org/software/binutils/])
-        else
-            AC_MSG_WARN([binutils opcodes not found, see https://www.gnu.org/software/binutils/])
-            DISASSEMBLER="no"
-        fi
-    fi
-
 fi
 AM_CONDITIONAL(with_disassembler, [test "x$DISASSEMBLER" != "xno"])
 if test "x$DISASSEMBLER" != "xno"; then
@@ -320,7 +291,6 @@ fi
 
 AC_OUTPUT([Makefile
 	   lightning.pc
-           gnulib-lib/Makefile
 	   doc/Makefile
 	   include/Makefile
 	   include/lightning/Makefile

@@ -1,13 +1,2 @@
 *.info*
 stamp-*
-/version.texi
-
-texinfo.tex
-mdate-sh
-
-fact
-ifib
-incr
-printf
-rfib
-rpn

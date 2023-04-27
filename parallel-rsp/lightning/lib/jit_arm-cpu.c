@@ -612,7 +612,7 @@ static void _torl(jit_state_t*,int,int,int) maybe_unused;
 #  define CMNI(rn,im)			CC_CMNI(ARM_CC_AL,rn,im)
 #  define T2_CMNI(rn,im)		torri(THUMB2_CMNI,rn,_R15_REGNO,im)
 #  define CC_TST(cc,rn,rm)		corrr(cc,ARM_TST,rn,r0,rm)
-#  define TST(rn,rm)			corrr(ARM_CC_AL,ARM_TST,rn,0,rm)
+#  define TST(rn,rm)			CC_TST(ARM_CC_AL,rn,rm)
 #  define T1_TST(rn,rm)			is(THUMB_TST|(_u3(rm)<<3)|_u3(rn))
 #  define T2_TST(rn,rm)			torrr(THUMB2_TST,rn,_R15_REGNO,rm)
 #  define CC_TSTI(cc,rn,im)		corri(cc,ARM_TST|ARM_I,rn,0,im)
@@ -843,10 +843,6 @@ static void _movr(jit_state_t*,jit_int32_t,jit_int32_t);
 static void _movi(jit_state_t*,jit_int32_t,jit_word_t);
 #  define movi_p(r0,i0)			_movi_p(_jit,r0,i0)
 static jit_word_t _movi_p(jit_state_t*,jit_int32_t,jit_word_t);
-#  define movnr(r0,r1,r2)		_movnr(_jit,r0,r1,r2)
-static void _movnr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
-#  define movzr(r0,r1,r2)		_movzr(_jit,r0,r1,r2)
-static void _movzr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
 #  define comr(r0,r1)			_comr(_jit,r0,r1)
 static void _comr(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define negr(r0,r1)			_negr(_jit,r0,r1)
@@ -1095,10 +1091,15 @@ static void _sti_i(jit_state_t*,jit_word_t,jit_int32_t);
 static void _stxr_i(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
 #  define stxi_i(r0,r1,i0)		_stxi_i(_jit,r0,r1,i0)
 static void _stxi_i(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
-#  define bswapr_us(r0,r1)		_bswapr_us(_jit,r0,r1)
-static void _bswapr_us(jit_state_t*,jit_int32_t,jit_int32_t);
-#  define bswapr_ui(r0,r1)		_bswapr_ui(_jit,r0,r1)
-static void _bswapr_ui(jit_state_t*,jit_int32_t,jit_int32_t);
+#  if __BYTE_ORDER == __LITTLE_ENDIAN
+#  define htonr_us(r0,r1)		_htonr_us(_jit,r0,r1)
+static void _htonr_us(jit_state_t*,jit_int32_t,jit_int32_t);
+#  define htonr_ui(r0,r1)		_htonr_ui(_jit,r0,r1)
+static void _htonr_ui(jit_state_t*,jit_int32_t,jit_int32_t);
+#  else
+#    define htonr_us(r0,r1)		extr_us(r0,r1)
+#    define htonr(r0,r1)		movr(r0,r1)
+#  endif
 #  define extr_c(r0,r1)			_extr_c(_jit,r0,r1)
 static void _extr_c(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define extr_uc(r0,r1)		_extr_uc(_jit,r0,r1)
@@ -1579,35 +1580,6 @@ _movi_p(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
     else
 	load_const(1, r0, 0);
     return (w);
-}
-
-static void
-_movznr(jit_state_t *_jit, int ct, jit_int32_t r0,
-        jit_int32_t r1, jit_int32_t r2)
-{
-    if (jit_thumb_p()) {
-        if (r2 < 7)
-            T1_CMPI(r2, 0);
-        else
-            T2_CMPI(r2, 0);
-        IT(ct);
-        T1_MOV(r0, r1);
-    } else {
-        CMPI(r2, 0);
-        CC_MOV(ct, r0, r1);
-    }
-}
-
-static void
-_movnr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
-{
-    _movznr(_jit, ARM_CC_NE, r0, r1, r2);
-}
-
-static void
-_movzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
-{
-    _movznr(_jit, ARM_CC_EQ, r0, r1, r2);
 }
 
 static void
@@ -3604,9 +3576,11 @@ _stxi_i(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
     }
 }
 
+#  if __BYTE_ORDER == __LITTLE_ENDIAN
 static void
-_bswapr_us(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+_htonr_us(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
+    jit_int32_t		t0;
     if (jit_thumb_p()) {
 	if ((r0|r1) < 8)
 	    T1_REV(r0, r1);
@@ -3620,14 +3594,20 @@ _bswapr_us(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 	    rshi_u(r0, r0, 16);
 	}
 	else {
-		generic_bswapr_us(_jit, r0, r1);
+	    t0 = jit_get_reg(jit_class_gpr);
+	    rshi(rn(t0), r1, 8);
+	    andi(r0, r1, 0xff);
+	    andi(rn(t0), rn(t0), 0xff);
+	    lshi(r0, r0, 8);
+	    orr(r0, r0, rn(t0));
+	    jit_unget_reg(t0);
 	}
     }
 }
 
 /* inline glibc htonl (without register clobber) */
 static void
-_bswapr_ui(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+_htonr_ui(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
     jit_int32_t		reg;
     if (jit_thumb_p()) {
@@ -3649,6 +3629,7 @@ _bswapr_ui(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 	}
     }
 }
+#endif
 
 static void
 _extr_c(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
