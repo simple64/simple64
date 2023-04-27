@@ -14,7 +14,7 @@
 
 extern "C"
 {
-#include <lightning.h>
+#include <lightning/lightning.h>
 }
 
 namespace RSP
