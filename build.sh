@@ -78,6 +78,18 @@ else
   cp "${base_dir}/simple64-gui/build/simple64-gui" "${install_dir}"
 fi
 
+if [[ ${UNAME} == *"MINGW"* ]]; then
+  rm -rf "${base_dir}/lightning"
+  mkdir -p "${base_dir}/lightning"
+  cd "${base_dir}/lightning"
+  curl https://ftp.gnu.org/gnu/lightning/lightning-2.2.2.tar.gz | tar -xz --strip-components=1
+  echo "AM_LDFLAGS=-no-undefined" >> lib/Makefile.am
+  ./configure --disable-disassembler
+  make -j4
+  make install
+  mv /mingw64/include/lightning.h /mingw64/include/lightning
+fi
+
 mkdir -p "${base_dir}/parallel-rsp/build"
 cd "${base_dir}/parallel-rsp/build"
 cmake -G Ninja -DCMAKE_BUILD_TYPE=Release ..
