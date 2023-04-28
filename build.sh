@@ -83,7 +83,7 @@ if [[ ${UNAME} == *"MINGW"* ]]; then
   mkdir -p "${base_dir}/lightning"
   cd "${base_dir}/lightning"
   curl https://ftp.gnu.org/gnu/lightning/lightning-2.2.2.tar.gz | tar -xz --strip-components=1
-  echo "AM_LDFLAGS=-no-undefined" >> lib/Makefile.am
+  echo "liblightning_la_LDFLAGS += -no-undefined" >> lib/Makefile.am
   ./configure --disable-disassembler
   make -j4
   make install
@@ -139,6 +139,7 @@ if [[ ${UNAME} == *"MINGW"* ]]; then
   cp -v "/${mingw_prefix}/bin/libintl-8.dll" "${install_dir}"
   cp -v "/${mingw_prefix}/bin/libiconv-2.dll" "${install_dir}"
   cp -v "/${mingw_prefix}/bin/libhidapi-0.dll" "${install_dir}"
+  cp -v "/${mingw_prefix}/bin/liblightning-2.dll" "${install_dir}"
   cp -v "/${mingw_prefix}/bin/libcrypto-3-x64.dll" "${install_dir}" # used by Qt at runtime
   cp -v "/${mingw_prefix}/bin/libssl-3-x64.dll" "${install_dir}" # used by Qt at runtime
   cp -v "${base_dir}/7za.exe" "${install_dir}"
