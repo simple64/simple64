@@ -7,3 +7,4 @@
 *.iml
 /build-*
 build/
+lightning_patched.c
