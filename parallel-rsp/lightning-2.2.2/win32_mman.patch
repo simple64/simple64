@@ -1,0 +1,52 @@
+--- lightning-2.2.2/lib/lightning.c	2023-04-28 14:22:31.953648525 -0600
++++ lightning_patched.c	2023-04-28 14:31:42.122729768 -0600
+@@ -2548,8 +2548,13 @@
+ 	jit_free((jit_pointer_t *)&_jitc->data.ptr);
+ #if HAVE_MMAP
+     else {
++#ifdef _WIN32
++	result = _mprotect(_jit->data.ptr,
++			  _jit->data.length, PROT_READ);
++#else
+ 	result = mprotect(_jit->data.ptr,
+ 			  _jit->data.length, PROT_READ);
++#endif
+ 	assert(result == 0);
+     }
+     if (!_jit->user_code) {
+@@ -2558,7 +2563,11 @@
+ 	/* FIXME should start adding consts at a page boundary */
+ 	_jit->code.protected -= _jitc->consts.hash.count * sizeof(jit_word_t);
+ #  endif
++#ifdef _WIN32
++	result = _mprotect(_jit->code.ptr, _jit->code.protected, PROT_READ | PROT_EXEC);
++#else
+ 	result = mprotect(_jit->code.ptr, _jit->code.protected, PROT_READ | PROT_EXEC);
++#endif
+ 	assert(result == 0);
+     }
+ #endif /* HAVE_MMAP */
+@@ -2576,7 +2585,11 @@
+ #else
+   int result;
+   if (_jit->user_code) return;
++#ifdef _WIN32
++  result = _mprotect (_jit->code.ptr, _jit->code.protected, PROT_READ | PROT_EXEC);
++#else
+   result = mprotect (_jit->code.ptr, _jit->code.protected, PROT_READ | PROT_EXEC);
++#endif
+   assert (result == 0);
+ #endif
+ }
+@@ -2589,7 +2602,11 @@
+ #else
+   int result;
+   if (_jit->user_code) return;
++#ifdef _WIN32
++  result = _mprotect (_jit->code.ptr, _jit->code.protected, PROT_READ | PROT_WRITE);
++#else
+   result = mprotect (_jit->code.ptr, _jit->code.protected, PROT_READ | PROT_WRITE);
++#endif
+   assert (result == 0);
+ #endif
+ }

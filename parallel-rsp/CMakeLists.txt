@@ -70,11 +70,19 @@ target_sources(${NAME_PLUGIN_SIMPLE64} PRIVATE
 		lightning-${LIGHTNING_VERSION}/lib/jit_note.c
 		lightning-${LIGHTNING_VERSION}/lib/jit_print.c
 		lightning-${LIGHTNING_VERSION}/lib/jit_size.c
-		lightning-${LIGHTNING_VERSION}/lib/lightning.c)
+		lightning-${LIGHTNING_VERSION}/lib/lightning_patched.c)
 
 if (WIN32)
 		target_sources(${NAME_PLUGIN_SIMPLE64} PRIVATE win32/mman/sys/mman.c)
 		target_include_directories(${NAME_PLUGIN_SIMPLE64} PRIVATE win32/mman)
+endif()
+
+if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/lightning-${LIGHTNING_VERSION}/lib/lightning_patched.c")
+	execute_process(COMMAND patch
+		${CMAKE_CURRENT_SOURCE_DIR}/lightning-${LIGHTNING_VERSION}/lib/lightning.c
+		-i ${CMAKE_CURRENT_SOURCE_DIR}/lightning-${LIGHTNING_VERSION}/win32_mman.patch
+		-o ${CMAKE_CURRENT_SOURCE_DIR}/lightning-${LIGHTNING_VERSION}/lib/lightning_patched.c
+		COMMAND_ERROR_IS_FATAL ANY)
 endif()
 
 target_include_directories(${NAME_PLUGIN_SIMPLE64} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/lightning-${LIGHTNING_VERSION}/include)
