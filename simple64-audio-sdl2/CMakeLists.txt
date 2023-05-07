@@ -5,12 +5,10 @@ project(simple64-audio-sdl2 LANGUAGES C)
 
 include(CheckIPOSupported)
 check_ipo_supported(RESULT ENABLE_IPO)
-if(ENABLE_IPO)
-    message("Interprocedural optimizations enabled")
-endif(ENABLE_IPO)
 
-if(ENABLE_IPO AND (CMAKE_BUILD_TYPE STREQUAL "Release"))
+if(ENABLE_IPO AND (NOT CMAKE_BUILD_TYPE STREQUAL "Debug"))
     set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
+    message("Interprocedural optimizations enabled")
 endif()
 
 find_package(SDL2 REQUIRED)
