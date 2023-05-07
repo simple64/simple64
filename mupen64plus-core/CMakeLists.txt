@@ -3,9 +3,6 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0")
 
 project(mupen64plus LANGUAGES C)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
 include(CheckIPOSupported)
 check_ipo_supported(RESULT ENABLE_IPO)
 if(ENABLE_IPO)
