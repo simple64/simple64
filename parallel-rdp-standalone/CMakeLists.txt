@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.22)
 set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0")
 
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_C_STANDARD 99)
 project(parallel-rdp LANGUAGES CXX C)
 
 set(NAME_PLUGIN_SIMPLE64 "simple64-video-parallel")
