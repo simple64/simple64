@@ -1646,8 +1646,6 @@ m64p_error main_run(void)
     else
         disable_extra_mem = ConfigGetParamInt(g_CoreConfig, "DisableExtraMem");
 
-    rdram_size = (disable_extra_mem == 0) ? 0x800000 : 0x400000;
-
     uint32_t count_per_op; //UNUSED
     uint32_t count_per_op_denom_pot; //UNUSED
     uint32_t rsp_delay_time; //UNUSED
@@ -1655,6 +1653,8 @@ m64p_error main_run(void)
     //During netplay, player 1 is the source of truth for these settings
     netplay_sync_settings(&count_per_op, &count_per_op_denom_pot, &disable_extra_mem, &si_dma_duration, &emumode, &no_compiled_jump, &rsp_delay_time);
 
+    rdram_size = (disable_extra_mem == 0) ? 0x800000 : 0x400000;
+    
     cheat_add_hacks(&g_cheat_ctx, ROM_PARAMS.cheats);
 
     /* do byte-swapping if it hasn't been done yet */
