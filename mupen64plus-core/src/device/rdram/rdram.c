@@ -232,7 +232,10 @@ void read_rdram_dram(void* opaque, uint32_t address, uint32_t* value)
     uint32_t addr = rdram_dram_address(address);
     cp0_ram_interlock(rdram->r4300);
 
-    *value = rdram->dram[addr];
+    if (address < rdram->dram_size)
+    {
+        *value = rdram->dram[addr];
+    }
 }
 
 void write_rdram_dram(void* opaque, uint32_t address, uint32_t value, uint32_t mask)
@@ -240,7 +243,10 @@ void write_rdram_dram(void* opaque, uint32_t address, uint32_t value, uint32_t m
     struct rdram* rdram = (struct rdram*)opaque;
     uint32_t addr = rdram_dram_address(address);
 
-    masked_write(&rdram->dram[addr], value, mask);
+    if (address < rdram->dram_size)
+    {
+        masked_write(&rdram->dram[addr], value, mask);
+    }
 }
 
 uint32_t rdram_calculate_cycles(uint32_t length)
