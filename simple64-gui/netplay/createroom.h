@@ -18,9 +18,7 @@ public:
 private slots:
     void handleRomButton();
     void handleCreateButton();
-    void getIP();
     void createRoom();
-    void ipReplyFinished(QNetworkReply *reply);
     void downloadFinished(QNetworkReply *reply);
     void processBinaryMessage(QByteArray message);
     void onFinished(int result);
@@ -46,7 +44,6 @@ private:
     QLabel *pingValue;
     int launched;
     QString filename;
-    QString clientIP;
     QUdpSocket broadcastSocket;
     QString customServerHost;
     QTimer *connectionTimer;
