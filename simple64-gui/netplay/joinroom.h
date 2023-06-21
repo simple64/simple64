@@ -21,9 +21,7 @@ private slots:
     void onConnected();
     void processBinaryMessage(QByteArray message);
     void refresh();
-    void getIP();
     void joinGame();
-    void ipReplyFinished(QNetworkReply *reply);
     void onFinished(int result);
     void processBroadcast();
     void sendPing();
@@ -44,7 +42,6 @@ private:
     int row = 0;
     int launched;
     QString filename;
-    QString clientIP;
     QUdpSocket broadcastSocket;
     QTimer *connectionTimer;
     QString customServerAddress;

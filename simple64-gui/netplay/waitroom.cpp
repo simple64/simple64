@@ -3,6 +3,7 @@
 #include "../interface/core_commands.h"
 #include <QGridLayout>
 #include <QMessageBox>
+#include <QJsonArray>
 
 WaitRoom::WaitRoom(QString filename, QJsonObject room, QWebSocket *socket, QWidget *parent)
     : QDialog(parent)
@@ -172,16 +173,14 @@ void WaitRoom::processBinaryMessage(QByteArray message)
     QJsonObject json = json_doc.object();
     if (json.value("type").toString() == "room_players")
     {
-        for (int i = 0; i < 4; ++i)
+        if (json.contains("player_names"))
         {
-            if (json.contains(QString::number(i)))
+            for (int i = 0; i < 4; ++i)
             {
-                pName[i]->setText(json.value(QString::number(i)).toString());
+                pName[i]->setText(json.value("player_names").toArray().at(i).toString());
                 if (pName[i]->text() == player_name)
                     player_number = i + 1;
             }
-            else
-                pName[i]->clear();
         }
     }
     else if (json.value("type").toString() == "chat_update")
