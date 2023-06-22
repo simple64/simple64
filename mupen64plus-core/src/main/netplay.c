@@ -55,6 +55,7 @@ static uint8_t l_player_lag[4];
 #define UDP_SEND_KEY_INFO 0
 #define UDP_RECEIVE_KEY_INFO 1
 #define UDP_REQUEST_KEY_INFO 2
+#define UDP_RECEIVE_KEY_INFO_GRATUITOUS 3
 #define UDP_SYNC_DATA 4
 
 //TCP packet formats
@@ -248,11 +249,13 @@ static void netplay_process()
         switch (packet->data[0])
         {
             case UDP_RECEIVE_KEY_INFO:
+            case UDP_RECEIVE_KEY_INFO_GRATUITOUS:
                 player = packet->data[1];
                 //current_status is a status update from the server
                 //it will let us know if another player has disconnected, or the games have desynced
                 current_status = packet->data[2];
-                l_player_lag[player] = packet->data[3];
+                if (packet->data[0] == UDP_RECEIVE_KEY_INFO)
+                    l_player_lag[player] = packet->data[3];
                 if (current_status != l_status)
                 {
                     if (((current_status & 0x1) ^ (l_status & 0x1)) != 0)
@@ -539,14 +542,14 @@ void netplay_sync_settings(uint32_t *count_per_op, uint32_t *count_per_op_denom_
 void netplay_check_sync(struct cp0* cp0)
 {
     //This function is used to check if games have desynced
-    //Every 60 VIs, it sends the value of the CP0 registers to the server
+    //Every 600 VIs, it sends the value of the CP0 registers to the server
     //The server will compare the values, and update the status byte if it detects a desync
     if (!netplay_is_init())
         return;
 
     const uint32_t* cp0_regs = r4300_cp0_regs(cp0);
 
-    if (l_vi_counter % 60 == 0)
+    if (l_vi_counter % 600 == 0)
     {
         uint32_t packet_len = (CP0_REGS_COUNT * 4) + 5;
         UDPpacket *packet = SDLNet_AllocPacket(packet_len);
