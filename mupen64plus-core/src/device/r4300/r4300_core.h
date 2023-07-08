@@ -31,6 +31,7 @@
 
 #include "cp0.h"
 #include "cp1.h"
+#include "cp2.h"
 #include "dcache.h"
 #include "icache.h"
 
@@ -198,6 +199,8 @@ struct r4300_core
     struct cp0 cp0;
 
     struct cp1 cp1;
+
+    struct cp2 cp2;
 
     struct memory* mem;
     struct mi_controller* mi;
