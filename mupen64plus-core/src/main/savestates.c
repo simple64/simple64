@@ -200,7 +200,7 @@ static int savestates_load_m64p(struct device* dev, char *filepath)
     char queue[1024];
     unsigned char using_tlb_data[4];
     unsigned char data_0001_0200[4096]; // 4k for extra state from v1.2
-    unsigned char data_0001_0900[2129944]; // extra state from v1.9
+    unsigned char data_0001_0900[2129960]; // extra state from v1.9
 
     uint32_t* cp0_regs = r4300_cp0_regs(&dev->r4300.cp0);
 
@@ -884,6 +884,11 @@ static int savestates_load_m64p(struct device* dev, char *filepath)
         if (version >= 0x00010900)
         {
             curr = data_0001_0900;
+
+            /* extra cp0 and cp2 state */
+            *r4300_cp0_latch(&dev->r4300.cp0) = GETDATA(curr, uint64_t);
+            *r4300_cp2_latch(&dev->r4300.cp2) = GETDATA(curr, uint64_t);
+
             /* extra cache state */
             COPYARRAY(dev->r4300.cp0.tlb.r_cached, curr, uint8_t, 0x100000);
             COPYARRAY(dev->r4300.cp0.tlb.w_cached, curr, uint8_t, 0x100000);
@@ -1148,7 +1153,7 @@ static int savestates_save_m64p(const struct device* dev, char *filepath)
     save_eventqueue_infos(&dev->r4300.cp0, queue);
 
     // Allocate memory for the save state data
-    save->size = 16788288 + sizeof(queue) + 4 + 4096 + 2129944;
+    save->size = 16788288 + sizeof(queue) + 4 + 4096 + 2129960;
     save->data = curr = malloc(save->size);
     if (save->data == NULL)
     {
@@ -1514,6 +1519,11 @@ static int savestates_save_m64p(const struct device* dev, char *filepath)
     PUTDATA(curr, uint16_t, dev->cart.flashram.mode);
 
     curr += 2965;
+
+    /* cp0 and cp2 latch (since 1.9) */
+    PUTDATA(curr, uint64_t, *r4300_cp0_latch((struct cp0*)&dev->r4300.cp0));
+    PUTDATA(curr, uint64_t, *r4300_cp2_latch((struct cp2*)&dev->r4300.cp2));
+
     /* extra cache state (since 1.9) */
     PUTARRAY(dev->r4300.cp0.tlb.r_cached, curr, uint8_t, 0x100000);
     PUTARRAY(dev->r4300.cp0.tlb.w_cached, curr, uint8_t, 0x100000);

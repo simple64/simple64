@@ -97,6 +97,7 @@
 #define CP0_CAUSE_IP6  UINT32_C(0x00004000)
 #define CP0_CAUSE_IP7  UINT32_C(0x00008000)    /* timer */
 #define CP0_CAUSE_CE1  UINT32_C(0x10000000)
+#define CP0_CAUSE_CE2  UINT32_C(0x20000000)
 #define CP0_CAUSE_BD   UINT32_C(0x80000000)
 
 
@@ -109,8 +110,8 @@ enum r4300_cp0_registers
     CP0_CONTEXT_REG,
     CP0_PAGEMASK_REG,
     CP0_WIRED_REG,
-    /* 7 is unused */
-    CP0_BADVADDR_REG = 8,
+    CP0_UNUSED_7,
+    CP0_BADVADDR_REG,
     CP0_COUNT_REG,
     CP0_ENTRYHI_REG,
     CP0_COMPARE_REG,
@@ -123,14 +124,18 @@ enum r4300_cp0_registers
     CP0_WATCHLO_REG,
     CP0_WATCHHI_REG,
     CP0_XCONTEXT_REG,
-    /* 21 - 25 are unused */
-    CP0_PERR_REG = 26,
-    /* 27 is unused */
-    CP0_TAGLO_REG = 28,
+    CP0_UNUSED_21,
+    CP0_UNUSED_22,
+    CP0_UNUSED_23,
+    CP0_UNUSED_24,
+    CP0_UNUSED_25,
+    CP0_PARITYERR_REG,
+    CP0_CACHEERR_REG,
+    CP0_TAGLO_REG,
     CP0_TAGHI_REG,
     CP0_ERROREPC_REG,
-    /* 31 is unused */
-    CP0_REGS_COUNT = 32
+    CP0_UNUSED_31,
+    CP0_REGS_COUNT
 };
 
 
@@ -181,6 +186,7 @@ struct cp0
 #ifndef NEW_DYNAREC
 	/* New dynarec uses a different memory layout */
     uint32_t regs[CP0_REGS_COUNT];
+    uint64_t latch;
 #endif
 
     /* set to avoid savestates/reset if state may be inconsistent
@@ -206,7 +212,6 @@ struct cp0
 
     struct tlb tlb;
     uint8_t half_count;
-    uint32_t latch;
 };
 
 #ifndef NEW_DYNAREC
@@ -223,6 +228,7 @@ void init_cp0(struct cp0* cp0, struct new_dynarec_hot_state* new_dynarec_hot_sta
 void poweron_cp0(struct cp0* cp0);
 
 uint32_t* r4300_cp0_regs(struct cp0* cp0);
+uint64_t* r4300_cp0_latch(struct cp0* cp0);
 uint32_t* r4300_cp0_last_addr(struct cp0* cp0);
 unsigned int* r4300_cp0_next_interrupt(struct cp0* cp0);
 
@@ -232,6 +238,7 @@ unsigned int* r4300_cp0_next_interrupt(struct cp0* cp0);
 int* r4300_cp0_cycle_count(struct cp0* cp0);
 
 int check_cop1_unusable(struct r4300_core* r4300);
+int check_cop2_unusable(struct r4300_core* r4300);
 
 void cp0_base_cycle(struct r4300_core* r4300);
 void cp0_mci_interlock(struct r4300_core* r4300, uint32_t cycles);
