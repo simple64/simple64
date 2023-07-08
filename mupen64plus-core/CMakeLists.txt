@@ -68,6 +68,7 @@ add_library(mupen64plus SHARED
     src/device/r4300/cached_interp.c
     src/device/r4300/cp0.c
     src/device/r4300/cp1.c
+    src/device/r4300/cp2.c
     src/device/r4300/idec.c
     src/device/r4300/interrupt.c
     src/device/r4300/pure_interp.c
