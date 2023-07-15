@@ -90,7 +90,6 @@ struct rdp_core
     uint32_t dpc_regs[DPC_REGS_COUNT];
     uint32_t dps_regs[DPS_REGS_COUNT];
     unsigned char do_on_unfreeze;
-    uint32_t sync_duration;
 
     struct fb fb;
 

@@ -324,6 +324,44 @@ void vk_read_screen(unsigned char* dest)
 	wsi->get_device().unmap_host_buffer(*buffer, Vulkan::MEMORY_ACCESS_READ_BIT);
 }
 
+uint32_t viCalculateHorizonalWidth(uint32_t hstart, uint32_t xscale, uint32_t width)
+{
+	if (xscale == 0)
+		return 320;
+
+	uint32_t start = ((hstart & 0x03FF0000) >> 16) & 0x3FF;
+	uint32_t end = (hstart & 0x3FF);
+	uint32_t delta;
+	if (end > start)
+		delta = end - start;
+	else
+		delta = start - end;
+	uint32_t scale = (xscale & 0xFFF);
+
+	if (delta == 0) {
+		delta = width;
+	}
+
+	return (delta * scale) / 0x400;
+}
+
+uint32_t viCalculateVerticalHeight(uint32_t vstart, uint32_t yscale)
+{
+	if (yscale == 0)
+		return 240;
+
+	uint32_t start = ((vstart & 0x03FF0000) >> 16) & 0x3FF;
+	uint32_t end = (vstart & 0x3FF);
+	uint32_t delta;
+	if (end > start)
+		delta = end - start;
+	else
+		delta = start - end;
+	uint32_t scale = (yscale & 0xFFF);
+
+	return (delta * scale) / 0x800;
+}
+
 void vk_process_commands()
 {
 	const uint32_t DP_CURRENT = *GET_GFX_INFO(DPC_CURRENT_REG) & 0x00FFFFF8;
@@ -387,6 +425,10 @@ void vk_process_commands()
 
 		if (RDP::Op(command) == RDP::Op::SyncFull)
 		{
+			uint32_t width = viCalculateHorizonalWidth(*GET_GFX_INFO(VI_H_START_REG), *GET_GFX_INFO(VI_X_SCALE_REG), *GET_GFX_INFO(VI_WIDTH_REG));
+			uint32_t height = viCalculateVerticalHeight(*GET_GFX_INFO(VI_V_START_REG), *GET_GFX_INFO(VI_Y_SCALE_REG));
+			*GET_GFX_INFO(DPC_CLOCK_REG) = width * height;
+
 			// For synchronous RDP:
 			if (vk_synchronous)
 			{
