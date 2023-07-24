@@ -427,7 +427,7 @@ void vk_process_commands()
 		{
 			uint32_t width = viCalculateHorizonalWidth(*GET_GFX_INFO(VI_H_START_REG), *GET_GFX_INFO(VI_X_SCALE_REG), *GET_GFX_INFO(VI_WIDTH_REG));
 			uint32_t height = viCalculateVerticalHeight(*GET_GFX_INFO(VI_V_START_REG), *GET_GFX_INFO(VI_Y_SCALE_REG));
-			*GET_GFX_INFO(DPC_CLOCK_REG) = width * height;
+			*GET_GFX_INFO(DPC_CLOCK_REG) = width * height * 2;
 
 			// For synchronous RDP:
 			if (vk_synchronous)
