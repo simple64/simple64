@@ -555,6 +555,20 @@ EXPORT void CALL ControllerCommand(int Control, unsigned char *Command)
         }
 }
 
+void boundAxis(double* x, double* y) {
+    double radius = 95.0; // this is roughly the maxium diagonal distance of the controller
+
+    // Calculate the distance from the origin (0, 0)
+    double distance = sqrt((*x) * (*x) + (*y) * (*y));
+
+    // If the distance is greater than the radius, scale the coordinates
+    if (distance > radius) {
+        double scaleFactor = radius / distance;
+        *x *= scaleFactor;
+        *y *= scaleFactor;
+    }
+}
+
 int modifyAxisValue(int axis_value, int Control, int direction)
 {
     axis_value = ((abs(axis_value) - controller[Control].deadzone) * MAX_AXIS_VALUE) / controller[Control].range;
@@ -744,6 +758,12 @@ EXPORT void CALL GetKeys( int Control, BUTTONS *Keys )
     setAxis(Control, 0/*X_AXIS*/, Keys, "AxisRight", 1);
     setAxis(Control, 1/*Y_AXIS*/, Keys, "AxisUp", 1);
     setAxis(Control, 1/*Y_AXIS*/, Keys, "AxisDown", -1);
+
+    double boundX = Keys->X_AXIS;
+    double boundY = Keys->Y_AXIS;
+    boundAxis(&boundX, &boundY);
+    Keys->X_AXIS = round(boundX);
+    Keys->Y_AXIS = round(boundY);
 }
 
 static int setupVosk()
