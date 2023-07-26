@@ -53,7 +53,7 @@ void icache_writeback(struct r4300_core* r4300, struct instcache *line)
 
 void icache_fill(struct instcache *line, struct r4300_core* r4300, uint32_t address)
 {
-    cp0_icb_interlock(r4300, 6);
+    cp0_icb_interlock(r4300, 24); // not sure about this
     line->valid = 1;
     line->tag = address & ~UINT32_C(0xFFF);
     r4300->current_access_size = ACCESS_ICACHE;
