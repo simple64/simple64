@@ -35,6 +35,7 @@ add_library(${NAME_PLUGIN_SIMPLE64} SHARED
     vulkan/fence.cpp
     vulkan/fence_manager.cpp
     vulkan/image.cpp
+    vulkan/indirect_layout.cpp
     vulkan/memory_allocator.cpp
     vulkan/pipeline_event.cpp
     vulkan/query_pool.cpp
@@ -43,7 +44,7 @@ add_library(${NAME_PLUGIN_SIMPLE64} SHARED
     vulkan/semaphore.cpp
     vulkan/semaphore_manager.cpp
     vulkan/shader.cpp
-    vulkan/texture_format.cpp
+    vulkan/texture/texture_format.cpp
     vulkan/wsi.cpp
     util/arena_allocator.cpp
     util/logging.cpp
