@@ -203,6 +203,7 @@ void JoinRoom::joinGame()
                 json.insert("player_name", playerName->text());
                 json.insert("password", passwordEdit->text());
                 json.insert("client_sha", QStringLiteral(GUI_VERSION));
+                json.insert("emulator", "simple64");
 /*
                 if (roomRequiresInputDelay)
                     json.insert("input_delay", inputDelay->text().toInt());
@@ -290,6 +291,7 @@ void JoinRoom::onConnected()
     QJsonObject json;
     json.insert("type", "get_rooms");
     json.insert("netplay_version", NETPLAY_VER);
+    json.insert("emulator", "simple64");
     QJsonDocument json_doc(json);
     webSocket->sendBinaryMessage(json_doc.toJson());
 }
