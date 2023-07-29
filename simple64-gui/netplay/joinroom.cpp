@@ -199,6 +199,7 @@ void JoinRoom::joinGame()
 */
             else
             {
+                joinButton->setEnabled(false);
                 json.insert("type", "join_room");
                 json.insert("player_name", playerName->text());
                 json.insert("password", passwordEdit->text());
@@ -349,6 +350,7 @@ void JoinRoom::processBinaryMessage(QByteArray message)
             WaitRoom *waitRoom = new WaitRoom(filename, json, webSocket, parentWidget());
             waitRoom->show();
             accept();
+            return;
         }
         else if (json.value("accept").toInt() == 1)
         {
@@ -380,6 +382,7 @@ void JoinRoom::processBinaryMessage(QByteArray message)
             msgBox.setText("Could not join room");
             msgBox.exec();
         }
+        joinButton->setEnabled(true);
     }
 }
 
