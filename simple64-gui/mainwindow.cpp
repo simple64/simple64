@@ -5,6 +5,7 @@
 #include <QDesktopServices>
 #include "settingsdialog.h"
 #include "plugindialog.h"
+#include "hotkeydialog.h"
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "interface/common.h"
@@ -793,6 +794,12 @@ void MainWindow::on_actionController_Configuration_triggered()
     Config_Func PluginConfig = (Config_Func) osal_dynlib_getproc(inputPlugin, "PluginConfig");
     if (PluginConfig)
         PluginConfig();
+}
+
+void MainWindow::on_actionHotkey_Configuration_triggered()
+{
+    HotkeyDialog *settings = new HotkeyDialog(this);
+    settings->show();
 }
 
 void MainWindow::on_actionToggle_Speed_Limiter_triggered()

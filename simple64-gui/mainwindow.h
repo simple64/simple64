@@ -113,6 +113,8 @@ private slots:
 
     void on_actionController_Configuration_triggered();
 
+    void on_actionHotkey_Configuration_triggered();
+
     void on_actionToggle_Speed_Limiter_triggered();
 
     void on_actionView_Log_triggered();

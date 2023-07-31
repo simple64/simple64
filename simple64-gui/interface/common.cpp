@@ -615,3 +615,311 @@ int QT2SDL2(int qtKey)
 
     return returnValue;
 }
+
+int SDL22QT(int scanCode)
+{
+    int returnValue;
+    switch (scanCode) {
+    case SDL_SCANCODE_ESCAPE:
+        returnValue = Qt::Key_Escape;
+        break;
+    case SDL_SCANCODE_TAB:
+        returnValue = Qt::Key_Tab;
+        break;
+    case SDL_SCANCODE_BACKSPACE:
+        returnValue = Qt::Key_Backspace;
+        break;
+    case SDL_SCANCODE_RETURN:
+        returnValue = Qt::Key_Return;
+        break;
+    case SDL_SCANCODE_KP_ENTER:
+        returnValue = Qt::Key_Enter;
+        break;
+    case SDL_SCANCODE_INSERT:
+        returnValue = Qt::Key_Insert;
+        break;
+    case SDL_SCANCODE_DELETE:
+        returnValue = Qt::Key_Delete;
+        break;
+    case SDL_SCANCODE_PAUSE:
+        returnValue = Qt::Key_Pause;
+        break;
+    case SDL_SCANCODE_PRINTSCREEN:
+        returnValue = Qt::Key_Print;
+        break;
+    case SDL_SCANCODE_SYSREQ:
+        returnValue = Qt::Key_SysReq;
+        break;
+    case SDL_SCANCODE_CLEAR:
+        returnValue = Qt::Key_Clear;
+        break;
+    case SDL_SCANCODE_HOME:
+        returnValue = Qt::Key_Home;
+        break;
+    case SDL_SCANCODE_END:
+        returnValue = Qt::Key_End;
+        break;
+    case SDL_SCANCODE_LEFT:
+        returnValue = Qt::Key_Left;
+        break;
+    case SDL_SCANCODE_RIGHT:
+        returnValue = Qt::Key_Right;
+        break;
+    case SDL_SCANCODE_UP:
+        returnValue = Qt::Key_Up;
+        break;
+    case SDL_SCANCODE_DOWN:
+        returnValue = Qt::Key_Down;
+        break;
+    case SDL_SCANCODE_PAGEUP:
+        returnValue = Qt::Key_PageUp;
+        break;
+    case SDL_SCANCODE_PAGEDOWN:
+        returnValue = Qt::Key_PageDown;
+        break;
+    case SDL_SCANCODE_LSHIFT:
+        returnValue = Qt::Key_Shift;
+        break;
+    case SDL_SCANCODE_LCTRL:
+        returnValue = Qt::Key_Control;
+        break;
+    case SDL_SCANCODE_LGUI:
+        returnValue = Qt::Key_Meta;
+        break;
+    case SDL_SCANCODE_LALT:
+        returnValue = Qt::Key_Alt;
+        break;
+    case SDL_SCANCODE_RALT:
+        returnValue = Qt::Key_AltGr;
+        break;
+    case SDL_SCANCODE_CAPSLOCK:
+        returnValue = Qt::Key_CapsLock;
+        break;
+    case SDL_SCANCODE_NUMLOCKCLEAR:
+        returnValue = Qt::Key_NumLock;
+        break;
+    case SDL_SCANCODE_SCROLLLOCK:
+        returnValue = Qt::Key_ScrollLock;
+        break;
+    case SDL_SCANCODE_F1:
+        returnValue = Qt::Key_F1;
+        break;
+    case SDL_SCANCODE_F2:
+        returnValue = Qt::Key_F2;
+        break;
+    case SDL_SCANCODE_F3:
+        returnValue = Qt::Key_F3;
+        break;
+    case SDL_SCANCODE_F4:
+        returnValue = Qt::Key_F4;
+        break;
+    case SDL_SCANCODE_F5:
+        returnValue = Qt::Key_F5;
+        break;
+    case SDL_SCANCODE_F6:
+        returnValue = Qt::Key_F6;
+        break;
+    case SDL_SCANCODE_F7:
+        returnValue = Qt::Key_F7;
+        break;
+    case SDL_SCANCODE_F8:
+        returnValue = Qt::Key_F8;
+        break;
+    case SDL_SCANCODE_F9:
+        returnValue = Qt::Key_F9;
+        break;
+    case SDL_SCANCODE_F10:
+        returnValue = Qt::Key_F10;
+        break;
+    case SDL_SCANCODE_F11:
+        returnValue = Qt::Key_F11;
+        break;
+    case SDL_SCANCODE_F12:
+        returnValue = Qt::Key_F12;
+        break;
+    case SDL_SCANCODE_F13:
+        returnValue = Qt::Key_F13;
+        break;
+    case SDL_SCANCODE_F14:
+        returnValue = Qt::Key_F14;
+        break;
+    case SDL_SCANCODE_F15:
+        returnValue = Qt::Key_F15;
+        break;
+    case SDL_SCANCODE_F16:
+        returnValue = Qt::Key_F16;
+        break;
+    case SDL_SCANCODE_F17:
+        returnValue = Qt::Key_F17;
+        break;
+    case SDL_SCANCODE_F18:
+        returnValue = Qt::Key_F18;
+        break;
+    case SDL_SCANCODE_F19:
+        returnValue = Qt::Key_F19;
+        break;
+    case SDL_SCANCODE_F20:
+        returnValue = Qt::Key_F20;
+        break;
+    case SDL_SCANCODE_F21:
+        returnValue = Qt::Key_F21;
+        break;
+    case SDL_SCANCODE_F22:
+        returnValue = Qt::Key_F22;
+        break;
+    case SDL_SCANCODE_F23:
+        returnValue = Qt::Key_F23;
+        break;
+    case SDL_SCANCODE_F24:
+        returnValue = Qt::Key_F24;
+        break;
+    case SDL_SCANCODE_SPACE:
+        returnValue = Qt::Key_Space;
+        break;
+    case SDL_SCANCODE_0:
+        returnValue = Qt::Key_0;
+        break;
+    case SDL_SCANCODE_1:
+        returnValue = Qt::Key_1;
+        break;
+    case SDL_SCANCODE_2:
+        returnValue = Qt::Key_2;
+        break;
+    case SDL_SCANCODE_3:
+        returnValue = Qt::Key_3;
+        break;
+    case SDL_SCANCODE_4:
+        returnValue = Qt::Key_4;
+        break;
+    case SDL_SCANCODE_5:
+        returnValue = Qt::Key_5;
+        break;
+    case SDL_SCANCODE_6:
+        returnValue = Qt::Key_6;
+        break;
+    case SDL_SCANCODE_7:
+        returnValue = Qt::Key_7;
+        break;
+    case SDL_SCANCODE_8:
+        returnValue = Qt::Key_8;
+        break;
+    case SDL_SCANCODE_9:
+        returnValue = Qt::Key_9;
+        break;
+    case SDL_SCANCODE_A:
+        returnValue = Qt::Key_A;
+        break;
+    case SDL_SCANCODE_B:
+        returnValue = Qt::Key_B;
+        break;
+    case SDL_SCANCODE_C:
+        returnValue = Qt::Key_C;
+        break;
+    case SDL_SCANCODE_D:
+        returnValue = Qt::Key_D;
+        break;
+    case SDL_SCANCODE_E:
+        returnValue = Qt::Key_E;
+        break;
+    case SDL_SCANCODE_F:
+        returnValue = Qt::Key_F;
+        break;
+    case SDL_SCANCODE_G:
+        returnValue = Qt::Key_G;
+        break;
+    case SDL_SCANCODE_H:
+        returnValue = Qt::Key_H;
+        break;
+    case SDL_SCANCODE_I:
+        returnValue = Qt::Key_I;
+        break;
+    case SDL_SCANCODE_J:
+        returnValue = Qt::Key_J;
+        break;
+    case SDL_SCANCODE_K:
+        returnValue = Qt::Key_K;
+        break;
+    case SDL_SCANCODE_L:
+        returnValue = Qt::Key_L;
+        break;
+    case SDL_SCANCODE_M:
+        returnValue = Qt::Key_M;
+        break;
+    case SDL_SCANCODE_N:
+        returnValue = Qt::Key_N;
+        break;
+    case SDL_SCANCODE_O:
+        returnValue = Qt::Key_O;
+        break;
+    case SDL_SCANCODE_P:
+        returnValue = Qt::Key_P;
+        break;
+    case SDL_SCANCODE_Q:
+        returnValue = Qt::Key_Q;
+        break;
+    case SDL_SCANCODE_R:
+        returnValue = Qt::Key_R;
+        break;
+    case SDL_SCANCODE_S:
+        returnValue = Qt::Key_S;
+        break;
+    case SDL_SCANCODE_T:
+        returnValue = Qt::Key_T;
+        break;
+    case SDL_SCANCODE_U:
+        returnValue = Qt::Key_U;
+        break;
+    case SDL_SCANCODE_V:
+        returnValue = Qt::Key_V;
+        break;
+    case SDL_SCANCODE_W:
+        returnValue = Qt::Key_W;
+        break;
+    case SDL_SCANCODE_X:
+        returnValue = Qt::Key_X;
+        break;
+    case SDL_SCANCODE_Y:
+        returnValue = Qt::Key_Y;
+        break;
+    case SDL_SCANCODE_Z:
+        returnValue = Qt::Key_Z;
+        break;
+    case SDL_SCANCODE_LEFTBRACKET:
+        returnValue = Qt::Key_BracketLeft;
+        break;
+    case SDL_SCANCODE_RIGHTBRACKET:
+        returnValue = Qt::Key_BracketRight;
+        break;
+    case SDL_SCANCODE_MINUS:
+        returnValue = Qt::Key_Minus;
+        break;
+    case SDL_SCANCODE_SEMICOLON:
+        returnValue = Qt::Key_Semicolon;
+        break;
+    case SDL_SCANCODE_SLASH:
+        returnValue = Qt::Key_Slash;
+        break;
+    case SDL_SCANCODE_BACKSLASH:
+        returnValue = Qt::Key_Backslash;
+        break;
+    case SDL_SCANCODE_APOSTROPHE:
+        returnValue = Qt::Key_Apostrophe;
+        break;
+    case SDL_SCANCODE_COMMA:
+        returnValue = Qt::Key_Comma;
+        break;
+    case SDL_SCANCODE_PERIOD:
+        returnValue = Qt::Key_Period;
+        break;
+    case SDL_SCANCODE_EQUALS:
+        returnValue = Qt::Key_Equal;
+        break;
+    case SDL_SCANCODE_GRAVE:
+        returnValue = Qt::Key_QuoteLeft;
+        break;
+    default:
+        returnValue = Qt::Key_unknown;
+        break;
+    }
+    return returnValue;
+}
