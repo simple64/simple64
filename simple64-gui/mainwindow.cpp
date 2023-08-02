@@ -285,8 +285,9 @@ MainWindow::MainWindow(QWidget *parent) :
     updateOpenRecent();
     updateGB(ui);
 
-    if (!settings->contains("configDirPath"))
-        settings->setValue("configDirPath", "$CONFIG_PATH$");
+    // migrate from old $CONFIG_PATH$ default
+    if (settings->value("configDirPath").toString().startsWith("$"))
+        settings->remove("configDirPath");
 
 #ifdef CONFIG_DIR_PATH
     settings->setValue("configDirPath", CONFIG_DIR_PATH);
@@ -932,8 +933,6 @@ void MainWindow::loadCoreLib()
     ConfigGetSharedDataFilepath = (ptr_ConfigGetSharedDataFilepath) osal_dynlib_getproc(coreLib, "ConfigGetSharedDataFilepath");
 
     QString qtConfigDir = settings->value("configDirPath").toString();
-    qtConfigDir.replace("$APP_PATH$", QCoreApplication::applicationDirPath());
-    qtConfigDir.replace("$CONFIG_PATH$", ConfigGetUserConfigPath());
 
     if (!qtConfigDir.isEmpty())
         (*CoreStartup)(CORE_API_VERSION, qtConfigDir.toUtf8().constData() /*Config dir*/, QCoreApplication::applicationDirPath().toUtf8().constData(), (char*)"Core", DebugCallback, NULL, NULL);

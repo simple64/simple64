@@ -17,6 +17,7 @@ protected:
     void closeEvent(QCloseEvent *event);
 private slots:
     void handleConfigButton();
+    void handleAppPathButton();
     void handleClearConfigButton();
     void handleConfigEdit();
 private:

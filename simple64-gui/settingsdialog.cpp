@@ -19,6 +19,12 @@ void SettingsDialog::handleConfigButton()
     }
 }
 
+void SettingsDialog::handleAppPathButton()
+{
+    configPath->setText(QCoreApplication::applicationDirPath());
+    w->getSettings()->setValue("configDirPath", QCoreApplication::applicationDirPath());
+}
+
 void SettingsDialog::handleClearConfigButton()
 {
     configPath->setText("");
@@ -41,6 +47,8 @@ void SettingsDialog::initStuff()
     QPushButton *configButton = new QPushButton("Set Path", this);
     connect(configButton, SIGNAL (released()),this, SLOT (handleConfigButton()));
     connect(configPath, SIGNAL (editingFinished()),this, SLOT (handleConfigEdit()));
+    QPushButton *appPathButton = new QPushButton("Use Application Path", this);
+    connect(appPathButton, SIGNAL (released()),this, SLOT (handleAppPathButton()));
     QPushButton *clearConfigButton = new QPushButton("Clear", this);
     connect(clearConfigButton, SIGNAL (released()),this, SLOT (handleClearConfigButton()));
     configPath->setStyleSheet("border: 1px solid; padding: 10px");
@@ -48,7 +56,8 @@ void SettingsDialog::initStuff()
     layout->addWidget(configLabel,1,0);
     layout->addWidget(configPath,1,1);
     layout->addWidget(configButton,1,2);
-    layout->addWidget(clearConfigButton,1,3);
+    layout->addWidget(appPathButton,1,3);
+    layout->addWidget(clearConfigButton,1,4);
 
 #ifdef CONFIG_DIR_PATH
     configPath->setEnabled(false);
