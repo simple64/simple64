@@ -125,7 +125,6 @@ void JoinRoom::resetList()
     headers.append("Game Name");
     headers.append("Game MD5");
     headers.append("Password Protected");
-    //headers.append("LLE");
     //headers.append("Fixed Input Delay");
     listWidget->setHorizontalHeaderLabels(headers);
     listWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
@@ -329,13 +328,10 @@ void JoinRoom::processBinaryMessage(QByteArray message)
         newItem->setFlags(newItem->flags() & ~Qt::ItemIsEditable);
         listWidget->setItem(row, 3, newItem);
 /*
-        newItem = new QTableWidgetItem(json.value("lle").toString());
-        newItem->setFlags(newItem->flags() & ~Qt::ItemIsEditable);
-        listWidget->setItem(row, 4, newItem);
         bool usesInputDelay = json.contains("use_input_delay") ? json.value("use_input_delay").toBool() : false;
         newItem = new QTableWidgetItem(usesInputDelay ? "Yes" : "No");
         newItem->setFlags(newItem->flags() & ~Qt::ItemIsEditable);
-        listWidget->setItem(row, 5, newItem);
+        listWidget->setItem(row, 4, newItem);
 */
 
         ++row;

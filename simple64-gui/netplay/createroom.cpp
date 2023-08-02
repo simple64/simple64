@@ -204,7 +204,6 @@ void CreateRoom::createRoom()
     json.insert("game_name", QString(rom_settings.goodname));
     json.insert("client_sha", QStringLiteral(GUI_VERSION));
     json.insert("netplay_version", NETPLAY_VER);
-    json.insert("lle", "Yes");
     json.insert("emulator", "simple64");
 /*
     json.insert("use_input_delay", useInputDelay->isChecked());
