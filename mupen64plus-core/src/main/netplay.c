@@ -19,7 +19,7 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.          *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#define SETTINGS_SIZE 28
+#define SETTINGS_SIZE 24
 
 #define M64P_CORE_PROTOTYPES 1
 #include "api/callbacks.h"
@@ -501,7 +501,7 @@ file_status_t netplay_read_storage(const char *filename, void *data, size_t size
     return ret;
 }
 
-void netplay_sync_settings(uint32_t *count_per_op, uint32_t *count_per_op_denom_pot, uint32_t *disable_extra_mem, int32_t *si_dma_duration, uint32_t *emumode, int32_t *no_compiled_jump, uint32_t *rsp_delay_time)
+void netplay_sync_settings(uint32_t *count_per_op, uint32_t *count_per_op_denom_pot, uint32_t *disable_extra_mem, int32_t *si_dma_duration, uint32_t *emumode, int32_t *no_compiled_jump)
 {
     if (!netplay_is_init())
         return;
@@ -518,7 +518,6 @@ void netplay_sync_settings(uint32_t *count_per_op, uint32_t *count_per_op_denom_
         SDLNet_Write32(*si_dma_duration, &output_data[13]);
         SDLNet_Write32(*emumode, &output_data[17]);
         SDLNet_Write32(*no_compiled_jump, &output_data[21]);
-        SDLNet_Write32(*rsp_delay_time, &output_data[25]);
         SDLNet_TCP_Send(l_tcpSocket, &output_data[0], SETTINGS_SIZE + 1);
     }
     else
@@ -535,7 +534,6 @@ void netplay_sync_settings(uint32_t *count_per_op, uint32_t *count_per_op_denom_
         *si_dma_duration = SDLNet_Read32(&output_data[12]);
         *emumode = SDLNet_Read32(&output_data[16]);
         *no_compiled_jump = SDLNet_Read32(&output_data[20]);
-        *rsp_delay_time = SDLNet_Read32(&output_data[24]);
     }
 }
 
