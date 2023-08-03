@@ -32,11 +32,10 @@ private:
     QNetworkAccessManager manager;
     QTableWidget *listWidget;
     QWebSocket *webSocket = nullptr;
-    QLineEdit *playerName;
+    QLineEdit *playerNameEdit;
     QLineEdit *passwordEdit;
     QPushButton *joinButton;
     QPushButton *refreshButton;
-    //QLineEdit *inputDelay;
     QLabel *pingLabel;
     QList<QJsonObject> rooms;
     int row = 0;
@@ -45,6 +44,7 @@ private:
     QUdpSocket broadcastSocket;
     QTimer *connectionTimer;
     QString customServerAddress;
+    QString playerName;
 };
 
 #endif // JOINROOM_H

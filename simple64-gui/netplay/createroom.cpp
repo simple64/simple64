@@ -49,21 +49,6 @@ CreateRoom::CreateRoom(QWidget *parent)
         playerNameEdit->setText(w->getSettings()->value("netplay_name").toString());
     layout->addWidget(playerNameEdit, 3, 1);
 
-/*
-    QLabel *useInputDelayLabel = new QLabel("Use Fixed Input Delay?", this);
-    layout->addWidget(useInputDelayLabel, 4, 0);
-    useInputDelay = new QCheckBox(this);
-    layout->addWidget(useInputDelay, 4, 1);
-    connect(useInputDelay, SIGNAL (clicked(bool)), this, SLOT(handleUseInputDelay(bool)));
-
-    QLabel *inputDelayLabel = new QLabel("Input Delay", this);
-    layout->addWidget(inputDelayLabel, 5, 0);
-    inputDelay = new QLineEdit(this);
-    inputDelay->setEnabled(false);
-    inputDelay->setValidator(new QIntValidator(0, 100, this));
-    layout->addWidget(inputDelay, 5, 1);
-*/
-
     QLabel *serverLabel = new QLabel("Server", this);
     layout->addWidget(serverLabel, 6, 0);
     serverChooser = new QComboBox(this);
@@ -191,12 +176,9 @@ void CreateRoom::handleCreateButton()
 
 void CreateRoom::createRoom()
 {
-    connect(webSocket, &QWebSocket::binaryMessageReceived,
-            this, &CreateRoom::processBinaryMessage);
-
     connectionTimer->stop();
     QJsonObject json;
-    json.insert("type", "create_room");
+    json.insert("type", "request_create_room");
     json.insert("room_name", nameEdit->text());
     json.insert("player_name", playerNameEdit->text());
     json.insert("password", passwordEdit->text());
@@ -205,12 +187,8 @@ void CreateRoom::createRoom()
     json.insert("client_sha", QStringLiteral(GUI_VERSION));
     json.insert("netplay_version", NETPLAY_VER);
     json.insert("emulator", "simple64");
-/*
-    json.insert("use_input_delay", useInputDelay->isChecked());
-    if (useInputDelay->isChecked())
-        json.insert("input_delay", inputDelay->text().toInt());
-*/
 
+    playerName = playerNameEdit->text();
     QJsonDocument json_doc(json);
     webSocket->sendBinaryMessage(json_doc.toJson());
 }
@@ -222,18 +200,23 @@ void CreateRoom::processBinaryMessage(QByteArray message)
     msgBox.setTextInteractionFlags(Qt::TextBrowserInteraction);
     QJsonDocument json_doc = QJsonDocument::fromJson(message);
     QJsonObject json = json_doc.object();
-    if (json.value("type").toString() == "message")
+    if (json.value("type").toString() == "reply_create_room")
     {
-        msgBox.setText(json.value("message").toString());
-        msgBox.exec();
-    }
-    else if (json.value("type").toString() == "send_room_create")
-    {
-        json.remove("type");
-        launched = 1;
-        WaitRoom *waitRoom = new WaitRoom(filename, json, webSocket, parentWidget());
-        waitRoom->show();
-        accept();
+        if (json.value("accept").toInt() == 0)
+        {
+            json.remove("type");
+            launched = 1;
+            WaitRoom *waitRoom = new WaitRoom(filename, json, webSocket, playerName, parentWidget());
+            waitRoom->show();
+            accept();
+        }
+        else
+        {
+            (*CoreDoCommand)(M64CMD_ROM_CLOSE, 0, NULL);
+            msgBox.setText(json.value("message").toString());
+            msgBox.exec();
+            createButton->setEnabled(true);
+        }
     }
 }
 
@@ -251,13 +234,6 @@ void CreateRoom::downloadFinished(QNetworkReply *reply)
 
     reply->deleteLater();
 }
-
-/*
-void CreateRoom::handleUseInputDelay(bool useInputDelay)
-{
-    inputDelay->setEnabled(useInputDelay);
-}
-*/
 
 void CreateRoom::handleServerChanged(int index)
 {
@@ -284,6 +260,8 @@ void CreateRoom::handleServerChanged(int index)
     connect(timer, &QTimer::timeout, this, &CreateRoom::sendPing);
     connect(webSocket, &QWebSocket::disconnected, timer, &QTimer::stop);
     connect(webSocket, &QObject::destroyed, timer, &QTimer::stop);
+
+    connect(webSocket, &QWebSocket::binaryMessageReceived, this, &CreateRoom::processBinaryMessage);
 
     timer->start(2500);
     QString serverAddress = serverChooser->itemData(index) == "Custom" ? customServerHost.prepend("ws://") : serverChooser->itemData(index).toString();

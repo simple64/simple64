@@ -5,12 +5,12 @@
 #include <QMessageBox>
 #include <QJsonArray>
 
-WaitRoom::WaitRoom(QString filename, QJsonObject room, QWebSocket *socket, QWidget *parent)
+WaitRoom::WaitRoom(QString filename, QJsonObject room, QWebSocket *socket, QString _player_name, QWidget *parent)
     : QDialog(parent)
 {
     this->resize(640,480);
 
-    player_name = room.value("player_name").toString();
+    player_name = _player_name;
     room_port = room.value("port").toInt();
     room_name = room.value("room_name").toString();
     file_name = filename;
@@ -111,7 +111,7 @@ void WaitRoom::sendPing()
     if (motd->text().isEmpty())
     {
         QJsonObject json;
-        json.insert("type", "get_motd");
+        json.insert("type", "request_motd");
         json.insert("room_name", room_name);
         QJsonDocument json_doc = QJsonDocument(json);
         webSocket->sendBinaryMessage(json_doc.toJson());
@@ -130,7 +130,7 @@ void WaitRoom::startGame()
     {
         startGameButton->setEnabled(false);
         QJsonObject json;
-        json.insert("type", "start_game");
+        json.insert("type", "request_begin_game");
         json.insert("port", room_port);
         QJsonDocument json_doc = QJsonDocument(json);
         webSocket->sendBinaryMessage(json_doc.toJson());
@@ -148,7 +148,7 @@ void WaitRoom::sendChat()
     if (!chatEdit->text().isEmpty())
     {
         QJsonObject json;
-        json.insert("type", "chat_message");
+        json.insert("type", "request_chat_message");
         json.insert("port", room_port);
         json.insert("player_name", player_name);
         json.insert("message", chatEdit->text());
@@ -171,7 +171,7 @@ void WaitRoom::processBinaryMessage(QByteArray message)
 {
     QJsonDocument json_doc = QJsonDocument::fromJson(message);
     QJsonObject json = json_doc.object();
-    if (json.value("type").toString() == "room_players")
+    if (json.value("type").toString() == "reply_players")
     {
         if (json.contains("player_names"))
         {
@@ -183,17 +183,17 @@ void WaitRoom::processBinaryMessage(QByteArray message)
             }
         }
     }
-    else if (json.value("type").toString() == "chat_update")
+    else if (json.value("type").toString() == "reply_chat_message")
     {
         chatWindow->appendPlainText(json.value("message").toString());
     }
-    else if (json.value("type").toString() == "begin_game")
+    else if (json.value("type").toString() == "reply_begin_game")
     {
         started = 1;
         w->openROM(file_name, webSocket->peerAddress().toString(), room_port, player_number);
         accept();
     }
-    else if (json.value("type").toString() == "send_motd")
+    else if (json.value("type").toString() == "reply_motd")
     {
         QString message = json.value("message").toString();
         motd->setText(message);
