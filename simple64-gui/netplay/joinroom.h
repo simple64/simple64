@@ -44,7 +44,6 @@ private:
     QUdpSocket broadcastSocket;
     QTimer *connectionTimer;
     QString customServerAddress;
-    QString playerName;
 };
 
 #endif // JOINROOM_H
