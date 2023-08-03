@@ -177,7 +177,6 @@ void JoinRoom::joinGame()
             json.insert("MD5", QString(rom_settings.MD5));
             json.insert("port", room_port);
 
-            playerName = playerNameEdit->text();
             QJsonDocument json_doc(json);
             webSocket->sendBinaryMessage(json_doc.toJson());
         }
@@ -299,7 +298,7 @@ void JoinRoom::processBinaryMessage(QByteArray message)
             json.remove("type");
             json.remove("accept");
             launched = 1;
-            WaitRoom *waitRoom = new WaitRoom(filename, json, webSocket, playerName, parentWidget());
+            WaitRoom *waitRoom = new WaitRoom(filename, json, webSocket, parentWidget());
             waitRoom->show();
             accept();
             return;
