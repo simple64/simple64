@@ -128,18 +128,6 @@ void CreateRoom::handleRomButton()
 void CreateRoom::handleCreateButton()
 {
     QMessageBox msgBox;
-    if (nameEdit->text().isEmpty())
-    {
-        msgBox.setText("Room name can not be empty");
-        msgBox.exec();
-        return;
-    }
-    if (playerNameEdit->text().isEmpty())
-    {
-        msgBox.setText("Player name can not be empty");
-        msgBox.exec();
-        return;
-    }
     if (serverChooser->currentData() == "Custom" && customServerHost.isEmpty())
     {
         msgBox.setText("Custom Server Address is invalid");
