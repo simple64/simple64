@@ -16,7 +16,7 @@ class WaitRoom : public QDialog
 {
     Q_OBJECT
 public:
-    WaitRoom(QString filename, QJsonObject room, QWebSocket *socket, QString _player_name, QWidget *parent = nullptr);
+    WaitRoom(QString filename, QJsonObject room, QWebSocket *socket, QWidget *parent = nullptr);
 private slots:
     void processBinaryMessage(QByteArray message);
     void onFinished(int);

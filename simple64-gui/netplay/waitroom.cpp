@@ -5,12 +5,12 @@
 #include <QMessageBox>
 #include <QJsonArray>
 
-WaitRoom::WaitRoom(QString filename, QJsonObject room, QWebSocket *socket, QString _player_name, QWidget *parent)
+WaitRoom::WaitRoom(QString filename, QJsonObject room, QWebSocket *socket, QWidget *parent)
     : QDialog(parent)
 {
     this->resize(640,480);
 
-    player_name = _player_name;
+    player_name = room.value("player_name").toString();
     room_port = room.value("port").toInt();
     room_name = room.value("room_name").toString();
     file_name = filename;
