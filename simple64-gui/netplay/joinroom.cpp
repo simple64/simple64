@@ -151,12 +151,6 @@ void JoinRoom::joinGame()
         msgBox.exec();
         return;
     }
-    if (playerNameEdit->text().isEmpty())
-    {
-        msgBox.setText("Player name can not be empty");
-        msgBox.exec();
-        return;
-    }
     if (listWidget->currentRow() < 0)
     {
         msgBox.setText("You haven't selected a game to join");
