@@ -533,10 +533,13 @@ bool vk_init()
 	default:
 		break;
 	}
-	if (vk_rescaling > 1 && vk_ssreadbacks)
-		flags |= RDP::COMMAND_PROCESSOR_FLAG_SUPER_SAMPLED_READ_BACK_BIT;
-	if (vk_ssdither)
-		flags |= RDP::COMMAND_PROCESSOR_FLAG_SUPER_SAMPLED_DITHER_BIT;
+	if (vk_rescaling > 1)
+	{
+		if (vk_ssreadbacks)
+			flags |= RDP::COMMAND_PROCESSOR_FLAG_SUPER_SAMPLED_READ_BACK_BIT;
+		if (vk_ssdither)
+			flags |= RDP::COMMAND_PROCESSOR_FLAG_SUPER_SAMPLED_DITHER_BIT;
+	}
 
 	processor = new RDP::CommandProcessor(wsi->get_device(), reinterpret_cast<void *>(aligned_rdram),
 											 offset, rdram_size, rdram_size / 2, flags);
