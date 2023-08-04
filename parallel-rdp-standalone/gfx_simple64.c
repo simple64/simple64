@@ -256,17 +256,26 @@ EXPORT void CALL FullSync(void)
     vk_full_sync();
 }
 
+static void setup_netplay()
+{
+    m64p_error netplay_init = ConfigReceiveNetplayConfig(NULL, 0); // A bit of a hack to determine if netplay is enabled
+    if (netplay_init != M64ERR_NOT_INIT)
+    {
+        DebugMessage(M64MSG_INFO, "Netplay enabled, disabling vsync");
+        vk_synchronous = 1; // force synchronous rdp during netplay
+        window_vsync = 0; // force disable vsync during netplay
+        vk_ssreadbacks = 0; // can cause desyncs
+    }
+}
+
 EXPORT int CALL RomOpen(void)
 {
     window_fullscreen = ConfigGetParamBool(configVideoParallel, KEY_FULLSCREEN);
     window_width = ConfigGetParamInt(configVideoParallel, KEY_SCREEN_WIDTH);
     window_height = ConfigGetParamInt(configVideoParallel, KEY_SCREEN_HEIGHT);
     window_widescreen = ConfigGetParamBool(configVideoParallel, KEY_WIDESCREEN);
-    m64p_error netplay_init = ConfigReceiveNetplayConfig(NULL, 0); // A bit of a hack to determine if netplay is enabled
-    if (netplay_init != M64ERR_NOT_INIT)
-        window_vsync = 0; // force disable vsync during netplay
-    else
-        window_vsync = ConfigGetParamBool(configVideoParallel, KEY_VSYNC);
+    window_vsync = ConfigGetParamBool(configVideoParallel, KEY_VSYNC);
+
     vk_rescaling = ConfigGetParamInt(configVideoParallel, KEY_UPSCALING);
     if (vk_rescaling > 4)
         vk_rescaling = 4;
@@ -287,11 +296,9 @@ EXPORT int CALL RomOpen(void)
     vk_downscaling_steps = ConfigGetParamInt(configVideoParallel, KEY_DOWNSCALE);
     vk_overscan = ConfigGetParamInt(configVideoParallel, KEY_OVERSCANCROP);
     vk_vertical_stretch = ConfigGetParamInt(configVideoParallel, KEY_VERTICAL_STRETCH);
+    vk_synchronous = ConfigGetParamBool(configVideoParallel, KEY_SYNCHRONOUS);
 
-    if (netplay_init != M64ERR_NOT_INIT)
-        vk_synchronous = 1; // force synchronous rdp during netplay
-    else
-        vk_synchronous = ConfigGetParamBool(configVideoParallel, KEY_SYNCHRONOUS);
+    setup_netplay();
 
     plugin_init();
     if (vk_init()) {
