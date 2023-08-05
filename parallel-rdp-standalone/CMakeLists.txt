@@ -79,7 +79,13 @@ else()
     target_compile_options(${NAME_PLUGIN_SIMPLE64} PRIVATE -march=x86-64-v3)
     target_link_options(${NAME_PLUGIN_SIMPLE64} PRIVATE -march=x86-64-v3)
 endif()
-if (NOT APPLE)
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    target_link_options(${NAME_PLUGIN_SIMPLE64} PRIVATE -fuse-ld=lld)
+endif()
+
+if (NOT APPLE AND NOT WIN32)
     target_link_options(${NAME_PLUGIN_SIMPLE64} PRIVATE -Wl,-Bsymbolic -Wl,-Bsymbolic-functions)
-endif (NOT APPLE)
+endif ()
+
 set_target_properties(${NAME_PLUGIN_SIMPLE64} PROPERTIES PREFIX "")
