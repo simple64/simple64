@@ -81,6 +81,11 @@ else()
     target_compile_options(simple64-gui PRIVATE -march=x86-64-v3)
     target_link_options(simple64-gui PRIVATE -march=x86-64-v3)
 endif()
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    target_link_options(simple64-gui PRIVATE -lstdc++)
+endif()
+
 if (NOT APPLE)
     target_link_options(simple64-gui PRIVATE -Wl,-Bsymbolic -Wl,-Bsymbolic-functions)
 endif (NOT APPLE)
