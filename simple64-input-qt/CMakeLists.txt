@@ -47,7 +47,13 @@ else()
     target_compile_options(simple64-input-qt PRIVATE -march=x86-64-v3)
     target_link_options(simple64-input-qt PRIVATE -march=x86-64-v3)
 endif()
-if (NOT APPLE)
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    target_link_options(simple64-input-qt PRIVATE -fuse-ld=lld)
+endif()
+
+if (NOT APPLE AND NOT WIN32)
     target_link_options(simple64-input-qt PRIVATE -Wl,-Bsymbolic -Wl,-Bsymbolic-functions)
-endif (NOT APPLE)
+endif ()
+
 target_link_libraries(simple64-input-qt PRIVATE Qt6::Widgets Qt6::Network SDL2::SDL2)
