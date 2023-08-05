@@ -29,19 +29,18 @@ jobs:
       - uses: msys2/setup-msys2@v2
         with:
           update: true
-          msystem: CLANG64
+          msystem: UCRT64
           install: >-
             make
             patch
-            mingw-w64-clang-x86_64-cmake
-            mingw-w64-clang-x86_64-clang
-            mingw-w64-clang-x86_64-lld
-            mingw-w64-clang-x86_64-hidapi
-            mingw-w64-clang-x86_64-freetype
-            mingw-w64-clang-x86_64-libpng
-            mingw-w64-clang-x86_64-SDL2
-            mingw-w64-clang-x86_64-SDL2_net
-            mingw-w64-clang-x86_64-qt6
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-hidapi
+            mingw-w64-ucrt-x86_64-freetype
+            mingw-w64-ucrt-x86_64-libpng
+            mingw-w64-ucrt-x86_64-SDL2
+            mingw-w64-ucrt-x86_64-SDL2_net
+            mingw-w64-ucrt-x86_64-qt6
             git
             zip
       - name: Run build script
