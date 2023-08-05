@@ -9,7 +9,7 @@ UNAME=$(uname -s)
 PLATFORM=$(uname -m)
 if [[ ${UNAME} == *"MINGW64"* ]]; then
   suffix=".dll"
-  mingw_prefix="clang64"
+  mingw_prefix="ucrt64"
 elif [[ ${UNAME} == *"Darwin"* ]]; then
   suffix=".dylib"
   qt_version=$(ls /usr/local/Cellar/qt)
@@ -95,8 +95,7 @@ if [[ ${UNAME} == *"MINGW64"* ]]; then
     
   # WINEDEBUG=+loaddll wine ./simple64-gui.exe 2> out.txt
   # cat out.txt | grep found
-  cp -v "/${mingw_prefix}/bin/libunwind.dll" "${install_dir}"
-  cp -v "/${mingw_prefix}/bin/libc++.dll" "${install_dir}"
+  cp -v "/${mingw_prefix}/bin/libstdc++-6.dll" "${install_dir}"
   cp -v "/${mingw_prefix}/bin/libdouble-conversion.dll" "${install_dir}"
   cp -v "/${mingw_prefix}/bin/zlib1.dll" "${install_dir}"
   cp -v "/${mingw_prefix}/bin/libicuin72.dll" "${install_dir}"
