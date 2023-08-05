@@ -1,12 +1,9 @@
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.26)
 set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0")
 
 project(simple64-input-raphnetraw LANGUAGES C)
 
-include(CheckIPOSupported)
-check_ipo_supported(RESULT ENABLE_IPO)
-
-if(ENABLE_IPO AND (NOT CMAKE_BUILD_TYPE STREQUAL "Debug"))
+if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
     message("Interprocedural optimizations enabled")
 endif()
