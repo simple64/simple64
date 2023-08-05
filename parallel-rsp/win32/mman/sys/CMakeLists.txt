@@ -1,7 +1,6 @@
-cmake_minimum_required (VERSION 3.22)
-set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0")
-
 project (mman-win32 C)
+
+cmake_minimum_required (VERSION 2.8)
 
 option (BUILD_SHARED_LIBS "shared/static libs" ON) 
 option (BUILD_TESTS "tests?" OFF)
