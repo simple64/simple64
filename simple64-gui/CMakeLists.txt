@@ -83,12 +83,13 @@ else()
 endif()
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    target_link_options(simple64-gui PRIVATE -lstdc++)
+    target_link_options(simple64-gui PRIVATE -fuse-ld=lld)
 endif()
 
-if (NOT APPLE)
+if (NOT APPLE AND NOT WIN32)
     target_link_options(simple64-gui PRIVATE -Wl,-Bsymbolic -Wl,-Bsymbolic-functions)
-endif (NOT APPLE)
+endif ()
+
 target_link_libraries(simple64-gui PRIVATE Qt6::Widgets Qt6::WebSockets ${CMAKE_DL_LIBS})
 
 set_target_properties(simple64-gui PROPERTIES
