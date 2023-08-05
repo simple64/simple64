@@ -133,9 +133,15 @@ else()
     target_compile_options(mupen64plus PRIVATE -march=x86-64-v3)
     target_link_options(mupen64plus PRIVATE -march=x86-64-v3)
 endif()
-if (NOT APPLE)
+
+if (CMAKE_C_COMPILER_ID STREQUAL "Clang")
+    target_link_options(mupen64plus PRIVATE -fuse-ld=lld)
+endif()
+
+if (NOT APPLE AND NOT WIN32)
     target_link_options(mupen64plus PRIVATE -Wl,-Bsymbolic -Wl,-Bsymbolic-functions)
-endif (NOT APPLE)
+endif ()
+
 target_link_directories(mupen64plus PRIVATE ${SDL_NET_LIBRARY_DIRS})
 target_link_libraries(mupen64plus PRIVATE SDL2::SDL2 ${SDL_NET_LIBRARIES} ZLIB::ZLIB PNG::PNG)
 if (APPLE)
