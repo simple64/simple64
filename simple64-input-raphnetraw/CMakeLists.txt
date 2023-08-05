@@ -50,8 +50,14 @@ else()
     target_compile_options(simple64-input-raphnetraw PRIVATE -march=x86-64-v3)
     target_link_options(simple64-input-raphnetraw PRIVATE -march=x86-64-v3)
 endif()
-if (NOT APPLE)
+
+if (CMAKE_C_COMPILER_ID STREQUAL "Clang")
+    target_link_options(simple64-input-raphnetraw PRIVATE -fuse-ld=lld)
+endif()
+
+if (NOT APPLE AND NOT WIN32)
     target_link_options(simple64-input-raphnetraw PRIVATE -Wl,-Bsymbolic -Wl,-Bsymbolic-functions)
-endif (NOT APPLE)
+endif ()
+
 target_link_directories(simple64-input-raphnetraw PRIVATE ${HIDAPI_LIBRARY_DIRS})
 target_link_libraries(simple64-input-raphnetraw PRIVATE ${HIDAPI_LIBRARIES})
