@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.26)
 set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0")
 
 project(parallel-rdp LANGUAGES CXX C)
@@ -7,10 +7,7 @@ set(NAME_PLUGIN_SIMPLE64 "simple64-video-parallel")
 include_directories(../mupen64plus-core/src/api)
 add_definitions(-DM64P_PLUGIN_API)
 
-include(CheckIPOSupported)
-check_ipo_supported(RESULT ENABLE_IPO)
-
-if(ENABLE_IPO AND (NOT CMAKE_BUILD_TYPE STREQUAL "Debug"))
+if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
     message("Interprocedural optimizations enabled")
 endif()
