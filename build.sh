@@ -7,13 +7,9 @@ RELEASE_TYPE="Release"
 
 UNAME=$(uname -s)
 PLATFORM=$(uname -m)
-if [[ ${UNAME} == *"MINGW"* ]]; then
+if [[ ${UNAME} == *"MINGW64"* ]]; then
   suffix=".dll"
-  if [[ ${UNAME} == *"MINGW64"* ]]; then
-    mingw_prefix="mingw64"
-  else
-    mingw_prefix="mingw32"
-  fi
+  mingw_prefix="ucrt64"
 elif [[ ${UNAME} == *"Darwin"* ]]; then
   suffix=".dylib"
   qt_version=$(ls /usr/local/Cellar/qt)
@@ -92,26 +88,21 @@ cmake -G Ninja -DCMAKE_BUILD_TYPE="${RELEASE_TYPE}" ..
 VERBOSE=1 cmake --build .
 cp simple64-video-parallel.* "${install_dir}"
 
-if [[ ${UNAME} == *"MINGW"* ]]; then
+if [[ ${UNAME} == *"MINGW64"* ]]; then
   cd "${install_dir}"
   windeployqt-qt6.exe --no-translations simple64-gui.exe
-
-  if [[ ${UNAME} == *"MINGW64"* ]]; then
-    my_os=win64
-    cp "/${mingw_prefix}/bin/libgcc_s_seh-1.dll" "${install_dir}"
-  else
-    my_os=win32
-    cp "/${mingw_prefix}/bin/libgcc_s_dw2-1.dll" "${install_dir}"
-  fi
+  my_os=win64
+    
   # WINEDEBUG=+loaddll wine ./simple64-gui.exe 2> out.txt
   # cat out.txt | grep found
+  cp -v "/${mingw_prefix}/bin/libgcc_s_seh-1.dll" "${install_dir}"
   cp -v "/${mingw_prefix}/bin/libwinpthread-1.dll" "${install_dir}"
   cp -v "/${mingw_prefix}/bin/libstdc++-6.dll" "${install_dir}"
   cp -v "/${mingw_prefix}/bin/libdouble-conversion.dll" "${install_dir}"
   cp -v "/${mingw_prefix}/bin/zlib1.dll" "${install_dir}"
-  cp -v "/${mingw_prefix}/bin/libicuin72.dll" "${install_dir}"
-  cp -v "/${mingw_prefix}/bin/libicuuc72.dll" "${install_dir}"
-  cp -v "/${mingw_prefix}/bin/libicudt72.dll" "${install_dir}"
+  cp -v "/${mingw_prefix}/bin/libicuin73.dll" "${install_dir}"
+  cp -v "/${mingw_prefix}/bin/libicuuc73.dll" "${install_dir}"
+  cp -v "/${mingw_prefix}/bin/libicudt73.dll" "${install_dir}"
   cp -v "/${mingw_prefix}/bin/libbrotlidec.dll" "${install_dir}"
   cp -v "/${mingw_prefix}/bin/libbrotlicommon.dll" "${install_dir}"
   cp -v "/${mingw_prefix}/bin/libpcre2-16-0.dll" "${install_dir}"
