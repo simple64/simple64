@@ -145,7 +145,6 @@ struct CPUState
 	uint32_t instruction_count = 0;
 	uint32_t last_instruction_type = 0;
 	uint32_t instruction_pipeline = 0;
-	uint32_t did_mfc0 = 0;
 	uint32_t dirty_blocks = 0;
 	static_assert(CODE_BLOCKS <= 32, "Code blocks must fit in 32-bit register.");
 
@@ -168,7 +167,8 @@ enum ReturnMode
 	MODE_BREAK = 2,
 	MODE_DMA_READ = 3,
 	MODE_CHECK_FLAGS = 4,
-	MODE_EXIT = 5
+	MODE_RSP_EXIT = 5,
+	MODE_RDP_EXIT = 6
 };
 
 enum InstructionType

@@ -1991,15 +1991,13 @@ ReturnMode CPU::run()
 			return MODE_BREAK;
 
 		case MODE_CHECK_FLAGS:
-		case MODE_EXIT:
+		case MODE_RSP_EXIT:
+		case MODE_RDP_EXIT:
 		case MODE_DMA_READ:
 			return static_cast<ReturnMode>(ret);
 
 		default:
-			if (state.did_mfc0)
-				return static_cast<ReturnMode>(MODE_EXIT);
-			else
-				break;
+			break;
 		}
 	}
 }
