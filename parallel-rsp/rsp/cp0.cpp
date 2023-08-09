@@ -26,14 +26,13 @@ extern "C"
 			rsp->sr[rt] = res;
 
 #ifdef PARALLEL_INTEGRATION
-		// WAIT_FOR_CPU_HOST. From CXD4.
-		if (rd == CP0_REGISTER_SP_STATUS)
-		{
-			return MODE_EXIT;
-		}
 		if (rd == CP0_REGISTER_SP_RESERVED)
 		{
 			*rsp->cp0.cr[CP0_REGISTER_SP_RESERVED] = 1;
+			return MODE_EXIT;
+		}
+		if (rd == CP0_REGISTER_SP_STATUS)
+		{
 			return MODE_EXIT;
 		}
 #endif
