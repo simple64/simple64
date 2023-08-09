@@ -6,8 +6,6 @@
 namespace RSP
 {
 extern RSP_INFO rsp;
-extern short MFC0_count[32];
-extern int SP_STATUS_TIMEOUT;
 } // namespace RSP
 #endif
 
@@ -31,11 +29,7 @@ extern "C"
 		// WAIT_FOR_CPU_HOST. From CXD4.
 		if (rd == CP0_REGISTER_SP_STATUS)
 		{
-			RSP::MFC0_count[rt] += 1;
-			if (RSP::MFC0_count[rt] >= RSP::SP_STATUS_TIMEOUT)
-			{
-				return MODE_EXIT;
-			}
+			return MODE_EXIT;
 		}
 		if (rd == CP0_REGISTER_SP_RESERVED)
 		{

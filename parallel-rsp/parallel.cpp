@@ -43,8 +43,6 @@ RSP::CPU cpu;
 #else
 RSP::JIT::CPU cpu;
 #endif
-short MFC0_count[32];
-int SP_STATUS_TIMEOUT;
 } // namespace RSP
 
 extern "C"
@@ -92,9 +90,6 @@ extern "C"
 		fprintf(stderr, "RUN TASK: %u\n", RSP::cpu.get_state().pc);
 		log_rsp_mem_parallel();
 #endif
-
-		for (auto &count : RSP::MFC0_count)
-			count = 0;
 
 		while (!(*RSP::rsp.SP_STATUS_REG & SP_STATUS_HALT))
 		{
@@ -168,8 +163,6 @@ extern "C"
 
 		*cr[RSP::CP0_REGISTER_SP_STATUS] = SP_STATUS_HALT;
 		RSP::cpu.get_state().cp0.irq = RSP::rsp.MI_INTR_REG;
-
-		RSP::SP_STATUS_TIMEOUT = 16;
 
 		RSP::cpu.set_dmem(reinterpret_cast<uint32_t *>(Rsp_Info.DMEM));
 		RSP::cpu.set_imem(reinterpret_cast<uint32_t *>(Rsp_Info.IMEM));
