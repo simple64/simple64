@@ -34,8 +34,13 @@ extern "C"
 			RSP::MFC0_count[rt] += 1;
 			if (RSP::MFC0_count[rt] >= RSP::SP_STATUS_TIMEOUT)
 			{
-				return MODE_RSP_EXIT;
+				return MODE_EXIT;
 			}
+		}
+		if (rd == CP0_REGISTER_SP_RESERVED)
+		{
+			*rsp->cp0.cr[CP0_REGISTER_SP_RESERVED] = 1;
+			return MODE_EXIT;
 		}
 #endif
 
@@ -322,7 +327,7 @@ extern "C"
 #ifdef PARALLEL_INTEGRATION
 			RSP::rsp.ProcessRdpList();
 			if (*rsp->cp0.irq & 0x20)
-				return MODE_RDP_EXIT;
+				return MODE_EXIT;
 #endif
 			break;
 

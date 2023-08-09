@@ -101,10 +101,7 @@ extern "C"
 			auto mode = RSP::cpu.run();
 			if (mode == RSP::MODE_CHECK_FLAGS && (*RSP::cpu.get_state().cp0.irq & 1))
 				break;
-			if (mode == RSP::MODE_RDP_EXIT)
-				break;
-			if (mode == RSP::MODE_RSP_EXIT)
-				RSP::SP_STATUS_TIMEOUT = 16;
+			if (mode == RSP::MODE_EXIT)
 				break;
 		}
 
@@ -172,7 +169,7 @@ extern "C"
 		*cr[RSP::CP0_REGISTER_SP_STATUS] = SP_STATUS_HALT;
 		RSP::cpu.get_state().cp0.irq = RSP::rsp.MI_INTR_REG;
 
-		RSP::SP_STATUS_TIMEOUT = 0x7fff;
+		RSP::SP_STATUS_TIMEOUT = 16;
 
 		RSP::cpu.set_dmem(reinterpret_cast<uint32_t *>(Rsp_Info.DMEM));
 		RSP::cpu.set_imem(reinterpret_cast<uint32_t *>(Rsp_Info.IMEM));

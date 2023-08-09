@@ -167,8 +167,7 @@ enum ReturnMode
 	MODE_BREAK = 2,
 	MODE_DMA_READ = 3,
 	MODE_CHECK_FLAGS = 4,
-	MODE_RSP_EXIT = 5,
-	MODE_RDP_EXIT = 6
+	MODE_EXIT = 5
 };
 
 enum InstructionType
