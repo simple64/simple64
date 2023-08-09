@@ -31,7 +31,8 @@ extern "C"
 			*rsp->cp0.cr[CP0_REGISTER_SP_RESERVED] = 1;
 			return MODE_EXIT;
 		}
-		if (rd == CP0_REGISTER_SP_STATUS)
+		// We don't return control to the CPU if the RDP FREEZE bit is set, doing so seems to cause flickering
+		else if (rd == CP0_REGISTER_SP_STATUS && (*rsp->cp0.cr[CP0_REGISTER_CMD_STATUS] & DPC_STATUS_FREEZE) == 0)
 		{
 			return MODE_EXIT;
 		}
