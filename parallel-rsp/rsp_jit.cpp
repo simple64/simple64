@@ -1996,10 +1996,7 @@ ReturnMode CPU::run()
 			return static_cast<ReturnMode>(ret);
 
 		default:
-			if (state.did_mfc0)
-				return static_cast<ReturnMode>(MODE_EXIT);
-			else
-				break;
+			break;
 		}
 	}
 }
