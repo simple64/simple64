@@ -182,5 +182,6 @@ void rsp_interrupt_event(void* opaque);
 void rsp_end_of_dma_event(void* opaque);
 
 void rsp_task_event(void* opaque);
+void clear_rsp_wait(struct rsp_core* sp, uint32_t value);
 
 #endif

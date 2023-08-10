@@ -396,9 +396,8 @@ void rsp_interrupt_event(void* opaque)
     sp->rsp_status = 0;
     sp->mi->r4300->cp0.interrupt_unsafe_state &= ~INTR_UNSAFE_RSP;
     raise_rcp_interrupt(sp->mi, MI_INTR_SP);
-    sp->rsp_wait &= ~(WAIT_PENDING_SP_INT | WAIT_PENDING_SP_INT_BROKE);
 
-    do_SP_Task(sp);
+    clear_rsp_wait(sp, WAIT_PENDING_SP_INT | WAIT_PENDING_SP_INT_BROKE);
 }
 
 void rsp_end_of_dma_event(void* opaque)
@@ -410,6 +409,13 @@ void rsp_end_of_dma_event(void* opaque)
 void rsp_task_event(void* opaque)
 {
     struct rsp_core* sp = (struct rsp_core*)opaque;
+
+    do_SP_Task(sp);
+}
+
+void clear_rsp_wait(struct rsp_core* sp, uint32_t value)
+{
+    sp->rsp_wait &= ~value;
 
     do_SP_Task(sp);
 }
