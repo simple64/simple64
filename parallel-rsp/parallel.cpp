@@ -85,7 +85,6 @@ extern "C"
 		// Run CPU until we either break or we need to fire an IRQ.
 		RSP::cpu.get_state().pc = *RSP::rsp.SP_PC_REG & 0xfff;
 		RSP::cpu.get_state().instruction_count = 0;
-		RSP::cpu.get_state().did_mfc0 = 0;
 
 #ifdef INTENSE_DEBUG
 		fprintf(stderr, "RUN TASK: %u\n", RSP::cpu.get_state().pc);
