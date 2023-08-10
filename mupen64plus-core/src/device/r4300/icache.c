@@ -25,7 +25,6 @@
 #include "device/rdram/rdram.h"
 #include "device/r4300/cached_interp.h"
 #include "device/memory/memory.h"
-#include "device/rcp/rsp/rsp_core.h"
 
 void poweron_icache(struct instcache *lines)
 {
@@ -72,8 +71,6 @@ void icache_fill(struct instcache *line, struct r4300_core* r4300, uint32_t addr
 // This code is performance critical, so for the cached interpreter, we used a version that doesn't need to return anything in order to save some CPU
 void icache_step(struct r4300_core* r4300)
 {
-    if (!r4300->sp->rsp_wait)
-        do_SP_Task(r4300->sp);
     cp0_base_cycle(r4300);
     struct precomp_instr *inst = (*r4300_pc_struct(r4300));
     uint32_t address = inst->phys_addr;
@@ -92,8 +89,6 @@ void icache_step(struct r4300_core* r4300)
 
 uint32_t* icache_fetch(struct r4300_core* r4300, uint32_t address)
 {
-    if (!r4300->sp->rsp_wait)
-        do_SP_Task(r4300->sp);
     cp0_base_cycle(r4300);
     if (r4300_translate_address(r4300, &address, &r4300->cached, 2))
         return NULL;
