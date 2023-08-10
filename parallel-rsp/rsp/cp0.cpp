@@ -26,18 +26,14 @@ extern "C"
 			rsp->sr[rt] = res;
 
 #ifdef PARALLEL_INTEGRATION
-		// WAIT_FOR_CPU_HOST. From CXD4.
 		if (rd == CP0_REGISTER_SP_RESERVED)
 		{
-			rsp->instruction_count += 4; // Needed for DK64
 			*rsp->cp0.cr[CP0_REGISTER_SP_RESERVED] = 1;
-			rsp->did_mfc0 = 1;
 			return MODE_EXIT;
 		}
 		// We don't return control to the CPU if the RDP FREEZE bit is set, doing so seems to cause flickering
 		else if (rd == CP0_REGISTER_SP_STATUS && (*rsp->cp0.cr[CP0_REGISTER_CMD_STATUS] & DPC_STATUS_FREEZE) == 0)
 		{
-			rsp->did_mfc0 = 1;
 			return MODE_EXIT;
 		}
 #endif
