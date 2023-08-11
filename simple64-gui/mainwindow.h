@@ -146,6 +146,7 @@ private:
     int verbose;
     int nogui;
     int run_test;
+    int test_key_value;
     uint32_t frame_count;
 
     QMessageBox *download_message = nullptr;

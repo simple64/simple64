@@ -240,6 +240,7 @@ MainWindow::MainWindow(QWidget *parent) :
     verbose = 0;
     nogui = 0;
     run_test = 0;
+    test_key_value = 225; // Shift/A
     ui->setupUi(this);
     this->setWindowTitle("simple64    build: " + QStringLiteral(GUI_VERSION).mid(0,7));
 
@@ -1117,16 +1118,15 @@ void MainWindow::addFrameCount()
 
 void MainWindow::simulateInput()
 {
-    int keyValue = 225; // Shift/A
     if (run_test % 2)
-        (*CoreDoCommand)(M64CMD_SEND_SDL_KEYDOWN, keyValue, NULL);
+        (*CoreDoCommand)(M64CMD_SEND_SDL_KEYDOWN, test_key_value, NULL);
     else
     {
-        (*CoreDoCommand)(M64CMD_SEND_SDL_KEYUP, keyValue, NULL);
-        if (keyValue = 225)
-            keyValue = 40; // Enter/Start
+        (*CoreDoCommand)(M64CMD_SEND_SDL_KEYUP, test_key_value, NULL);
+        if (test_key_value == 40)
+            test_key_value = 225; // Enter/Start
         else
-            keyValue = 225;
+            test_key_value = 40;
     }
     printf("%u\n", frame_count);
     if (run_test == 1)
