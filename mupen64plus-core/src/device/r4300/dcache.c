@@ -34,7 +34,7 @@ void poweron_dcache(struct datacache *lines)
 
 void dcache_writeback(struct r4300_core* r4300, struct datacache *line)
 {
-    cp0_dcb_interlock(r4300, rdram_calculate_cycles(20));
+    cp0_dcb_interlock(r4300, rdram_calculate_cycles(16));
     line->dirty = 0;
     uint32_t cache_address = (line->tag | line->index) & UINT32_C(0x1ffffffc);
     invalidate_r4300_cached_code(r4300, R4300_KSEG0 + cache_address, 16);
