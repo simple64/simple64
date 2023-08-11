@@ -48,7 +48,7 @@ void dcache_writeback(struct r4300_core* r4300, struct datacache *line)
 
 static void dcache_fill(struct datacache *line, struct r4300_core* r4300, uint32_t address)
 {
-    cp0_dcb_interlock(r4300, 5);
+    cp0_dcb_interlock(r4300, 7);
     line->valid = 1;
     line->dirty = 0;
     line->tag = address & ~UINT32_C(0xFFF);
