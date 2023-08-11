@@ -239,6 +239,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     verbose = 0;
     nogui = 0;
+    run_test = 0;
     ui->setupUi(this);
     this->setWindowTitle("simple64    build: " + QStringLiteral(GUI_VERSION).mid(0,7));
 
@@ -483,6 +484,16 @@ void MainWindow::setNoGUI()
 int MainWindow::getNoGUI()
 {
     return nogui;
+}
+
+void MainWindow::setTest(int value)
+{
+    run_test = value;
+}
+
+int MainWindow::getTest()
+{
+    return run_test;
 }
 
 int MainWindow::getVerbose()
@@ -1104,8 +1115,34 @@ void MainWindow::addFrameCount()
     ++frame_count;
 }
 
+void MainWindow::simulateInput()
+{
+    int keyValue = 225; // Shift/A
+    if (run_test % 2)
+        (*CoreDoCommand)(M64CMD_SEND_SDL_KEYDOWN, keyValue, NULL);
+    else
+    {
+        (*CoreDoCommand)(M64CMD_SEND_SDL_KEYUP, keyValue, NULL);
+        if (keyValue = 225)
+            keyValue = 40; // Enter/Start
+        else
+            keyValue = 225;
+    }
+    printf("%u\n", frame_count);
+    if (run_test == 1)
+    {
+        if (frame_count == 0)
+            abort();
+        else
+            (*CoreDoCommand)(M64CMD_STOP, 0, NULL);
+    }
+    --run_test;
+}
+
 void MainWindow::updateFrameCount()
 {
+    if (run_test)
+        simulateInput();
     QString FPS = QString("%1 FPS").arg(frame_count);
     FPSLabel->setText(FPS);
     frame_count = 0;
