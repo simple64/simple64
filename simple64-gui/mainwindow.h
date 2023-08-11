@@ -47,6 +47,8 @@ public:
     int getVerbose();
     void setNoGUI();
     int getNoGUI();
+    void setTest(int value);
+    int getTest();
     void updatePlugins();
     void resetCore();
     m64p_dynlib_handle getCoreLib();
@@ -138,10 +140,12 @@ private:
     void loadPlugins();
     void closeCoreLib();
     void closePlugins();
+    void simulateInput();
     Ui::MainWindow *ui;
     QMenu * OpenRecent;
     int verbose;
     int nogui;
+    int run_test;
     uint32_t frame_count;
 
     QMessageBox *download_message = nullptr;

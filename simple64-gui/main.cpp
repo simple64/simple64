@@ -16,8 +16,10 @@ int main(int argc, char *argv[])
     parser.addHelpOption();
     QCommandLineOption verboseOption({"v", "verbose"}, "Verbose mode. Prints out more information to log.");
     QCommandLineOption noGUIOption("nogui", "Disable GUI elements.");
+    QCommandLineOption testOption("test", "Run debug tests.", "number_of_frames");
     parser.addOption(verboseOption);
     parser.addOption(noGUIOption);
+    parser.addOption(testOption);
     parser.addPositionalArgument("ROM", QCoreApplication::translate("main", "ROM to open."));
     parser.process(a);
     const QStringList args = parser.positionalArguments();
@@ -29,6 +31,8 @@ int main(int argc, char *argv[])
         w->setVerbose();
     if (parser.isSet(noGUIOption))
         w->setNoGUI();
+    if (parser.isSet(testOption))
+        w->setTest(parser.value(testOption).toInt());
     if (args.size() > 0)
         w->openROM(args.at(0), "", 0, 0);
     else
