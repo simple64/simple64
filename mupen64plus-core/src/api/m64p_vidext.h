@@ -44,6 +44,19 @@ typedef m64p_error (*ptr_VidExt_Init)(void);
 EXPORT m64p_error CALL VidExt_Init(void);
 #endif
 
+/* VidExt_InitWithRenderMode()
+ *
+ * This function should be called from within the InitiateGFX() video plugin
+ * function call with the specified rendering mode (OpenGL or Vulkan).
+ * The default SDL implementation of this function simply calls
+ * SDL_InitSubSystem(SDL_INIT_VIDEO). It does not open a rendering window or
+ * switch video modes.
+ */
+typedef m64p_error (*ptr_VidExt_InitWithRenderMode)(m64p_render_mode);
+#if defined(M64P_CORE_PROTOTYPES)
+EXPORT m64p_error CALL VidExt_InitWithRenderMode(m64p_render_mode);
+#endif
+
 /* VidExt_Quit()
  *
  * This function closes any open rendering window and shuts down the video
@@ -181,22 +194,24 @@ typedef uint32_t (*ptr_VidExt_GL_GetDefaultFramebuffer)(void);
 EXPORT uint32_t CALL VidExt_GL_GetDefaultFramebuffer(void);
 #endif
 
-/* VidExt_GetVkSurface()
+/* VidExt_VK_GetSurface()
  *
- * Returns the VkSurfaceKHR handle which points to the rendering surface.
+ * This functions gives out a vulkan surface
  */
-typedef void* (*ptr_VidExt_GetVkSurface)(void*);
+typedef m64p_error (*ptr_VidExt_VK_GetSurface)(void**, void*);
 #if defined(M64P_CORE_PROTOTYPES)
-EXPORT void* CALL VidExt_GetVkSurface(void*);
+EXPORT m64p_error CALL VidExt_VK_GetSurface(void**, void*);
 #endif
 
-/* VidExt_GetVkInstExtensions()
+/* VidExt_VK_GetInstanceExtensions()
  *
- * Returns a list of supported Vulkan instance extensions.
+ * This functions gives out a list of supported vulkan
+ * extensions, and the caller will be given the amount
+ * of strings stored in the list
  */
-typedef m64p_error (*ptr_VidExt_GetVkInstExtensions)(const char**[], uint32_t*);
+typedef m64p_error (*ptr_VidExt_VK_GetInstanceExtensions)(const char**[], uint32_t*);
 #if defined(M64P_CORE_PROTOTYPES)
-EXPORT m64p_error CALL VidExt_GetVkInstExtensions(const char**[], uint32_t*);
+EXPORT m64p_error CALL VidExt_VK_GetInstanceExtensions(const char**[], uint32_t*);
 #endif
 
 #ifdef __cplusplus
