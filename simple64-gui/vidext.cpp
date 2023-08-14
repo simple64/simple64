@@ -20,6 +20,11 @@ m64p_error qtVidExtFuncInit(void)
     return M64ERR_SUCCESS;
 }
 
+m64p_error qtVidExtFuncInitWithRenderMode(m64p_render_mode)
+{
+    return qtVidExtFuncInit();
+}
+
 m64p_error qtVidExtFuncQuit(void)
 {
     init = 0;
@@ -116,7 +121,7 @@ uint32_t qtVidExtFuncGLGetDefaultFramebuffer(void)
     return 0;
 }
 
-void* qtVidExtFuncGetVkSurface(void* instance)
+m64p_error qtVidExtFuncGetVkSurface(void** surface, void* instance)
 {
     if (!vulkan_inst.vkInstance())
     {
@@ -124,11 +129,10 @@ void* qtVidExtFuncGetVkSurface(void* instance)
         vulkan_inst.create();
         w->getWorkerThread()->createVkWindow(&vulkan_inst);
     }
-    VkSurfaceKHR surface = nullptr;
-    while (surface == nullptr)
-        surface = QVulkanInstance::surfaceForWindow(w->getVkWindow());
+    while (*surface == nullptr)
+        *surface = QVulkanInstance::surfaceForWindow(w->getVkWindow());
     init = 1;
-    return surface;
+    return M64ERR_SUCCESS;
 }
 
 m64p_error qtVidExtFuncGetVkInstExtensions(const char** ext[], uint32_t* ext_num)

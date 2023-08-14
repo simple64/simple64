@@ -10,6 +10,7 @@
 extern "C" {
 #endif
 m64p_error qtVidExtFuncInit(void);
+m64p_error qtVidExtFuncInitWithRenderMode(m64p_render_mode RenderMode);
 m64p_error qtVidExtFuncQuit(void);
 m64p_error qtVidExtFuncListModes(m64p_2d_size *SizeArray, int *NumSizes);
 m64p_error qtVidExtFuncListRates(m64p_2d_size Size, int *NumRates, int *Rates);
@@ -23,7 +24,7 @@ m64p_error qtVidExtFuncSetCaption(const char *_title);
 m64p_error qtVidExtFuncToggleFS(void);
 m64p_error qtVidExtFuncResizeWindow(int, int);
 uint32_t   qtVidExtFuncGLGetDefaultFramebuffer(void);
-void*      qtVidExtFuncGetVkSurface(void*);
+m64p_error qtVidExtFuncGetVkSurface(void** surface, void* instance);
 m64p_error qtVidExtFuncGetVkInstExtensions(const char**[], uint32_t*);
 #ifdef __cplusplus
 }
