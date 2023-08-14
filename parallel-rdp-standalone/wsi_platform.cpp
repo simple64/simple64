@@ -4,7 +4,9 @@
 
 VkSurfaceKHR QT_WSIPlatform::create_surface(VkInstance instance, VkPhysicalDevice gpu)
 {
-    return screen_get_surface(instance);
+    surface = nullptr;
+    screen_get_surface(&surface, instance);
+    return surface;
 }
 
 void QT_WSIPlatform::destroy_surface(VkInstance instance, VkSurfaceKHR surface)
