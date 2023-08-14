@@ -23,7 +23,7 @@
 
 #define SETTINGS_VER 2
 
-m64p_video_extension_functions vidExtFunctions = {16,
+m64p_video_extension_functions vidExtFunctions = {17,
                                                  qtVidExtFuncInit,
                                                  qtVidExtFuncQuit,
                                                  qtVidExtFuncListModes,
@@ -38,6 +38,7 @@ m64p_video_extension_functions vidExtFunctions = {16,
                                                  qtVidExtFuncToggleFS,
                                                  qtVidExtFuncResizeWindow,
                                                  qtVidExtFuncGLGetDefaultFramebuffer,
+                                                 qtVidExtFuncInitWithRenderMode,
                                                  qtVidExtFuncGetVkSurface,
                                                  qtVidExtFuncGetVkInstExtensions};
 
