@@ -15,13 +15,24 @@ static int l_PluginInit = 0;
 static int GameFreq = 0;
 static AUDIO_INFO AudioInfo;
 static unsigned char primaryBuffer[0x40000];
-static uint8_t output_buffer[0x40000];
 static uint8_t mix_buffer[0x40000];
 static int VolIsMuted = 0;
 static unsigned int paused = 0;
 static int ff = 0;
 static int VolSDL = SDL_MIX_MAXVOLUME;
-static SDL_AudioStream* audio_stream;
+
+void CloseAudio()
+{
+    if (dev)
+    {
+        SDL_ClearQueuedAudio(dev);
+        SDL_CloseAudioDevice(dev);
+        dev = 0;
+    }
+
+    if(hardware_spec != NULL) free(hardware_spec);
+    hardware_spec = NULL;
+}
 
 EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle CoreLibHandle, void *Context, void (*DebugCallback)(void *, int, const char *))
 {
@@ -32,6 +43,8 @@ EXPORT m64p_error CALL PluginStartup(m64p_dynlib_handle CoreLibHandle, void *Con
     l_PluginInit = 1;
     VolIsMuted = 0;
     ff = 0;
+    dev = 0;
+    hardware_spec = NULL;
 
     return M64ERR_SUCCESS;
 }
@@ -41,8 +54,7 @@ EXPORT m64p_error CALL PluginShutdown(void)
     if (!l_PluginInit)
         return M64ERR_NOT_INIT;
 
-    if(hardware_spec != NULL) free(hardware_spec);
-    hardware_spec = NULL;
+    CloseAudio();
 
     SDL_QuitSubSystem(SDL_INIT_AUDIO);
     l_PluginInit = 0;
@@ -75,11 +87,11 @@ EXPORT m64p_error CALL PluginGetVersion(m64p_plugin_type *PluginType, int *Plugi
 
 void InitAudio()
 {
+    CloseAudio();
     SDL_AudioSpec *desired, *obtained;
-    if(hardware_spec != NULL) free(hardware_spec);
     desired = malloc(sizeof(SDL_AudioSpec));
     obtained = malloc(sizeof(SDL_AudioSpec));
-    desired->freq = 48000;
+    desired->freq = GameFreq;
     desired->format = AUDIO_S16SYS;
     desired->channels = 2;
     desired->samples = 16;
@@ -87,24 +99,11 @@ void InitAudio()
     desired->userdata = NULL;
 
     const char *dev_name = SDL_GetAudioDeviceName(-1, 0);
-    dev = SDL_OpenAudioDevice(dev_name, 0, desired, obtained, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE | SDL_AUDIO_ALLOW_SAMPLES_CHANGE);
+    dev = SDL_OpenAudioDevice(dev_name, 0, desired, obtained, SDL_AUDIO_ALLOW_SAMPLES_CHANGE);
     free(desired);
     hardware_spec = obtained;
     SDL_PauseAudioDevice(dev, 0);
     paused = 0;
-    audio_stream = SDL_NewAudioStream(AUDIO_S16SYS, 2, GameFreq, hardware_spec->format, 2, hardware_spec->freq);
-}
-
-void CloseAudio()
-{
-    SDL_ClearQueuedAudio(dev);
-    SDL_CloseAudioDevice(dev);
-
-    if(hardware_spec != NULL) free(hardware_spec);
-    hardware_spec = NULL;
-
-    SDL_FreeAudioStream(audio_stream);
-    audio_stream = NULL;
 }
 
 EXPORT void CALL AiDacrateChanged( int SystemType )
@@ -124,8 +123,7 @@ EXPORT void CALL AiDacrateChanged( int SystemType )
             GameFreq = 48628316 / (*AudioInfo.AI_DACRATE_REG + 1);
             break;
     }
-    SDL_FreeAudioStream(audio_stream);
-    audio_stream = SDL_NewAudioStream(AUDIO_S16SYS, 2, GameFreq, hardware_spec->format, 2, hardware_spec->freq);
+    InitAudio();
 }
 
 EXPORT void CALL AiLenChanged( void )
@@ -167,14 +165,10 @@ EXPORT void CALL AiLenChanged( void )
         }
 
         if (audio_queued < acceptable_latency)
-            SDL_AudioStreamPut(audio_stream, primaryBuffer, LenReg);
-
-        int output_length = SDL_AudioStreamGet(audio_stream, output_buffer, sizeof(output_buffer));
-        if (output_length > 0)
         {
-            SDL_memset(mix_buffer, 0, output_length);
-            SDL_MixAudioFormat(mix_buffer, output_buffer, hardware_spec->format, output_length, VolSDL);
-            SDL_QueueAudio(dev, mix_buffer, output_length);
+            SDL_memset(mix_buffer, 0, LenReg);
+            SDL_MixAudioFormat(mix_buffer, primaryBuffer, hardware_spec->format, LenReg, VolSDL);
+            SDL_QueueAudio(dev, mix_buffer, LenReg);
         }
     }
 }
