@@ -91,9 +91,8 @@ if [[ ${UNAME} == *"MINGW64"* ]]; then
   cd "${install_dir}"
   windeployqt-qt6.exe --no-translations simple64-gui.exe
   my_os=win64
-    
-  # WINEDEBUG=+loaddll wine ./simple64-gui.exe 2> out.txt
-  # cat out.txt | grep found
+
+  # shellcheck disable=SC2154
   cp -v "${MSYSTEM_PREFIX}/bin/libgcc_s_seh-1.dll" "${install_dir}"
   cp -v "${MSYSTEM_PREFIX}/bin/libwinpthread-1.dll" "${install_dir}"
   cp -v "${MSYSTEM_PREFIX}/bin/libstdc++-6.dll" "${install_dir}"
