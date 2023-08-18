@@ -22,6 +22,7 @@ public:
     QComboBox *profileSelect;
 private slots:
     void fileDownloaded(QNetworkReply* pReply);
+    void handleSslErrors(QNetworkReply *reply, const QList<QSslError> &errors);
 private:
     QComboBox *gamepadSelect;
     QComboBox *pakSelect;
