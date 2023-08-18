@@ -15,6 +15,10 @@
 #include <QDir>
 #include <QThread>
 
+void ControllerTab::handleSslErrors(QNetworkReply *reply, const QList<QSslError> &errors) {
+    reply->ignoreSslErrors();
+}
+
 void ControllerTab::fileDownloaded(QNetworkReply* pReply) {
     if (pReply->error())
     {
@@ -60,7 +64,8 @@ void ControllerTab::fileDownloaded(QNetworkReply* pReply) {
 ControllerTab::ControllerTab(unsigned int controller, QSettings* settings, QSettings* controllerSettings, QWidget *parent)
     : QWidget(parent)
 {
-    connect(&modelDownloader, SIGNAL (finished(QNetworkReply*)), this, SLOT (fileDownloaded(QNetworkReply*)));
+    connect(&modelDownloader, &QNetworkAccessManager::finished, this, &ControllerTab::fileDownloaded);
+    connect(&modelDownloader, &QNetworkAccessManager::sslErrors, this, &ControllerTab::handleSslErrors);
     QGridLayout *layout = new QGridLayout(this);
     QLabel *profileLabel = new QLabel("Profile", this);
     layout->addWidget(profileLabel, 0, 0);
@@ -95,7 +100,7 @@ ControllerTab::ControllerTab(unsigned int controller, QSettings* settings, QSett
         {
             if (!QFile::exists(QDir(ConfigGetUserDataPath()).filePath("vosk-model-small-en-us-0.15/conf/mfcc.conf")))
             {
-                QNetworkRequest request(QUrl("http://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip"));
+                QNetworkRequest request(QUrl("https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip"));
                 request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
                 progress = new QProgressDialog("Downloading voice model...", "Abort", 0, 100, this);
                 progress->show();
