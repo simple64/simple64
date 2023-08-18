@@ -9,7 +9,6 @@ UNAME=$(uname -s)
 PLATFORM=$(uname -m)
 if [[ ${UNAME} == *"MINGW64"* ]]; then
   suffix=".dll"
-  mingw_prefix="ucrt64"
 elif [[ ${UNAME} == *"Darwin"* ]]; then
   suffix=".dylib"
   qt_version=$(ls /usr/local/Cellar/qt)
@@ -95,33 +94,33 @@ if [[ ${UNAME} == *"MINGW64"* ]]; then
     
   # WINEDEBUG=+loaddll wine ./simple64-gui.exe 2> out.txt
   # cat out.txt | grep found
-  cp -v "/${mingw_prefix}/bin/libgcc_s_seh-1.dll" "${install_dir}"
-  cp -v "/${mingw_prefix}/bin/libwinpthread-1.dll" "${install_dir}"
-  cp -v "/${mingw_prefix}/bin/libstdc++-6.dll" "${install_dir}"
-  cp -v "/${mingw_prefix}/bin/libdouble-conversion.dll" "${install_dir}"
-  cp -v "/${mingw_prefix}/bin/zlib1.dll" "${install_dir}"
-  cp -v "/${mingw_prefix}/bin/libicuin73.dll" "${install_dir}"
-  cp -v "/${mingw_prefix}/bin/libicuuc73.dll" "${install_dir}"
-  cp -v "/${mingw_prefix}/bin/libicudt73.dll" "${install_dir}"
-  cp -v "/${mingw_prefix}/bin/libbrotlidec.dll" "${install_dir}"
-  cp -v "/${mingw_prefix}/bin/libbrotlicommon.dll" "${install_dir}"
-  cp -v "/${mingw_prefix}/bin/libpcre2-16-0.dll" "${install_dir}"
-  cp -v "/${mingw_prefix}/bin/libpcre2-8-0.dll" "${install_dir}"
-  cp -v "/${mingw_prefix}/bin/libharfbuzz-0.dll" "${install_dir}"
-  cp -v "/${mingw_prefix}/bin/libb2-1.dll" "${install_dir}"
-  cp -v "/${mingw_prefix}/bin/libmd4c.dll" "${install_dir}"
-  cp -v "/${mingw_prefix}/bin/libpng16-16.dll" "${install_dir}"
-  cp -v "/${mingw_prefix}/bin/libfreetype-6.dll" "${install_dir}"
-  cp -v "/${mingw_prefix}/bin/libglib-2.0-0.dll" "${install_dir}"
-  cp -v "/${mingw_prefix}/bin/SDL2.dll" "${install_dir}"
-  cp -v "/${mingw_prefix}/bin/SDL2_net.dll" "${install_dir}"
-  cp -v "/${mingw_prefix}/bin/libbz2-1.dll" "${install_dir}"
-  cp -v "/${mingw_prefix}/bin/libgraphite2.dll" "${install_dir}"
-  cp -v "/${mingw_prefix}/bin/libintl-8.dll" "${install_dir}"
-  cp -v "/${mingw_prefix}/bin/libiconv-2.dll" "${install_dir}"
-  cp -v "/${mingw_prefix}/bin/libhidapi-0.dll" "${install_dir}"
-  cp -v "/${mingw_prefix}/bin/libcrypto-3-x64.dll" "${install_dir}" # used by Qt at runtime
-  cp -v "/${mingw_prefix}/bin/libssl-3-x64.dll" "${install_dir}" # used by Qt at runtime
+  cp -v "${MSYSTEM_PREFIX}/bin/libgcc_s_seh-1.dll" "${install_dir}"
+  cp -v "${MSYSTEM_PREFIX}/bin/libwinpthread-1.dll" "${install_dir}"
+  cp -v "${MSYSTEM_PREFIX}/bin/libstdc++-6.dll" "${install_dir}"
+  cp -v "${MSYSTEM_PREFIX}/bin/libdouble-conversion.dll" "${install_dir}"
+  cp -v "${MSYSTEM_PREFIX}/bin/zlib1.dll" "${install_dir}"
+  cp -v "${MSYSTEM_PREFIX}/bin/libicuin73.dll" "${install_dir}"
+  cp -v "${MSYSTEM_PREFIX}/bin/libicuuc73.dll" "${install_dir}"
+  cp -v "${MSYSTEM_PREFIX}/bin/libicudt73.dll" "${install_dir}"
+  cp -v "${MSYSTEM_PREFIX}/bin/libbrotlidec.dll" "${install_dir}"
+  cp -v "${MSYSTEM_PREFIX}/bin/libbrotlicommon.dll" "${install_dir}"
+  cp -v "${MSYSTEM_PREFIX}/bin/libpcre2-16-0.dll" "${install_dir}"
+  cp -v "${MSYSTEM_PREFIX}/bin/libpcre2-8-0.dll" "${install_dir}"
+  cp -v "${MSYSTEM_PREFIX}/bin/libharfbuzz-0.dll" "${install_dir}"
+  cp -v "${MSYSTEM_PREFIX}/bin/libb2-1.dll" "${install_dir}"
+  cp -v "${MSYSTEM_PREFIX}/bin/libmd4c.dll" "${install_dir}"
+  cp -v "${MSYSTEM_PREFIX}/bin/libpng16-16.dll" "${install_dir}"
+  cp -v "${MSYSTEM_PREFIX}/bin/libfreetype-6.dll" "${install_dir}"
+  cp -v "${MSYSTEM_PREFIX}/bin/libglib-2.0-0.dll" "${install_dir}"
+  cp -v "${MSYSTEM_PREFIX}/bin/SDL2.dll" "${install_dir}"
+  cp -v "${MSYSTEM_PREFIX}/bin/SDL2_net.dll" "${install_dir}"
+  cp -v "${MSYSTEM_PREFIX}/bin/libbz2-1.dll" "${install_dir}"
+  cp -v "${MSYSTEM_PREFIX}/bin/libgraphite2.dll" "${install_dir}"
+  cp -v "${MSYSTEM_PREFIX}/bin/libintl-8.dll" "${install_dir}"
+  cp -v "${MSYSTEM_PREFIX}/bin/libiconv-2.dll" "${install_dir}"
+  cp -v "${MSYSTEM_PREFIX}/bin/libhidapi-0.dll" "${install_dir}"
+  cp -v "${MSYSTEM_PREFIX}/bin/libcrypto-3-x64.dll" "${install_dir}" # used by Qt at runtime
+  cp -v "${MSYSTEM_PREFIX}/bin/libssl-3-x64.dll" "${install_dir}" # used by Qt at runtime
   cp -v "${base_dir}/7za.exe" "${install_dir}"
   cp -v "${base_dir}/simple64-gui/discord/discord_game_sdk.dll" "${install_dir}"
   cp -v "${base_dir}/simple64-input-qt/vosk/x86_64/vosk.dll" "${install_dir}"
