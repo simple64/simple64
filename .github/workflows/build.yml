@@ -33,16 +33,18 @@ jobs:
           install: >-
             make
             patch
-            mingw-w64-ucrt-x86_64-cmake
-            mingw-w64-ucrt-x86_64-gcc
-            mingw-w64-ucrt-x86_64-hidapi
-            mingw-w64-ucrt-x86_64-freetype
-            mingw-w64-ucrt-x86_64-libpng
-            mingw-w64-ucrt-x86_64-SDL2
-            mingw-w64-ucrt-x86_64-SDL2_net
-            mingw-w64-ucrt-x86_64-qt6
             git
             zip
+          pacboy: >-
+            cmake:p
+            gcc:p
+            hidapi:p
+            freetype:p
+            libpng:p
+            SDL2:p
+            SDL2_net:p
+            qt6:p
+
       - name: Run build script
         run: msys2 -c 'export SIMPLE64_AUTOUPDATE=1; ./build.sh'
       - name: Upload zip
