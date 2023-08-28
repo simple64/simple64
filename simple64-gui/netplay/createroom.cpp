@@ -177,15 +177,15 @@ void CreateRoom::createRoom()
     json.insert("emulator", "simple64");
 
     QJsonDocument json_doc(json);
-    webSocket->sendBinaryMessage(json_doc.toJson());
+    webSocket->sendTextMessage(json_doc.toJson());
 }
 
-void CreateRoom::processBinaryMessage(QByteArray message)
+void CreateRoom::processTextMessage(QString message)
 {
     QMessageBox msgBox;
     msgBox.setTextFormat(Qt::RichText);
     msgBox.setTextInteractionFlags(Qt::TextBrowserInteraction);
-    QJsonDocument json_doc = QJsonDocument::fromJson(message);
+    QJsonDocument json_doc = QJsonDocument::fromJson(message.toUtf8());
     QJsonObject json = json_doc.object();
     if (json.value("type").toString() == "reply_create_room")
     {
@@ -248,7 +248,7 @@ void CreateRoom::handleServerChanged(int index)
     connect(webSocket, &QWebSocket::disconnected, timer, &QTimer::stop);
     connect(webSocket, &QObject::destroyed, timer, &QTimer::stop);
 
-    connect(webSocket, &QWebSocket::binaryMessageReceived, this, &CreateRoom::processBinaryMessage);
+    connect(webSocket, &QWebSocket::textMessageReceived, this, &CreateRoom::processTextMessage);
 
     timer->start(2500);
     QString serverAddress = serverChooser->itemData(index) == "Custom" ? customServerHost.prepend("ws://") : serverChooser->itemData(index).toString();
