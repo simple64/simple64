@@ -20,7 +20,7 @@ private slots:
     void handleCreateButton();
     void createRoom();
     void downloadFinished(QNetworkReply *reply);
-    void processBinaryMessage(QByteArray message);
+    void processTextMessage(QString message);
     void onFinished(int result);
     void processBroadcast();
     void handleServerChanged(int index);

@@ -19,8 +19,8 @@ WaitRoom::WaitRoom(QString filename, QJsonObject room, QWebSocket *socket, QWidg
     w->getSettings()->setValue("netplay_name", player_name);
 
     webSocket = socket;
-    connect(webSocket, &QWebSocket::binaryMessageReceived,
-            this, &WaitRoom::processBinaryMessage);
+    connect(webSocket, &QWebSocket::textMessageReceived,
+            this, &WaitRoom::processTextMessage);
 
     connect(webSocket, &QWebSocket::pong, this, &WaitRoom::updatePing);
 
@@ -88,7 +88,7 @@ WaitRoom::WaitRoom(QString filename, QJsonObject room, QWebSocket *socket, QWidg
     json.insert("type", "request_players");
     json.insert("port", room_port);
     QJsonDocument json_doc = QJsonDocument(json);
-    webSocket->sendBinaryMessage(json_doc.toJson());
+    webSocket->sendTextMessage(json_doc.toJson());
 
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &WaitRoom::sendPing);
@@ -114,7 +114,7 @@ void WaitRoom::sendPing()
         json.insert("type", "request_motd");
         json.insert("room_name", room_name);
         QJsonDocument json_doc = QJsonDocument(json);
-        webSocket->sendBinaryMessage(json_doc.toJson());
+        webSocket->sendTextMessage(json_doc.toJson());
     }
     webSocket->ping();
 }
@@ -133,7 +133,7 @@ void WaitRoom::startGame()
         json.insert("type", "request_begin_game");
         json.insert("port", room_port);
         QJsonDocument json_doc = QJsonDocument(json);
-        webSocket->sendBinaryMessage(json_doc.toJson());
+        webSocket->sendTextMessage(json_doc.toJson());
     }
     else
     {
@@ -153,7 +153,7 @@ void WaitRoom::sendChat()
         json.insert("player_name", player_name);
         json.insert("message", chatEdit->text());
         QJsonDocument json_doc = QJsonDocument(json);
-        webSocket->sendBinaryMessage(json_doc.toJson());
+        webSocket->sendTextMessage(json_doc.toJson());
         chatEdit->clear();
     }
 }
@@ -167,9 +167,9 @@ void WaitRoom::onFinished(int)
     webSocket->deleteLater();
 }
 
-void WaitRoom::processBinaryMessage(QByteArray message)
+void WaitRoom::processTextMessage(QString message)
 {
-    QJsonDocument json_doc = QJsonDocument::fromJson(message);
+    QJsonDocument json_doc = QJsonDocument::fromJson(message.toUtf8());
     QJsonObject json = json_doc.object();
     if (json.value("type").toString() == "reply_players")
     {

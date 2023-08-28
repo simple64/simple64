@@ -19,7 +19,7 @@ private slots:
     void downloadFinished(QNetworkReply *reply);
     void serverChanged(int index);
     void onConnected();
-    void processBinaryMessage(QByteArray message);
+    void processTextMessage(QString message);
     void refresh();
     void joinGame();
     void onFinished(int result);
