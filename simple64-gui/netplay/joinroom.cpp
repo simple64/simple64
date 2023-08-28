@@ -178,7 +178,7 @@ void JoinRoom::joinGame()
             json.insert("port", room_port);
 
             QJsonDocument json_doc(json);
-            webSocket->sendBinaryMessage(json_doc.toJson());
+            webSocket->sendTextMessage(json_doc.toJson());
         }
         else
         {
@@ -230,7 +230,7 @@ void JoinRoom::serverChanged(int index)
     connect(webSocket, &QWebSocket::disconnected, connectionTimer, &QTimer::stop);
     connect(webSocket, &QObject::destroyed, connectionTimer, &QTimer::stop);
 
-    connect(webSocket, &QWebSocket::binaryMessageReceived, this, &JoinRoom::processBinaryMessage);
+    connect(webSocket, &QWebSocket::textMessageReceived, this, &JoinRoom::processTextMessage);
 
     QTimer *pingTimer = new QTimer(this);
     connect(webSocket, &QWebSocket::pong, this, &JoinRoom::updatePing);
@@ -259,12 +259,12 @@ void JoinRoom::onConnected()
     json.insert("netplay_version", NETPLAY_VER);
     json.insert("emulator", "simple64");
     QJsonDocument json_doc(json);
-    webSocket->sendBinaryMessage(json_doc.toJson());
+    webSocket->sendTextMessage(json_doc.toJson());
 }
 
-void JoinRoom::processBinaryMessage(QByteArray message)
+void JoinRoom::processTextMessage(QString message)
 {
-    QJsonDocument json_doc = QJsonDocument::fromJson(message);
+    QJsonDocument json_doc = QJsonDocument::fromJson(message.toUtf8());
     QJsonObject json = json_doc.object();
     QMessageBox msgBox;
     msgBox.setTextFormat(Qt::RichText);

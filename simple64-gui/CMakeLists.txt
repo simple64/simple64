@@ -10,7 +10,7 @@ endif()
 
 include_directories(../mupen64plus-core/src/api)
 
-add_definitions(-DQT_DISABLE_DEPRECATED_BEFORE=0x0602ff -DNETPLAY_VER=14)
+add_definitions(-DQT_DISABLE_DEPRECATED_BEFORE=0x0602ff -DNETPLAY_VER=15)
 
 if (DEFINED ENV{SIMPLE64_AUTOUPDATE})
     add_definitions(-D_AUTOUPDATE)
