@@ -77,6 +77,7 @@ VERBOSE=1 cmake --build .
 cp simple64-video-parallel.* "${install_dir}"
 
 if [[ ! -d "${base_dir}/discord" ]]; then
+  echo "Downloading Discord SDK"
   mkdir -p "${base_dir}/discord"
   cd "${base_dir}/discord"
   wget -q https://dl-game-sdk.discordapp.net/2.5.6/discord_game_sdk.zip
@@ -88,10 +89,13 @@ if [[ ! -d "${base_dir}/vosk" ]]; then
   mkdir -p "${base_dir}/vosk"
   cd "${base_dir}/vosk"
   if [[ ${UNAME} == *"MINGW64"* ]]; then
+    echo "Downloading Vosk for Windows"
     wget -q https://github.com/alphacep/vosk-api/releases/download/v0.3.45/vosk-win64-0.3.45.zip
   elif [[ "${PLATFORM}" == "aarch64" ]]; then
+    echo "Downloading Vosk for Linux aarch64"
     wget -q https://github.com/alphacep/vosk-api/releases/download/v0.3.45/vosk-linux-aarch64-0.3.45.zip
   else
+    echo "Downloading Vosk for Linux x86_64"
     wget -q https://github.com/alphacep/vosk-api/releases/download/v0.3.45/vosk-linux-x86_64-0.3.45.zip
   fi
   unzip -jq ./*.zip
