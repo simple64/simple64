@@ -103,6 +103,15 @@ if [[ ! -d "${base_dir}/vosk" ]]; then
 fi
 
 if [[ ${UNAME} == *"MINGW64"* ]]; then
+  if [[ ! -d "${base_dir}/7z" ]]; then
+    echo "Downloading 7-zip"
+    mkdir -p "${base_dir}/7z"
+    cd "${base_dir}/7z"
+    wget -q https://www.7-zip.org/a/7z2301-extra.7z
+    7z x 7z2301-extra.7z
+    rm 7z2301-extra.7z
+  fi
+
   cd "${install_dir}"
   windeployqt-qt6.exe --no-translations simple64-gui.exe
   my_os=win64
@@ -135,7 +144,7 @@ if [[ ${UNAME} == *"MINGW64"* ]]; then
   cp -v "${MSYSTEM_PREFIX}/bin/libhidapi-0.dll" "${install_dir}"
   cp -v "${MSYSTEM_PREFIX}/bin/libcrypto-3-x64.dll" "${install_dir}" # used by Qt at runtime
   cp -v "${MSYSTEM_PREFIX}/bin/libssl-3-x64.dll" "${install_dir}" # used by Qt at runtime
-  cp -v "${base_dir}/7za.exe" "${install_dir}"
+  cp -v "${base_dir}/7z/x64/7za.exe" "${install_dir}"
   cp -v "${base_dir}/discord/lib/x86_64/discord_game_sdk.dll" "${install_dir}"
   cp -v "${base_dir}/vosk/libvosk.dll" "${install_dir}/vosk.dll"
 else

@@ -1,6 +1,7 @@
 simple64/
 discord/
 vosk/
+7z/
 *zip
 *.dylib
 .DS_Store

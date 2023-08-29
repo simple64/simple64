@@ -12,3 +12,4 @@ rm -rf parallel-rsp/build
 rm -rf parallel-rdp-standalone/build
 rm -rf discord
 rm -rf vosk
+rm -rf 7z
