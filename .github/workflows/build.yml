@@ -46,7 +46,7 @@ jobs:
             qt6:p
 
       - name: Run build script
-        run: msys2 -c 'export SIMPLE64_AUTOUPDATE=1; ./build.sh'
+        run: msys2 -c 'export SIMPLE64_AUTOUPDATE=1; ./build.sh zip'
       - name: Upload zip
         uses: actions/upload-artifact@v3
         with:
