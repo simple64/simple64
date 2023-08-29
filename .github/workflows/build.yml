@@ -35,6 +35,7 @@ jobs:
             patch
             git
             zip
+            unzip
           pacboy: >-
             cmake:p
             gcc:p
