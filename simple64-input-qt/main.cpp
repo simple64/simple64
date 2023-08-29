@@ -796,7 +796,7 @@ static int setupVosk()
     desired->samples = 1024;
     desired->callback = NULL;
     desired->userdata = NULL;
-    audio_dev = SDL_OpenAudioDevice(NULL, 1, desired, obtained, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE);
+    audio_dev = SDL_OpenAudioDevice(NULL, 1, desired, obtained, SDL_AUDIO_ALLOW_SAMPLES_CHANGE | SDL_AUDIO_ALLOW_FREQUENCY_CHANGE);
     free(desired);
     hardware_spec = obtained;
     recognizer = nullptr;
