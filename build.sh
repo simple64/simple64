@@ -9,11 +9,6 @@ UNAME=$(uname -s)
 PLATFORM=$(uname -m)
 if [[ ${UNAME} == *"MINGW64"* ]]; then
   suffix=".dll"
-elif [[ ${UNAME} == *"Darwin"* ]]; then
-  suffix=".dylib"
-  qt_version=$(ls /usr/local/Cellar/qt)
-  export CXXFLAGS='-stdlib=libc++'
-  export LDFLAGS='-mmacosx-version-min=11.0'
 else
   suffix=".so"
 fi
@@ -67,13 +62,7 @@ mkdir -p "${base_dir}/simple64-gui/build"
 cd "${base_dir}/simple64-gui/build"
 cmake -G Ninja -DCMAKE_BUILD_TYPE="${RELEASE_TYPE}" ..
 VERBOSE=1 cmake --build .
-
-if [[ ${UNAME} == *"Darwin"* ]]; then
-  "/usr/local/Cellar/qt/${qt_version}/bin/macdeployqt" "${base_dir}/simple64-gui/build/simple64-gui.app"
-  cp -a "${base_dir}/simple64-gui/build/simple64-gui.app" "${install_dir}"
-else
-  cp "${base_dir}/simple64-gui/build/simple64-gui" "${install_dir}"
-fi
+cp "${base_dir}/simple64-gui/build/simple64-gui" "${install_dir}"
 
 mkdir -p "${base_dir}/parallel-rsp/build"
 cd "${base_dir}/parallel-rsp/build"
@@ -86,6 +75,32 @@ cd "${base_dir}/parallel-rdp-standalone/build"
 cmake -G Ninja -DCMAKE_BUILD_TYPE="${RELEASE_TYPE}" ..
 VERBOSE=1 cmake --build .
 cp simple64-video-parallel.* "${install_dir}"
+
+if [[ ! -d "${base_dir}/discord" ]]; then
+  echo "Downloading Discord SDK"
+  mkdir -p "${base_dir}/discord"
+  cd "${base_dir}/discord"
+  wget -q https://dl-game-sdk.discordapp.net/2.5.6/discord_game_sdk.zip
+  unzip -q discord_game_sdk.zip
+  rm discord_game_sdk.zip
+fi
+
+if [[ ! -d "${base_dir}/vosk" ]]; then
+  mkdir -p "${base_dir}/vosk"
+  cd "${base_dir}/vosk"
+  if [[ ${UNAME} == *"MINGW64"* ]]; then
+    echo "Downloading Vosk for Windows"
+    wget -q https://github.com/alphacep/vosk-api/releases/download/v0.3.45/vosk-win64-0.3.45.zip
+  elif [[ "${PLATFORM}" == "aarch64" ]]; then
+    echo "Downloading Vosk for Linux aarch64"
+    wget -q https://github.com/alphacep/vosk-api/releases/download/v0.3.45/vosk-linux-aarch64-0.3.45.zip
+  else
+    echo "Downloading Vosk for Linux x86_64"
+    wget -q https://github.com/alphacep/vosk-api/releases/download/v0.3.45/vosk-linux-x86_64-0.3.45.zip
+  fi
+  unzip -jq ./*.zip
+  rm ./*.zip
+fi
 
 if [[ ${UNAME} == *"MINGW64"* ]]; then
   cd "${install_dir}"
@@ -121,28 +136,21 @@ if [[ ${UNAME} == *"MINGW64"* ]]; then
   cp -v "${MSYSTEM_PREFIX}/bin/libcrypto-3-x64.dll" "${install_dir}" # used by Qt at runtime
   cp -v "${MSYSTEM_PREFIX}/bin/libssl-3-x64.dll" "${install_dir}" # used by Qt at runtime
   cp -v "${base_dir}/7za.exe" "${install_dir}"
-  cp -v "${base_dir}/simple64-gui/discord/discord_game_sdk.dll" "${install_dir}"
-  cp -v "${base_dir}/simple64-input-qt/vosk/x86_64/vosk.dll" "${install_dir}"
-elif [[ ${UNAME} == *"Darwin"* ]]; then
-  cp "${base_dir}/simple64-gui/discord/discord_game_sdk.dylib" "${install_dir}"
-  cd "${base_dir}"
-  sh ./link-mac.sh
+  cp -v "${base_dir}/discord/lib/x86_64/discord_game_sdk.dll" "${install_dir}"
+  cp -v "${base_dir}/vosk/libvosk.dll" "${install_dir}/vosk.dll"
 else
+  cp "${base_dir}/vosk/libvosk.so" "${install_dir}"
   if [[ "${PLATFORM}" == "aarch64" ]]; then
     my_os=linux_aarch64
-    cp "${base_dir}/simple64-input-qt/vosk/aarch64/libvosk.so" "${install_dir}"
   else
     my_os=linux_x86_64
-    cp "${base_dir}/simple64-gui/discord/libdiscord_game_sdk.so" "${install_dir}"
-    cp "${base_dir}/simple64-input-qt/vosk/x86_64/libvosk.so" "${install_dir}"
+    cp "${base_dir}/discord/lib/x86_64/discord_game_sdk.so" "${install_dir}/libdiscord_game_sdk.so"
   fi
 fi
 
-if [[ "$1" != "nozip" ]]; then
-  if [[ ${UNAME} != *"Darwin"* ]]; then
-    cd "${base_dir}"
-    rm -f "${base_dir}/"*.zip
-    HASH=$(git rev-parse --short HEAD)
-    zip --symlinks -r "simple64-${my_os}-${HASH}.zip" simple64
-  fi
+if [[ "$1" == "zip" ]]; then
+  cd "${base_dir}"
+  rm -f "${base_dir}/"*.zip
+  HASH=$(git rev-parse --short HEAD)
+  zip --symlinks -r "simple64-${my_os}-${HASH}.zip" simple64
 fi
