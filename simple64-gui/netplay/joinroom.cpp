@@ -3,6 +3,7 @@
 #include "../mainwindow.h"
 #include "../interface/core_commands.h"
 #include "../version.h"
+#include "netplay_common.h"
 #include <QGridLayout>
 #include <QLabel>
 #include <QJsonObject>
@@ -177,8 +178,7 @@ void JoinRoom::joinGame()
             json.insert("MD5", QString(rom_settings.MD5));
             json.insert("port", room_port);
 
-            QJsonDocument json_doc(json);
-            webSocket->sendTextMessage(json_doc.toJson());
+            sendNetplayMessage(webSocket, json);
         }
         else
         {
@@ -258,8 +258,7 @@ void JoinRoom::onConnected()
     json.insert("type", "request_get_rooms");
     json.insert("netplay_version", NETPLAY_VER);
     json.insert("emulator", "simple64");
-    QJsonDocument json_doc(json);
-    webSocket->sendTextMessage(json_doc.toJson());
+    sendNetplayMessage(webSocket, json);
 }
 
 void JoinRoom::processTextMessage(QString message)

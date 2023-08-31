@@ -3,6 +3,7 @@
 #include "waitroom.h"
 #include "../version.h"
 #include "../interface/core_commands.h"
+#include "netplay_common.h"
 #include <QGridLayout>
 #include <QLabel>
 #include <QCheckBox>
@@ -176,8 +177,7 @@ void CreateRoom::createRoom()
     json.insert("netplay_version", NETPLAY_VER);
     json.insert("emulator", "simple64");
 
-    QJsonDocument json_doc(json);
-    webSocket->sendTextMessage(json_doc.toJson());
+    sendNetplayMessage(webSocket, json);
 }
 
 void CreateRoom::processTextMessage(QString message)
