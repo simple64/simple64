@@ -20,26 +20,26 @@ base_dir=${PWD}
 mkdir -p "${base_dir}/mupen64plus-core/build"
 cd "${base_dir}/mupen64plus-core/build"
 cmake -G Ninja -DCMAKE_BUILD_TYPE="${RELEASE_TYPE}" ..
-VERBOSE=1 cmake --build .
+cmake --build .
 cp ./*mupen64plus"${suffix}" "${install_dir}"
 cp "${base_dir}/mupen64plus-core/data/"* "${install_dir}"
 
 mkdir -p "${base_dir}/simple64-input-raphnetraw/build"
 cd "${base_dir}/simple64-input-raphnetraw/build"
 cmake -G Ninja -DCMAKE_BUILD_TYPE="${RELEASE_TYPE}" ..
-VERBOSE=1 cmake --build .
+cmake --build .
 cp simple64-input-raphnetraw.* "${install_dir}"
 
 mkdir -p "${base_dir}/simple64-input-qt/build"
 cd "${base_dir}/simple64-input-qt/build"
 cmake -G Ninja -DCMAKE_BUILD_TYPE="${RELEASE_TYPE}" ..
-VERBOSE=1 cmake --build .
+cmake --build .
 cp simple64-input-qt.* "${install_dir}"
 
 mkdir -p "${base_dir}/simple64-audio-sdl2/build"
 cd "${base_dir}/simple64-audio-sdl2/build"
 cmake -G Ninja -DCMAKE_BUILD_TYPE="${RELEASE_TYPE}" ..
-VERBOSE=1 cmake --build .
+cmake --build .
 cp simple64-audio-sdl2.* "${install_dir}"
 
 cd "${base_dir}"
@@ -61,19 +61,19 @@ fi
 mkdir -p "${base_dir}/simple64-gui/build"
 cd "${base_dir}/simple64-gui/build"
 cmake -G Ninja -DCMAKE_BUILD_TYPE="${RELEASE_TYPE}" ..
-VERBOSE=1 cmake --build .
+cmake --build .
 cp "${base_dir}/simple64-gui/build/simple64-gui" "${install_dir}"
 
 mkdir -p "${base_dir}/parallel-rsp/build"
 cd "${base_dir}/parallel-rsp/build"
 cmake -G Ninja -DCMAKE_BUILD_TYPE="${RELEASE_TYPE}" ..
-VERBOSE=1 cmake --build .
+cmake --build .
 cp simple64-rsp-parallel.* "${install_dir}"
 
 mkdir -p "${base_dir}/parallel-rdp-standalone/build"
 cd "${base_dir}/parallel-rdp-standalone/build"
 cmake -G Ninja -DCMAKE_BUILD_TYPE="${RELEASE_TYPE}" ..
-VERBOSE=1 cmake --build .
+cmake --build .
 cp simple64-video-parallel.* "${install_dir}"
 
 if [[ ! -d "${base_dir}/discord" ]]; then
