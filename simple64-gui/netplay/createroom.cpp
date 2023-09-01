@@ -175,9 +175,10 @@ void CreateRoom::createRoom()
     json.insert("game_name", QString(rom_settings.goodname));
     json.insert("client_sha", QStringLiteral(GUI_VERSION));
     json.insert("netplay_version", NETPLAY_VER);
-    json.insert("emulator", "simple64");
+    addAuthData(webSocket, &json);
 
-    sendNetplayMessage(webSocket, json);
+    QJsonDocument json_doc(json);
+    webSocket->sendTextMessage(json_doc.toJson());
 }
 
 void CreateRoom::processTextMessage(QString message)

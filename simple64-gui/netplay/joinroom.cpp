@@ -178,7 +178,8 @@ void JoinRoom::joinGame()
             json.insert("MD5", QString(rom_settings.MD5));
             json.insert("port", room_port);
 
-            sendNetplayMessage(webSocket, json);
+            QJsonDocument json_doc(json);
+            webSocket->sendTextMessage(json_doc.toJson());
         }
         else
         {
@@ -257,8 +258,10 @@ void JoinRoom::onConnected()
     QJsonObject json;
     json.insert("type", "request_get_rooms");
     json.insert("netplay_version", NETPLAY_VER);
-    json.insert("emulator", "simple64");
-    sendNetplayMessage(webSocket, json);
+    addAuthData(webSocket, &json);
+
+    QJsonDocument json_doc(json);
+    webSocket->sendTextMessage(json_doc.toJson());
 }
 
 void JoinRoom::processTextMessage(QString message)

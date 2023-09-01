@@ -1,7 +1,6 @@
 #include "waitroom.h"
 #include "../mainwindow.h"
 #include "../interface/core_commands.h"
-#include "netplay_common.h"
 #include <QGridLayout>
 #include <QMessageBox>
 #include <QJsonArray>
@@ -88,7 +87,8 @@ WaitRoom::WaitRoom(QString filename, QJsonObject room, QWebSocket *socket, QWidg
     QJsonObject json;
     json.insert("type", "request_players");
     json.insert("port", room_port);
-    sendNetplayMessage(webSocket, json);
+    QJsonDocument json_doc(json);
+    webSocket->sendTextMessage(json_doc.toJson());
 
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &WaitRoom::sendPing);
@@ -113,7 +113,8 @@ void WaitRoom::sendPing()
         QJsonObject json;
         json.insert("type", "request_motd");
         json.insert("room_name", room_name);
-        sendNetplayMessage(webSocket, json);
+        QJsonDocument json_doc(json);
+        webSocket->sendTextMessage(json_doc.toJson());
     }
     webSocket->ping();
 }
@@ -131,7 +132,8 @@ void WaitRoom::startGame()
         QJsonObject json;
         json.insert("type", "request_begin_game");
         json.insert("port", room_port);
-        sendNetplayMessage(webSocket, json);
+        QJsonDocument json_doc(json);
+        webSocket->sendTextMessage(json_doc.toJson());
     }
     else
     {
@@ -150,7 +152,8 @@ void WaitRoom::sendChat()
         json.insert("port", room_port);
         json.insert("player_name", player_name);
         json.insert("message", chatEdit->text());
-        sendNetplayMessage(webSocket, json);
+        QJsonDocument json_doc(json);
+        webSocket->sendTextMessage(json_doc.toJson());
         chatEdit->clear();
     }
 }

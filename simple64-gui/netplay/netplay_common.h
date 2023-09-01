@@ -4,6 +4,6 @@
 #include <QWebSocket>
 #include <QJsonObject>
 
-void sendNetplayMessage(QWebSocket* webSocket, QJsonObject json);
+void addAuthData(QWebSocket* webSocket, QJsonObject* json);
 
 #endif
