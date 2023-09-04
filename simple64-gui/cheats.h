@@ -6,23 +6,26 @@
 #include <QCheckBox>
 #include <QJsonObject>
 #include <QButtonGroup>
+#include <QPlainTextEdit>
+
+class CheatsTextEdit : public QPlainTextEdit
+{
+public:
+    explicit CheatsTextEdit(QString _game, QWidget *parent = 0);
+private:
+    QString m_game = "";
+};
 
 class CheatsCheckBox : public QCheckBox
 {
 public:
-    explicit CheatsCheckBox(QWidget *parent = 0);
+    explicit CheatsCheckBox(QString _game, QString _cheat, QWidget *parent = 0);
     void loadState();
     void setGroup(QButtonGroup* group) {
         m_group = group;
     }
-    void setCheatName(QString name) {
-        m_cheatName = name;
-    }
     void setOptionName(QString name) {
         m_optionName = name;
-    }
-    void setGame(QString name) {
-        m_game = name;
     }
 private:
     QButtonGroup* m_group = nullptr;
@@ -35,7 +38,7 @@ class CheatsDialog : public QDialog
 {
     Q_OBJECT
 public:
-    CheatsDialog(QWidget *parent = nullptr);
+    CheatsDialog(QString gameName, QWidget *parent = nullptr);
 private:
     QGridLayout *m_layout;
 };

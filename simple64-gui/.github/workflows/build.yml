@@ -15,11 +15,11 @@ jobs:
         run: |
           dnf -y update
           dnf -y install qt6-qtwebsockets-devel SDL2-devel zlib-devel cmake ninja-build git
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           path: simple64-gui
       - name: Checkout core repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: simple64/mupen64plus-core
           path: mupen64plus-core
@@ -35,11 +35,11 @@ jobs:
   build-windows:
     runs-on: windows-2022
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           path: simple64-gui
       - name: Checkout core repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: simple64/mupen64plus-core
           path: mupen64plus-core

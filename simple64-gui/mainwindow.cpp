@@ -778,8 +778,18 @@ void MainWindow::on_actionToggle_Fullscreen_triggered()
 
 void MainWindow::on_actionCheats_triggered()
 {
-    CheatsDialog *cheats = new CheatsDialog(this);
-    cheats->show();
+    QString gameName = getCheatGameName();
+    if (!gameName.isEmpty())
+    {
+        CheatsDialog *cheats = new CheatsDialog(gameName, this);
+        cheats->show();
+    }
+    else
+    {
+        QMessageBox msgBox;
+        msgBox.setText("Game must be running.");
+        msgBox.exec();
+    }
 }
 
 void MainWindow::on_actionSave_State_To_triggered()
