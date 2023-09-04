@@ -102,6 +102,13 @@ if [[ ! -d "${base_dir}/vosk" ]]; then
   rm ./*.zip
 fi
 
+if [[ ! -f "${base_dir}/cheats.json" ]]; then
+  cd "${base_dir}"
+  wget -q https://raw.githubusercontent.com/simple64/cheat-parser/main/cheats.json
+fi
+
+cp "${base_dir}/cheats.json" "${install_dir}"
+
 if [[ ${UNAME} == *"MINGW64"* ]]; then
   if [[ ! -d "${base_dir}/7z" ]]; then
     echo "Downloading 7-zip"

@@ -2,6 +2,7 @@ simple64/
 discord/
 vosk/
 7z/
+cheats.json
 *zip
 *.dylib
 .DS_Store
