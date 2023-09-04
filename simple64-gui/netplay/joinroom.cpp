@@ -289,7 +289,11 @@ void JoinRoom::processTextMessage(QString message)
             newItem = new QTableWidgetItem(json.value("MD5").toString());
             newItem->setFlags(newItem->flags() & ~Qt::ItemIsEditable);
             listWidget->setItem(row, 2, newItem);
-            newItem = new QTableWidgetItem(json.value("protected").toString());
+
+            QString protectedValue = "No";
+            if (json.value("protected").toBool())
+                protectedValue = "Yes";
+            newItem = new QTableWidgetItem(protectedValue);
             newItem->setFlags(newItem->flags() & ~Qt::ItemIsEditable);
             listWidget->setItem(row, 3, newItem);
 
