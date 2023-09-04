@@ -26,7 +26,7 @@ static void paramListCallback(void *context, const char *ParamName, m64p_type Pa
        helper.append("</span>");
        desc->setToolTip(helper);
     }
-    desc->setStyleSheet("border: 1px solid; padding: 10px");
+    desc->setStyleSheet("padding: 10px");
     dialog->getLayout()->addWidget(desc, *dialog->getLayoutRow(), 0);
     CustomButton *my_Widget = new CustomButton(dialog->getLayout()->parentWidget());
     dialog->getButtonList()->append(my_Widget);
@@ -96,7 +96,7 @@ HotkeyDialog::HotkeyDialog(QWidget *parent)
     mainLayout->addWidget(coreEventsScroll);
     QPushButton *resetButton = new QPushButton("Reset All Settings", this);
     resetButton->setAutoDefault(false);
-    connect(resetButton, SIGNAL (released()),this, SLOT (handleResetButton()));
+    connect(resetButton, &QPushButton::released,this, &HotkeyDialog::handleResetButton);
     mainLayout->addWidget(resetButton);
     setLayout(mainLayout);
 }

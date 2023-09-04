@@ -25,6 +25,7 @@ private slots:
     void updatePing(quint64 elapsedTime, const QByteArray &payload);
     void sendPing();
 private:
+    QJsonObject cheats;
     QWebSocket *webSocket = nullptr;
     QLabel *pName[4];
     QPlainTextEdit *chatWindow;

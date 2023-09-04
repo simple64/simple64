@@ -10,6 +10,10 @@ WaitRoom::WaitRoom(QString filename, QJsonObject room, QWebSocket *socket, QWidg
 {
     this->resize(640,480);
 
+    QString cheats_string = room.value("features").toObject().value("cheats").toString();
+    QJsonDocument cheats_doc = QJsonDocument::fromJson(cheats_string.toUtf8());
+    cheats = cheats_doc.object();
+
     player_name = room.value("player_name").toString();
     room_port = room.value("port").toInt();
     room_name = room.value("room_name").toString();
@@ -82,7 +86,7 @@ WaitRoom::WaitRoom(QString filename, QJsonObject room, QWebSocket *socket, QWidg
 
     setLayout(layout);
 
-    connect(this, SIGNAL (finished(int)), this, SLOT (onFinished(int)));
+    connect(this, &WaitRoom::finished, this, &WaitRoom::onFinished);
 
     QJsonObject json;
     json.insert("type", "request_players");
@@ -190,7 +194,7 @@ void WaitRoom::processTextMessage(QString message)
     else if (json.value("type").toString() == "reply_begin_game")
     {
         started = 1;
-        w->openROM(file_name, webSocket->peerAddress().toString(), room_port, player_number);
+        w->openROM(file_name, webSocket->peerAddress().toString(), room_port, player_number, cheats);
         accept();
     }
     else if (json.value("type").toString() == "reply_motd")

@@ -38,7 +38,7 @@ JoinRoom::JoinRoom(QWidget *parent)
 
     serverChooser = new QComboBox(this);
     serverChooser->setSizeAdjustPolicy(QComboBox::AdjustToContents);
-    connect(serverChooser, SIGNAL(currentIndexChanged(int)), this, SLOT(serverChanged(int)));
+    connect(serverChooser, &QComboBox::currentIndexChanged, this, &JoinRoom::serverChanged);
 
     layout->addWidget(serverChooser, 0, 3);
 
@@ -64,10 +64,10 @@ JoinRoom::JoinRoom(QWidget *parent)
 
     setLayout(layout);
 
-    connect(&manager, SIGNAL(finished(QNetworkReply*)),
-            SLOT(downloadFinished(QNetworkReply*)));
+    connect(&manager, &QNetworkAccessManager::finished, this,
+            &JoinRoom::downloadFinished);
 
-    connect(this, SIGNAL (finished(int)), this, SLOT (onFinished(int)));
+    connect(this, &JoinRoom::finished, this, &JoinRoom::onFinished);
 
     QNetworkRequest request(QUrl(QStringLiteral("https://m64p.s3.amazonaws.com/servers.json")));
     manager.get(request);
@@ -111,14 +111,14 @@ void JoinRoom::resetList()
     row = 0;
     rooms.clear();
     listWidget->clear();
-    listWidget->setColumnCount(4);
+    listWidget->setColumnCount(5);
     listWidget->setRowCount(row);
     QStringList headers;
     headers.append("Room Name");
     headers.append("Game Name");
     headers.append("Game MD5");
     headers.append("Password Protected");
-    //headers.append("Fixed Input Delay");
+    headers.append("Cheats Enabled");
     listWidget->setHorizontalHeaderLabels(headers);
     listWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 }
@@ -292,6 +292,13 @@ void JoinRoom::processTextMessage(QString message)
             newItem = new QTableWidgetItem(json.value("protected").toString());
             newItem->setFlags(newItem->flags() & ~Qt::ItemIsEditable);
             listWidget->setItem(row, 3, newItem);
+
+            QString cheatsValue = "No";
+            if (!json.value("features").toObject().value("cheats").toString().isEmpty())
+                cheatsValue = "Yes";
+            newItem = new QTableWidgetItem(cheatsValue);
+            newItem->setFlags(newItem->flags() & ~Qt::ItemIsEditable);
+            listWidget->setItem(row, 4, newItem);
 
             ++row;
         }

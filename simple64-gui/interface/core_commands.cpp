@@ -20,3 +20,5 @@ ptr_ConfigOpenSection            ConfigOpenSection = nullptr;
 ptr_ConfigSaveSection            ConfigSaveSection = nullptr;
 ptr_ConfigListParameters         ConfigListParameters = nullptr;
 ptr_ConfigGetSharedDataFilepath  ConfigGetSharedDataFilepath = nullptr;
+
+ptr_CoreAddCheat                 CoreAddCheat = nullptr;

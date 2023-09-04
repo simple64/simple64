@@ -46,7 +46,7 @@ static void paramListCallback(void *context, const char *ParamName, m64p_type Pa
        helper.append("</span>");
        desc->setToolTip(helper);
     }
-    desc->setStyleSheet("border: 1px solid; padding: 10px");
+    desc->setStyleSheet("padding: 10px");
     my_layout->addWidget(desc, *my_row, 0);
     void *my_Widget = nullptr;
     switch (ParamType) {
@@ -75,7 +75,7 @@ static void paramListCallback(void *context, const char *ParamName, m64p_type Pa
         ((CustomCheckBox*)my_Widget)->setConfigHandle(current_handle);
         ((CustomCheckBox*)my_Widget)->setParamType(ParamType);
         ((CustomCheckBox*)my_Widget)->setParamName(ParamName);
-        ((CustomCheckBox*)my_Widget)->setStyleSheet("border: 1px solid; padding: 10px");
+        ((CustomCheckBox*)my_Widget)->setStyleSheet("padding: 10px");
         l_ParamBool = (*ConfigGetParamBool)(current_handle, ParamName);
         ((CustomCheckBox*)my_Widget)->setCheckState(l_ParamBool ? Qt::Checked : Qt::Unchecked);
         break;
@@ -159,7 +159,7 @@ PluginDialog::PluginDialog(QWidget *parent)
     mainLayout->addWidget(tabWidget);
     QPushButton *resetButton = new QPushButton("Reset All Settings", this);
     resetButton->setAutoDefault(false);
-    connect(resetButton, SIGNAL (released()),this, SLOT (handleResetButton()));
+    connect(resetButton, &QPushButton::released,this, &PluginDialog::handleResetButton);
     mainLayout->addWidget(resetButton);
     setLayout(mainLayout);
 }

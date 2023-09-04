@@ -55,6 +55,8 @@
     </property>
     <addaction name="actionToggle_Fullscreen"/>
     <addaction name="separator"/>
+    <addaction name="actionCheats"/>
+    <addaction name="separator"/>
     <addaction name="actionMute"/>
     <addaction name="separator"/>
     <addaction name="actionPause_Game"/>
@@ -170,6 +172,11 @@
   <action name="actionToggle_Fullscreen">
    <property name="text">
     <string>Toggle Fullscreen (Alt + Return)</string>
+   </property>
+  </action>
+  <action name="actionCheats">
+   <property name="text">
+    <string>Cheats</string>
    </property>
   </action>
   <action name="actionController_Configuration">

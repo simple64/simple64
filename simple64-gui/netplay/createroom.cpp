@@ -1,4 +1,5 @@
 #include "../mainwindow.h"
+#include "../cheats.h"
 #include "createroom.h"
 #include "waitroom.h"
 #include "../version.h"
@@ -38,7 +39,7 @@ CreateRoom::CreateRoom(QWidget *parent)
     QLabel *romLabel = new QLabel("ROM", this);
     layout->addWidget(romLabel, 2, 0);
     romButton = new QPushButton("ROM Path", this);
-    connect(romButton, SIGNAL (released()), this, SLOT (handleRomButton()));
+    connect(romButton, &QPushButton::released, this, &CreateRoom::handleRomButton);
     layout->addWidget(romButton, 2, 1);
 
     QLabel *playerNameLabel = new QLabel("Player Name", this);
@@ -55,7 +56,7 @@ CreateRoom::CreateRoom(QWidget *parent)
     serverChooser = new QComboBox(this);
     serverChooser->setSizeAdjustPolicy(QComboBox::AdjustToContents);
     layout->addWidget(serverChooser, 6, 1);
-    connect(serverChooser, SIGNAL(currentIndexChanged(int)), this, SLOT(handleServerChanged(int)));
+    connect(serverChooser, &QComboBox::currentIndexChanged, this, &CreateRoom::handleServerChanged);
 
     QLabel *pingLabel = new QLabel("Your ping:", this);
     layout->addWidget(pingLabel, 7, 0);
@@ -69,15 +70,15 @@ CreateRoom::CreateRoom(QWidget *parent)
     layout->addWidget(lineH1, 8, 0, 1, 2);
 
     createButton = new QPushButton("Create Game", this);
-    connect(createButton, SIGNAL (released()), this, SLOT (handleCreateButton()));
+    connect(createButton, &QPushButton::released, this, &CreateRoom::handleCreateButton);
     layout->addWidget(createButton, 9, 0, 1, 2);
 
     setLayout(layout);
 
-    connect(&manager, SIGNAL(finished(QNetworkReply*)),
-            SLOT(downloadFinished(QNetworkReply*)));
+    connect(&manager, &QNetworkAccessManager::finished, this,
+           &CreateRoom::downloadFinished);
 
-    connect(this, SIGNAL (finished(int)), this, SLOT (onFinished(int)));
+    connect(this, &CreateRoom::finished, this, &CreateRoom::onFinished);
 
     QNetworkRequest request(QUrl(QStringLiteral("https://m64p.s3.amazonaws.com/servers.json")));
     manager.get(request);
@@ -143,7 +144,7 @@ void CreateRoom::handleCreateButton()
         connectionTimer = new QTimer(this);
         connectionTimer->setSingleShot(true);
         connectionTimer->start(5000);
-        connect(connectionTimer, SIGNAL(timeout()), this, SLOT(connectionFailed()));
+        connect(connectionTimer, &QTimer::timeout, this, &CreateRoom::connectionFailed);
         connect(webSocket, &QWebSocket::disconnected, connectionTimer, &QTimer::stop);
         connect(webSocket, &QObject::destroyed, connectionTimer, &QTimer::stop);
 
@@ -175,6 +176,18 @@ void CreateRoom::createRoom()
     json.insert("game_name", QString(rom_settings.goodname));
     json.insert("client_sha", QStringLiteral(GUI_VERSION));
     json.insert("netplay_version", NETPLAY_VER);
+
+    QString gameName = getCheatGameName();
+    QJsonObject gameData = loadCheatData(gameName);
+    QJsonObject cheats = getCheatsFromSettings(gameName, gameData);
+    if (!cheats.isEmpty())
+    {
+        QJsonDocument cheatsDoc(cheats);
+        QJsonObject features;
+        features.insert("cheats", QString(cheatsDoc.toJson(QJsonDocument::Compact)));
+        json.insert("features", features);
+    }
+
     addAuthData(webSocket, &json);
 
     QJsonDocument json_doc(json);

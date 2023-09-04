@@ -9,7 +9,7 @@
 #include <QDBusInterface>
 #endif
 
-WorkerThread::WorkerThread(QString _netplay_ip, int _netplay_port, int _netplay_player, QObject *parent)
+WorkerThread::WorkerThread(QString _netplay_ip, int _netplay_port, int _netplay_player, QJsonObject _cheats, QObject *parent)
     : QThread(parent)
 {
 #ifdef _WIN32
@@ -18,19 +18,21 @@ WorkerThread::WorkerThread(QString _netplay_ip, int _netplay_port, int _netplay_
     netplay_ip = _netplay_ip;
     netplay_port = _netplay_port;
     netplay_player = _netplay_player;
+    cheats = _cheats;
 }
 
 void WorkerThread::run()
 {
-    connect(this, SIGNAL(resizeMainWindow(int,int)), w, SLOT(resizeMainWindow(int, int)), Qt::BlockingQueuedConnection);
-    connect(this, SIGNAL(toggleFS(int)), w, SLOT(toggleFS(int)), Qt::BlockingQueuedConnection);
-    connect(this, SIGNAL(createVkWindow(QVulkanInstance*)), w, SLOT(createVkWindow(QVulkanInstance*)), Qt::BlockingQueuedConnection);
-    connect(this, SIGNAL(deleteVkWindow()), w, SLOT(deleteVkWindow()), Qt::BlockingQueuedConnection);
-    connect(this, SIGNAL(showMessage(QString)), w, SLOT(showMessage(QString)), Qt::QueuedConnection);
-    connect(this, SIGNAL(updateDiscordActivity(struct DiscordActivity)), w, SLOT(updateDiscordActivity(struct DiscordActivity)), Qt::BlockingQueuedConnection);
-    connect(this, SIGNAL(clearDiscordActivity()), w, SLOT(clearDiscordActivity()), Qt::BlockingQueuedConnection);
-    connect(this, SIGNAL(addLog(QString)), w->getLogViewer(), SLOT(addLog(QString)), Qt::QueuedConnection);
-    connect(this, SIGNAL(addFrameCount()), w, SLOT(addFrameCount()), Qt::QueuedConnection);
+    connect(this, &WorkerThread::resizeMainWindow, w, &MainWindow::resizeMainWindow, Qt::BlockingQueuedConnection);
+    connect(this, &WorkerThread::toggleFS, w, &MainWindow::toggleFS, Qt::BlockingQueuedConnection);
+    connect(this, &WorkerThread::createVkWindow, w, &MainWindow::createVkWindow, Qt::BlockingQueuedConnection);
+    connect(this, &WorkerThread::deleteVkWindow, w, &MainWindow::deleteVkWindow, Qt::BlockingQueuedConnection);
+    connect(this, &WorkerThread::showMessage, w, &MainWindow::showMessage, Qt::QueuedConnection);
+    connect(this, &WorkerThread::updateDiscordActivity, w, &MainWindow::updateDiscordActivity, Qt::BlockingQueuedConnection);
+    connect(this, &WorkerThread::clearDiscordActivity, w, &MainWindow::clearDiscordActivity, Qt::BlockingQueuedConnection);
+    connect(this, &WorkerThread::setCheats, w, &MainWindow::setCheats, Qt::BlockingQueuedConnection);
+    connect(this, &WorkerThread::addLog, w->getLogViewer(), &LogViewer::addLog, Qt::QueuedConnection);
+    connect(this, &WorkerThread::addFrameCount, w, &MainWindow::addFrameCount, Qt::QueuedConnection);
 #ifdef _WIN32
     SetThreadExecutionState(ES_CONTINUOUS | ES_DISPLAY_REQUIRED);
 #else
@@ -62,6 +64,8 @@ void WorkerThread::run()
         activity.timestamps = timestamps;
         strncpy(activity.details, rom_settings.goodname, 128);
         emit updateDiscordActivity(activity);
+
+        emit setCheats(cheats, netplay_port > 0);
 
         res = launchGame(netplay_ip, netplay_port, netplay_player);
 

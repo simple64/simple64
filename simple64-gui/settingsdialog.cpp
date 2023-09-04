@@ -45,12 +45,12 @@ void SettingsDialog::initStuff()
     configPath = new QLineEdit(this);
     configPath->setText(w->getSettings()->value("configDirPath").toString());
     QPushButton *configButton = new QPushButton("Set Path", this);
-    connect(configButton, SIGNAL (released()),this, SLOT (handleConfigButton()));
-    connect(configPath, SIGNAL (editingFinished()),this, SLOT (handleConfigEdit()));
+    connect(configButton, &QPushButton::released,this, &SettingsDialog::handleConfigButton);
+    connect(configPath, &QLineEdit::editingFinished,this, &SettingsDialog::handleConfigEdit);
     QPushButton *appPathButton = new QPushButton("Use Application Path", this);
-    connect(appPathButton, SIGNAL (released()),this, SLOT (handleAppPathButton()));
+    connect(appPathButton, &QPushButton::released,this, &SettingsDialog::handleAppPathButton);
     QPushButton *clearConfigButton = new QPushButton("Clear", this);
-    connect(clearConfigButton, SIGNAL (released()),this, SLOT (handleClearConfigButton()));
+    connect(clearConfigButton, &QPushButton::released,this, &SettingsDialog::handleClearConfigButton);
     configPath->setStyleSheet("border: 1px solid; padding: 10px");
     layout->addWidget(note,0,0,1,-1);
     layout->addWidget(configLabel,1,0);

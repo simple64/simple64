@@ -46,6 +46,7 @@ add_executable(simple64-gui
     vidext.cpp
     settingsdialog.cpp
     interface/common.cpp
+    cheats.cpp
     hotkeydialog.cpp
     plugindialog.cpp
     vkwindow.cpp

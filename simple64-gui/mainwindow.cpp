@@ -6,6 +6,7 @@
 #include "settingsdialog.h"
 #include "plugindialog.h"
 #include "hotkeydialog.h"
+#include "cheats.h"
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "interface/common.h"
@@ -301,7 +302,7 @@ MainWindow::MainWindow(QWidget *parent) :
     if (!settings->contains("volume"))
         settings->setValue("volume", 100);
     VolumeAction * volumeAction = new VolumeAction(tr("Volume"), this);
-    connect(volumeAction->slider(), SIGNAL(valueChanged(int)), this, SLOT(volumeValueChanged(int)));
+    connect(volumeAction->slider(), &QSlider::valueChanged, this, &MainWindow::volumeValueChanged);
     volumeAction->slider()->setValue(settings->value("volume").toInt());
     ui->menuEmulation->insertAction(ui->actionMute, volumeAction);
 
@@ -571,7 +572,7 @@ void MainWindow::updateOpenRecent()
         OpenRecent->addAction(recent[i]);
         QAction *temp_recent = recent[i];
         connect(temp_recent, &QAction::triggered,[=](){
-                    openROM(temp_recent->text(), "", 0, 0);
+                    openROM(temp_recent->text(), "", 0, 0, QJsonObject());
                 });
     }
     OpenRecent->addSeparator();
@@ -657,7 +658,7 @@ void MainWindow::resetCore()
     loadPlugins();
 }
 
-void MainWindow::openROM(QString filename, QString netplay_ip, int netplay_port, int netplay_player)
+void MainWindow::openROM(QString filename, QString netplay_ip, int netplay_port, int netplay_player, QJsonObject cheats)
 {
     stopGame();
 
@@ -665,7 +666,7 @@ void MainWindow::openROM(QString filename, QString netplay_ip, int netplay_port,
 
     resetCore();
 
-    workerThread = new WorkerThread(netplay_ip, netplay_port, netplay_player, this);
+    workerThread = new WorkerThread(netplay_ip, netplay_port, netplay_player, cheats, this);
     workerThread->setFileName(filename);
 
     QStringList list;
@@ -688,7 +689,7 @@ void MainWindow::on_actionOpen_ROM_triggered()
     if (!filename.isNull()) {
         QFileInfo info(filename);
         settings->setValue("ROMdir", info.absoluteDir().absolutePath());
-        openROM(filename, "", 0, 0);
+        openROM(filename, "", 0, 0, QJsonObject());
     }
 }
 
@@ -773,6 +774,12 @@ void MainWindow::on_actionToggle_Fullscreen_triggered()
         response = M64VIDEO_WINDOWED;
         (*CoreDoCommand)(M64CMD_CORE_STATE_SET, M64CORE_VIDEO_MODE, &response);
     }
+}
+
+void MainWindow::on_actionCheats_triggered()
+{
+    CheatsDialog *cheats = new CheatsDialog(this);
+    cheats->show();
 }
 
 void MainWindow::on_actionSave_State_To_triggered()
@@ -944,6 +951,8 @@ void MainWindow::loadCoreLib()
     ConfigSaveSection =           (ptr_ConfigSaveSection) osal_dynlib_getproc(coreLib, "ConfigSaveSection");
     ConfigListParameters =        (ptr_ConfigListParameters) osal_dynlib_getproc(coreLib, "ConfigListParameters");
     ConfigGetSharedDataFilepath = (ptr_ConfigGetSharedDataFilepath) osal_dynlib_getproc(coreLib, "ConfigGetSharedDataFilepath");
+
+    CoreAddCheat = (ptr_CoreAddCheat) osal_dynlib_getproc(coreLib, "CoreAddCheat");
 
     QString qtConfigDir = settings->value("configDirPath").toString();
 
@@ -1145,6 +1154,21 @@ void MainWindow::updateFrameCount()
     if (run_test)
         simulateInput();
     QString FPS = QString("%1 FPS").arg(frame_count);
+    if (m_cheatsEnabled)
+    {
+        FPS.prepend("Cheats Enabled    ");
+    }
     FPSLabel->setText(FPS);
     frame_count = 0;
+}
+
+void MainWindow::setCheats(QJsonObject cheatsData, bool netplay)
+{
+    if (!netplay)
+    {
+        QString gameName = getCheatGameName();
+        QJsonObject gameData = loadCheatData(gameName);
+        cheatsData = getCheatsFromSettings(gameName, gameData);
+    }
+    m_cheatsEnabled = loadCheats(cheatsData);
 }
