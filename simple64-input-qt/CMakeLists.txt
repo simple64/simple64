@@ -16,7 +16,7 @@ find_package(SDL2 REQUIRED)
 find_package(Qt6 REQUIRED COMPONENTS Widgets Network)
 qt_standard_project_setup()
 
-add_library(simple64-input-qt SHARED
+qt_add_library(simple64-input-qt SHARED
     configdialog.cpp
     qt2sdl2.cpp
     main.cpp
