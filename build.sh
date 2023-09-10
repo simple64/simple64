@@ -23,6 +23,7 @@ cmake -G Ninja -DCMAKE_BUILD_TYPE="${RELEASE_TYPE}" ..
 cmake --build .
 cp ./*mupen64plus"${suffix}" "${install_dir}"
 cp "${base_dir}/mupen64plus-core/data/mupen64plus.ini" "${install_dir}"
+cp "${base_dir}/mupen64plus-core/data/pif"* "${install_dir}"
 
 mkdir -p "${base_dir}/simple64-input-raphnetraw/build"
 cd "${base_dir}/simple64-input-raphnetraw/build"
