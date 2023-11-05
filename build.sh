@@ -149,6 +149,7 @@ if [[ ${UNAME} == *"MINGW64"* ]]; then
   cp -v "${MSYSTEM_PREFIX}/bin/libgraphite2.dll" "${install_dir}"
   cp -v "${MSYSTEM_PREFIX}/bin/libintl-8.dll" "${install_dir}"
   cp -v "${MSYSTEM_PREFIX}/bin/libiconv-2.dll" "${install_dir}"
+  cp -v "${MSYSTEM_PREFIX}/bin/libzstd.dll" "${install_dir}"
   cp -v "${MSYSTEM_PREFIX}/bin/libhidapi-0.dll" "${install_dir}"
   cp -v "${MSYSTEM_PREFIX}/bin/libcrypto-3-x64.dll" "${install_dir}" # used by Qt at runtime
   cp -v "${MSYSTEM_PREFIX}/bin/libssl-3-x64.dll" "${install_dir}" # used by Qt at runtime
