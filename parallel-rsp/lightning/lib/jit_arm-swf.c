@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019  Free Software Foundation, Inc.
+ * Copyright (C) 2012-2023  Free Software Foundation, Inc.
  *
  * This file is part of GNU lightning.
  *
@@ -564,6 +564,8 @@ _swf_ff(jit_state_t *_jit, float(*i0)(float),
 	jit_int32_t r0, jit_int32_t r1)
 {
     jit_get_reg_args();
+    if (jit_fpr_p(r0) || jit_fpr_p(r1))
+	CHECK_SWF_OFFSET();
     if (jit_fpr_p(r1))
 	swf_ldrin(_R0_REGNO, _FP_REGNO, swf_off(r1) + 8);
     else
@@ -581,6 +583,8 @@ _swf_dd(jit_state_t *_jit, double (*i0)(double),
 	jit_int32_t r0, jit_int32_t r1)
 {
     jit_get_reg_args();
+    if (jit_fpr_p(r0) || jit_fpr_p(r1))
+	CHECK_SWF_OFFSET();
     if (jit_fpr_p(r1)) {
 	if (!jit_thumb_p() && jit_armv5e_p())
 	    LDRDIN(_R0_REGNO, _FP_REGNO, swf_off(r1) + 8);
@@ -614,6 +618,8 @@ _swf_fff(jit_state_t *_jit, float (*i0)(float, float),
 	 jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
     jit_get_reg_args();
+    if (jit_fpr_p(r0) || jit_fpr_p(r1) || jit_fpr_p(r2))
+	CHECK_SWF_OFFSET();
     if (jit_fpr_p(r1))
 	swf_ldrin(_R0_REGNO, _FP_REGNO, swf_off(r1) + 8);
     else
@@ -635,6 +641,8 @@ _swf_ddd(jit_state_t *_jit, double (*i0)(double, double),
 	 jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
     jit_get_reg_args();
+    if (jit_fpr_p(r0) || jit_fpr_p(r1) || jit_fpr_p(r2))
+	CHECK_SWF_OFFSET();
     if (jit_fpr_p(r1)) {
 	if (!jit_thumb_p() && jit_armv5e_p())
 	    LDRDIN(_R0_REGNO, _FP_REGNO, swf_off(r1) + 8);
@@ -684,6 +692,8 @@ _swf_fff_(jit_state_t *_jit, float (*i0)(float, float),
 	jit_float32_t	f;
     } data;
     jit_get_reg_args();
+    if (jit_fpr_p(r0) || jit_fpr_p(r1))
+	CHECK_SWF_OFFSET();
     data.f = i1;
     if (jit_fpr_p(r1))
 	swf_ldrin(_R0_REGNO, _FP_REGNO, swf_off(r1) + 8);
@@ -706,6 +716,8 @@ _swf_rsbi_f(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_float32_t i0)
 	jit_float32_t	f;
     } data;
     jit_get_reg_args();
+    if (jit_fpr_p(r0) || jit_fpr_p(r1))
+	CHECK_SWF_OFFSET();
     data.f = i0;
     movi(_R0_REGNO, data.i);
     if (jit_fpr_p(r1))
@@ -729,7 +741,8 @@ _swf_ddd_(jit_state_t *_jit, double (*i0)(double, double),
 	jit_float64_t	d;
     } data;
     jit_get_reg_args();
-
+    if (jit_fpr_p(r0) || jit_fpr_p(r1))
+	CHECK_SWF_OFFSET();
     data.d = i1;
     if (jit_fpr_p(r1)) {
 	if (!jit_thumb_p() && jit_armv5e_p())
@@ -769,6 +782,8 @@ _swf_rsbi_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_float64_t i0)
 	jit_float64_t	d;
     } data;
     jit_get_reg_args();
+    if (jit_fpr_p(r0) || jit_fpr_p(r1))
+	CHECK_SWF_OFFSET();
     data.d = i0;
     movi(_R0_REGNO, data.i[0]);
     movi(_R1_REGNO, data.i[1]);
@@ -805,6 +820,8 @@ _swf_iff(jit_state_t *_jit, int (*i0)(float, float),
 	 jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
     jit_get_reg_args();
+    if (jit_fpr_p(r1) || jit_fpr_p(r2))
+	CHECK_SWF_OFFSET();
     if (jit_fpr_p(r1))
 	swf_ldrin(_R0_REGNO, _FP_REGNO, swf_off(r1) + 8);
     else
@@ -823,6 +840,8 @@ _swf_idd(jit_state_t *_jit, int (*i0)(double, double),
 	 jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
     jit_get_reg_args();
+    if (jit_fpr_p(r1) || jit_fpr_p(r2))
+	CHECK_SWF_OFFSET();
     if (jit_fpr_p(r1)) {
 	if (!jit_thumb_p() && jit_armv5e_p())
 	    LDRDIN(_R0_REGNO, _FP_REGNO, swf_off(r1) + 8);
@@ -861,6 +880,8 @@ _swf_iff_(jit_state_t *_jit, int (*i0)(float, float),
 	jit_float32_t	f;
     } data;
     jit_get_reg_args();
+    if (jit_fpr_p(r1))
+	CHECK_SWF_OFFSET();
     data.f = i1;
     if (jit_fpr_p(r1))
 	swf_ldrin(_R0_REGNO, _FP_REGNO, swf_off(r1) + 8);
@@ -881,6 +902,8 @@ _swf_idd_(jit_state_t *_jit, int (*i0)(double, double),
 	jit_float64_t	d;
     } data;
     jit_get_reg_args();
+    if (jit_fpr_p(r1))
+	CHECK_SWF_OFFSET();
     data.d = i1;
     if (jit_fpr_p(r1)) {
 	if (!jit_thumb_p() && jit_armv5e_p())
@@ -907,6 +930,8 @@ _swf_iunff(jit_state_t *_jit, int (*i0)(float, float),
 {
     jit_word_t		instr;
     jit_get_reg_args();
+    if (jit_fpr_p(r1) || jit_fpr_p(r2))
+	CHECK_SWF_OFFSET();
     if (jit_fpr_p(r1))
 	swf_ldrin(_R0_REGNO, _FP_REGNO, swf_off(r1) + 8);
     else
@@ -952,6 +977,8 @@ _swf_iundd(jit_state_t *_jit, int (*i0)(double, double),
 {
     jit_word_t		instr;
     jit_get_reg_args();
+    if (jit_fpr_p(r1) || jit_fpr_p(r2))
+	CHECK_SWF_OFFSET();
     if (jit_fpr_p(r1)) {
 	if (!jit_thumb_p() && jit_armv5e_p())
 	    LDRDIN(_R0_REGNO, _FP_REGNO, swf_off(r1) + 8);
@@ -1033,6 +1060,8 @@ _swf_iunff_(jit_state_t *_jit, int (*i0)(float, float),
 	jit_float32_t	f;
     } data;
     jit_get_reg_args();
+    if (jit_fpr_p(r1))
+	CHECK_SWF_OFFSET();
     data.f = i1;
     if (jit_fpr_p(r1))
 	swf_ldrin(_R0_REGNO, _FP_REGNO, swf_off(r1) + 8);
@@ -1077,6 +1106,8 @@ _swf_iundd_(jit_state_t *_jit, int (*i0)(double, double),
 	jit_float64_t	d;
     } data;
     jit_get_reg_args();
+    if (jit_fpr_p(r1))
+	CHECK_SWF_OFFSET();
     data.d = i1;
     if (jit_fpr_p(r1)) {
 	if (!jit_thumb_p() && jit_armv5e_p())
@@ -1135,6 +1166,8 @@ _swf_bff(jit_state_t *_jit, int (*i0)(float, float), int cc,
 {
     jit_word_t		w, d;
     jit_get_reg_args();
+    if (jit_fpr_p(r0) || jit_fpr_p(r1))
+	CHECK_SWF_OFFSET();
     if (jit_fpr_p(r0))
 	swf_ldrin(_R0_REGNO, _FP_REGNO, swf_off(r0) + 8);
     else
@@ -1168,6 +1201,8 @@ _swf_bdd(jit_state_t *_jit, int (*i0)(double, double), int cc,
 {
     jit_word_t		w, d;
     jit_get_reg_args();
+    if (jit_fpr_p(r0) || jit_fpr_p(r1))
+	CHECK_SWF_OFFSET();
     if (jit_fpr_p(r0)) {
 	if (!jit_thumb_p() && jit_armv5e_p())
 	    LDRDIN(_R0_REGNO, _FP_REGNO, swf_off(r0) + 8);
@@ -1221,6 +1256,8 @@ _swf_bff_(jit_state_t *_jit, int (*i0)(float, float), int cc,
     } data;
     jit_word_t		w, d;
     jit_get_reg_args();
+    if (jit_fpr_p(r0))
+	CHECK_SWF_OFFSET();
     data.f = i2;
     if (jit_fpr_p(r0))
 	swf_ldrin(_R0_REGNO, _FP_REGNO, swf_off(r0) + 8);
@@ -1256,6 +1293,8 @@ _swf_bdd_(jit_state_t *_jit, int (*i0)(double, double), int cc,
 	jit_float64_t	d;
     } data;
     jit_get_reg_args();
+    if (jit_fpr_p(r0))
+	CHECK_SWF_OFFSET();
     data.d = i2;
     if (jit_fpr_p(r0)) {
 	if (!jit_thumb_p() && jit_armv5e_p())
@@ -1296,6 +1335,8 @@ _swf_bunff(jit_state_t *_jit, int eq,
 {
     jit_word_t		w, d, j0, j1;
     jit_get_reg_args();
+    if (jit_fpr_p(r0) || jit_fpr_p(r1))
+	CHECK_SWF_OFFSET();
     if (jit_fpr_p(r0))
 	swf_ldrin(_R0_REGNO, _FP_REGNO, swf_off(r0) + 8);
     else
@@ -1366,6 +1407,8 @@ _swf_bundd(jit_state_t *_jit, int eq,
 {
     jit_word_t		w, d, j0, j1;
     jit_get_reg_args();
+    if (jit_fpr_p(r0) || jit_fpr_p(r1))
+	CHECK_SWF_OFFSET();
     if (jit_fpr_p(r0)) {
 	if (!jit_thumb_p() && jit_armv5e_p())
 	    LDRDIN(_R0_REGNO, _FP_REGNO, swf_off(r0) + 8);
@@ -1474,6 +1517,8 @@ _swf_bunff_(jit_state_t *_jit, int eq,
     data.f = i1;
     jit_get_reg_args();
     if (jit_fpr_p(r0))
+	CHECK_SWF_OFFSET();
+    if (jit_fpr_p(r0))
 	swf_ldrin(_R0_REGNO, _FP_REGNO, swf_off(r0) + 8);
     else
 	movr(_R0_REGNO, r0);
@@ -1541,6 +1586,8 @@ _swf_bundd_(jit_state_t *_jit, int eq,
 	jit_float64_t	d;
     } data;
     jit_get_reg_args();
+    if (jit_fpr_p(r0))
+	CHECK_SWF_OFFSET();
     data.d = i1;
     if (jit_fpr_p(r0)) {
 	if (!jit_thumb_p() && jit_armv5e_p())
@@ -1622,6 +1669,8 @@ static void
 _swf_extr_f(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
     jit_get_reg_args();
+    if (jit_fpr_p(r0))
+	CHECK_SWF_OFFSET();
     movr(_R0_REGNO, r1);
     swf_call(__aeabi_i2f, i2f, _R1_REGNO);
     if (jit_fpr_p(r0))
@@ -1635,6 +1684,8 @@ static void
 _swf_extr_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
     jit_get_reg_args();
+    if (jit_fpr_p(r0))
+	CHECK_SWF_OFFSET();
     movr(_R0_REGNO, r1);
     swf_call(__aeabi_i2d, i2d, _R2_REGNO);
     if (jit_fpr_p(r0)) {
@@ -1656,6 +1707,8 @@ static void
 _swf_extr_d_f(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
     jit_get_reg_args();
+    if (jit_fpr_p(r0) || jit_fpr_p(r1))
+	CHECK_SWF_OFFSET();
     if (jit_fpr_p(r1)) {
 	if (!jit_thumb_p() && jit_armv5e_p())
 	    LDRDIN(_R0_REGNO, _FP_REGNO, swf_off(r1) + 8);
@@ -1680,6 +1733,8 @@ static void
 _swf_extr_f_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
     jit_get_reg_args();
+    if (jit_fpr_p(r0) || jit_fpr_p(r1))
+	CHECK_SWF_OFFSET();
     if (jit_fpr_p(r1))
 	swf_ldrin(_R0_REGNO, _FP_REGNO, swf_off(r1) + 8);
     else
@@ -1709,6 +1764,8 @@ _swf_truncr_f_i(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     jit_word_t		slow_not_nan;
 #endif
     jit_get_reg_args();
+    if (jit_fpr_p(r1))
+	CHECK_SWF_OFFSET();
     if (jit_fpr_p(r1))
 	swf_ldrin(_R0_REGNO, _FP_REGNO, swf_off(r1) + 8);
     else
@@ -1763,6 +1820,8 @@ _swf_truncr_d_i(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     jit_word_t		slow_not_nan;
 #endif
     jit_get_reg_args();
+    if (jit_fpr_p(r1))
+	CHECK_SWF_OFFSET();
     if (jit_fpr_p(r1)) {
 	if (!jit_thumb_p() && jit_armv5e_p())
 	    LDRDIN(_R0_REGNO, _FP_REGNO, swf_off(r1) + 8);
@@ -1823,6 +1882,8 @@ _swf_movr_f(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
     jit_int32_t		reg;
     if (r0 != r1) {
+	if (jit_fpr_p(r0) || jit_fpr_p(r1))
+	    CHECK_SWF_OFFSET();
 	if (jit_fpr_p(r1)) {
 	    reg = jit_get_reg(jit_class_gpr);
 	    swf_ldrin(rn(reg), _FP_REGNO, swf_off(r1) + 8);
@@ -1844,6 +1905,8 @@ _swf_movr_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
     jit_int32_t		reg;
     if (r0 != r1) {
+	if (jit_fpr_p(r0) || jit_fpr_p(r1))
+	    CHECK_SWF_OFFSET();
 	if (jit_fpr_p(r1)) {
 	    if (!jit_thumb_p() && jit_armv5e_p() &&
 		(reg = jit_get_reg_pair()) != JIT_NOREG) {
@@ -1894,6 +1957,8 @@ _swf_movi_f(jit_state_t *_jit, jit_int32_t r0, jit_float32_t i0)
 	jit_float32_t	f;
     } data;
     jit_int32_t		reg;
+    if (jit_fpr_p(r0))
+	CHECK_SWF_OFFSET();
     data.f = i0;
     if (jit_fpr_p(r0)) {
 	reg = jit_get_reg(jit_class_gpr);
@@ -1913,6 +1978,8 @@ _swf_movi_d(jit_state_t *_jit, jit_int32_t r0, jit_float64_t i0)
 	jit_int32_t	i[2];
 	jit_float64_t	d;
     } data;
+    if (jit_fpr_p(r0))
+	CHECK_SWF_OFFSET();
     data.d = i0;
     if (jit_fpr_p(r0)) {
 	if (!jit_thumb_p() && jit_armv5e_p() &&
@@ -1941,6 +2008,8 @@ static void
 _swf_absr_f(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
     jit_int32_t		reg;
+    if (jit_fpr_p(r0) || jit_fpr_p(r1))
+	CHECK_SWF_OFFSET();
     if (jit_fpr_p(r1)) {
 	reg = jit_get_reg(jit_class_gpr);
 	swf_ldrin(rn(reg), _FP_REGNO, swf_off(r1) + 8);
@@ -1966,6 +2035,8 @@ static void
 _swf_absr_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
     jit_int32_t		reg;
+    if (jit_fpr_p(r0) || jit_fpr_p(r1))
+	CHECK_SWF_OFFSET();
     if (jit_fpr_p(r1)) {
 	if (jit_fpr_p(r0) && !jit_thumb_p() && jit_armv5e_p() &&
 	    r0 != r1 && (reg = jit_get_reg_pair()) != JIT_NOREG) {
@@ -2013,6 +2084,8 @@ static void
 _swf_negr_f(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
     jit_int32_t		reg;
+    if (jit_fpr_p(r0) || jit_fpr_p(r1))
+	CHECK_SWF_OFFSET();
     if (jit_fpr_p(r1)) {
 	reg = jit_get_reg(jit_class_gpr);
 	swf_ldrin(rn(reg), _FP_REGNO, swf_off(r1) + 8);
@@ -2038,6 +2111,8 @@ static void
 _swf_negr_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
     jit_int32_t		reg;
+    if (jit_fpr_p(r0) || jit_fpr_p(r1))
+	CHECK_SWF_OFFSET();
     if (jit_fpr_p(r1)) {
 	if (jit_fpr_p(r0) && !jit_thumb_p() && jit_armv5e_p() &&
 	    r0 != r1 && (reg = jit_get_reg_pair()) != JIT_NOREG) {
@@ -2170,6 +2245,7 @@ _swf_ldr_f(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
     jit_int32_t		reg;
     if (jit_fpr_p(r0)) {
+	CHECK_SWF_OFFSET();
 	reg = jit_get_reg(jit_class_gpr);
 	ldxi_i(rn(reg), r1, 0);
 	swf_strin(rn(reg), _FP_REGNO, swf_off(r0) + 8);
@@ -2184,6 +2260,7 @@ _swf_ldr_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
     jit_int32_t		reg;
     if (jit_fpr_p(r0)) {
+	CHECK_SWF_OFFSET();
 	if (!jit_thumb_p() && jit_armv5e_p() &&
 	    (reg = jit_get_reg_pair()) != JIT_NOREG) {
 	    LDRDI(rn(reg), r1, 0);
@@ -2212,6 +2289,7 @@ _swf_ldi_f(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
 {
     jit_int32_t		reg;
     if (jit_fpr_p(r0)) {
+	CHECK_SWF_OFFSET();
 	reg = jit_get_reg(jit_class_gpr);
 	ldi_i(rn(reg), i0);
 	swf_strin(rn(reg), _FP_REGNO, swf_off(r0) + 8);
@@ -2225,6 +2303,8 @@ static void
 _swf_ldi_d(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
 {
     jit_int32_t		rg0, rg1;
+    if (jit_fpr_p(r0))
+	CHECK_SWF_OFFSET();
     if (jit_fpr_p(r0) && !jit_thumb_p() && jit_armv5e_p() &&
 	(rg0 = jit_get_reg_pair()) != JIT_NOREG) {
 	movi(rn(rg0), i0);
@@ -2258,6 +2338,7 @@ _swf_ldxr_f(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
     jit_int32_t		reg;
     if (jit_fpr_p(r0)) {
+	CHECK_SWF_OFFSET();
 	reg = jit_get_reg(jit_class_gpr);
 	ldxr_i(rn(reg), r1, r2);
 	swf_strin(rn(reg), _FP_REGNO, swf_off(r0) + 8);
@@ -2272,6 +2353,7 @@ _swf_ldxr_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
     jit_int32_t		rg0, rg1;
     if (jit_fpr_p(r0)) {
+	CHECK_SWF_OFFSET();
 	if (!jit_thumb_p() && jit_armv5e_p() &&
 	    (rg0 = jit_get_reg_pair()) != JIT_NOREG) {
 	    LDRD(rn(rg0), r1, r2);
@@ -2307,6 +2389,8 @@ static void
 _swf_ldxi_f(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
     jit_int32_t		reg;
+    if (jit_fpr_p(r0))
+	CHECK_SWF_OFFSET();
     if (jit_fpr_p(r0)) {
 	reg = jit_get_reg(jit_class_gpr);
 	ldxi_i(rn(reg), r1, i0);
@@ -2322,6 +2406,7 @@ _swf_ldxi_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
     jit_int32_t		rg0, rg1;
     if (jit_fpr_p(r0)) {
+	CHECK_SWF_OFFSET();
 	if (!jit_thumb_p() && jit_armv5e_p() &&
 	    ((i0 >= 0 && i0 <= 255) || (i0 < 0 && i0 >= -255)) &&
 	    (rg0 = jit_get_reg_pair()) != JIT_NOREG) {
@@ -2391,6 +2476,7 @@ _swf_str_f(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
     jit_int32_t		reg;
     if (jit_fpr_p(r1)) {
+	CHECK_SWF_OFFSET();
 	reg = jit_get_reg(jit_class_gpr);
 	swf_ldrin(rn(reg), _FP_REGNO, swf_off(r1) + 8);
 	stxi_i(0, r0, rn(reg));
@@ -2405,6 +2491,7 @@ _swf_str_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
     jit_int32_t		reg;
     if (jit_fpr_p(r1)) {
+	CHECK_SWF_OFFSET();
 	if (!jit_thumb_p() && jit_armv5e_p() &&
 	    (reg = jit_get_reg_pair()) != JIT_NOREG) {
 	    LDRDIN(rn(reg), _FP_REGNO, swf_off(r1) + 8);
@@ -2435,6 +2522,7 @@ _swf_sti_f(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0)
 {
     jit_int32_t		reg;
     if (jit_fpr_p(r0)) {
+	CHECK_SWF_OFFSET();
 	reg = jit_get_reg(jit_class_gpr);
 	swf_ldrin(rn(reg), _FP_REGNO, swf_off(r0) + 8);
 	sti_i(i0, rn(reg));
@@ -2449,6 +2537,7 @@ _swf_sti_d(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0)
 {
     jit_int32_t		rg0, rg1;
     if (jit_fpr_p(r0)) {
+	CHECK_SWF_OFFSET();
 	if (!jit_thumb_p() && jit_armv5e_p() &&
 	    (rg0 = jit_get_reg_pair()) != JIT_NOREG) {
 	    rg1 = jit_get_reg(jit_class_gpr);
@@ -2488,6 +2577,7 @@ _swf_stxr_f(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
     jit_int32_t		reg;
     if (jit_fpr_p(r2)) {
+	CHECK_SWF_OFFSET();
 	reg = jit_get_reg(jit_class_gpr);
 	swf_ldrin(rn(reg), _FP_REGNO, swf_off(r2) + 8);
 	stxr_i(r1, r0, rn(reg));
@@ -2502,6 +2592,7 @@ _swf_stxr_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
     jit_int32_t		rg0, rg1;
     if (jit_fpr_p(r2)) {
+	CHECK_SWF_OFFSET();
 	if (!jit_thumb_p() && jit_armv5e_p() &&
 	    (rg0 = jit_get_reg_pair()) != JIT_NOREG) {
 	    LDRDIN(rn(rg0), _FP_REGNO, swf_off(r2) + 8);
@@ -2538,6 +2629,7 @@ _swf_stxi_f(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
 {
     jit_int32_t		reg;
     if (jit_fpr_p(r1)) {
+	CHECK_SWF_OFFSET();
 	reg = jit_get_reg(jit_class_gpr);
 	swf_ldrin(rn(reg), _FP_REGNO, swf_off(r1) + 8);
 	stxi_i(i0, r0, rn(reg));
@@ -2552,6 +2644,7 @@ _swf_stxi_d(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
 {
     jit_int32_t		rg0, rg1;
     if (jit_fpr_p(r1)) {
+	CHECK_SWF_OFFSET();
 	if (!jit_thumb_p() && jit_armv5e_p() &&
 	    ((i0 >= 0 && i0 <= 255) || (i0 < 0 && i0 >= -255)) &&
 	    (rg0 = jit_get_reg_pair()) != JIT_NOREG) {

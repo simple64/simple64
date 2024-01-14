@@ -58,8 +58,8 @@ int
 main(int argc, char *argv[])
 {
     void		(*code)(void);
-    jit_node_t		*jmp, *pass;
-    jit_node_t		 *jw,  *jf,  *jd;
+    jit_node_t		*jmp, *pass, *fail;
+    jit_node_t		 *jw, *jf, *jd;
     jit_int32_t		  s1,   s2,   s3,   s4,   s5,   s6,   s7,   s8,
 			  s9,  s10,  s11,  s12,  s13,  s14,  s15,  s16;
     jit_node_t		 *a1,  *a2,  *a3,  *a4,  *a5,  *a6,  *a7,  *a8,
@@ -172,10 +172,11 @@ main(int argc, char *argv[])
     LOAD_ARG(16);
 #undef LOAD_ARG
     pass = jit_forward();
+    fail = jit_forward();
 #define CHECK_ARG(N)							\
     do {								\
 	jit_getarg(JIT_R0, a##N);					\
-	jit_patch_at(jit_beqi(JIT_R0, 17 - N), pass);			\
+	jit_patch_at(jit_bnei(JIT_R0, 17 - N), fail);			\
     } while (0)
     CHECK_ARG(1);
     CHECK_ARG(2);
@@ -194,6 +195,8 @@ main(int argc, char *argv[])
     CHECK_ARG(15);
     CHECK_ARG(16);
 #undef CHECK_ARG
+    jit_patch_at(jit_jmpi(), pass);
+    jit_link(fail);
     jit_calli(abort);
     jit_link(pass);
     jit_ret();
@@ -300,10 +303,11 @@ main(int argc, char *argv[])
     LOAD_ARG(16);
 #undef LOAD_ARG
     pass = jit_forward();
+    fail = jit_forward();
 #define CHECK_ARG(N)							\
     do {								\
 	jit_getarg_f(JIT_F0, a##N);					\
-	jit_patch_at(jit_beqi_f(JIT_F0, 17 - N), pass);			\
+	jit_patch_at(jit_bnei_f(JIT_F0, 17 - N), fail);			\
     } while (0)
     CHECK_ARG(1);
     CHECK_ARG(2);
@@ -322,6 +326,8 @@ main(int argc, char *argv[])
     CHECK_ARG(15);
     CHECK_ARG(16);
 #undef CHECK_ARG
+    jit_patch_at(jit_jmpi(), pass);
+    jit_link(fail);
     jit_calli(abort);
     jit_link(pass);
     jit_ret();
@@ -428,10 +434,11 @@ main(int argc, char *argv[])
     LOAD_ARG(16);
 #undef LOAD_ARG
     pass = jit_forward();
+    fail = jit_forward();
 #define CHECK_ARG(N)							\
     do {								\
 	jit_getarg_d(JIT_F0, a##N);					\
-	jit_patch_at(jit_beqi_d(JIT_F0, 17 - N), pass);			\
+	jit_patch_at(jit_bnei_d(JIT_F0, 17 - N), fail);			\
     } while (0)
     CHECK_ARG(1);
     CHECK_ARG(2);
@@ -450,6 +457,8 @@ main(int argc, char *argv[])
     CHECK_ARG(15);
     CHECK_ARG(16);
 #undef CHECK_ARG
+    jit_patch_at(jit_jmpi(), pass);
+    jit_link(fail);
     jit_calli(abort);
     jit_link(pass);
     jit_ret();
@@ -484,6 +493,7 @@ main(int argc, char *argv[])
 	jit_pushargi(1);
     }
     jit_patch_at(jit_finishi(NULL), jw);
+
     jit_prepare();
     {
 	jit_pushargi_f(16);
@@ -504,6 +514,7 @@ main(int argc, char *argv[])
 	jit_pushargi_f(1);
     }
     jit_patch_at(jit_finishi(NULL), jf);
+
     jit_prepare();
     {
 	jit_pushargi_d(16);

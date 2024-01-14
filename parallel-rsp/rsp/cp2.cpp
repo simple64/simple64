@@ -29,23 +29,21 @@ extern "C"
 
 	void RSP_MTC2(RSP::CPUState *rsp, unsigned rt, unsigned rd, unsigned element)
 	{
-		uint16_t *e = rsp->cp2.regs[rd].e;
-
 #ifdef INTENSE_DEBUG
 		fprintf(stderr, "MTC2, rt = %u, [rt] = 0x%x, rd = %u, e = %u\n", rt, rsp->sr[rt], rd, element);
 #endif
 
-		unsigned lo = element >> 1;
-		rt = rsp->sr[rt];
-
+		uint16_t *e = rsp->cp2.regs[rd].e;
+		const uint16_t v = rsp->sr[rt];
 		if (element & 1)
 		{
-			unsigned hi = (element + 1) >> 1;
-			e[lo] = (e[lo] & 0xff00) | ((rt >> 8) & 0xff);
-			e[hi] = (e[lo] & 0x00ff) | ((rt & 0xff) << 8);
+			const auto i = element >> 1;
+			e[i] = (e[i] & 0xff00) | (v >> 8);
+			if (element != 0xf)
+				e[i+1] = (e[i+1] & 0xff) | (v << 8);
 		}
 		else
-			e[lo] = rt;
+			e[element >> 1] = v;
 	}
 
 	void RSP_MFC2(RSP::CPUState *rsp, unsigned rt, unsigned rd, unsigned element)

@@ -14,7 +14,11 @@ namespace RSP
 {
 namespace JIT
 {
+#if TARGET_OS_TV // tvOS is 64bit but does not allow an infinite amount of VA space
+static constexpr bool huge_va = false;
+#else
 static constexpr bool huge_va = std::numeric_limits<size_t>::max() > 0x100000000ull;
+#endif
 // On 64-bit systems, we will never allocate more than one block, this is important since we must ensure that
 // relative jumps are reachable in 32-bits.
 // We won't actually allocate 1 GB on 64-bit, but just reserve VA space for it, which we have basically an infinite amount of.

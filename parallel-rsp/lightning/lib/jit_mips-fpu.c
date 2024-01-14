@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019  Free Software Foundation, Inc.
+ * Copyright (C) 2012-2023  Free Software Foundation, Inc.
  *
  * This file is part of GNU lightning.
  *
@@ -220,7 +220,7 @@ static void _divi_d(jit_state_t*,jit_int32_t,jit_int32_t,jit_float64_t*);
 #  define sqrtr_f(r0,r1)		SQRT_S(r0,r1)
 #  define sqrtr_d(r0,r1)		SQRT_D(r0,r1)
 #  define movr_w_f(r0, r1)		MTC1(r1, r0)
-#  define movr_f_w(r0, r1)		MFC1(r1, r0)
+#  define movr_f_w(r0, r1)		MFC1(r0, r1)
 #  define movi_f_w(r0, i0)		_movi_f_w(_jit, r0, i0)
 static void _movi_f_w(jit_state_t*,jit_int32_t,jit_float32_t*);
 #  define extr_f(r0, r1)		_extr_f(_jit, r0, r1)

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019  Free Software Foundation, Inc.
+ * Copyright (C) 2012-2023  Free Software Foundation, Inc.
  *
  * This file is part of GNU lightning.
  *
@@ -50,7 +50,21 @@ static asymbol			 *disasm_synthetic;
 static long			  disasm_num_symbols;
 static long			  disasm_num_synthetic;
 static jit_state_t		 *disasm_jit;
-#define disasm_stream		  stdout
+static FILE			 *disasm_stream;
+#endif
+
+#if BINUTILS_2_38
+static int fprintf_styled(void * stream, enum disassembler_style style, const char* fmt, ...)
+{
+  va_list args;
+  int r;
+
+  va_start(args, fmt);
+  r = vfprintf(disasm_stream, fmt, args);
+  va_end(args);
+
+  return r;
+}
 #endif
 
 /*
@@ -59,6 +73,7 @@ static jit_state_t		 *disasm_jit;
 void
 jit_init_debug(const char *progname)
 {
+    jit_init_print();
 #if DISASSEMBLER
     bfd_init();
 
@@ -73,64 +88,29 @@ jit_init_debug(const char *progname)
     }
     bfd_check_format(disasm_bfd, bfd_object);
     bfd_check_format(disasm_bfd, bfd_archive);
+    if (!disasm_stream)
+	disasm_stream = stderr;
+
+#if BINUTILS_2_38
+    INIT_DISASSEMBLE_INFO(disasm_info, disasm_stream, fprintf, fprintf_styled);
+#else
     INIT_DISASSEMBLE_INFO(disasm_info, disasm_stream, fprintf);
-#  if defined(__i386__) || defined(__x86_64__)
-    disasm_info.arch = bfd_arch_i386;
-#    if defined(__x86_64__)
-#      if __WORDSIZE == 32
-    disasm_info.mach = bfd_mach_x64_32;
-#      else
-    disasm_info.mach = bfd_mach_x86_64;
-#      endif
-#    else
-    disasm_info.mach = bfd_mach_i386_i386;
-#    endif
-#  endif
-#  if defined(__powerpc__)
-    disasm_info.arch = bfd_arch_powerpc;
-    disasm_info.mach = bfd_mach_ppc64;
-#    if HAVE_DISASSEMBLE_INIT_FOR_TARGET
+#endif
+    disasm_info.arch = bfd_get_arch(disasm_bfd);
+    disasm_info.mach = bfd_get_mach(disasm_bfd);
+
+#  if HAVE_DISASSEMBLE_INIT_FOR_TARGET
     disassemble_init_for_target(&disasm_info);
-#    elif HAVE_DISASSEMBLE_INIT_POWERPC
-    disassemble_init_powerpc(&disasm_info);
-#    endif
-#    if defined(__powerpc64__)
+#  endif
+
+#  if defined(__powerpc64__)
     disasm_info.disassembler_options = "64";
-#    endif
-#    if HAVE_DISASSEMBLE_INIT_FOR_TARGET
-    disassemble_init_for_target(&disasm_info);
-#    elif HAVE_DISASSEMBLE_INIT_POWERPC
-    disassemble_init_powerpc(&disasm_info);
-#    endif
 #  endif
-#  if defined(__sparc__)
+#  if defined(__sparc__) || defined(__s390__) || defined(__s390x__)
     disasm_info.endian = disasm_info.display_endian = BFD_ENDIAN_BIG;
 #  endif
 #  if defined(__s390__) || defined(__s390x__)
-    disasm_info.arch = bfd_arch_s390;
-#    if __WORDSIZE == 32
-    disasm_info.mach = bfd_mach_s390_31;
-#    else
-    disasm_info.mach = bfd_mach_s390_64;
-#    endif
-    disasm_info.endian = disasm_info.display_endian = BFD_ENDIAN_BIG;
     disasm_info.disassembler_options = "zarch";
-#  endif
-#  if defined(__alpha__)
-    disasm_info.arch = bfd_arch_alpha;
-    disasm_info.mach = bfd_mach_alpha_ev6;
-#  endif
-#  if defined(__hppa__)
-    disasm_info.arch = bfd_arch_hppa;
-    disasm_info.mach = bfd_mach_hppa10;
-#  endif
-#  if defined(__riscv)
-    disasm_info.arch = bfd_arch_riscv;
-#  if __WORDSIZE == 32
-    disasm_info.mach = bfd_mach_riscv32;
-#  else
-    disasm_info.mach = bfd_mach_riscv64;
-#  endif
 #  endif
     disasm_info.print_address_func = disasm_print_address;
 
@@ -276,7 +256,7 @@ disasm_print_address(bfd_vma addr, struct disassemble_info *info)
     int			 line;
     char		 buffer[address_buffer_length];
 
-    sprintf(buffer, address_buffer_format, (long long)addr);
+    sprintf(buffer, address_buffer_format, addr);
     (*info->fprintf_func)(info->stream, "0x%s", buffer);
 
 #  define _jit				disasm_jit
@@ -339,7 +319,10 @@ _disassemble(jit_state_t *_jit, jit_pointer_t code, jit_int32_t length)
     char		*name, *old_name;
     char		*file, *old_file;
     int			 line,  old_line;
-#if __arm__
+#if __riscv && __WORDSIZE == 64
+    jit_word_t		*vector;
+    jit_int32_t		 offset;
+#elif __arm__
     jit_int32_t		 offset;
     jit_bool_t		 data_info;
     jit_int32_t		 data_offset;
@@ -350,6 +333,10 @@ _disassemble(jit_state_t *_jit, jit_pointer_t code, jit_int32_t length)
 #if DEVEL_DISASSEMBLER
     jit_node_t		*node;
     jit_uword_t		 prevw;
+#endif
+
+#if __riscv && __WORDSIZE == 64
+    end -= _jitc->consts.hash.count * 8;
 #endif
 
 #if __arm__
@@ -374,7 +361,7 @@ _disassemble(jit_state_t *_jit, jit_pointer_t code, jit_int32_t length)
 	}
 	while (node && (jit_uword_t)(prevw + node->offset) == (jit_uword_t)pc) {
 	    jit_print_node(node);
-	    fputc('\n', stdout); 
+	    fputc('\n', disasm_stream);
 	    prevw += node->offset;
 	    node = node->next;
 	}
@@ -419,11 +406,22 @@ _disassemble(jit_state_t *_jit, jit_pointer_t code, jit_int32_t length)
 	    old_line = line;
 	}
 
-	bytes = sprintf(buffer, address_buffer_format, (long long)pc);
+	bytes = sprintf(buffer, address_buffer_format, pc);
 	(*disasm_info.fprintf_func)(disasm_stream, "%*c0x%s\t",
 				    16 - bytes, ' ', buffer);
 	pc += (*disasm_print)(pc, &disasm_info);
 	putc('\n', disasm_stream);
     }
+#if __riscv && __WORDSIZE == 64
+    for (vector = (jit_word_t *)end, offset = 0;
+	 offset < _jitc->consts.hash.count; offset++) {
+	bytes = sprintf(buffer, address_buffer_format,
+			(long long)end + offset * sizeof(jit_word_t));
+	(*disasm_info.fprintf_func)(disasm_stream,
+				    "%*c0x%s\t.quad\t0x%016lx\t# (%ld)\n",
+				    16 - bytes, ' ', buffer,
+				    vector[offset], vector[offset]);
+    }
+#endif
 }
 #endif

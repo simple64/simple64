@@ -1,5 +1,5 @@
 #
-# Copyright 2000, 2001, 2002, 2012-2019 Free Software Foundation, Inc.
+# Copyright 2000, 2001, 2002, 2012-2022 Free Software Foundation, Inc.
 #
 # This file is part of GNU lightning.
 #
@@ -14,27 +14,34 @@
 # License for more details.
 #
 
-AM_CFLAGS = -I$(top_srcdir)/include -D_GNU_SOURCE $(LIGHTNING_CFLAGS)
+AM_CFLAGS = -I$(top_builddir)/include -I$(top_srcdir)/include	\
+	-D_GNU_SOURCE $(LIGHTNING_CFLAGS)
 liblightning_LTLIBRARIES = liblightning.la
-liblightning_la_LDFLAGS = -version-info 1:0:0
+liblightning_la_LDFLAGS = -version-info 2:0:0
 
+AM_CPPFLAGS =
 if get_jit_size
 JIT_SIZE_PATH = "$(top_builddir)/jit_$(cpu)-sz.c"
-AM_CPPFLAGS=-DGET_JIT_SIZE=1 -DJIT_SIZE_PATH='$(JIT_SIZE_PATH)'
+AM_CPPFLAGS += -DGET_JIT_SIZE=1 -DJIT_SIZE_PATH='$(JIT_SIZE_PATH)'
+endif
+if strong_type_checking
+AM_CPPFLAGS += -DSTRONG_TYPE_CHECKING=1
 endif
 
 liblightningdir = $(libdir)
 liblightning_la_SOURCES =	\
 	jit_disasm.c		\
 	jit_memory.c		\
-	jit_names.c		\
 	jit_note.c		\
 	jit_print.c		\
 	jit_size.c		\
 	lightning.c
 
 EXTRA_DIST =			\
+	jit_names.c		\
+	jit_fallback.c		\
 	jit_rewind.c		\
+	aarch64-logical-immediates.c	\
 	jit_aarch64.c		\
 	jit_aarch64-cpu.c	\
 	jit_aarch64-fpu.c	\
@@ -56,6 +63,10 @@ EXTRA_DIST =			\
 	jit_ia64-cpu.c		\
 	jit_ia64-fpu.c		\
 	jit_ia64-sz.c		\
+	jit_loongarch.c		\
+	jit_loongarch-cpu.c	\
+	jit_loongarch-fpu.c	\
+	jit_loongarch-sz.c	\
 	jit_mips.c		\
 	jit_mips-cpu.c		\
 	jit_mips-fpu.c		\

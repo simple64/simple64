@@ -1,10 +1,11 @@
 #if __WORDSIZE == 32
-#define JIT_INSTR_MAX 44
+#define JIT_INSTR_MAX 180
     0,	/* data */
     0,	/* live */
     0,	/* align */
     0,	/* save */
     0,	/* load */
+    4,	/* skip */
     0,	/* #name */
     0,	/* #note */
     0,	/* label */
@@ -13,7 +14,10 @@
     0,	/* va_push */
     0,	/* allocai */
     0,	/* allocar */
-    0,	/* arg */
+    0,	/* arg_c */
+    0,	/* arg_s */
+    0,	/* arg_i */
+    0,	/* arg_l */
     0,	/* getarg_c */
     0,	/* getarg_uc */
     0,	/* getarg_s */
@@ -21,11 +25,23 @@
     0,	/* getarg_i */
     0,	/* getarg_ui */
     0,	/* getarg_l */
-    0,	/* putargr */
-    0,	/* putargi */
+    0,	/* putargr_c */
+    0,	/* putargi_c */
+    0,	/* putargr_uc */
+    0,	/* putargi_uc */
+    0,	/* putargr_s */
+    0,	/* putargi_s */
+    0,	/* putargr_us */
+    0,	/* putargi_us */
+    0,	/* putargr_i */
+    0,	/* putargi_i */
+    0,	/* putargr_ui */
+    0,	/* putargi_ui */
+    0,	/* putargr_l */
+    0,	/* putargi_l */
     4,	/* va_start */
     8,	/* va_arg */
-    8,	/* va_arg_d */
+    12,	/* va_arg_d */
     0,	/* va_end */
     4,	/* addr */
     12,	/* addi */
@@ -94,12 +110,19 @@
     16,	/* nei */
     4,	/* movr */
     8,	/* movi */
+    16,	/* movnr */
+    16,	/* movzr */
+    24,	/* casr */
+    32,	/* casi */
     8,	/* extr_c */
     4,	/* extr_uc */
     8,	/* extr_s */
     8,	/* extr_us */
     0,	/* extr_i */
     0,	/* extr_ui */
+    20,	/* bswapr_us */
+    52,	/* bswapr_ui */
+    0,	/* bswapr_ul */
     8,	/* htonr_us */
     4,	/* htonr_ui */
     0,	/* htonr_ul */
@@ -188,17 +211,41 @@
     12,	/* bxsubr_u */
     12,	/* bxsubi_u */
     8,	/* jmpr */
-    16,	/* jmpi */
+    8,	/* jmpi */
     8,	/* callr */
-    16,	/* calli */
+    8,	/* calli */
     0,	/* prepare */
-    0,	/* pushargr */
-    0,	/* pushargi */
+    0,	/* pushargr_c */
+    0,	/* pushargi_c */
+    0,	/* pushargr_uc */
+    0,	/* pushargi_uc */
+    0,	/* pushargr_s */
+    0,	/* pushargi_s */
+    0,	/* pushargr_us */
+    0,	/* pushargi_us */
+    0,	/* pushargr_i */
+    0,	/* pushargi_i */
+    0,	/* pushargr_ui */
+    0,	/* pushargi_ui */
+    0,	/* pushargr_l */
+    0,	/* pushargi_l */
     0,	/* finishr */
     0,	/* finishi */
     0,	/* ret */
-    0,	/* retr */
-    0,	/* reti */
+    0,	/* retr_c */
+    0,	/* reti_c */
+    0,	/* retr_uc */
+    0,	/* reti_uc */
+    0,	/* retr_s */
+    0,	/* reti_s */
+    0,	/* retr_us */
+    0,	/* reti_us */
+    0,	/* retr_i */
+    0,	/* reti_i */
+    0,	/* retr_ui */
+    0,	/* reti_ui */
+    0,	/* retr_l */
+    0,	/* reti_l */
     0,	/* retval_c */
     0,	/* retval_uc */
     0,	/* retval_s */
@@ -398,15 +445,20 @@
     0,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
+    176,	/* clo */
+    148,	/* clz */
+    180,	/* cto */
+    152,	/* ctz */
 #endif /* __WORDSIZE */
 
 #if __WORDSIZE == 64
-#define JIT_INSTR_MAX 64
+#define JIT_INSTR_MAX 216
     0,	/* data */
     0,	/* live */
-    4,	/* align */
+    24,	/* align */
     0,	/* save */
     0,	/* load */
+    4,	/* skip */
     0,	/* #name */
     0,	/* #note */
     4,	/* label */
@@ -415,7 +467,10 @@
     0,	/* va_push */
     0,	/* allocai */
     0,	/* allocar */
-    0,	/* arg */
+    0,	/* arg_c */
+    0,	/* arg_s */
+    0,	/* arg_i */
+    0,	/* arg_l */
     0,	/* getarg_c */
     0,	/* getarg_uc */
     0,	/* getarg_s */
@@ -423,8 +478,20 @@
     0,	/* getarg_i */
     0,	/* getarg_ui */
     0,	/* getarg_l */
-    0,	/* putargr */
-    0,	/* putargi */
+    0,	/* putargr_c */
+    0,	/* putargi_c */
+    0,	/* putargr_uc */
+    0,	/* putargi_uc */
+    0,	/* putargr_s */
+    0,	/* putargi_s */
+    0,	/* putargr_us */
+    0,	/* putargi_us */
+    0,	/* putargr_i */
+    0,	/* putargi_i */
+    0,	/* putargr_ui */
+    0,	/* putargi_ui */
+    0,	/* putargr_l */
+    0,	/* putargi_l */
     4,	/* va_start */
     8,	/* va_arg */
     8,	/* va_arg_d */
@@ -496,17 +563,24 @@
     16,	/* nei */
     4,	/* movr */
     24,	/* movi */
+    16,	/* movnr */
+    16,	/* movzr */
+    24,	/* casr */
+    44,	/* casi */
     8,	/* extr_c */
     4,	/* extr_uc */
     8,	/* extr_s */
     8,	/* extr_us */
     8,	/* extr_i */
     8,	/* extr_ui */
+    20,	/* bswapr_us */
+    52,	/* bswapr_ui */
+    116,	/* bswapr_ul */
     8,	/* htonr_us */
     8,	/* htonr_ui */
     4,	/* htonr_ul */
     4,	/* ldr_c */
-    28,	/* ldi_c */
+    24,	/* ldi_c */
     4,	/* ldr_uc */
     28,	/* ldi_uc */
     4,	/* ldr_s */
@@ -590,17 +664,41 @@
     12,	/* bxsubr_u */
     12,	/* bxsubi_u */
     8,	/* jmpr */
-    32,	/* jmpi */
+    8,	/* jmpi */
     8,	/* callr */
-    32,	/* calli */
+    40,	/* calli */
     0,	/* prepare */
-    0,	/* pushargr */
-    0,	/* pushargi */
+    0,	/* pushargr_c */
+    0,	/* pushargi_c */
+    0,	/* pushargr_uc */
+    0,	/* pushargi_uc */
+    0,	/* pushargr_s */
+    0,	/* pushargi_s */
+    0,	/* pushargr_us */
+    0,	/* pushargi_us */
+    0,	/* pushargr_i */
+    0,	/* pushargi_i */
+    0,	/* pushargr_ui */
+    0,	/* pushargi_ui */
+    0,	/* pushargr_l */
+    0,	/* pushargi_l */
     0,	/* finishr */
     0,	/* finishi */
     0,	/* ret */
-    0,	/* retr */
-    0,	/* reti */
+    0,	/* retr_c */
+    0,	/* reti_c */
+    0,	/* retr_uc */
+    0,	/* reti_uc */
+    0,	/* retr_s */
+    0,	/* reti_s */
+    0,	/* retr_us */
+    0,	/* reti_us */
+    0,	/* retr_i */
+    0,	/* reti_i */
+    0,	/* retr_ui */
+    0,	/* reti_ui */
+    0,	/* retr_l */
+    0,	/* reti_l */
     0,	/* retval_c */
     0,	/* retval_uc */
     0,	/* retval_s */
@@ -657,7 +755,7 @@
     16,	/* truncr_f_l */
     20,	/* extr_f */
     12,	/* extr_d_f */
-    16,	/* movr_f */
+    24,	/* movr_f */
     32,	/* movi_f */
     8,	/* ldr_f */
     32,	/* ldi_f */
@@ -672,13 +770,13 @@
     20,	/* bler_f */
     44,	/* blei_f */
     28,	/* beqr_f */
-    60,	/* beqi_f */
+    52,	/* beqi_f */
     20,	/* bger_f */
     44,	/* bgei_f */
     20,	/* bgtr_f */
     44,	/* bgti_f */
     20,	/* bner_f */
-    44,	/* bnei_f */
+    60,	/* bnei_f */
     20,	/* bunltr_f */
     44,	/* bunlti_f */
     20,	/* bunler_f */
@@ -800,4 +898,8 @@
     0,	/* movi_d_ww */
     0,	/* movr_d_w */
     0,	/* movi_d_w */
+    216,	/* clo */
+    188,	/* clz */
+    204,	/* cto */
+    176,	/* ctz */
 #endif /* __WORDSIZE */

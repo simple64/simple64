@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019  Free Software Foundation, Inc.
+ * Copyright (C) 2012-2023  Free Software Foundation, Inc.
  *
  * This file is part of GNU lightning.
  *
@@ -408,14 +408,14 @@ _x87_b##name##i_##type(jit_state_t *_jit,				\
 		       jit_word_t i0, jit_int32_t r0,			\
 		       jit_float##size##_t *i1)				\
 {									\
-    jit_word_t		word;						\
+    jit_word_t		w;						\
     jit_int32_t		reg = jit_get_reg(jit_class_fpr|		\
 					  jit_class_nospill);		\
     assert(jit_x87_reg_p(reg));						\
     x87_movi_##type(rn(reg), i1);					\
-    word = x87_b##name##r_##type(i0, r0, rn(reg));			\
+    w = x87_b##name##r_##type(i0, r0, rn(reg));				\
     jit_unget_reg(reg);							\
-    return (word);							\
+    return (w);								\
 }
 #  define fopi(name)			fpr_opi(name, f, 32)
 #  define fbopi(name)			fpr_bopi(name, f, 32)
@@ -662,6 +662,7 @@ _x87_sqrtr_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 static void
 _x87_truncr_d_i(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
+    CHECK_CVT_OFFSET();
 #if defined(sun)
     /* for the sake of passing test cases in x87 mode, otherwise only sse
      * is supported */
@@ -692,6 +693,7 @@ _x87_truncr_d_i(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 static void
 _x87_truncr_d_l(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
+    CHECK_CVT_OFFSET();
     fldr(r1);
     fisttpqm(CVT_OFFSET, _RBP_REGNO, _NOREG, _SCL1);
     ldxi(r0, _RBP_REGNO, CVT_OFFSET);
@@ -701,6 +703,7 @@ _x87_truncr_d_l(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 static void
 _x87_extr_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
+    CHECK_CVT_OFFSET();
     stxi(CVT_OFFSET, _RBP_REGNO, r1);
 #  if __X32
     fildlm(CVT_OFFSET, _RBP_REGNO, _NOREG, _SCL1);
@@ -771,8 +774,7 @@ _x87jcc(jit_state_t *_jit, jit_int32_t code,
 	fldr(r0);
 	fucomipr(r1 + 1);
     }
-    jcc(code, i0);
-    return (_jit->pc.w);
+    return (jcc(code, i0));
 }
 
 static jit_word_t
@@ -788,8 +790,7 @@ _x87jcc2(jit_state_t *_jit, jit_int32_t code,
 	fldr(f0);
 	fucomipr(f1 + 1);
     }
-    jcc(code, i0);
-    return (_jit->pc.w);
+    return (jcc(code, i0));
 }
 
 fopi(lt)
@@ -847,6 +848,7 @@ _x87_movi_f(jit_state_t *_jit, jit_int32_t r0, jit_float32_t *i0)
 	fldln2();
     else {
 	if (_jitc->no_data) {
+	    CHECK_CVT_OFFSET();
 	    reg = jit_get_reg(jit_class_gpr);
 	    movi(rn(reg), data.i);
 	    stxi_i(CVT_OFFSET, _RBP_REGNO, rn(reg));
@@ -1038,6 +1040,7 @@ _x87_movi_d(jit_state_t *_jit, jit_int32_t r0, jit_float64_t *i0)
 	fldln2();
     else {
 	if (_jitc->no_data) {
+	    CHECK_CVT_OFFSET();
 	    reg = jit_get_reg(jit_class_gpr);
 #if __X32 || __X64_32
 	    movi(rn(reg), data.ii[0]);
@@ -1082,10 +1085,9 @@ _x87_eqr_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 	fldr(f1);
 	fucomipr(f2 + 1);
     }
-    jpes(0);
-    jp_code = _jit->pc.w;
+    jp_code = jpes(0);
     cc(X86_CC_E, reg);
-    patch_rel_char(jp_code, _jit->pc.w);
+    patch_at(jp_code, _jit->pc.w);
     if (!rc)
 	xchgr(r0, reg);
 }
@@ -1115,10 +1117,9 @@ _x87_ner_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 	fldr(f1);
 	fucomipr(f2 + 1);
     }
-    jpes(0);
-    jp_code = _jit->pc.w;
+    jp_code = jpes(0);
     cc(X86_CC_NE, reg);
-    patch_rel_char(jp_code, _jit->pc.w);
+    patch_at(jp_code, _jit->pc.w);
     if (!rc)
 	xchgr(r0, reg);
 }
@@ -1283,6 +1284,7 @@ dbopi(le)
 static jit_word_t
 _x87_beqr_d(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
 {
+    jit_word_t			w;
     jit_int32_t			f0, f1;
     jit_word_t			jp_code;
     if (r1 == _ST0_REGNO)	f0 = r1, f1 = r0;
@@ -1293,11 +1295,10 @@ _x87_beqr_d(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
 	fldr(f0);
 	fucomipr(f1 + 1);
     }
-    jpes(0);
-    jp_code = _jit->pc.w;
-    jcc(X86_CC_E, i0);
-    patch_rel_char(jp_code, _jit->pc.w);
-    return (_jit->pc.w);
+    jp_code = jpes(0);
+    w = jcc(X86_CC_E, i0);
+    patch_at(jp_code, _jit->pc.w);
+    return (w);
 }
 dbopi(eq)
 dbopi(ge)
@@ -1306,6 +1307,7 @@ dbopi(gt)
 static jit_word_t
 _x87_bner_d(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
 {
+    jit_word_t			w;
     jit_int32_t			f0, f1;
     jit_word_t			jp_code;
     jit_word_t			jz_code;
@@ -1317,14 +1319,12 @@ _x87_bner_d(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
 	fldr(f0);
 	fucomipr(f1 + 1);
     }
-    jpes(0);
-    jp_code = _jit->pc.w;
-    jzs(0);
-    jz_code = _jit->pc.w;
-    patch_rel_char(jp_code, _jit->pc.w);
-    jmpi(i0);
-    patch_rel_char(jz_code, _jit->pc.w);
-    return (_jit->pc.w);
+    jp_code = jpes(0);
+    jz_code = jzs(0);
+    patch_at(jp_code, _jit->pc.w);
+    w = jmpi(i0);
+    patch_at(jz_code, _jit->pc.w);
+    return (w);
 }
 dbopi(ne)
 dbopi(unlt)

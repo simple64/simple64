@@ -1,10 +1,10 @@
-#define def_wi(i)			\
+#define def_wi(i, ii)			\
 	name _w##i			\
 _w##i:					\
 	prolog				\
-	arg $arg##i			\
+	arg##ii $arg##i			\
 	getarg##i %r0 $arg##i		\
-	retr %r0			\
+	retr##i %r0			\
 	epilog
 #define def_wf(f)			\
 	name _w##f			\
@@ -15,11 +15,11 @@ _w##f:					\
 	truncr##f %r0 %f0		\
 	retr %r0			\
 	epilog
-#define def_fi(f, i)			\
+#define def_fi(f, i, ii)		\
 	name f##i			\
 f##i:					\
 	prolog				\
-	arg $arg##i			\
+	arg##ii $arg##i			\
 	getarg##i %r0 $arg##i		\
 	extr##f %f0 %r0			\
 	retr##f %f0			\
@@ -52,33 +52,33 @@ bstr:
 .code
 	jmpi main
 
-	def_wi(_c)
-	def_wi(_uc)
-	def_wi(_s)
-	def_wi(_us)
+	def_wi(_c, _c)
+	def_wi(_uc, _c)
+	def_wi(_s, _s)
+	def_wi(_us, _s)
 #if __WORDSIZE == 64
-	def_wi(_i)
-	def_wi(_ui)
+	def_wi(_i, _i)
+	def_wi(_ui, _i)
 #endif
 	def_wf(_f)
 	def_wf(_d)
-	def_fi(_f, _c)
-	def_fi(_f, _uc)
-	def_fi(_f, _s)
-	def_fi(_f, _us)
-	def_fi(_f, _i)
+	def_fi(_f, _c, _c)
+	def_fi(_f, _uc, _c)
+	def_fi(_f, _s, _s)
+	def_fi(_f, _us, _s)
+	def_fi(_f, _i, _i)
 #if __WORDSIZE == 64
-	def_fi(_f, _ui)
-	def_fi(_f, _l)
+	def_fi(_f, _ui, _i)
+	def_fi(_f, _l, _l)
 #endif
-	def_fi(_d, _c)
-	def_fi(_d, _uc)
-	def_fi(_d, _s)
-	def_fi(_d, _us)
-	def_fi(_d, _i)
+	def_fi(_d, _c, _c)
+	def_fi(_d, _uc, _c)
+	def_fi(_d, _s, _s)
+	def_fi(_d, _us, _s)
+	def_fi(_d, _i, _i)
 #if __WORDSIZE == 64
-	def_fi(_d, _ui)
-	def_fi(_d, _l)
+	def_fi(_d, _ui, _i)
+	def_fi(_d, _l, _l)
 #endif
 	def_f(_f)
 	def_f(_d)
@@ -91,7 +91,7 @@ main:
 
 #define _call_w(n, i, a, r)		\
 	prepare				\
-		pushargi a		\
+		pushargi##i a		\
 	finishi _w##i			\
 	retval %r0			\
 	extr##i %r0 %r0			\
@@ -111,7 +111,7 @@ _w##f##_##n:
 #define call_wf(n, f, a, r)		_call_wf(n, f, a, r)
 #define _call_fi(n, f, i, a, r)		\
 	prepare				\
-		pushargi a		\
+		pushargi##i a		\
 	finishi f##i			\
 	retval##f %f0			\
 	beqi##f f##i##n %f0 r		\
@@ -196,6 +196,7 @@ f##g##n:
 	call_wf(__LINE__, _d, c7f, f7f)
 	call_wf(__LINE__, _d, wc80, f80)
 	call_wf(__LINE__, _d, wc81, f81)
+
 	call_fi(__LINE__, _f, _c, c7f, f7f)
 	call_fi(__LINE__, _f, _c, c80, f80)
 	call_fi(__LINE__, _f, _uc, c7f, f7f)

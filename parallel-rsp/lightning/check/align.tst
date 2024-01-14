@@ -17,7 +17,7 @@ L2:
 	align $(__WORDSIZE / 8)		/* possible nops */
 L3:
 	jmpi L1
-	align $(__WORDSIZE / 8)		/* possible nops */
+	align 32			/* Force nops */
 L4:
 	prepare
 		pushargi fmt

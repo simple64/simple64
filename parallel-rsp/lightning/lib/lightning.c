@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019  Free Software Foundation, Inc.
+ * Copyright (C) 2012-2023  Free Software Foundation, Inc.
  *
  * This file is part of GNU lightning.
  *
@@ -19,7 +19,9 @@
 
 #include <lightning.h>
 #include <lightning/jit_private.h>
-#include <sys/mman.h>
+#if HAVE_MMAP
+#  include <sys/mman.h>
+#endif
 #if defined(__sgi)
 #  include <fcntl.h>
 #endif
@@ -62,13 +64,28 @@ static void _del_label(jit_state_t*, jit_node_t*, jit_node_t*);
 static void
 _jit_dataset(jit_state_t *_jit);
 
+#define block_update_set(block, target)	_block_update_set(_jit, block, target)
+static jit_bool_t _block_update_set(jit_state_t*, jit_block_t*, jit_block_t*);
+
+#define propagate_backward(block)	_propagate_backward(_jit, block)
+static void _propagate_backward(jit_state_t*, jit_block_t*);
+
+#define check_block_again()		_check_block_again(_jit)
+static jit_bool_t _check_block_again(jit_state_t*);
+
+#define do_setup()			_do_setup(_jit)
+static void _do_setup(jit_state_t*);
+
 #define jit_setup(block)		_jit_setup(_jit, block)
 static void
 _jit_setup(jit_state_t *_jit, jit_block_t *block);
 
-#define jit_follow(block, todo)		_jit_follow(_jit, block, todo)
+#define do_follow(always)		_do_follow(_jit, always)
+static void _do_follow(jit_state_t*, jit_bool_t);
+
+#define jit_follow(block)		_jit_follow(_jit, block)
 static void
-_jit_follow(jit_state_t *_jit, jit_block_t *block, jit_bool_t *todo);
+_jit_follow(jit_state_t *_jit, jit_block_t *block);
 
 #define jit_update(node, live, mask)	_jit_update(_jit, node, live, mask)
 static void
@@ -103,7 +120,7 @@ static jit_bool_t
 _reverse_jump(jit_state_t *_jit, jit_node_t *prev, jit_node_t *node);
 
 #define redundant_store(node, jump)	_redundant_store(_jit, node, jump)
-static void
+static jit_bool_t
 _redundant_store(jit_state_t *_jit, jit_node_t *node, jit_bool_t jump);
 
 #define simplify_movr(p, n, k, s)	_simplify_movr(_jit, p, n, k, s)
@@ -129,7 +146,7 @@ static void
 _simplify_spill(jit_state_t *_jit, jit_node_t *node, jit_int32_t regno);
 
 #define simplify()			_simplify(_jit)
-static void
+static jit_bool_t
 _simplify(jit_state_t *_jit);
 
 #define jit_reg_undef			-1
@@ -210,8 +227,25 @@ _jit_get_reg(jit_state_t *_jit, jit_int32_t regspec)
 	for (regno = 0; regno < _jitc->reglen; regno++) {
 	    if ((jit_class(_rvs[regno].spec) & spec) == spec &&
 		!jit_regset_tstbit(&_jitc->regarg, regno) &&
-		!jit_regset_tstbit(&_jitc->reglive, regno))
+		!jit_regset_tstbit(&_jitc->reglive, regno)) {
+		if (jit_regset_tstbit(&_jitc->regmask, regno)) {
+		    /* search further, attempting to find a truly known
+		    * free register, not just one in unknown state. */
+		    jit_int32_t	regfree;
+
+		    for (regfree = regno + 1;
+			 regfree < _jitc->reglen; regfree++) {
+			if ((jit_class(_rvs[regfree].spec) & spec) == spec &&
+			    !jit_regset_tstbit(&_jitc->regarg, regfree) &&
+			    !jit_regset_tstbit(&_jitc->reglive, regfree) &&
+			    !jit_regset_tstbit(&_jitc->regmask, regfree)) {
+			    regno = regfree;
+			    break;
+			}
+		    }
+		}
 		goto regarg;
+	    }
 	}
 
 	/* search for a register matching spec that is not an argument
@@ -857,6 +891,7 @@ jit_new_state(void)
     jit_regset_new(&_jitc->regsav);
     jit_regset_new(&_jitc->reglive);
     jit_regset_new(&_jitc->regmask);
+    jit_regset_new(&_jitc->explive);
 
     jit_init();
 
@@ -956,10 +991,12 @@ _jit_destroy_state(jit_state_t *_jit)
 #if DEVEL_DISASSEMBLER
     jit_really_clear_state();
 #endif
+#if HAVE_MMAP
     if (!_jit->user_code)
 	munmap(_jit->code.ptr, _jit->code.length);
     if (!_jit->user_data)
 	munmap(_jit->data.ptr, _jit->data.length);
+#endif
     jit_free((jit_pointer_t *)&_jit);
 }
 
@@ -1135,6 +1172,20 @@ _jit_new_node_qww(jit_state_t *_jit, jit_code_t code,
 }
 
 jit_node_t *
+_jit_new_node_wwq(jit_state_t *_jit, jit_code_t code,
+		  jit_word_t u, jit_word_t v,
+		  jit_int32_t l, jit_int32_t h)
+{
+    jit_node_t		*node = new_node(code);
+    assert(!_jitc->realize);
+    node->u.w = u;
+    node->v.w = v;
+    node->w.q.l = l;
+    node->w.q.h = h;
+    return (link_node(node));
+}
+
+jit_node_t *
 _jit_new_node_wwf(jit_state_t *_jit, jit_code_t code,
 		  jit_word_t u, jit_word_t v, jit_float32_t w)
 {
@@ -1302,14 +1353,36 @@ _jit_classify(jit_state_t *_jit, jit_code_t code)
 	    mask = 0;
 	    break;
 	case jit_code_live:	case jit_code_va_end:
-	case jit_code_retr:	case jit_code_retr_f:	case jit_code_retr_d:
-	case jit_code_pushargr:	case jit_code_pushargr_f:
+	case jit_code_retr_c:	case jit_code_retr_uc:
+	case jit_code_retr_s:	case jit_code_retr_us:
+	case jit_code_retr_i:	case jit_code_retr_ui:
+	case jit_code_retr_l:
+	case jit_code_retr_f:	case jit_code_retr_d:
+	case jit_code_pushargr_c:
+	case jit_code_pushargr_uc:
+	case jit_code_pushargr_s:
+	case jit_code_pushargr_us:
+	case jit_code_pushargr_i:
+	case jit_code_pushargr_ui:
+	case jit_code_pushargr_l:
+	case jit_code_pushargr_f:
 	case jit_code_pushargr_d:
 	case jit_code_finishr:	/* synthesized will set jit_cc_a0_jmp */
 	    mask = jit_cc_a0_reg;
 	    break;
-	case jit_code_align:	case jit_code_reti:	case jit_code_pushargi:
-	case jit_code_finishi:	/* synthesized will set jit_cc_a0_jmp */
+	case jit_code_align:	case jit_code_skip:
+	case jit_code_reti_c:	case jit_code_reti_uc:
+	case jit_code_reti_s:	case jit_code_reti_us:
+	case jit_code_reti_i:	case jit_code_reti_ui:
+	case jit_code_reti_l:
+	case jit_code_pushargi_c:
+	case jit_code_pushargi_uc:
+	case jit_code_pushargi_s:
+	case jit_code_pushargi_us:
+	case jit_code_pushargi_i:
+	case jit_code_pushargi_ui:
+	case jit_code_pushargi_l:
+        case jit_code_finishi:	/* synthesized will set jit_cc_a0_jmp */
 	    mask = jit_cc_a0_int;
 	    break;
 	case jit_code_reti_f:	case jit_code_pushargi_f:
@@ -1321,7 +1394,9 @@ _jit_classify(jit_state_t *_jit, jit_code_t code)
 	case jit_code_allocai:
 	    mask = jit_cc_a0_int|jit_cc_a1_int;
 	    break;
-	case jit_code_arg:	case jit_code_arg_f:	case jit_code_arg_d:
+	case jit_code_arg_c:	case jit_code_arg_s:
+	case jit_code_arg_i:	case jit_code_arg_l:
+	case jit_code_arg_f:	case jit_code_arg_d:
 	    mask = jit_cc_a0_int|jit_cc_a0_arg;
 	    break;
 	case jit_code_calli:	case jit_code_jmpi:
@@ -1345,11 +1420,17 @@ _jit_classify(jit_state_t *_jit, jit_code_t code)
 	case jit_code_getarg_f:	case jit_code_getarg_d:
 	    mask = jit_cc_a0_reg|jit_cc_a0_chg|jit_cc_a1_arg;
 	    break;
-	case jit_code_putargr:	case jit_code_putargr_f:
-	case jit_code_putargr_d:
+	case jit_code_putargr_c:case jit_code_putargr_uc:
+	case jit_code_putargr_s:case jit_code_putargr_us:
+	case jit_code_putargr_i:case jit_code_putargr_ui:
+	case jit_code_putargr_l:
+	case jit_code_putargr_f:case jit_code_putargr_d:
 	    mask = jit_cc_a0_reg|jit_cc_a1_arg;
 	    break;
-	case jit_code_putargi:
+	case jit_code_putargi_c:case jit_code_putargi_uc:
+	case jit_code_putargi_s:case jit_code_putargi_us:
+	case jit_code_putargi_i:case jit_code_putargi_ui:
+	case jit_code_putargi_l:
 	    mask = jit_cc_a0_int|jit_cc_a1_arg;
 	    break;
 	case jit_code_putargi_f:
@@ -1380,6 +1461,7 @@ _jit_classify(jit_state_t *_jit, jit_code_t code)
 	case jit_code_truncr_f_i:			case jit_code_truncr_f_l:
 	case jit_code_truncr_d_i:			case jit_code_truncr_d_l:
 	case jit_code_htonr_us:	case jit_code_htonr_ui:	case jit_code_htonr_ul:
+	case jit_code_bswapr_us:	case jit_code_bswapr_ui:	case jit_code_bswapr_ul:
 	case jit_code_ldr_c:	case jit_code_ldr_uc:
 	case jit_code_ldr_s:	case jit_code_ldr_us:	case jit_code_ldr_i:
 	case jit_code_ldr_ui:	case jit_code_ldr_l:	case jit_code_negr_f:
@@ -1388,6 +1470,8 @@ _jit_classify(jit_state_t *_jit, jit_code_t code)
 	case jit_code_negr_d:	case jit_code_absr_d:	case jit_code_sqrtr_d:
 	case jit_code_movr_d:	case jit_code_extr_d:	case jit_code_extr_f_d:
 	case jit_code_ldr_d:
+	case jit_code_clor:	case jit_code_clzr:
+	case jit_code_ctor:	case jit_code_ctzr:
 	case jit_code_movr_w_f:	case jit_code_movr_f_w:
 	case jit_code_movr_w_d:	case jit_code_movr_d_w:
 	case jit_code_va_arg:	case jit_code_va_arg_d:
@@ -1531,6 +1615,17 @@ _jit_classify(jit_state_t *_jit, jit_code_t code)
 	case jit_code_bxsubr:	case jit_code_bxsubr_u:
 	    mask = jit_cc_a0_jmp|jit_cc_a1_reg|jit_cc_a1_chg|jit_cc_a2_reg;
 	    break;
+	case jit_code_movnr:	case jit_code_movzr:
+	    mask = jit_cc_a0_reg|jit_cc_a0_cnd|jit_cc_a1_reg|jit_cc_a2_reg;
+	    break;
+	case jit_code_casr:
+	    mask = jit_cc_a0_reg|jit_cc_a0_chg|jit_cc_a1_reg|
+		   jit_cc_a2_reg|jit_cc_a2_rlh;
+	    break;
+	case jit_code_casi:
+	    mask = jit_cc_a0_reg|jit_cc_a0_chg|jit_cc_a1_int|
+		   jit_cc_a2_reg|jit_cc_a2_rlh;
+	    break;
 	default:
 	    abort();
     }
@@ -1593,6 +1688,146 @@ _jit_patch_at(jit_state_t *_jit, jit_node_t *instr, jit_node_t *label)
     label->link = instr;
 }
 
+static void
+_do_setup(jit_state_t *_jit)
+{
+    jit_block_t		*block;
+    jit_word_t		 offset;
+
+    /* create initial mapping of live register values
+     * at the start of a basic block */
+    for (offset = 0; offset < _jitc->blocks.offset; offset++) {
+	block = _jitc->blocks.ptr + offset;
+	if (!block->label)
+	    continue;
+	if (block->label->code == jit_code_epilog) {
+	    jit_regset_setbit(&block->reglive, JIT_RET);
+	    jit_regset_setbit(&block->reglive, JIT_FRET);
+	    jit_regset_com(&block->regmask, &block->reglive);
+	    continue;
+	}
+	jit_setup(block);
+    }
+}
+
+static jit_bool_t
+_block_update_set(jit_state_t *_jit,
+		  jit_block_t *block, jit_block_t *target)
+{
+    jit_regset_t	regmask;
+
+    jit_regset_ior(&regmask, &block->reglive, &target->reglive);
+    jit_regset_and(&regmask,  &regmask, &block->regmask);
+    if (jit_regset_set_p(&regmask)) {
+	jit_regset_ior(&block->reglive, &block->reglive, &regmask);
+	jit_regset_and(&regmask, &block->reglive, &block->regmask);
+	jit_regset_com(&regmask, &regmask);
+	jit_regset_and(&block->regmask, &block->regmask, &regmask);
+	block->again = 1;
+	return (1);
+    }
+    return (0);
+}
+
+static void
+_propagate_backward(jit_state_t *_jit, jit_block_t *block)
+{
+    jit_block_t		*prev;
+    jit_word_t		 offset;
+
+    for (offset = block->label->v.w - 1;
+	 offset >= 0; --offset)  {
+	prev = _jitc->blocks.ptr + offset;
+	if (!block_update_set(prev, block) ||
+	    !(prev->label->flag & jit_flag_head))
+	    break;
+    }
+}
+
+static jit_bool_t
+_check_block_again(jit_state_t *_jit)
+{
+    jit_int32_t		 todo;
+    jit_word_t		 offset;
+    jit_node_t		*node, *label;
+    jit_block_t		*block, *target;
+
+    todo = 0;
+    for (offset = 0; offset < _jitc->blocks.offset; offset++) {
+	block = _jitc->blocks.ptr + offset;
+	if (block->again) {
+	    todo = 1;
+	    break;
+	}
+    }
+    /* If no block changed state */
+    if (!todo)
+	return (0);
+
+    do {
+	todo = 0;
+	block = NULL;
+	for (node = _jitc->head; node; node = node->next) {
+	    /* Special jumps that match jit_cc_a0_jmp */
+	    if (node->code == jit_code_calli || node->code == jit_code_callr)
+		continue;
+
+	    /* Remember current label */
+	    if (node->code == jit_code_label ||
+		node->code == jit_code_prolog ||
+		node->code == jit_code_epilog) {
+
+		/* If previous block does not pass through */
+		if (!(node->flag & jit_flag_head))
+		    block = NULL;
+
+		target = _jitc->blocks.ptr + node->v.w;
+		if (block && target->again && block_update_set(block, target)) {
+		    propagate_backward(block);
+		    todo = 1;
+		}
+		block = target;
+	    }
+	    /* If not the first jmpi */
+	    else if (block) {
+		/* If a jump to dynamic address or if a jump to raw address */
+		if (!(jit_classify(node->code) & jit_cc_a0_jmp) ||
+		    !(node->flag & jit_flag_node))
+		    continue;
+		label = node->u.n;
+		/* Mark predecessor needs updating due to target change */
+		target = _jitc->blocks.ptr + label->v.w;
+		if (target->again && block_update_set(block, target)) {
+		    propagate_backward(block);
+		    todo = 1;
+		}
+	    }
+	}
+    }
+    while (todo);
+
+    return (todo);
+}
+
+static void
+_do_follow(jit_state_t *_jit, jit_bool_t always)
+{
+    jit_block_t		*block;
+    jit_word_t		 offset;
+
+    /* set live state of registers not referenced in a block, but
+     * referenced in a jump target or normal flow */
+    for (offset = 0; offset < _jitc->blocks.offset; offset++) {
+	block = _jitc->blocks.ptr + offset;
+	if (!block->label || block->label->code == jit_code_epilog)
+	    continue;
+	if (always || block->again) {
+	    block->again = 0;
+	    jit_follow(block);
+	}
+    }
+}
+
 void
 _jit_optimize(jit_state_t *_jit)
 {
@@ -1602,48 +1837,46 @@ _jit_optimize(jit_state_t *_jit)
     jit_node_t		*node;
     jit_block_t		*block;
     jit_word_t		 offset;
+    jit_regset_t	 regmask;
 
+    todo = 0;
     _jitc->function = NULL;
 
     thread_jumps();
     sequential_labels();
     split_branches();
-
-    /* create initial mapping of live register values
-     * at the start of a basic block */
-    for (offset = 0; offset < _jitc->blocks.offset; offset++) {
-	block = _jitc->blocks.ptr + offset;
-	if (!block->label)
-	    continue;
-	if (block->label->code != jit_code_epilog)
-	    jit_setup(block);
-    }
-
-    /* set live state of registers not referenced in a block, but
-     * referenced in a jump target or normal flow */
-    do {
-	todo = 0;
-	for (offset = 0; offset < _jitc->blocks.offset; offset++) {
-	    block = _jitc->blocks.ptr + offset;
-	    if (!block->label)
-		continue;
-	    if (block->label->code != jit_code_epilog)
-		jit_follow(block, &todo);
-	}
-    } while (todo);
+    do_setup();
+    do_follow(1);
 
     patch_registers();
-    simplify();
+    if (simplify())
+	todo = 1;
 
-    /* figure out labels that are only reached with a jump
-     * and is required to do a simple redundant_store removal
-     * on jit_beqi below */
+    jit_regset_set_ui(&regmask, 0);
+    for (offset = 0; offset < _jitc->reglen; offset++) {
+	if ((jit_class(_rvs[offset].spec) & (jit_class_gpr|jit_class_fpr)) &&
+	    (jit_class(_rvs[offset].spec) & jit_class_sav) == jit_class_sav)
+	    jit_regset_setbit(&regmask, offset);
+    }
+
+    /* Figure out labels that are only reached with a jump */
     jump = 1;
     for (node = _jitc->head; node; node = node->next) {
 	switch (node->code) {
 	    case jit_code_label:
-		if (!jump)
+		if (!jump) {
 		    node->flag |= jit_flag_head;
+		    if (!node->link) {
+			/* Block is dead code or only reachable with an
+			 * indirect jumps. In such condition, must assume
+			 * all callee save registers are live. */
+			block = _jitc->blocks.ptr + node->v.w;
+			jit_regset_ior(&block->reglive,
+				       &block->reglive, &regmask);
+			/* Cleanup regmask */
+			block_update_set(block, block);
+		    }
+		}
 		break;
 	    case jit_code_jmpi:		case jit_code_jmpr:
 	    case jit_code_epilog:
@@ -1665,69 +1898,98 @@ _jit_optimize(jit_state_t *_jit)
 	    node->v.w &= ~jit_regno_patch;
 	if (mask & jit_cc_a2_reg)
 	    node->w.w &= ~jit_regno_patch;
-	switch (node->code) {
-	    case jit_code_prolog:
-		_jitc->function = _jitc->functions.ptr + node->w.w;
-		break;
-	    case jit_code_epilog:
-		_jitc->function = NULL;
-		break;
-	    case jit_code_beqi:
-		redundant_store(node, 1);
-		break;
-	    case jit_code_bnei:
-		redundant_store(node, 0);
-		break;
-	    default:
+	if (node->code == jit_code_beqi) {
+	    if (redundant_store(node, 1)) {
+		block = _jitc->blocks.ptr + ((jit_node_t *)node->u.n)->v.w;
+		block->again = 1;
+		todo = 1;
+	    }
+	}
+	else if (node->code == jit_code_bnei) {
+	    if (redundant_store(node, 0)) {
+		block = _jitc->blocks.ptr + ((jit_node_t *)node->u.n)->v.w;
+		block->again = 1;
+		todo = 1;
+	    }
+	}
+    }
+
+    if (!todo)
+	todo = check_block_again();
+
+    /* If instructions were removed or first pass did modify the entry
+     * state of any block */
+    if (todo) {
+	do_setup();
+	todo = 0;
+	do {
+	    do_follow(0);
+	    /* If any block again has the entry state modified. */
+	    todo = check_block_again();
+	} while (todo);
+    }
+
+    for (node = _jitc->head; node; node = node->next) {
+	mask = jit_classify(node->code);
+	if (mask & jit_cc_a0_reg)
+	    node->u.w &= ~jit_regno_patch;
+	if (mask & jit_cc_a1_reg)
+	    node->v.w &= ~jit_regno_patch;
+	if (mask & jit_cc_a2_reg)
+	    node->w.w &= ~jit_regno_patch;
+	if  (node->code == jit_code_prolog)
+	    _jitc->function = _jitc->functions.ptr + node->w.w;
+	else if(node->code == jit_code_epilog)
+	    _jitc->function = NULL;
+	else {
 #if JIT_HASH_CONSTS
-		if (mask & jit_cc_a0_flt) {
-		    node->u.p = jit_data(&node->u.f, sizeof(jit_float32_t), 4);
-		    node->flag |= jit_flag_node | jit_flag_data;
-		}
-		else if (mask & jit_cc_a0_dbl) {
-		    node->u.p = jit_data(&node->u.d, sizeof(jit_float64_t), 8);
-		    node->flag |= jit_flag_node | jit_flag_data;
-		}
-		else if (mask & jit_cc_a1_flt) {
-		    node->v.p = jit_data(&node->v.f, sizeof(jit_float32_t), 4);
-		    node->flag |= jit_flag_node | jit_flag_data;
-		}
-		else if (mask & jit_cc_a1_dbl) {
-		    node->v.p = jit_data(&node->v.d, sizeof(jit_float64_t), 8);
-		    node->flag |= jit_flag_node | jit_flag_data;
-		}
-		else if (mask & jit_cc_a2_flt) {
-		    node->w.p = jit_data(&node->w.f, sizeof(jit_float32_t), 4);
-		    node->flag |= jit_flag_node | jit_flag_data;
-		}
-		else if (mask & jit_cc_a2_dbl) {
-		    node->w.p = jit_data(&node->w.d, sizeof(jit_float64_t), 8);
-		    node->flag |= jit_flag_node | jit_flag_data;
-		}
+	    if (mask & jit_cc_a0_flt) {
+		node->u.p = jit_data(&node->u.f, sizeof(jit_float32_t), 4);
+		node->flag |= jit_flag_node | jit_flag_data;
+	    }
+	    else if (mask & jit_cc_a0_dbl) {
+		node->u.p = jit_data(&node->u.d, sizeof(jit_float64_t), 8);
+		node->flag |= jit_flag_node | jit_flag_data;
+	    }
+	    else if (mask & jit_cc_a1_flt) {
+		node->v.p = jit_data(&node->v.f, sizeof(jit_float32_t), 4);
+		node->flag |= jit_flag_node | jit_flag_data;
+	    }
+	    else if (mask & jit_cc_a1_dbl) {
+		node->v.p = jit_data(&node->v.d, sizeof(jit_float64_t), 8);
+		node->flag |= jit_flag_node | jit_flag_data;
+	    }
+	    else if (mask & jit_cc_a2_flt) {
+		node->w.p = jit_data(&node->w.f, sizeof(jit_float32_t), 4);
+		node->flag |= jit_flag_node | jit_flag_data;
+	    }
+	    else if (mask & jit_cc_a2_dbl) {
+		node->w.p = jit_data(&node->w.d, sizeof(jit_float64_t), 8);
+		node->flag |= jit_flag_node | jit_flag_data;
+	    }
 #endif
-		if (_jitc->function) {
-		    if ((mask & (jit_cc_a0_reg|jit_cc_a0_chg)) ==
-			(jit_cc_a0_reg|jit_cc_a0_chg)) {
-			if (mask & jit_cc_a0_rlh) {
-			    jit_regset_setbit(&_jitc->function->regset,
-					      jit_regno(node->u.q.l));
-			    jit_regset_setbit(&_jitc->function->regset,
-					      jit_regno(node->u.q.h));
-			}
-			else
-			    jit_regset_setbit(&_jitc->function->regset,
-					      jit_regno(node->u.w));
+	    if (_jitc->function) {
+		if ((mask & (jit_cc_a0_reg|jit_cc_a0_chg)) ==
+		    (jit_cc_a0_reg|jit_cc_a0_chg)) {
+		    if (mask & jit_cc_a0_rlh) {
+			jit_regset_setbit(&_jitc->function->regset,
+					  jit_regno(node->u.q.l));
+			jit_regset_setbit(&_jitc->function->regset,
+					  jit_regno(node->u.q.h));
 		    }
-		    if ((mask & (jit_cc_a1_reg|jit_cc_a1_chg)) ==
-			(jit_cc_a1_reg|jit_cc_a1_chg))
+		    else
 			jit_regset_setbit(&_jitc->function->regset,
-					  jit_regno(node->v.w));
-		    if ((mask & (jit_cc_a2_reg|jit_cc_a2_chg)) ==
-			(jit_cc_a2_reg|jit_cc_a2_chg))
-			jit_regset_setbit(&_jitc->function->regset,
-					  jit_regno(node->w.w));
+					  jit_regno(node->u.w));
 		}
-		break;
+		if ((mask & (jit_cc_a1_reg|jit_cc_a1_chg)) ==
+		    (jit_cc_a1_reg|jit_cc_a1_chg))
+		    jit_regset_setbit(&_jitc->function->regset,
+				      jit_regno(node->v.w));
+		if ((mask & (jit_cc_a2_reg|jit_cc_a2_chg)) ==
+		    (jit_cc_a2_reg|jit_cc_a2_chg))
+		    jit_regset_setbit(&_jitc->function->regset,
+				      jit_regno(node->w.w));
+	    }
 	}
     }
 }
@@ -1743,6 +2005,10 @@ _jit_reglive(jit_state_t *_jit, jit_node_t *node)
 	case jit_code_label:	case jit_code_prolog:	case jit_code_epilog:
 	    block = _jitc->blocks.ptr + node->v.w;
 	    jit_regset_set(&_jitc->reglive, &block->reglive);
+	    jit_regset_set_ui(&_jitc->explive, 0);
+	    break;
+	case jit_code_live:
+	    jit_regset_setbit(&_jitc->explive, node->u.w);
 	    break;
 	case jit_code_callr:
 	    value = jit_regno(node->u.w);
@@ -1798,13 +2064,24 @@ _jit_reglive(jit_state_t *_jit, jit_node_t *node)
 		else
 		    jit_regset_setbit(&_jitc->reglive, node->v.w);
 	    }
-	    if ((value & jit_cc_a2_reg) && !(node->w.w & jit_regno_patch)) {
-		if (value & jit_cc_a2_chg) {
-		    jit_regset_clrbit(&_jitc->reglive, node->w.w);
-		    jit_regset_setbit(&_jitc->regmask, node->w.w);
+	    if (value & jit_cc_a2_reg) {
+		if (value & jit_cc_a2_rlh) {
+		    /* Assume registers are not changed */
+		    if (!(node->w.q.l & jit_regno_patch))
+			jit_regset_setbit(&_jitc->reglive, node->w.q.l);
+		    if (!(node->w.q.h & jit_regno_patch))
+			jit_regset_setbit(&_jitc->reglive, node->w.q.h);
 		}
-		else
-		    jit_regset_setbit(&_jitc->reglive, node->w.w);
+		else {
+		    if (!(node->w.w & jit_regno_patch)) {
+			if (value & jit_cc_a2_chg) {
+			    jit_regset_clrbit(&_jitc->reglive, node->w.w);
+			    jit_regset_setbit(&_jitc->regmask, node->w.w);
+			}
+			else
+			    jit_regset_setbit(&_jitc->reglive, node->w.w);
+		    }
+		}
 	    }
 	    if (jit_regset_set_p(&_jitc->regmask)) {
 		jit_update(node->next, &_jitc->reglive, &_jitc->regmask);
@@ -1835,8 +2112,27 @@ _jit_regarg_set(jit_state_t *_jit, jit_node_t *node, jit_int32_t value)
     }
     if (value & jit_cc_a1_reg)
 	jit_regset_setbit(&_jitc->regarg, jit_regno(node->v.w));
-    if (value & jit_cc_a2_reg)
-	jit_regset_setbit(&_jitc->regarg, jit_regno(node->w.w));
+    if (value & jit_cc_a2_reg) {
+	if (value & jit_cc_a2_rlh) {
+	    jit_regset_setbit(&_jitc->regarg, jit_regno(node->w.q.l));
+	    jit_regset_setbit(&_jitc->regarg, jit_regno(node->w.q.h));
+	}
+	else
+	    jit_regset_setbit(&_jitc->regarg, jit_regno(node->w.w));
+    }
+    /* Prevent incorrect detection of running out of registers
+     * if will need to patch jump, and all registers have been
+     * used in the current block. */
+    if (node->code == jit_code_jmpi && (node->flag & jit_flag_node)) {
+	jit_node_t	*label = node->u.n;
+	jit_block_t	*block = _jitc->blocks.ptr + label->v.w;
+	jit_regset_set(&_jitc->reglive, &block->reglive);
+	jit_regset_set(&_jitc->regmask, &block->regmask);
+	if (jit_regset_set_p(&_jitc->explive)) {
+	    jit_regset_ior(&_jitc->reglive, &block->reglive, &_jitc->explive);
+	    jit_regset_xor(&_jitc->regmask, &_jitc->regmask, &_jitc->explive);
+	}
+    }
 }
 
 void
@@ -1855,8 +2151,14 @@ _jit_regarg_clr(jit_state_t *_jit, jit_node_t *node, jit_int32_t value)
     }
     if (value & jit_cc_a1_reg)
 	jit_regset_clrbit(&_jitc->regarg, jit_regno(node->v.w));
-    if (value & jit_cc_a2_reg)
-	jit_regset_clrbit(&_jitc->regarg, jit_regno(node->w.w));
+    if (value & jit_cc_a2_reg) {
+	if (value & jit_cc_a2_rlh) {
+	    jit_regset_clrbit(&_jitc->regarg, jit_regno(node->w.q.l));
+	    jit_regset_clrbit(&_jitc->regarg, jit_regno(node->w.q.h));
+	}
+	else
+	    jit_regset_clrbit(&_jitc->regarg, jit_regno(node->w.w));
+    }
 }
 
 void
@@ -1891,6 +2193,9 @@ _jit_dataset(jit_state_t *_jit)
 #endif
 
     assert(!_jitc->dataset);
+#if !HAVE_MMAP
+    assert(_jit->user_data);
+#else
     if (!_jit->user_data) {
 
 	/* create read only data buffer */
@@ -1908,6 +2213,7 @@ _jit_dataset(jit_state_t *_jit)
 	close(mmap_fd);
 #endif
     }
+#endif /* !HAVE_MMAP */
 
     if (!_jitc->no_data)
 	jit_memcpy(_jit->data.ptr, _jitc->data.ptr, _jitc->data.offset);
@@ -2013,6 +2319,7 @@ _jit_emit(jit_state_t *_jit)
 #if defined(__sgi)
     int			 mmap_fd;
 #endif
+    int			 mmap_prot, mmap_flags;
 
     if (!_jitc->realize)
 	jit_realize();
@@ -2022,20 +2329,39 @@ _jit_emit(jit_state_t *_jit)
 
     _jitc->emit = 1;
 
+#if !HAVE_MMAP
+    assert(_jit->user_code);
+#else
     if (!_jit->user_code) {
+	mmap_prot = PROT_READ | PROT_WRITE;
+#if !(__OpenBSD__ || __APPLE__)
+	mmap_prot |= PROT_EXEC;
+#endif
+#if __NetBSD__
+	mmap_prot = PROT_MPROTECT(mmap_prot);
+	mmap_flags = 0;
+#else
+	mmap_flags = MAP_PRIVATE;
+#endif
+	mmap_flags |= MAP_ANON;
 #if defined(__sgi)
 	mmap_fd = open("/dev/zero", O_RDWR);
 #endif
 	_jit->code.ptr = mmap(NULL, _jit->code.length,
-			      PROT_EXEC | PROT_READ | PROT_WRITE,
-			      MAP_PRIVATE | MAP_ANON, mmap_fd, 0);
+			      mmap_prot, mmap_flags, mmap_fd, 0);
 	assert(_jit->code.ptr != MAP_FAILED);
     }
+#endif /* !HAVE_MMAP */
     _jitc->code.end = _jit->code.ptr + _jit->code.length -
 	jit_get_max_instr();
     _jit->pc.uc = _jit->code.ptr;
 
     for (;;) {
+#if __NetBSD__
+	result = mprotect(_jit->code.ptr, _jit->code.length,
+			  PROT_READ | PROT_WRITE);
+	assert(result == 0);
+#endif
 	if ((code = emit_code()) == NULL) {
 	    _jitc->patches.offset = 0;
 	    for (node = _jitc->head; node; node = node->next) {
@@ -2044,6 +2370,9 @@ _jit_emit(jit_state_t *_jit)
 		     node->code == jit_code_epilog))
 		    node->flag &= ~jit_flag_patch;
 	    }
+#if !HAVE_MMAP
+	    assert(_jit->user_code);
+#else
 	    if (_jit->user_code)
 		goto fail;
 #if GET_JIT_SIZE
@@ -2068,8 +2397,7 @@ _jit_emit(jit_state_t *_jit)
 #  endif
 #else
 	    _jit->code.ptr = mmap(NULL, length,
-				  PROT_EXEC | PROT_READ | PROT_WRITE,
-				  MAP_PRIVATE | MAP_ANON, mmap_fd, 0);
+				  mmap_prot, mmap_flags, mmap_fd, 0);
 #endif
 
 	    assert(_jit->code.ptr != MAP_FAILED);
@@ -2077,6 +2405,7 @@ _jit_emit(jit_state_t *_jit)
 	    _jitc->code.end = _jit->code.ptr + _jit->code.length -
 		jit_get_max_instr();
 	    _jit->pc.uc = _jit->code.ptr;
+#endif /* !HAVE_MMAP */
 	}
 	else
 	    break;
@@ -2093,28 +2422,61 @@ _jit_emit(jit_state_t *_jit)
 
     if (_jit->user_data)
 	jit_free((jit_pointer_t *)&_jitc->data.ptr);
+#if HAVE_MMAP
     else {
 #ifdef _WIN32
-	result = _mprotect(_jit->data.ptr, _jit->data.length, PROT_READ);
+	result = _mprotect(_jit->data.ptr,
+			  _jit->data.length, PROT_READ);
 #else
-	result = mprotect(_jit->data.ptr, _jit->data.length, PROT_READ);
+	result = mprotect(_jit->data.ptr,
+			  _jit->data.length, PROT_READ);
 #endif
 	assert(result == 0);
     }
     if (!_jit->user_code) {
+	_jit->code.protected = _jit->pc.uc - _jit->code.ptr;
+#  if __riscv && __WORDSIZE == 64
+	/* FIXME should start adding consts at a page boundary */
+	_jit->code.protected -= _jitc->consts.hash.count * sizeof(jit_word_t);
+#  endif
 #ifdef _WIN32
-	result = _mprotect(_jit->code.ptr, _jit->code.length,
-			  PROT_READ | PROT_EXEC);
+	result = _mprotect(_jit->code.ptr, _jit->code.protected, PROT_READ | PROT_EXEC);
 #else
-	result = mprotect(_jit->code.ptr, _jit->code.length,
-			  PROT_READ | PROT_EXEC);
+	result = mprotect(_jit->code.ptr, _jit->code.protected, PROT_READ | PROT_EXEC);
 #endif
 	assert(result == 0);
     }
+#endif /* HAVE_MMAP */
 
     return (_jit->code.ptr);
 fail:
     return (NULL);
+}
+
+void
+_jit_protect(jit_state_t *_jit)
+{
+#if !HAVE_MMAP
+  assert (_jit->user_code);
+#else
+  int result;
+  if (_jit->user_code) return;
+  result = mprotect (_jit->code.ptr, _jit->code.protected, PROT_READ | PROT_EXEC);
+  assert (result == 0);
+#endif
+}
+
+void
+_jit_unprotect(jit_state_t *_jit)
+{
+#if !HAVE_MMAP
+  assert (_jit->user_code);
+#else
+  int result;
+  if (_jit->user_code) return;
+  result = mprotect (_jit->code.ptr, _jit->code.protected, PROT_READ | PROT_WRITE);
+  assert (result == 0);
+#endif
 }
 
 void
@@ -2232,7 +2594,7 @@ _jit_setup(jit_state_t *_jit, jit_block_t *block)
  * or normal flow that have a live register not used in this block.
  */
 static void
-_jit_follow(jit_state_t *_jit, jit_block_t *block, jit_bool_t *todo)
+_jit_follow(jit_state_t *_jit, jit_block_t *block)
 {
     jit_node_t		*node;
     jit_block_t		*next;
@@ -2261,7 +2623,7 @@ _jit_follow(jit_state_t *_jit, jit_block_t *block, jit_bool_t *todo)
 		    /*  Remove from unknown state bitmask. */
 		    jit_regset_com(&regtemp, &regtemp);
 		    jit_regset_and(&block->regmask, &block->regmask, &regtemp);
-		    *todo = 1;
+		    block->again = 1;
 		}
 	    case jit_code_prolog:
 	    case jit_code_epilog:
@@ -2289,11 +2651,26 @@ _jit_follow(jit_state_t *_jit, jit_block_t *block, jit_bool_t *todo)
 	    default:
 		value = jit_classify(node->code);
 		if (value & jit_cc_a2_reg) {
-		    if (!(node->w.w & jit_regno_patch)) {
-			if (jit_regset_tstbit(&regmask, node->w.w)) {
-			    jit_regset_clrbit(&regmask, node->w.w);
-			    if (!(value & jit_cc_a2_chg))
-				jit_regset_setbit(&reglive, node->w.w);
+		    if (value & jit_cc_a2_rlh) {
+			if (!(node->w.q.l & jit_regno_patch)) {
+			    /* Assume register is not changed */
+			    if (jit_regset_tstbit(&regmask, node->w.q.l))
+				jit_regset_clrbit(&regmask, node->w.q.l);
+			}
+			if (!(node->w.q.h & jit_regno_patch)) {
+			    if (jit_regset_tstbit(&regmask, node->w.q.h))
+				jit_regset_clrbit(&regmask, node->w.q.h);
+			}
+		    }
+		    else {
+			if (value & jit_cc_a2_reg) {
+			    if (!(node->w.w & jit_regno_patch)) {
+				if (jit_regset_tstbit(&regmask, node->w.w)) {
+				    jit_regset_clrbit(&regmask, node->w.w);
+				    if (!(value & jit_cc_a2_chg))
+					jit_regset_setbit(&reglive, node->w.w);
+				}
+			    }
 			}
 		    }
 		}
@@ -2348,7 +2725,7 @@ _jit_follow(jit_state_t *_jit, jit_block_t *block, jit_bool_t *todo)
 			    jit_regset_com(&regtemp, &regtemp);
 			    jit_regset_and(&block->regmask,
 					   &block->regmask, &regtemp);
-			    *todo = 1;
+			    block->again = 1;
 			}
 		    }
 		    else {
@@ -2361,19 +2738,19 @@ _jit_follow(jit_state_t *_jit, jit_block_t *block, jit_bool_t *todo)
 			 * means that only JIT_Vn registers can be trusted on
 			 * arrival of jmpr.
 			 */
+			jit_regset_set_ui(&regmask, 0);
 			for (regno = 0; regno < _jitc->reglen; regno++) {
 			    spec = jit_class(_rvs[regno].spec);
-			    if (jit_regset_tstbit(&regmask, regno) &&
-				(spec & (jit_class_gpr|jit_class_fpr)) &&
-				!(spec & jit_class_sav))
-				jit_regset_clrbit(&regmask, regno);
+			    if ((spec & (jit_class_gpr|jit_class_fpr)) &&
+				(spec & jit_class_sav))
+				jit_regset_setbit(&regmask, regno);
 			}
 			/*   Assume non callee save registers are live due
 			 * to jump to unknown location. */
 			/* Treat all callee save as live. */
-			jit_regset_ior(&reglive, &reglive, &regmask);
+			jit_regset_ior(&block->reglive, &reglive, &regmask);
 			/* Treat anything else as dead. */
-			jit_regset_set_ui(&regmask, 0);
+			return;
 		    }
 		}
 		break;
@@ -2440,11 +2817,24 @@ _jit_update(jit_state_t *_jit, jit_node_t *node,
 	    default:
 		value = jit_classify(node->code);
 		if (value & jit_cc_a2_reg) {
-		    if (!(node->w.w & jit_regno_patch)) {
-			if (jit_regset_tstbit(mask, node->w.w)) {
-			    jit_regset_clrbit(mask, node->w.w);
-			    if (!(value & jit_cc_a2_chg))
-				jit_regset_setbit(live, node->w.w);
+		    if (value & jit_cc_a2_rlh) {
+			if (!(node->w.q.l & jit_regno_patch)) {
+			    /* Assume register is not changed */
+			    if (jit_regset_tstbit(mask, node->w.q.l))
+				jit_regset_clrbit(mask, node->w.q.l);
+			}
+			if (!(node->w.q.h & jit_regno_patch)) {
+			    if (jit_regset_tstbit(mask, node->w.q.h))
+				jit_regset_clrbit(mask, node->w.q.h);
+			}
+		    }
+		    else {
+			if (!(node->w.w & jit_regno_patch)) {
+			    if (jit_regset_tstbit(mask, node->w.w)) {
+				jit_regset_clrbit(mask, node->w.w);
+				if (!(value & jit_cc_a2_chg))
+				    jit_regset_setbit(live, node->w.w);
+			    }
 			}
 		    }
 		}
@@ -2509,19 +2899,22 @@ _jit_update(jit_state_t *_jit, jit_node_t *node,
 			 * means that only JIT_Vn registers can be trusted on
 			 * arrival of jmpr.
 			 */
+			jit_regset_set_ui(mask, 0);
 			for (regno = 0; regno < _jitc->reglen; regno++) {
 			    spec = jit_class(_rvs[regno].spec);
-			    if (jit_regset_tstbit(mask, regno) &&
-				(spec & (jit_class_gpr|jit_class_fpr)) &&
-				!(spec & jit_class_sav))
-				jit_regset_clrbit(mask, regno);
+			    if ((spec & (jit_class_gpr|jit_class_fpr)) &&
+				(spec & jit_class_sav))
+				jit_regset_setbit(mask, regno);
 			}
 			/*   Assume non callee save registers are live due
 			 * to jump to unknown location. */
 			/* Treat all callee save as live. */
 			jit_regset_ior(live, live, mask);
+			/*   Prevent explicitly set as live registers to
+			 * be used as a temporary for the jmpi. */
+			jit_regset_ior(live, live, &_jitc->explive);
 			/* Treat anything else as dead. */
-			jit_regset_set_ui(mask, 0);
+			return;
 		    }
 		}
 		break;
@@ -2587,7 +2980,10 @@ _sequential_labels(jit_state_t *_jit)
 		    if ((jump = node->link)) {
 			for (; jump; jump = link) {
 			    link = jump->link;
-			    jump->u.n = prev;
+			    if (jump->code == jit_code_movi)
+				jump->v.n = prev;
+			    else
+				jump->u.n = prev;
 			    jump->link = prev->link;
 			    prev->link = jump;
 			}
@@ -2601,7 +2997,10 @@ _sequential_labels(jit_state_t *_jit)
 		if ((jump = next->link)) {
 		    for (; jump; jump = link) {
 			link = jump->link;
-			jump->u.n = node;
+			if (jump->code == jit_code_movi)
+			    jump->v.n = node;
+			else
+			    jump->u.n = node;
 			jump->link = node->link;
 			node->link = jump;
 		    }
@@ -2623,36 +3022,59 @@ _split_branches(jit_state_t *_jit)
     jit_node_t		*next;
     jit_node_t		*label;
     jit_block_t		*block;
+    jit_block_t		*blocks;
+    jit_word_t		 offset;
+    jit_word_t		 length;
 
+    length = _jitc->blocks.length;
+    jit_alloc((jit_pointer_t *)&blocks, length * sizeof(jit_block_t));
+    if ((node = _jitc->head) &&
+	(node->code == jit_code_label || node->code == jit_code_prolog)) {
+	block = _jitc->blocks.ptr + node->v.w;
+	memcpy(blocks, block, sizeof(jit_block_t));
+	node->v.w = 0;
+	offset = 1;
+    }
+    else
+	offset = 0;
     for (node = _jitc->head; node; node = next) {
 	if ((next = node->next)) {
 	    if (next->code == jit_code_label ||
 		next->code == jit_code_prolog ||
-		next->code == jit_code_epilog)
-		continue;
+		next->code == jit_code_epilog) {
+		if (offset >= length) {
+		    jit_realloc((jit_pointer_t *)&blocks,
+				length * sizeof(jit_block_t),
+				(length + 16) * sizeof(jit_block_t));
+		    length += 16;
+		}
+		block = _jitc->blocks.ptr + next->v.w;
+		memcpy(blocks + offset, block, sizeof(jit_block_t));
+		next->v.w = offset++;
+	    }
 	    /* split block on branches */
-	    if (jit_classify(node->code) & jit_cc_a0_jmp) {
+	    else if (jit_classify(node->code) & jit_cc_a0_jmp) {
 		label = new_node(jit_code_label);
 		label->next = next;
 		node->next = label;
-		if (_jitc->blocks.offset >= _jitc->blocks.length) {
-		    jit_word_t	  length;
-
-		    length = _jitc->blocks.length + 16;
-		    jit_realloc((jit_pointer_t *)&_jitc->blocks.ptr,
-				_jitc->blocks.length * sizeof(jit_block_t),
-				length * sizeof(jit_block_t));
-		    _jitc->blocks.length = length;
+		if (offset >= length) {
+		    jit_realloc((jit_pointer_t *)&blocks,
+				length * sizeof(jit_block_t),
+				(length + 16) * sizeof(jit_block_t));
+		    length += 16;
 		}
-		block = _jitc->blocks.ptr + _jitc->blocks.offset;
+		block = blocks + offset;
 		block->label = label;
-		label->v.w = _jitc->blocks.offset;
+		label->v.w = offset++;
 		jit_regset_new(&block->reglive);
 		jit_regset_new(&block->regmask);
-		++_jitc->blocks.offset;
 	    }
 	}
     }
+    jit_free((jit_pointer_t *)&_jitc->blocks.ptr);
+    _jitc->blocks.ptr = blocks;
+    _jitc->blocks.offset = offset;
+    _jitc->blocks.length = length;
 }
 
 static jit_bool_t
@@ -2733,7 +3155,6 @@ _redundant_jump(jit_state_t *_jit, jit_node_t *prev, jit_node_t *node)
 		}
 		break;
 	    case jit_code_name:		case jit_code_note:
-	    case jit_code_align:
 		break;
 	    default:
 		return (0);
@@ -2784,7 +3205,7 @@ reverse_jump_code(jit_code_t code)
 	case jit_code_bgti_f:	return (jit_code_bunlei_f);
 
 	case jit_code_bner_f:	return (jit_code_beqr_f);
-	case jit_code_bnei_f:	return (jit_code_beqr_f);
+	case jit_code_bnei_f:	return (jit_code_beqi_f);
 
 	case jit_code_bunltr_f:	return (jit_code_bger_f);
 	case jit_code_bunlti_f:	return (jit_code_bgei_f);
@@ -2917,7 +3338,7 @@ _reverse_jump(jit_state_t *_jit, jit_node_t *prev, jit_node_t *node)
     return (0);
 }
 
-static void
+static jit_bool_t
 _redundant_store(jit_state_t *_jit, jit_node_t *node, jit_bool_t jump)
 {
     jit_node_t		*iter;
@@ -2925,30 +3346,33 @@ _redundant_store(jit_state_t *_jit, jit_node_t *node, jit_bool_t jump)
     jit_word_t		 word;
     jit_int32_t		 spec;
     jit_int32_t		 regno;
+    jit_bool_t		 result;
 
     if (jump) {
 	prev = node->u.n;
 	if (prev->code == jit_code_epilog)
-	    return;
+	    return (0);
 	assert(prev->code == jit_code_label);
 	if ((prev->flag & jit_flag_head) || node->link || prev->link != node)
 	    /* multiple sources */
-	    return;
+	    return (0);
 	/* if there are sequential labels it will return below */
     }
     else
 	prev = node;
+    result = 0;
     word = node->w.w;
     regno = jit_regno(node->v.w);
     for (iter = prev->next; iter; prev = iter, iter = iter->next) {
 	switch (iter->code) {
 	    case jit_code_label:	case jit_code_prolog:
 	    case jit_code_epilog:
-		return;
+		return (result);
 	    case jit_code_movi:
 		if (regno == jit_regno(iter->u.w)) {
 		    if (iter->flag || iter->v.w != word)
-			return;
+			return (result);
+		    result = 1;
 		    del_node(prev, iter);
 		    iter = prev;
 		}
@@ -2956,32 +3380,34 @@ _redundant_store(jit_state_t *_jit, jit_node_t *node, jit_bool_t jump)
 	    default:
 		spec = jit_classify(iter->code);
 		if (spec & jit_cc_a0_jmp)
-		    return;
+		    return (result);
 		if ((spec & (jit_cc_a0_reg|jit_cc_a0_chg)) ==
 		    (jit_cc_a0_reg|jit_cc_a0_chg)) {
 		    if (spec & jit_cc_a0_rlh) {
 			if (regno == jit_regno(iter->u.q.l) ||
 			    regno == jit_regno(iter->u.q.h))
-			    return;
+			    return (result);
 		    }
 		    else {
 			if (regno == jit_regno(iter->u.w))
-			    return;
+			    return (result);
 		    }
 		}
 		if ((spec & (jit_cc_a1_reg|jit_cc_a1_chg)) ==
 		    (jit_cc_a1_reg|jit_cc_a1_chg)) {
 		    if (regno == jit_regno(iter->v.w))
-			return;
+			return (result);
 		}
 		if ((spec & (jit_cc_a2_reg|jit_cc_a2_chg)) ==
 		    (jit_cc_a2_reg|jit_cc_a2_chg)) {
 		    if (regno == jit_regno(iter->w.w))
-			return;
+			return (result);
 		}
 		break;
 	}
     }
+
+    return (result);
 }
 
 static jit_bool_t
@@ -3128,7 +3554,6 @@ _simplify_stxi(jit_state_t *_jit, jit_node_t *prev, jit_node_t *node)
     /* no multiple information, so, if set to a constant,
      * prefer to keep that information */
     if (value->kind == 0) {
-	value->kind = jit_kind_code;
 	switch (node->code) {
 	    /* no information about signed/unsigned either */
 	    case jit_code_stxi_c:	value->code = jit_code_ldxi_c;	break;
@@ -3169,7 +3594,7 @@ _simplify_spill(jit_state_t *_jit, jit_node_t *node, jit_int32_t regno)
  * once to the same value, and is a common pattern of calls
  * to jit_pushargi and jit_pushargr
  */
-static void
+static jit_bool_t
 _simplify(jit_state_t *_jit)
 {
     jit_node_t		*prev;
@@ -3177,7 +3602,9 @@ _simplify(jit_state_t *_jit)
     jit_node_t		*next;
     jit_int32_t		 info;
     jit_int32_t		 regno;
+    jit_bool_t		 result;
 
+    result = 0;
     for (prev = NULL, node = _jitc->head; node; prev = node, node = next) {
 	next = node->next;
 	switch (node->code) {
@@ -3200,6 +3627,7 @@ _simplify(jit_state_t *_jit)
 		     * already holding */
 		    patch_register(node->link->next, node,
 				   jit_regno_patch|regno, regno);
+		    result = 1;
 		    del_node(_jitc->spill[regno], node->link);
 		    del_node(prev, node);
 		    node = prev;
@@ -3209,58 +3637,74 @@ _simplify(jit_state_t *_jit)
 	    case jit_code_movr:
 		regno = jit_regno(node->u.w);
 		if (simplify_movr(prev, node,
-				  jit_kind_word, sizeof(jit_word_t)))
+				  jit_kind_word, sizeof(jit_word_t))) {
+		    result = 1;
 		    simplify_spill(node = prev, regno);
+		}
 		break;
 	    case jit_code_movi:
 		regno = jit_regno(node->u.w);
 		if (simplify_movi(prev, node,
-				  jit_kind_word, sizeof(jit_word_t)))
+				  jit_kind_word, sizeof(jit_word_t))) {
+		    result = 1;
 		    simplify_spill(node = prev, regno);
+		}
 		break;
 	    case jit_code_movr_f:
 		regno = jit_regno(node->u.w);
 		if (simplify_movr(prev, node,
-				  jit_kind_float32, sizeof(jit_float32_t)))
+				  jit_kind_float32, sizeof(jit_float32_t))) {
+		    result = 1;
 		    simplify_spill(node = prev, regno);
+		}
 		break;
 	    case jit_code_movi_f:
 		regno = jit_regno(node->u.w);
 		if (simplify_movi(prev, node,
-				  jit_kind_float32, sizeof(jit_float32_t)))
+				  jit_kind_float32, sizeof(jit_float32_t))) {
+		    result = 1;
 		    simplify_spill(node = prev, regno);
+		}
 		break;
 	    case jit_code_movr_d:
 		regno = jit_regno(node->u.w);
 		if (simplify_movr(prev, node,
-				  jit_kind_float64, sizeof(jit_float64_t)))
+				  jit_kind_float64, sizeof(jit_float64_t))) {
+		    result = 1;
 		    simplify_spill(node = prev, regno);
+		}
 		break;
 	    case jit_code_movi_d:
 		regno = jit_regno(node->u.w);
 		if (simplify_movi(prev, node,
-				  jit_kind_float64, sizeof(jit_float64_t)))
+				  jit_kind_float64, sizeof(jit_float64_t))) {
+		    result = 1;
 		    simplify_spill(node = prev, regno);
+		}
 		break;
 	    case jit_code_ldxi_c:	case jit_code_ldxi_uc:
 	    case jit_code_ldxi_s:	case jit_code_ldxi_us:
 	    case jit_code_ldxi_i:	case jit_code_ldxi_ui:
 	    case jit_code_ldxi_l:
 	    case jit_code_ldxi_f:	case jit_code_ldxi_d:
-		regno = jit_regno(node->u.w);
 #if __WORDSIZE == 32
 		/* XXX (maister): This is buggy with the sequence of sll, movd-to-reg, movslq-to-reg.
 		 * The sign extension may be elided on 64-bit. */
-		if (simplify_ldxi(prev, node))
+		regno = jit_regno(node->u.w);
+		if (simplify_ldxi(prev, node)) {
+		    result = 1;
 		    simplify_spill(node = prev, regno);
+		}
 #endif
 		break;
 	    case jit_code_stxi_c:	case jit_code_stxi_s:
 	    case jit_code_stxi_i:	case jit_code_stxi_l:
 	    case jit_code_stxi_f:	case jit_code_stxi_d:
 		regno = jit_regno(node->u.w);
-		if (simplify_stxi(prev, node))
+		if (simplify_stxi(prev, node)) {
+		    result = 1;
 		    simplify_spill(node = prev, regno);
+		}
 		break;
 	    default:
 		info = jit_classify(node->code);
@@ -3289,13 +3733,29 @@ _simplify(jit_state_t *_jit)
 		    ++_jitc->gen[regno];
 		}
 		if (info & jit_cc_a2_chg) {
-		    regno = jit_regno(node->w.w);
-		    _jitc->values[regno].kind = 0;
-		    ++_jitc->gen[regno];
+#if 0
+		    /* Assume registers are not changed */
+		    if (info & jit_cc_a2_rlh) {
+			regno = jit_regno(node->w.q.l);
+			_jitc->values[regno].kind = 0;
+			++_jitc->gen[regno];
+			regno = jit_regno(node->w.q.h);
+			_jitc->values[regno].kind = 0;
+			++_jitc->gen[regno];
+		    }
+		    else {
+#endif
+			regno = jit_regno(node->w.w);
+			_jitc->values[regno].kind = 0;
+			++_jitc->gen[regno];
+#if 0
+		    }
+#endif
 		}
 		break;
 	}
     }
+    return (result);
 }
 
 static jit_int32_t
@@ -3316,7 +3776,7 @@ _register_change_p(jit_state_t *_jit, jit_node_t *node, jit_node_t *link,
 	    default:
 		value = jit_classify(node->code);
 		/* lack of extra information */
-		if (value & jit_cc_a0_jmp)
+		if (value & (jit_cc_a0_jmp|jit_cc_a0_cnd))
 		    return (jit_reg_change);
 		else if ((value & (jit_cc_a0_reg|jit_cc_a0_chg)) ==
 			 (jit_cc_a0_reg|jit_cc_a0_chg) &&
@@ -3496,10 +3956,48 @@ _patch_register(jit_state_t *_jit, jit_node_t *node, jit_node_t *link,
 	}
 	if ((value & jit_cc_a1_reg) && node->v.w == regno)
 	    node->v.w = patch;
-	if ((value & jit_cc_a2_reg) && node->w.w == regno)
-	    node->w.w = patch;
+	if (value & jit_cc_a2_reg) {
+	    if (value & jit_cc_a2_rlh) {
+		if (node->w.q.l == regno)
+		    node->w.q.l = patch;
+		if (node->w.q.h == regno)
+		    node->w.q.h = patch;
+	    }
+	    else {
+		if (node->w.w == regno)
+		    node->w.w = patch;
+	    }
+	}
     }
 }
+
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+#  define htonr_us(r0,r1)		bswapr_us(r0,r1)
+#  define htonr_ui(r0,r1)		bswapr_ui(r0,r1)
+#  if __WORDSIZE == 64
+#    define htonr_ul(r0,r1)		bswapr_ul(r0,r1)
+#  endif
+#else
+#  define htonr_us(r0,r1)		extr_us(r0,r1)
+#  if __WORDSIZE == 32
+#    define htonr_ui(r0,r1)		movr(r0,r1)
+#  else
+#    define htonr_ui(r0,r1)		extr_ui(r0,r1)
+#    define htonr_ul(r0,r1)		movr(r0,r1)
+#  endif
+#endif
+
+static maybe_unused void
+generic_bswapr_us(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1);
+static maybe_unused void
+generic_bswapr_ui(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1);
+#if __WORDSIZE == 64
+static maybe_unused void
+generic_bswapr_ul(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1);
+#endif
+
+#define patch_alist(revert)		_patch_alist(_jit, revert)
+static maybe_unused void _patch_alist(jit_state_t *_jit, jit_bool_t revert);
 
 #if defined(__i386__) || defined(__x86_64__)
 #  include "jit_x86.c"
@@ -3523,4 +4021,87 @@ _patch_register(jit_state_t *_jit, jit_node_t *node, jit_node_t *link,
 #  include "jit_alpha.c"
 #elif defined(__riscv)
 #  include "jit_riscv.c"
+#elif defined(__loongarch__)
+#  include "jit_loongarch.c"
+#endif
+
+static maybe_unused void
+generic_bswapr_us(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    jit_int32_t reg = jit_get_reg(jit_class_gpr);
+
+    rshi(rn(reg), r1, 8);
+    andi(r0, r1, 0xff);
+    andi(rn(reg), rn(reg), 0xff);
+    lshi(r0, r0, 8);
+    orr(r0, r0, rn(reg));
+
+    jit_unget_reg(reg);
+}
+
+static maybe_unused void
+generic_bswapr_ui(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    jit_int32_t reg = jit_get_reg(jit_class_gpr);
+
+	rshi(rn(reg), r1, 16);
+	bswapr_us(r0, r1);
+	bswapr_us(rn(reg), rn(reg));
+	lshi(r0, r0, 16);
+	orr(r0, r0, rn(reg));
+
+    jit_unget_reg(reg);
+}
+
+#if __WORDSIZE == 64
+static maybe_unused void
+generic_bswapr_ul(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    jit_int32_t reg = jit_get_reg(jit_class_gpr);
+
+    rshi_u(rn(reg), r1, 32);
+    bswapr_ui(r0, r1);
+    bswapr_ui(rn(reg), rn(reg));
+    lshi(r0, r0, 32);
+    orr(r0, r0, rn(reg));
+
+    jit_unget_reg(reg);
+}
+#endif
+
+#if defined(stack_framesize)
+static maybe_unused void
+_patch_alist(jit_state_t *_jit, jit_bool_t revert)
+{
+    jit_int32_t		 diff;
+    jit_node_t		*node;
+    diff = jit_diffsize();
+    if (diff) {
+	if (revert)
+	    diff = -diff;
+	for (node = _jitc->function->alist; node; node = node->link) {
+	    switch (node->code) {
+		case jit_code_ldxi_c:	case jit_code_ldxi_uc:
+		case jit_code_ldxi_s:	case jit_code_ldxi_us:
+		case jit_code_ldxi_i:
+#if __WORDSIZE == 64
+		case jit_code_ldxi_ui:	case jit_code_ldxi_l:
+#endif
+		case jit_code_ldxi_f:	case jit_code_ldxi_d:
+		    node->w.w -= diff;
+		    break;
+		case jit_code_stxi_c:	case jit_code_stxi_s:
+		case jit_code_stxi_i:
+#if __WORDSIZE == 64
+		case jit_code_stxi_l:
+#endif
+		case jit_code_stxi_f:	case jit_code_stxi_d:
+		    node->u.w -= diff;
+		    break;
+		default:
+		    abort();
+	    }
+	}
+    }
+}
 #endif

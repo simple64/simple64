@@ -31,14 +31,24 @@ main(int argc, char *argv[])
     int			  mmap_fd;
 #endif
     void		(*function)(void);
+    int			  mmap_prot, mmap_flags, result;
 
 #if defined(__sgi)
     mmap_fd = open("/dev/zero", O_RDWR);
 #endif
 
-    ptr = mmap(NULL, 1024 * 1024,
-	       PROT_EXEC | PROT_READ | PROT_WRITE,
-	       MAP_PRIVATE | MAP_ANON, mmap_fd, 0);
+    mmap_prot = PROT_READ | PROT_WRITE;
+#if !(__OpenBSD__ || __APPLE__)
+    mmap_prot |= PROT_EXEC;
+#endif
+#if __NetBSD__
+    mmap_prot = PROT_MPROTECT(mmap_prot);
+    mmap_flags = 0;
+#else
+    mmap_flags = MAP_PRIVATE;
+#endif
+    mmap_flags |= MAP_ANON;
+    ptr = mmap(NULL, 1024 * 1024,  mmap_prot, mmap_flags, mmap_fd, 0);
     assert(ptr != MAP_FAILED);
 #if defined(__sgi)
     close(mmap_fd);
@@ -72,6 +82,10 @@ main(int argc, char *argv[])
     if (function != NULL)
 	abort();
 
+#if __NetBSD__
+    result = mprotect(ptr, 1024 * 1024, PROT_READ | PROT_WRITE);
+    assert(result == 0);
+#endif
     /* and calling again with enough space works */
     jit_set_code(ptr, 1024 * 1024);
     function = jit_emit();
@@ -79,6 +93,10 @@ main(int argc, char *argv[])
 	abort();
 
     jit_clear_state();
+#if __NetBSD__ ||  __OpenBSD__ || __APPLE__
+    result = mprotect(ptr, 1024 * 1024, PROT_READ | PROT_EXEC);
+    assert(result == 0);
+#endif
     (*function)();
     jit_destroy_state();
     finish_jit();

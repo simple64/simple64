@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2019  Free Software Foundation, Inc.
+ * Copyright (C) 2013-2023  Free Software Foundation, Inc.
  *
  * This file is part of GNU lightning.
  *
@@ -394,6 +394,8 @@ static void _nop(jit_state_t*,jit_int32_t);
 #  define EAR(R1,R2)			RRE_(0xB24F,R1,R2)
 /* EXTRACT PSW */
 #  define EPSW(R1,R2)			RRE_(0xB98D,R1,R2)
+/* FIND LEFTMOST ONE */
+#  define FLOGR(R1,R2)			RRE_(0xB983,R1,R2)
 /* INSERT CHARACTER */
 #  define IC(R1,D2,X2,B2)		RX_(0x43,R1,X2,B2,D2)
 #  define ICY(R1,D2,X2,B2)		RXY_(0xE3,R1,X2,B2,D2,0x73)
@@ -966,6 +968,23 @@ static void _movr(jit_state_t*,jit_int32_t,jit_int32_t);
 static void _movi(jit_state_t*,jit_int32_t,jit_word_t);
 #  define movi_p(r0,i0)			_movi_p(_jit,r0,i0)
 static jit_word_t _movi_p(jit_state_t*,jit_int32_t,jit_word_t);
+#  define bswapr_us(r0, r1)		_bswapr_us(_jit, r0, r1)
+static void _bswapr_us(jit_state_t*,jit_int32_t,jit_int32_t);
+#  define bswapr_ui(r0, r1)		_bswapr_ui(_jit, r0, r1)
+static void _bswapr_ui(jit_state_t*,jit_int32_t,jit_int32_t);
+#  if __WORDSIZE == 64
+#define bswapr_ul(r0, r1)		_bswapr_ul(_jit, r0, r1)
+static void _bswapr_ul(jit_state_t*,jit_int32_t,jit_int32_t);
+#endif
+#  define movnr(r0,r1,r2)		_movnr(_jit,r0,r1,r2)
+static void _movnr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define movzr(r0,r1,r2)		_movzr(_jit,r0,r1,r2)
+static void _movzr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define casx(r0, r1, r2, r3, i0)	_casx(_jit, r0, r1, r2, r3, i0)
+static void _casx(jit_state_t *_jit,jit_int32_t,jit_int32_t,
+		  jit_int32_t,jit_int32_t,jit_word_t);
+#define casr(r0, r1, r2, r3)		casx(r0, r1, r2, r3, 0)
+#define casi(r0, i0, r1, r2)		casx(r0, _NOREG, r1, r2, i0)
 #  define addr(r0,r1,r2)		_addr(_jit,r0,r1,r2)
 static void _addr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
 #  define addi(r0,r1,i0)		_addi(_jit,r0,r1,i0)
@@ -1039,32 +1058,39 @@ static void _qdivi_u(jit_state_t*,jit_int32_t,
 #  if __WORDSIZE == 32
 #    define lshr(r0,r1,r2)		_lshr(_jit,r0,r1,r2)
 static void _lshr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
-#  else
-#    define lshr(r0,r1,r2)		SLLG(r0,r1,0,r2)
-#  endif
-#  define lshi(r0,r1,i0)		_lshi(_jit,r0,r1,i0)
+#    define lshi(r0,r1,i0)		_lshi(_jit,r0,r1,i0)
 static void _lshi(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
-#  if __WORDSIZE == 32
 #    define rshr(r0,r1,r2)		_rshr(_jit,r0,r1,r2)
 static void _rshr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
-#  else
-#    define rshr(r0,r1,r2)		SRAG(r0,r1,0,r2)
-#  endif
-#  define rshi(r0,r1,i0)		_rshi(_jit,r0,r1,i0)
+#    define rshi(r0,r1,i0)		_rshi(_jit,r0,r1,i0);
 static void _rshi(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
-#  if __WORDSIZE == 32
 #    define rshr_u(r0,r1,r2)		_rshr_u(_jit,r0,r1,r2)
 static void _rshr_u(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
-#  else
-#    define rshr_u(r0,r1,r2)		SRLG(r0,r1,0,r2)
-#  endif
 #  define rshi_u(r0,r1,i0)		_rshi_u(_jit,r0,r1,i0)
 static void _rshi_u(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
+#  else
+#    define lshr(r0,r1,r2)		SLLG(r0,r1,0,r2)
+#    define lshi(r0,r1,i0)		SLLG(r0,r1,i0,0)
+#    define rshr(r0,r1,r2)		SRAG(r0,r1,0,r2)
+#    define rshi(r0,r1,i0)		SRAG(r0,r1,i0,0)
+#    define rshr_u(r0,r1,r2)		SRLG(r0,r1,0,r2)
+#    define rshi_u(r0,r1,i0)		SRLG(r0,r1,i0,0)
+#  endif
 #  if __WORDSIZE == 32
 #    define negr(r0,r1)			LCR(r0,r1)
 #  else
 #    define negr(r0,r1)			LCGR(r0,r1)
 #  endif
+#  define bitswap(r0, r1)		_bitswap(_jit, r0, r1)
+static void _bitswap(jit_state_t*, jit_int32_t, jit_int32_t);
+#  define clor(r0, r1)			_clor(_jit, r0, r1)
+static void _clor(jit_state_t*, jit_int32_t, jit_int32_t);
+#  define clzr(r0, r1)			_clzr(_jit, r0, r1)
+static void _clzr(jit_state_t*, jit_int32_t, jit_int32_t);
+#  define ctor(r0, r1)			_ctor(_jit, r0, r1)
+static void _ctor(jit_state_t*, jit_int32_t, jit_int32_t);
+#  define ctzr(r0, r1)			_ctzr(_jit, r0, r1)
+static void _ctzr(jit_state_t*, jit_int32_t, jit_int32_t);
 #  define comr(r0,r1)			_comr(_jit,r0,r1)
 static void _comr(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define andr(r0,r1,r2)		_andr(_jit,r0,r1,r2)
@@ -1079,13 +1105,6 @@ static void _ori(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
 static void _xorr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
 #  define xori(r0,r1,i0)		_xori(_jit,r0,r1,i0)
 static void _xori(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
-#  define htonr_us(r0,r1)		extr_us(r0,r1)
-#  if __WORDSIZE == 32
-#    define htonr_ui(r0,r1)		movr(r0,r1)
-#  else
-#    define htonr_ui(r0,r1)		extr_ui(r0,r1)
-#    define htonr_ul(r0,r1)		movr(r0,r1)
-#  endif
 #  define extr_c(r0,r1)			LGBR(r0,r1)
 #  define extr_uc(r0,r1)		LLGCR(r0,r1)
 #  define extr_s(r0,r1)			LGHR(r0,r1)
@@ -1284,13 +1303,13 @@ static void _stxi_l(jit_state_t*,jit_word_t,jit_int32_t,jit_int32_t);
 #  define bmci(i0,r0,i1)		bmxi(CC_E,i0,r0,i1)
 #  define bmci_p(i0,r0,i1)		bmxi_p(CC_E,i0,r0,i1)
 #  define jmpr(r0)			BR(r0)
-#  define jmpi(i0)			_jmpi(_jit,i0)
-static void _jmpi(jit_state_t*,jit_word_t);
+#  define jmpi(i0,i1)			_jmpi(_jit,i0,i1)
+static jit_word_t _jmpi(jit_state_t*,jit_word_t, jit_bool_t);
 #  define jmpi_p(i0)			_jmpi_p(_jit,i0)
 static jit_word_t _jmpi_p(jit_state_t*,jit_word_t);
 #  define callr(r0)			BALR(_R14_REGNO,r0)
-#  define calli(i0)			_calli(_jit,i0)
-static void _calli(jit_state_t*,jit_word_t);
+#  define calli(i0,i1)			_calli(_jit,i0,i1)
+static jit_word_t _calli(jit_state_t*,jit_word_t, jit_bool_t);
 #  define calli_p(i0)			_calli_p(_jit,i0)
 static jit_word_t _calli_p(jit_state_t*,jit_word_t);
 #  define prolog(i0)			_prolog(_jit,i0)
@@ -2443,6 +2462,90 @@ _movi_p(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
 }
 
 static void
+_movnr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
+{
+    jit_word_t	w;
+    w = beqi_p(_jit->pc.w, r2, 0);
+#if __WORDSIZE == 32
+    LR(r0, r1);
+#else
+    LGR(r0, r1);
+#endif
+    patch_at(w, _jit->pc.w);
+}
+
+static void
+_movzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
+{
+    jit_word_t	w;
+    w = bnei_p(_jit->pc.w, r2, 0);
+#if __WORDSIZE == 32
+    LR(r0, r1);
+#else
+    LGR(r0, r1);
+#endif
+    patch_at(w, _jit->pc.w);
+}
+
+static void
+_bswapr_us(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    LRVR(r0, r1);
+    SRL(r0, 16, 0);
+    LLGHR(r0, r0);
+}
+
+static void
+_bswapr_ui(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    LRVR(r0, r1);
+#  if __WORDSIZE == 64
+    LLGFR(r0, r0);
+#  endif
+}
+
+#if __WORDSIZE == 64
+static void
+_bswapr_ul(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    LRVGR(r0, r1);
+}
+#endif
+
+static void
+_casx(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
+      jit_int32_t r2, jit_int32_t r3, jit_word_t i0)
+{
+    jit_int32_t         iscasi, r1_reg;
+    if ((iscasi = (r1 == _NOREG))) {
+        r1_reg = jit_get_reg_but_zero(0);
+        r1 = rn(r1_reg);
+        movi(r1, i0);
+    }
+    /* Do not clobber r2 */
+    movr(r0, r2);
+    /*  The CS and CSG instructions below effectively do atomically:
+     * if (*r1 == r0)
+     *     *r1 = r3;
+     * else
+     *     r0 = *r1
+     * So, we do not need to check cpu flags to know if it did work,
+     * just compare if values are different.
+     * Obviously it is somewhat of undefined behavior if old_value (r2)
+     * and new_value (r3) have the same value, but should still work
+     * as expected as a noop.
+     */
+#  if __WORDSIZE == 32
+    CS(r0, r3, 0, r1);
+#  else
+    CSG(r0, r3, 0, r1);
+#  endif
+    eqr(r0, r0, r2);
+    if (iscasi)
+        jit_unget_reg(r1_reg);
+}
+
+static void
 _addr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
     if (r0 == r2)
@@ -2833,19 +2936,14 @@ _lshr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 	SLL(r0, 0, r2);
     }
 }
-#endif
 
 static void
 _lshi(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
-    jit_int32_t		reg;
-    reg = jit_get_reg_but_zero(0);
-    movi(rn(reg), i0);
-    lshr(r0, r1, rn(reg));
-    jit_unget_reg_but_zero(reg);
+    movr(r0, r1);
+    SLL(r0, i0, 0);
 }
 
-#  if __WORDSIZE == 32
 static void
 _rshr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
@@ -2862,19 +2960,14 @@ _rshr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 	SRA(r0, 0, r2);
     }
 }
-#endif
 
 static void
 _rshi(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
-    jit_int32_t		reg;
-    reg = jit_get_reg_but_zero(0);
-    movi(rn(reg), i0);
-    rshr(r0, r1, rn(reg));
-    jit_unget_reg_but_zero(reg);
+    movr(r0, r1);
+    SRA(r0, i0, 0);
 }
 
-#  if __WORDSIZE == 32
 static void
 _rshr_u(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
@@ -2891,16 +2984,141 @@ _rshr_u(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 	SRL(r0, 0, r2);
     }
 }
-#endif
 
 static void
 _rshi_u(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
-    jit_int32_t		reg;
-    reg = jit_get_reg_but_zero(0);
-    movi(rn(reg), i0);
-    rshr_u(r0, r1, rn(reg));
-    jit_unget_reg_but_zero(reg);
+    movr(r0, r1);
+    SRL(r0, i0, 0);
+}
+#endif
+
+static void
+_bitswap(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    jit_int32_t		t0, t1, t2, t3, t4;
+    movr(r0, r1);
+    t0 = jit_get_reg(jit_class_gpr);
+    t1 = jit_get_reg(jit_class_gpr);
+    t2 = jit_get_reg(jit_class_gpr);
+    movi(rn(t0), __WORDSIZE == 32 ? 0x55555555L : 0x5555555555555555L);
+    rshi_u(rn(t1), r0, 1);		/* t1 = v >> 1 */
+    andr(rn(t1), rn(t1), rn(t0));	/* t1 &= t0 */
+    andr(rn(t2), r0, rn(t0));		/* t2 = v & t0*/
+    lshi(rn(t2), rn(t2), 1);		/* t2 <<= 1 */
+    orr(r0, rn(t1), rn(t2));		/* v = t1 | t2 */
+    movi(rn(t0), __WORDSIZE == 32 ? 0x33333333L : 0x3333333333333333L);
+    rshi_u(rn(t1), r0, 2);		/* t1 = v >> 2 */
+    andr(rn(t1), rn(t1), rn(t0));	/* t1 &= t0 */
+    andr(rn(t2), r0, rn(t0));		/* t2 = v & t0*/
+    lshi(rn(t2), rn(t2), 2);		/* t2 <<= 2 */
+    orr(r0, rn(t1), rn(t2));		/* v = t1 | t2 */
+    movi(rn(t0), __WORDSIZE == 32 ? 0x0f0f0f0fL : 0x0f0f0f0f0f0f0f0fL);
+    rshi_u(rn(t1), r0, 4);		/* t1 = v >> 4 */
+    andr(rn(t1), rn(t1), rn(t0));	/* t1 &= t0 */
+    andr(rn(t2), r0, rn(t0));		/* t2 = v & t0*/
+    lshi(rn(t2), rn(t2), 4);		/* t2 <<= 4 */
+    orr(r0, rn(t1), rn(t2));		/* v = t1 | t2 */
+    movi(rn(t0), __WORDSIZE == 32 ?  0x00ff00ffL : 0x00ff00ff00ff00ffL);
+    rshi_u(rn(t1), r0, 8);		/* t1 = v >> 8 */
+    andr(rn(t1), rn(t1), rn(t0));	/* t1 &= t0 */
+    andr(rn(t2), r0, rn(t0));		/* t2 = v & t0*/
+    lshi(rn(t2), rn(t2), 8);		/* t2 <<= 8 */
+    orr(r0, rn(t1), rn(t2));		/* v = t1 | t2 */
+#  if __WORDSIZE == 32
+    rshi_u(rn(t1), r0, 16);		/* t1 = v >> 16 */
+    lshi(rn(t2), r0, 16);		/* t2 = v << 16 */
+    orr(r0, rn(t1), rn(t2));		/* v = t1 | t2 */
+#  else
+    movi(rn(t0), 0x0000ffff0000ffffL);
+    rshi_u(rn(t1), r0, 16);		/* t1 = v >> 16 */
+    andr(rn(t1), rn(t1), rn(t0));	/* t1 &= t0 */
+    andr(rn(t2), r0, rn(t0));		/* t2 = v & t0*/
+    lshi(rn(t2), rn(t2), 16);		/* t2 <<= 16 */
+    orr(r0, rn(t1), rn(t2));		/* v = t1 | t2 */
+    rshi_u(rn(t1), r0, 32);		/* t1 = v >> 32 */
+    lshi(rn(t2), r0, 32);		/* t2 = v << 32 */
+    orr(r0, rn(t1), rn(t2));		/* v = t1 | t2 */
+#  endif
+    jit_unget_reg(t2);
+    jit_unget_reg(t1);
+    jit_unget_reg(t0);
+}
+
+static void
+_clor(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+#if CHECK_FLOGR
+    if (jit_cpu.flogr) {
+#endif
+	comr(r0, r1);
+	clzr(r0, r0);
+#if CHECK_FLOGR
+    }
+    else
+	fallback_clo(r0, r1);
+#endif
+}
+
+static void
+_clzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+#if CHECK_FLOGR
+    if (jit_cpu.flogr) {
+#endif
+#if __WORDSIZE == 32
+	jit_word_t		w;
+#endif
+	jit_int32_t		regno;
+	regno = jit_get_reg_pair();
+#if __WORDSIZE == 32
+	SLLG(rn(regno), r1, 32, 0);
+#else
+	movr(rn(regno), r1);
+#endif
+	FLOGR(rn(regno), rn(regno));
+	movr(r0, rn(regno));
+#if __WORDSIZE == 32
+	w = blei_p(_jit->pc.w, r0, 31);
+	rshi(r0, r0, 1);	/* r0 is 64 */
+	patch_at(w, _jit->pc.w);
+#endif
+	jit_unget_reg_pair(regno);
+#if CHECK_FLOGR
+    }
+    else
+	fallback_clz(r0, r1);
+#endif
+}
+
+static void
+_ctor(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+#if CHECK_FLOGR
+    if (jit_cpu.flogr) {
+#endif
+	bitswap(r0, r1);
+	clor(r0, r0);
+#if CHECK_FLOGR
+    }
+    else
+	fallback_cto(r0, r1);
+#endif
+}
+
+static void
+_ctzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+#if CHECK_FLOGR
+    if (jit_cpu.flogr) {
+#endif
+	bitswap(r0, r1);
+	clzr(r0, r0);
+#if CHECK_FLOGR
+    }
+    else
+	fallback_ctz(r0, r1);
+#endif
 }
 
 static void
@@ -3433,13 +3651,14 @@ _stxi_l(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
 }
 #endif
 
-static void
-_jmpi(jit_state_t *_jit, jit_word_t i0)
+static jit_word_t
+_jmpi(jit_state_t *_jit, jit_word_t i0, jit_bool_t i1)
 {
-    jit_word_t		d;
     jit_int32_t		reg;
-    d = (i0 - _jit->pc.w) >> 1;
-    if (s16_p(d))
+    jit_word_t		d, w;
+    w = _jit->pc.w;
+    d = (i0 - w) >> 1;
+    if (i1 && s16_p(d))
 	J(x16(d));
     else if (s32_p(d))
 	BRL(d);
@@ -3449,6 +3668,7 @@ _jmpi(jit_state_t *_jit, jit_word_t i0)
 	jmpr(rn(reg));
 	jit_unget_reg_but_zero(reg);
     }
+    return (w);
 }
 
 static jit_word_t
@@ -3463,13 +3683,16 @@ _jmpi_p(jit_state_t *_jit, jit_word_t i0)
     return (w);
 }
 
-static void
-_calli(jit_state_t *_jit, jit_word_t i0)
+static jit_word_t
+_calli(jit_state_t *_jit, jit_word_t i0, jit_bool_t i1)
 {
-    jit_word_t		d;
     jit_int32_t		reg;
-    d = (i0 - _jit->pc.w) >> 1;
-    if (s32_p(d))
+    jit_word_t		d, w;
+    w = _jit->pc.w;
+    d = (i0 - w) >> 1;
+    if (i1 && s16_p(d))
+	BRAS(_R14_REGNO, x16(d));
+    else if (s32_p(d))
 	BRASL(_R14_REGNO, d);
     else {
 	reg = jit_get_reg_but_zero(0);
@@ -3477,6 +3700,7 @@ _calli(jit_state_t *_jit, jit_word_t i0)
 	callr(rn(reg));
 	jit_unget_reg_but_zero(reg);
     }
+    return (w);
 }
 
 static jit_word_t
@@ -3825,17 +4049,17 @@ _patch_at(jit_state_t *_jit, jit_word_t instr, jit_word_t label)
 	u.s[7] = i1.s;
 #endif
     }
-    /* BRC */
+    /* BRC or BRL */
     else if (i0.b.op == 0xA7) {
-	assert(i0.b.r3 == 0x4);
+	assert(i0.b.r3 == 0x4 || i0.b.r3 == 0x5);
 	d = (label - instr) >> 1;
 	assert(s16_p(d));
 	i1.b.i2 = d;
 	u.s[1] = i1.s;
     }
-    /* BRCL */
+    /* BRCL or BRASL */
     else if (i0.b.op == 0xC0) {
-	assert(i0.b.r3 == 0x4);
+	assert(i0.b.r3 == 0x4 || i0.b.r3 == 0x5);
 	d = (label - instr) >> 1;
 	assert(s32_p(d));
 	i12.i = d;

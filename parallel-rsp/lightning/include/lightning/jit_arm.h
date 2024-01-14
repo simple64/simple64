@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019  Free Software Foundation, Inc.
+ * Copyright (C) 2012-2023  Free Software Foundation, Inc.
  *
  * This file is part of GNU lightning.
  *
@@ -106,6 +106,9 @@ typedef enum {
 
 typedef struct {
     jit_uint32_t version	: 4;
+    /* this field originally was only used for the 'e' in armv5te.
+     * it can also be used to force hardware division, if setting
+     * version to 7, telling it is armv7r or better. */
     jit_uint32_t extend		: 1;
     /* only generate thumb instructions for thumb2 */
     jit_uint32_t thumb		: 1;
@@ -117,6 +120,12 @@ typedef struct {
      * due to some memory ordering constraint not being respected, so,
      * disable by default */
     jit_uint32_t ldrt_strt	: 1;
+    /* assume functions called never match jit instruction set?
+     * that is libc, gmp, mpfr, etc functions are in thumb mode and jit
+     * is in arm mode, or the reverse, what may cause a crash upon return
+     * of that function if generating jit for a relative jump.
+     */
+    jit_uint32_t exchange	: 1;
 } jit_cpu_t;
 
 /*

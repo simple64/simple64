@@ -2,15 +2,16 @@
 .code
 	prolog
 	allocai 32 $buf
-	arg $c
-	arg $uc
-	arg $s
-	arg $us
-	arg $i
+	arg_c $c
+	arg_c $uc
+	arg_s $s
+	arg_s $us
+	arg_i $i
+	arg_i $ui
 #if __WORDSIZE == 64
-	arg $ui
-	arg $l
+	arg_l $l
 #endif
+	arg $a
 	getarg_c %r0 $c
 	getarg_uc %r0 $uc
 	getarg_s %r0 $s
@@ -20,6 +21,25 @@
 	getarg_ui %r0 $ui
 	getarg_l %r0 $l
 #endif
+	getarg %r0 $a
+	putargr_c %r0 $c
+	putargi_c 1 $c
+	putargr_uc %r0 $uc
+	putargi_uc 1 $uc
+	putargr_s %r0 $s
+	putargi_s 1 $s
+	putargr_us %r0 $us
+	putargi_us 1 $us
+	putargr_i %r0 $i
+	putargi_i 1 $ui
+#if __WORDSIZE == 64
+	putargr_ui %r0 $ui
+	putargi_ui 1 $ui
+	putargr_l %r0 $l
+	putargi_l 1 $l
+#endif
+	putargr %r0 $a
+	putargi 1 $a
 	addr %r0 %r1 %r2
 	addi %r0 %r1 2
 	addcr %r0 %r1 %r2
@@ -64,6 +84,10 @@
 	rshi_u %r0 %r1 2
 	negr %r0 %r1
 	comr %r0 %r1
+	clor %r0 %r1
+	clzr %r0 %r1
+	ctor %r0 %r1
+	ctzr %r0 %r1
 	ltr %r0 %r1 %r2
 	lti %r0 %r1 2
 	ltr_u %r0 %r1 %r2
@@ -205,6 +229,15 @@ label:
 	callr %r0
 	calli label
 	prepare
+	pushargr_c %r0
+	pushargr_uc %r0
+	pushargr_s %r0
+	pushargr_us %r0
+	pushargr_i %r0
+#if __WORDSIZE == 64
+	pushargr_ui %r0
+	pushargr_l %r0
+#endif
 	pushargr %r0
 	finishr %r0
 	prepare
@@ -212,6 +245,15 @@ label:
 	ellipsis
 	finishi 0x80000000
 	ret
+	retr_c %r1
+	retr_uc %r1
+	retr_s %r1
+	retr_us %r1
+	retr_i %r1
+#if __WORDSIZE == 64
+	retr_ui %r1
+	retr_l %r1
+#endif
 	retr %r1
 	reti 2
 	retval_c %r1
@@ -225,6 +267,8 @@ label:
 #endif
 	arg_f $f
 	getarg_f %f1 $f
+	putargr_f %f1 $f
+	putargi_f 1.0 $f
 	addr_f %f0 %f1 %f2
 	addi_f %f0 %f1 0.5
 	subr_f %f0 %f1 %f2
@@ -323,6 +367,8 @@ unordi:
 	retval_f %f1
 	arg_d $f
 	getarg_d %f1 $f
+	putargr_d %f1 $f
+	putargi_d 1.0 $f
 	addr_d %f0 %f1 %f2
 	addi_d %f0 %f1 0.5
 	subr_d %f0 %f1 %f2

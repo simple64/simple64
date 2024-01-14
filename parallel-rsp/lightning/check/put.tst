@@ -9,49 +9,49 @@ ok:
 putr:
 	prolog
 	frame 160
-	arg $ac
-	arg $auc
-	arg $as
-	arg $aus
-	arg $ai
+	arg_c $ac
+	arg_c $auc
+	arg_s $as
+	arg_s $aus
+	arg_i $ai
 #if __WORDSIZE == 64
-	arg $aui
-	arg $al
+	arg_i $aui
+	arg_l $al
 #endif
 	arg_f $af
 	arg_d $ad
 	arg $a
 #if __WORDSIZE == 64
-	arg $_l
-	arg $_ui
+	arg_l $_l
+	arg_i $_ui
 #endif
-	arg $_i
-	arg $_us
-	arg $_s
-	arg $_uc
-	arg $_c
+	arg_i $_i
+	arg_s $_us
+	arg_s $_s
+	arg_c $_uc
+	arg_c $_c
 	getarg_c %r0 $ac
 	negr %r0 %r0
-	putargr %r0 $ac
+	putargr_c %r0 $ac
 	getarg_uc %r0 $auc
 	negr %r0 %r0
-	putargr %r0 $auc
+	putargr_uc %r0 $auc
 	getarg_s %r0 $as
 	negr %r0 %r0
-	putargr %r0 $as
+	putargr_s %r0 $as
 	getarg_us %r0 $aus
 	negr %r0 %r0
-	putargr %r0 $aus
+	putargr_us %r0 $aus
 	getarg_i %r0 $ai
 	negr %r0 %r0
-	putargr %r0 $ai
+	putargr_i %r0 $ai
 #if __WORDSIZE == 64
 	getarg_ui %r0 $aui
 	negr %r0 %r0
-	putargr %r0 $aui
+	putargr_ui %r0 $aui
 	getarg_l %r0 $al
 	negr %r0 %r0
-	putargr %r0 $al
+	putargr_l %r0 $al
 #endif
 	getarg_f %f0 $af
 	negr_f %f0 %f0
@@ -65,49 +65,49 @@ putr:
 #if __WORDSIZE == 64
 	getarg_l %r0 $_l
 	negr %r0 %r0
-	putargr %r0 $_l
+	putargr_l %r0 $_l
 	getarg_ui %r0 $_ui
 	negr %r0 %r0
-	putargr %r0 $_ui
+	putargr_ui %r0 $_ui
 #endif
 	getarg_i %r0 $_i
 	negr %r0 %r0
-	putargr %r0 $_i
+	putargr_i %r0 $_i
 	getarg_us %r0 $_us
 	negr %r0 %r0
-	putargr %r0 $_us
+	putargr_us %r0 $_us
 	getarg_s %r0 $_s
 	negr %r0 %r0
-	putargr %r0 $_s
+	putargr_s %r0 $_s
 	getarg_uc %r0 $_uc
 	negr %r0 %r0
-	putargr %r0 $_uc
+	putargr_uc %r0 $_uc
 	getarg_c %r0 $_c
 	negr %r0 %r0
-	putargr %r0 $_c
+	putargr_c %r0 $_c
 	jmpi _putr
 rputr:
-	putargi 17 $ac
-	putargi 16 $auc
-	putargi 15 $as
-	putargi 14 $aus
-	putargi 13 $ai
+	putargi_c 17 $ac
+	putargi_uc 16 $auc
+	putargi_s 15 $as
+	putargi_us 14 $aus
+	putargi_i 13 $ai
 #if __WORDSIZE == 64
-	putargi 12 $aui
-	putargi 11 $al
+	putargi_ui 12 $aui
+	putargi_l 11 $al
 #endif
 	putargi_f 10 $af
 	putargi_d 9 $ad
 	putargi 8 $a
 #if __WORDSIZE == 64
-	putargi 7 $_l
-	putargi 6 $_ui
+	putargi_l 7 $_l
+	putargi_ui 6 $_ui
 #endif
-	putargi 5 $_i
-	putargi 4 $_us
-	putargi 3 $_s
-	putargi 2 $_uc
-	putargi 1 $_c
+	putargi_i 5 $_i
+	putargi_us 4 $_us
+	putargi_s 3 $_s
+	putargi_uc 2 $_uc
+	putargi_c 1 $_c
 	jmpi _puti
 rputi:
 	ret
@@ -117,27 +117,27 @@ rputi:
 _putr:
 	prolog
 	tramp 160
-	arg $ac
-	arg $auc
-	arg $as
-	arg $aus
-	arg $ai
+	arg_c $ac
+	arg_c $auc
+	arg_s $as
+	arg_s $aus
+	arg_i $ai
 #if __WORDSIZE == 64
-	arg $aui
-	arg $al
+	arg_i $aui
+	arg_l $al
 #endif
 	arg_f $af
 	arg_d $ad
 	arg $a
 #if __WORDSIZE == 64
-	arg $_l
-	arg $_ui
+	arg_l $_l
+	arg_i $_ui
 #endif
-	arg $_i
-	arg $_us
-	arg $_s
-	arg $_uc
-	arg $_c
+	arg_i $_i
+	arg_s $_us
+	arg_s $_s
+	arg_c $_uc
+	arg_c $_c
 	getarg_c %r0 $ac
 	beqi rac %r0 -1
 	calli @abort
@@ -181,7 +181,7 @@ rad:
 	calli @abort
 ra:
 #if __WORDSIZE == 64
-	getarg %r0 $_l
+	getarg_l %r0 $_l
 	beqi r_l %r0 -11
 	calli @abort
 r_l:
@@ -217,27 +217,27 @@ r_c:
 _puti:
 	prolog
 	tramp 160
-	arg $ac
-	arg $auc
-	arg $as
-	arg $aus
-	arg $ai
+	arg_c $ac
+	arg_c $auc
+	arg_s $as
+	arg_s $aus
+	arg_i $ai
 #if __WORDSIZE == 64
-	arg $aui
-	arg $al
+	arg_i $aui
+	arg_l $al
 #endif
 	arg_f $af
 	arg_d $ad
 	arg $a
 #if __WORDSIZE == 64
-	arg $_l
-	arg $_ui
+	arg_l $_l
+	arg_i $_ui
 #endif
-	arg $_i
-	arg $_us
-	arg $_s
-	arg $_uc
-	arg $_c
+	arg_i $_i
+	arg_s $_us
+	arg_s $_s
+	arg_c $_uc
+	arg_c $_c
 	getarg_c %r0 $ac
 	beqi iac %r0 17
 	calli @abort
@@ -281,7 +281,7 @@ iad:
 	calli @abort
 ia:
 #if __WORDSIZE == 64
-	getarg %r0 $_l
+	getarg_l %r0 $_l
 	beqi i_l %r0 7
 	calli @abort
 i_l:
@@ -390,27 +390,27 @@ fd2:
 main:
 	prolog
 	prepare
-		pushargi 1
-		pushargi 2
-		pushargi 3
-		pushargi 4
-		pushargi 5
+		pushargi_c  1
+		pushargi_uc 2
+		pushargi_s  3
+		pushargi_us 4
+		pushargi_i  5
 #if __WORDSIZE == 64
-		pushargi 6
-		pushargi 7
+		pushargi_ui 6
+		pushargi_l  7
 #endif
-		pushargi_f 8
-		pushargi_d 9
-		pushargi 10
+		pushargi_f  8
+		pushargi_d  9
+		pushargi    10
 #if __WORDSIZE == 64
-		pushargi 11
-		pushargi 12
+		pushargi_l  11
+		pushargi_ui 12
 #endif
-		pushargi 13
-		pushargi 14
-		pushargi 15
-		pushargi 16
-		pushargi 17
+		pushargi_i  13
+		pushargi_us 14
+		pushargi_s  15
+		pushargi_uc 16
+		pushargi_c  17
 	finishi putr
 	prepare
 		pushargi 1

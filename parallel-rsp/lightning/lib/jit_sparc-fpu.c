@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2019  Free Software Foundation, Inc.
+ * Copyright (C) 2013-2023  Free Software Foundation, Inc.
  *
  * This file is part of GNU lightning.
  *
@@ -498,6 +498,44 @@ _f3f(jit_state_t *_jit, jit_int32_t rd,
 }
 
 #  if __WORDSIZE == 64
+/* Handle the special case of using all float registers, as exercised
+ * in check/carg.c.
+ * For example:
+ *	putargr_f JIT_F0 $ARG
+ * where JIT_F0 is %f32 and $ARG is %f31 and if %f30 (the mapping for %f31)
+ * is live, the jit_get_reg() call might return %f30, but, because it is
+ * live, will spill/reload it, generating assembly:
+ *
+ *	std  %f30, [ %fp + OFFS ]
+ *	fmovd  %f32, %f30
+ *	fmovs  %f30, %f31
+ *	ldd  [ %fp + OFFS ], %f30
+ *
+ * what basically becomes a noop as it restores the old value.
+ */
+#define get_sng_reg(u)		_get_sng_reg(_jit, u)
+static jit_int32_t
+_get_sng_reg(jit_state_t *_jit, jit_int32_t r0)
+{
+    jit_int32_t		reg, tmp;
+    /* Attempt to get a nospill register */
+    reg = jit_get_reg(CLASS_SNG | jit_class_nospill | jit_class_chk);
+    if (reg == JIT_NOREG) {
+	/* Will need to spill, so allow spilling it. */
+	reg = jit_get_reg(CLASS_SNG);
+	/* If the special condition happens, allocate another one.
+	 * This will generate uglier machine code (code for floats
+	 * is already ugly), but will work, but doing a double
+	 * spill/reload; the first one being a noop.  */
+	if (rn(reg) == r0 - 1) {
+	    tmp = reg;
+	    reg = jit_get_reg(CLASS_SNG);
+	    jit_unget_reg(tmp);
+	}
+    }
+    return (reg);
+}
+
 static void
 _movr_f(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
@@ -507,7 +545,7 @@ _movr_f(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 	    if (single_precision_p(r1))
 		FMOVS(r1, r0);
 	    else {
-		t1 = jit_get_reg(CLASS_SNG);
+		t1 = get_sng_reg(r0);
 		movr_d(rn(t1), r1);
 		FMOVS(rn(t1), r0);
 		jit_unget_reg(t1);
@@ -515,13 +553,13 @@ _movr_f(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 	}
 	else {
 	    if (single_precision_p(r1)) {
-		t0 = jit_get_reg(CLASS_SNG);
+		t0 = get_sng_reg(r0);
 		FMOVS(r1, rn(t0));
 		movr_d(r0, rn(t0));
 		jit_unget_reg(t0);
 	    }
 	    else {
-		t1 = jit_get_reg(CLASS_SNG);
+		t1 = get_sng_reg(r0);
 		movr_d(rn(t1), r1);
 		FMOVS(rn(t1), rn(t1));
 		movr_d(r0, rn(t1));
@@ -1491,7 +1529,12 @@ _vaarg_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     assert(_jitc->function->self.call & jit_call_varargs);
 
     /* Load argument. */
+#if __WORDSIZE == 64
     ldr_d(r0, r1);
+#else
+    ldr_f(r0, r1);
+    ldxi_f(r0 + 1, r1, 4);
+#endif
 
     /* Update vararg stack pointer. */
     addi(r1, r1, 8);

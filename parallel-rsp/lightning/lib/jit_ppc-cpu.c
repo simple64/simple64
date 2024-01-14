@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019  Free Software Foundation, Inc.
+ * Copyright (C) 2012-2023  Free Software Foundation, Inc.
  *
  * This file is part of GNU lightning.
  *
@@ -202,8 +202,21 @@ static void _FXS(jit_state_t*,int,int,int,int,int,int,int);
 #  define XCMPLI(cr,l,a,u)		FCI(10,cr,l,a,u)
 #  define CMPLDI(a,s)			XCMPLI(0,1,a,s)
 #  define CMPLWI(a,s)			XCMPLI(0,0,a,s)
+#  if __WORDSIZE == 32
+#  define CMPX(a,b)			CMPW(a,b)
+#  define CMPXI(a,s)			CMPWI(a,s)
+#  define CMPLX(a,b)			CMPLW(a,b)
+#  define CMPLXI(a,s)			CMPLWI(a,s)
+#  else
+#  define CMPX(a,b)			CMPD(a,b)
+#  define CMPXI(a,s)			CMPDI(a,s)
+#  define CMPLX(a,b)			CMPLD(a,b)
+#  define CMPLXI(a,s)			CMPLDI(a,s)
+#  endif
 #  define CNTLZW(a,s)			FX(31,s,a,0,26)
 #  define CNTLZW_(a,s)			FX_(31,s,a,0,26)
+#  define CNTLZD(a,s)			FX(31,s,a,0,58)
+#  define CNTLZD_(a,s)			FX_(31,s,a,0,58)
 #  define CRAND(d,a,b)			FX(19,d,a,b,257)
 #  define CRANDC(d,a,b)			FX(19,d,a,b,129)
 #  define CREQV(d,a,b)			FX(19,d,a,b,289)
@@ -260,7 +273,7 @@ static void _FXS(jit_state_t*,int,int,int,int,int,int,int);
 #  define LHAU(d,a,s)			FDs(43,d,a,s)
 #  define LHAUX(d,a,b)			FX(31,d,a,b,375)
 #  define LHAX(d,a,b)			FX(31,d,a,b,343)
-#  define LHRBX(d,a,b)			FX(31,d,a,b,790)
+#  define LHBRX(d,a,b)			FX(31,d,a,b,790)
 #  define LHZ(d,a,s)			FDs(40,d,a,s)
 #  define LHZU(d,a,s)			FDs(41,d,a,s)
 #  define LHZUX(d,a,b)			FX(31,d,a,b,311)
@@ -271,6 +284,7 @@ static void _FXS(jit_state_t*,int,int,int,int,int,int,int);
 #  define LSWI(d,a,n)			FX(31,d,a,n,597)
 #  define LSWX(d,a,b)			FX(31,d,a,b,533)
 #  define LWARX(d,a,b)			FX(31,d,a,b,20)
+#  define LDARX(d,a,b)			FX(31,d,a,b,84)
 #  define LWBRX(d,a,b)			FX(31,d,a,b,534)
 #  define LWA(d,a,s)			FDs(58,d,a,s|2)
 #  define LWAUX(d,a,b)			FX(31,d,a,b,373)
@@ -446,6 +460,7 @@ static void _MCRXR(jit_state_t*, jit_int32_t);
 #  define STW(s,a,d)			FDs(36,s,a,d)
 #  define STWBRX(s,a,b)			FX(31,s,a,b,662)
 #  define STWCX_(s,a,b)			FX_(31,s,a,b,150)
+#  define STDCX_(s,a,b)			FX_(31,s,a,b,214)
 #  define STWU(s,a,d)			FDs(37,s,a,d)
 #  define STWUX(s,a,b)			FX(31,s,a,b,183)
 #  define STWX(s,a,b)			FX(31,s,a,b,151)
@@ -505,10 +520,32 @@ static void _nop(jit_state_t*,jit_int32_t);
 static void _movr(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define movi(r0,i0)			_movi(_jit,r0,i0)
 static void _movi(jit_state_t*,jit_int32_t,jit_word_t);
+#  define movnr(r0,r1,r2)		_movnr(_jit,r0,r1,r2)
+static void _movnr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define movzr(r0,r1,r2)		_movzr(_jit,r0,r1,r2)
+static void _movzr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
 #  define movi_p(r0,i0)			_movi_p(_jit,r0,i0)
 static jit_word_t _movi_p(jit_state_t*,jit_int32_t,jit_word_t);
+#  define casx(r0, r1, r2, r3, i0)	_casx(_jit, r0, r1, r2, r3, i0)
+static void _casx(jit_state_t *_jit,jit_int32_t,jit_int32_t,
+		  jit_int32_t,jit_int32_t,jit_word_t);
+#define casr(r0, r1, r2, r3)		casx(r0, r1, r2, r3, 0)
+#define casi(r0, i0, r1, r2)		casx(r0, _NOREG, r1, r2, i0)
 #  define negr(r0,r1)			NEG(r0,r1)
 #  define comr(r0,r1)			NOT(r0,r1)
+#  define bitswap(r0, r1)		_bitswap(_jit, r0, r1)
+static void _bitswap(jit_state_t*, jit_int32_t, jit_int32_t);
+#  define clor(r0, r1)			_clor(_jit, r0, r1)
+static void _clor(jit_state_t*, jit_int32_t, jit_int32_t);
+#  if __WORDSIZE == 32
+#    define clzr(r0, r1)		CNTLZW(r0, r1)
+#  else
+#    define clzr(r0, r1)		CNTLZD(r0, r1)
+#  endif
+#  define ctor(r0, r1)			_ctor(_jit, r0, r1)
+static void _ctor(jit_state_t*, jit_int32_t, jit_int32_t);
+#  define ctzr(r0, r1)			_ctzr(_jit, r0, r1)
+static void _ctzr(jit_state_t*, jit_int32_t, jit_int32_t);
 #  define extr_c(r0,r1)			EXTSB(r0,r1)
 #  define extr_uc(r0,r1)		ANDI_(r0,r1,0xff)
 #  define extr_s(r0,r1)			EXTSH(r0,r1)
@@ -517,23 +554,14 @@ static jit_word_t _movi_p(jit_state_t*,jit_int32_t,jit_word_t);
 #    define extr_i(r0,r1)		EXTSW(r0,r1)
 #    define extr_ui(r0,r1)		CLRLDI(r0,r1,32)
 #  endif
-#  if __BYTE_ORDER == __BIG_ENDIAN
-#    define htonr_us(r0,r1)		extr_us(r0,r1)
-#    if __WORDSIZE == 32
-#      define htonr_ui(r0,r1)		movr(r0,r1)
-#    else
-#      define htonr_ui(r0,r1)		extr_ui(r0,r1)
-#      define htonr_ul(r0,r1)		movr(r0,r1)
-#    endif
-#  else
-#    define htonr_us(r0,r1)		_htonr_us(_jit,r0,r1)
-static void _htonr_us(jit_state_t*,jit_int32_t,jit_int32_t);
-#    define htonr_ui(r0,r1)		_htonr_ui(_jit,r0,r1)
-static void _htonr_ui(jit_state_t*,jit_int32_t,jit_int32_t);
-#    if __WORDSIZE == 64
-#      define htonr_ul(r0,r1)		_htonr_ul(_jit,r0,r1)
-static void _htonr_ul(jit_state_t*,jit_int32_t,jit_int32_t);
-#    endif
+#  define bswapr_us_lh(r0,r1,no_flag)	_bswapr_us(_jit,r0,r1,no_flag)
+#  define bswapr_us(r0,r1)		_bswapr_us(_jit,r0,r1,0)
+static void _bswapr_us(jit_state_t*,jit_int32_t,jit_int32_t,jit_bool_t);
+#  define bswapr_ui_lw(r0,r1,no_flag)	_bswapr_ui(_jit,r0,r1,no_flag)
+#  define bswapr_ui(r0,r1)		_bswapr_ui(_jit,r0,r1,0)
+static void _bswapr_ui(jit_state_t*,jit_int32_t,jit_int32_t,jit_bool_t);
+#  if __WORDSIZE == 64
+#    define bswapr_ul(r0,r1)		generic_bswapr_ul(_jit,r0,r1)
 #  endif
 #  define addr(r0,r1,r2)		ADD(r0,r1,r2)
 #  define addi(r0,r1,i0)		_addi(_jit,r0,r1,i0)
@@ -856,14 +884,14 @@ static jit_word_t _jmpi_p(jit_state_t*,jit_word_t) maybe_unused;
 #    define callr(r0,i0)		_callr(_jit,r0,i0)
 static void _callr(jit_state_t*,jit_int32_t,jit_int32_t);
 #    define calli(i0,i1)		_calli(_jit,i0,i1)
-static void _calli(jit_state_t*,jit_word_t,jit_int32_t);
+static jit_word_t _calli(jit_state_t*,jit_word_t,jit_int32_t);
 #  define calli_p(i0,i1)		_calli_p(_jit,i0,i1)
 static jit_word_t _calli_p(jit_state_t*,jit_word_t,jit_int32_t);
 #  else
 #    define callr(r0)			_callr(_jit,r0)
 static void _callr(jit_state_t*,jit_int32_t);
 #    define calli(i0)			_calli(_jit,i0)
-static void _calli(jit_state_t*,jit_word_t);
+static jit_word_t _calli(jit_state_t*,jit_word_t);
 #    define calli_p(i0)			_calli_p(_jit,i0)
 static jit_word_t _calli_p(jit_state_t*,jit_word_t);
 #endif
@@ -1120,6 +1148,22 @@ _movi(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
     }
 }
 
+static void
+_movnr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
+{
+    CMPXI(r2, 0);
+    BEQ(8);
+    MR(r0, r1);
+}
+
+static void
+_movzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
+{
+    CMPXI(r2, 0);
+    BNE(8);
+    MR(r0, r1);
+}
+
 static jit_word_t
 _movi_p(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
 {
@@ -1138,47 +1182,210 @@ _movi_p(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
     return (word);
 }
 
-#  if __BYTE_ORDER == __LITTLE_ENDIAN
 static void
-_htonr_us(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+_casx(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
+      jit_int32_t r2, jit_int32_t r3, jit_word_t i0)
 {
-    jit_int32_t		t0;
+    jit_int32_t		r1_reg, iscasi;
+    jit_word_t		retry, done, jump0, jump1;
+    if ((iscasi = (r1 == _NOREG))) {
+	r1_reg = jit_get_reg(jit_class_gpr);
+	r1 = rn(r1_reg);
+	movi(r1, i0);
+    }
+    SYNC();
+    /* retry: */
+    retry = _jit->pc.w;
+#  if __WORDSIZE == 32
+    LWARX(r0, _R0_REGNO, r1);
+#  else
+    LDARX(r0, _R0_REGNO, r1);
+#  endif
+    jump0 = bner(_jit->pc.w, r0, r2);	/* bne done r0 r2 */
+#  if __WORDSIZE == 32
+    STWCX_(r3, _R0_REGNO, r1);
+#  else
+    STDCX_(r3, _R0_REGNO, r1);
+#  endif
+    jump1 = _jit->pc.w;
+    BNE(0);				/* BNE retry */
+    /* done: */
+    done = _jit->pc.w;
+    ISYNC();
+    MFCR(r0);
+    EXTRWI(r0, r0, 1, CR_EQ);
+    patch_at(jump0, done);
+    patch_at(jump1, retry);
+    if (iscasi)
+	jit_unget_reg(r1_reg);
+}
+
+/* http://graphics.stanford.edu/~seander/bithacks.html#ReverseParallel */
+/*
+unsigned int v; // 32-bit word to reverse bit order
+
+// swap odd and even bits
+v = ((v >> 1) & 0x55555555) | ((v & 0x55555555) << 1);
+// swap consecutive pairs
+v = ((v >> 2) & 0x33333333) | ((v & 0x33333333) << 2);
+// swap nibbles ... 
+v = ((v >> 4) & 0x0F0F0F0F) | ((v & 0x0F0F0F0F) << 4);
+// swap bytes
+v = ((v >> 8) & 0x00FF00FF) | ((v & 0x00FF00FF) << 8);
+// swap 2-byte long pairs
+v = ( v >> 16             ) | ( v               << 16);
+ */
+static void
+_bitswap(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    jit_int32_t		t0, t1, t2, t3, t4;
+    movr(r0, r1);
     t0 = jit_get_reg(jit_class_gpr);
-    rshi(rn(t0), r1, 8);
-    andi(r0, r1, 0xff);
-    andi(rn(t0), rn(t0), 0xff);
-    lshi(r0, r0, 8);
-    orr(r0, r0, rn(t0));
+    t1 = jit_get_reg(jit_class_gpr);
+    t2 = jit_get_reg(jit_class_gpr);
+    movi(rn(t0), __WORDSIZE == 32 ? 0x55555555L : 0x5555555555555555L);
+    rshi_u(rn(t1), r0, 1);		/* t1 = v >> 1 */
+    andr(rn(t1), rn(t1), rn(t0));	/* t1 &= t0 */
+    andr(rn(t2), r0, rn(t0));		/* t2 = v & t0*/
+    lshi(rn(t2), rn(t2), 1);		/* t2 <<= 1 */
+    orr(r0, rn(t1), rn(t2));		/* v = t1 | t2 */
+    movi(rn(t0), __WORDSIZE == 32 ? 0x33333333L : 0x3333333333333333L);
+    rshi_u(rn(t1), r0, 2);		/* t1 = v >> 2 */
+    andr(rn(t1), rn(t1), rn(t0));	/* t1 &= t0 */
+    andr(rn(t2), r0, rn(t0));		/* t2 = v & t0*/
+    lshi(rn(t2), rn(t2), 2);		/* t2 <<= 2 */
+    orr(r0, rn(t1), rn(t2));		/* v = t1 | t2 */
+    movi(rn(t0), __WORDSIZE == 32 ? 0x0f0f0f0fL : 0x0f0f0f0f0f0f0f0fL);
+    rshi_u(rn(t1), r0, 4);		/* t1 = v >> 4 */
+    andr(rn(t1), rn(t1), rn(t0));	/* t1 &= t0 */
+    andr(rn(t2), r0, rn(t0));		/* t2 = v & t0*/
+    lshi(rn(t2), rn(t2), 4);		/* t2 <<= 4 */
+    orr(r0, rn(t1), rn(t2));		/* v = t1 | t2 */
+    movi(rn(t0), __WORDSIZE == 32 ?  0x00ff00ffL : 0x00ff00ff00ff00ffL);
+    rshi_u(rn(t1), r0, 8);		/* t1 = v >> 8 */
+    andr(rn(t1), rn(t1), rn(t0));	/* t1 &= t0 */
+    andr(rn(t2), r0, rn(t0));		/* t2 = v & t0*/
+    lshi(rn(t2), rn(t2), 8);		/* t2 <<= 8 */
+    orr(r0, rn(t1), rn(t2));		/* v = t1 | t2 */
+#  if __WORDSIZE == 32
+    rshi_u(rn(t1), r0, 16);		/* t1 = v >> 16 */
+    lshi(rn(t2), r0, 16);		/* t2 = v << 16 */
+    orr(r0, rn(t1), rn(t2));		/* v = t1 | t2 */
+#  else
+    movi(rn(t0), 0x0000ffff0000ffffL);
+    rshi_u(rn(t1), r0, 16);		/* t1 = v >> 16 */
+    andr(rn(t1), rn(t1), rn(t0));	/* t1 &= t0 */
+    andr(rn(t2), r0, rn(t0));		/* t2 = v & t0*/
+    lshi(rn(t2), rn(t2), 16);		/* t2 <<= 16 */
+    orr(r0, rn(t1), rn(t2));		/* v = t1 | t2 */
+    rshi_u(rn(t1), r0, 32);		/* t1 = v >> 32 */
+    lshi(rn(t2), r0, 32);		/* t2 = v << 32 */
+    orr(r0, rn(t1), rn(t2));		/* v = t1 | t2 */
+#  endif
+    jit_unget_reg(t2);
+    jit_unget_reg(t1);
     jit_unget_reg(t0);
 }
 
 static void
-_htonr_ui(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+_clor(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
-    jit_int32_t		reg;
+    comr(r0, r1);
+    clzr(r0, r0);
+}
+
+static void
+_ctor(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    bitswap(r0, r1);
+    clor(r0, r0);
+}
+
+static void
+_ctzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    bitswap(r0, r1);
+    clzr(r0, r0);
+}
+
+static void
+_bswapr_us(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_bool_t no_flag)
+{
+    jit_int32_t		reg, addr_reg;
+
+    /* Convert load followed by bswap to a single instruction */
+    /* FIXME r0 and r1 do not need to be the same, only must check if
+     * r1 was loaded in previous instruction */
+    if (no_flag && r0 == r1) {
+        if ((*(_jit->pc.ui - 1) & 0xffe007ff) == (0x7c00022e | r0 << 21)) {
+            /* Convert LHZX to LHBRX */
+            _jit->pc.ui--;
+            LHBRX(r0, (*_jit->pc.ui >> 16) & 0x1f, (*_jit->pc.ui >> 11) & 0x1f);
+            return;
+        }
+
+        if ((*(_jit->pc.ui - 1) & 0xffe00000) == (0xa0000000 | r0 << 21)) {
+            /* Convert LHZ to LHBRX */
+            _jit->pc.ui--;
+            addr_reg = (*_jit->pc.ui >> 16) & 0x1f;
+
+            reg = jit_get_reg(jit_class_gpr);
+            LI(rn(reg), (short)*_jit->pc.ui);
+            LHBRX(r0, rn(reg), addr_reg);
+            jit_unget_reg(reg);
+            return;
+        }
+    }
+
+    if (r0 == r1) {
+        RLWIMI(r0, r0, 16, 8, 15);
+        RLWINM(r0, r0, 24, 16, 31);
+    } else {
+        RLWINM(r0, r1, 8, 16, 23);
+        RLWIMI(r0, r1, 24, 24, 31);
+    }
+}
+
+static void
+_bswapr_ui(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_bool_t no_flag)
+{
+    jit_int32_t		reg, addr_reg;
+
+    /* Convert load followed by bswap to a single instruction */
+    /* FIXME r0 and r1 do not need to be the same, only must check if
+     * r1 was loaded in previous instruction */
+    if (no_flag && r0 == r1) {
+        if ((*(_jit->pc.ui - 1) & 0xffe007ff) == (0x7c00002e | r0 << 21)) {
+            /* Convert LWZX to LWBRX */
+            _jit->pc.ui--;
+            LWBRX(r0, (*_jit->pc.ui >> 16) & 0x1f, (*_jit->pc.ui >> 11) & 0x1f);
+            return;
+        }
+
+        if ((*(_jit->pc.ui - 1) & 0xffe00000) == (0x80000000 | r0 << 21)) {
+            /* Convert LWZ to LWBRX */
+            _jit->pc.ui--;
+            addr_reg = (*_jit->pc.ui >> 16) & 0x1f;
+
+            reg = jit_get_reg(jit_class_gpr);
+            LI(rn(reg), (short)*_jit->pc.ui);
+            LWBRX(r0, rn(reg), addr_reg);
+            jit_unget_reg(reg);
+            return;
+        }
+    }
+
     reg = jit_get_reg(jit_class_gpr);
     ROTLWI(rn(reg), r1, 8);
     RLWIMI(rn(reg), r1, 24, 0, 7);
     RLWIMI(rn(reg), r1, 24, 16, 23);
+#  if __WORDSIZE == 64
     CLRLDI(r0, rn(reg), 32);
-    jit_unget_reg(reg);
-}
-
-#    if __WORDSIZE == 64
-static void
-_htonr_ul(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
-{
-    jit_int32_t		reg;
-    reg = jit_get_reg(jit_class_gpr);
-    rshi_u(rn(reg), r1, 32);
-    htonr_ui(r0, r1);
-    htonr_ui(rn(reg), rn(reg));
-    lshi(r0, r0, 32);
-    orr(r0, r0, rn(reg));
-    jit_unget_reg(reg);
-}
-#    endif
+#  else
+    MR(r0,rn(reg));
 #  endif
+    jit_unget_reg(reg);
+}
 
 static void
 _addi(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
@@ -1433,15 +1640,23 @@ _remi_u(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
     jit_unget_reg(reg);
 }
 
+#  define is_mask(im)		((im) ? (__builtin_popcountl((im) + (1 << __builtin_ctzl(im))) <= 1) : 0)
+
 static void
 _andi(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
-    jit_int32_t		reg;
+    jit_int32_t		reg, offt;
     if (can_zero_extend_short_p(i0))
 	ANDI_(r0, r1, i0);
     else if (can_zero_extend_int_p(i0) && !(i0 & 0x0000ffff))
 	ANDIS_(r0, r1, (jit_uword_t)i0 >> 16);
-    else {
+    else if (__WORDSIZE == 32 && is_mask(i0)) {
+	offt = __builtin_ctzl(i0);
+	RLWINM(r0, r1, 0, 32 - offt - __builtin_popcountl(i0), 31 - offt);
+    } else if (__WORDSIZE == 32 && is_mask(~i0)) {
+	offt = __builtin_ctzl(~i0);
+	RLWINM(r0, r1, 0, 32 - offt, 31 - offt - __builtin_popcountl(~i0));
+    } else {
 	reg = jit_get_reg(jit_class_gpr);
 	movi(rn(reg), i0);
 	AND(r0, r1, rn(reg));
@@ -1526,7 +1741,7 @@ _rshi_u(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 static void
 _ltr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    CMPW(r1, r2);
+    CMPX(r1, r2);
     MFCR(r0);
     EXTRWI(r0, r0, 1, CR_LT);
 }
@@ -1536,11 +1751,11 @@ _lti(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
     jit_int32_t		reg;
     if (can_sign_extend_short_p(i0))
-	CMPWI(r1, i0);
+	CMPXI(r1, i0);
     else {
 	reg = jit_get_reg(jit_class_gpr);
 	movi(rn(reg), i0);
-	CMPW(r1, rn(reg));
+	CMPX(r1, rn(reg));
 	jit_unget_reg(reg);
     }
     MFCR(r0);
@@ -1574,7 +1789,7 @@ _lti_u(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 static void
 _ler(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    CMPW(r1, r2);
+    CMPX(r1, r2);
     CRNOT(CR_GT, CR_GT);
     MFCR(r0);
     EXTRWI(r0, r0, 1, CR_GT);
@@ -1585,11 +1800,11 @@ _lei(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
     jit_int32_t		reg;
     if (can_sign_extend_short_p(i0))
-	CMPWI(r1, i0);
+	CMPXI(r1, i0);
     else {
 	reg = jit_get_reg(jit_class_gpr);
 	movi(rn(reg), i0);
-	CMPW(r1, rn(reg));
+	CMPX(r1, rn(reg));
 	jit_unget_reg(reg);
     }
     CRNOT(CR_GT, CR_GT);
@@ -1626,7 +1841,7 @@ _lei_u(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 static void
 _eqr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    CMPW(r1, r2);
+    CMPX(r1, r2);
     MFCR(r0);
     EXTRWI(r0, r0, 1, CR_EQ);
 }
@@ -1636,13 +1851,13 @@ _eqi(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
     jit_int32_t		reg;
     if (can_sign_extend_short_p(i0))
-	CMPWI(r1, i0);
+	CMPXI(r1, i0);
     else if (can_zero_extend_short_p(i0))
 	CMPLWI(r1, i0);
     else {
 	reg = jit_get_reg(jit_class_gpr);
 	movi(rn(reg), i0);
-	CMPW(r1, rn(reg));
+	CMPX(r1, rn(reg));
 	jit_unget_reg(reg);
     }
     MFCR(r0);
@@ -1652,7 +1867,7 @@ _eqi(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 static void
 _ger(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    CMPW(r1, r2);
+    CMPX(r1, r2);
     CRNOT(CR_LT, CR_LT);
     MFCR(r0);
     EXTRWI(r0, r0, 1, CR_LT);
@@ -1663,11 +1878,11 @@ _gei(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
     jit_int32_t		reg;
     if (can_sign_extend_short_p(i0))
-	CMPWI(r1, i0);
+	CMPXI(r1, i0);
     else {
 	reg = jit_get_reg(jit_class_gpr);
 	movi(rn(reg), i0);
-	CMPW(r1, rn(reg));
+	CMPX(r1, rn(reg));
 	jit_unget_reg(reg);
     }
     CRNOT(CR_LT, CR_LT);
@@ -1704,7 +1919,7 @@ _gei_u(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 static void
 _gtr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    CMPW(r1, r2);
+    CMPX(r1, r2);
     MFCR(r0);
     EXTRWI(r0, r0, 1, CR_GT);
 }
@@ -1714,11 +1929,11 @@ _gti(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
     jit_int32_t		reg;
     if (can_sign_extend_short_p(i0))
-	CMPWI(r1, i0);
+	CMPXI(r1, i0);
     else {
 	reg = jit_get_reg(jit_class_gpr);
 	movi(rn(reg), i0);
-	CMPW(r1, rn(reg));
+	CMPX(r1, rn(reg));
 	jit_unget_reg(reg);
     }
     MFCR(r0);
@@ -1752,7 +1967,7 @@ _gti_u(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 static void
 _ner(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 {
-    CMPW(r1, r2);
+    CMPX(r1, r2);
     CRNOT(CR_EQ, CR_EQ);
     MFCR(r0);
     EXTRWI(r0, r0, 1, CR_EQ);
@@ -1763,13 +1978,13 @@ _nei(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_word_t i0)
 {
     jit_int32_t		reg;
     if (can_sign_extend_short_p(i0))
-	CMPWI(r1, i0);
+	CMPXI(r1, i0);
     else if (can_zero_extend_short_p(i0))
 	CMPLWI(r1, i0);
     else {
 	reg = jit_get_reg(jit_class_gpr);
 	movi(rn(reg), i0);
-	CMPW(r1, rn(reg));
+	CMPX(r1, rn(reg));
 	jit_unget_reg(reg);
     }
     CRNOT(CR_EQ, CR_EQ);
@@ -1781,7 +1996,7 @@ static jit_word_t
 _bltr(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
 {
     jit_word_t		d, w;
-    CMPW(r0, r1);
+    CMPX(r0, r1);
     w = _jit->pc.w;
     d = (i0 - w) & ~3;
     BLT(d);
@@ -1794,11 +2009,11 @@ _blti(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_word_t i1)
     jit_int32_t		reg;
     jit_word_t		d, w;
     if (can_sign_extend_short_p(i1))
-	CMPWI(r0, i1);
+	CMPXI(r0, i1);
     else {
 	reg = jit_get_reg(jit_class_gpr);
 	movi(rn(reg), i1);
-	CMPW(r0, rn(reg));
+	CMPX(r0, rn(reg));
 	jit_unget_reg(reg);
     }
     w = _jit->pc.w;
@@ -1841,7 +2056,7 @@ static jit_word_t
 _bler(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
 {
     jit_word_t		d, w;
-    CMPW(r0, r1);
+    CMPX(r0, r1);
     w = _jit->pc.w;
     d = (i0 - w) & ~3;
     BLE(d);
@@ -1854,11 +2069,11 @@ _blei(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_word_t i1)
     jit_int32_t		reg;
     jit_word_t		d, w;
     if (can_sign_extend_short_p(i1))
-	CMPWI(r0, i1);
+	CMPXI(r0, i1);
     else {
 	reg = jit_get_reg(jit_class_gpr);
 	movi(rn(reg), i1);
-	CMPW(r0, rn(reg));
+	CMPX(r0, rn(reg));
 	jit_unget_reg(reg);
     }
     w = _jit->pc.w;
@@ -1901,7 +2116,7 @@ static jit_word_t
 _beqr(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
 {
     jit_word_t		d, w;
-    CMPW(r0, r1);
+    CMPX(r0, r1);
     w = _jit->pc.w;
     d = (i0 - w) & ~3;
     BEQ(d);
@@ -1914,13 +2129,13 @@ _beqi(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_word_t i1)
     jit_int32_t		reg;
     jit_word_t		d, w;
     if (can_sign_extend_short_p(i1))
-	CMPWI(r0, i1);
+	CMPXI(r0, i1);
     else if (can_zero_extend_short_p(i1))
 	CMPLWI(r0, i1);
     else {
 	reg = jit_get_reg(jit_class_gpr);
 	movi(rn(reg), i1);
-	CMPW(r0, rn(reg));
+	CMPX(r0, rn(reg));
 	jit_unget_reg(reg);
     }
     w = _jit->pc.w;
@@ -1933,7 +2148,7 @@ static jit_word_t
 _bger(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
 {
     jit_word_t		d, w;
-    CMPW(r0, r1);
+    CMPX(r0, r1);
     w = _jit->pc.w;
     d = (i0 - w) & ~3;
     BGE(d);
@@ -1946,11 +2161,11 @@ _bgei(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_word_t i1)
     jit_int32_t		reg;
     jit_word_t		d, w;
     if (can_sign_extend_short_p(i1))
-	CMPWI(r0, i1);
+	CMPXI(r0, i1);
     else {
 	reg = jit_get_reg(jit_class_gpr);
 	movi(rn(reg), i1);
-	CMPW(r0, rn(reg));
+	CMPX(r0, rn(reg));
 	jit_unget_reg(reg);
     }
     w = _jit->pc.w;
@@ -1993,7 +2208,7 @@ static jit_word_t
 _bgtr(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
 {
     jit_word_t		d, w;
-    CMPW(r0, r1);
+    CMPX(r0, r1);
     w = _jit->pc.w;
     d = (i0 - w) & ~3;
     BGT(d);
@@ -2006,11 +2221,11 @@ _bgti(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_word_t i1)
     jit_int32_t		reg;
     jit_word_t		d, w;
     if (can_sign_extend_short_p(i1))
-	CMPWI(r0, i1);
+	CMPXI(r0, i1);
     else {
 	reg = jit_get_reg(jit_class_gpr);
 	movi(rn(reg), i1);
-	CMPW(r0, rn(reg));
+	CMPX(r0, rn(reg));
 	jit_unget_reg(reg);
     }
     w = _jit->pc.w;
@@ -2053,7 +2268,7 @@ static jit_word_t
 _bner(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_int32_t r1)
 {
     jit_word_t		d, w;
-    CMPW(r0, r1);
+    CMPX(r0, r1);
     w = _jit->pc.w;
     d = (i0 - w) & ~3;
     BNE(d);
@@ -2066,13 +2281,13 @@ _bnei(jit_state_t *_jit, jit_word_t i0, jit_int32_t r0, jit_word_t i1)
     jit_int32_t		reg;
     jit_word_t		d, w;
     if (can_sign_extend_short_p(i1))
-	CMPWI(r0, i1);
+	CMPXI(r0, i1);
     else if (can_zero_extend_short_p(i1))
 	CMPLWI(r0, i1);
     else {
 	reg = jit_get_reg(jit_class_gpr);
 	movi(rn(reg), i1);
-	CMPW(r0, rn(reg));
+	CMPX(r0, rn(reg));
 	jit_unget_reg(reg);
     }
     w = _jit->pc.w;
@@ -2671,7 +2886,7 @@ _ldxr_i(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
     jit_int32_t		reg;
     if (r1 == _R0_REGNO) {
 	if (r2 != _R0_REGNO)
-	    LWZX(r0, r2, r1);
+	    LWAX(r0, r2, r1);
 	else {
 	    reg = jit_get_reg(jit_class_gpr);
 	    movr(rn(reg), r1);
@@ -2680,7 +2895,7 @@ _ldxr_i(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
 	}
     }
     else
-	LWZX(r0, r1, r2);
+	LWAX(r0, r1, r2);
 }
 
 static void
@@ -3200,21 +3415,28 @@ _callr(jit_state_t *_jit, jit_int32_t r0
 }
 
 /* assume fixed address or reachable address */
-static void
+static jit_word_t
 _calli(jit_state_t *_jit, jit_word_t i0
 #  if _CALL_SYSV
        , jit_int32_t varargs
 #  endif
        )
 {
+    jit_word_t		w;
 #  if _CALL_SYSV
     jit_word_t		d;
-    d = (i0 - _jit->pc.w) & ~3;
-    if (can_sign_extend_jump_p(d))
+    d = (i0 - _jit->pc.w - !!varargs * 4) & ~3;
+    if (can_sign_extend_jump_p(d)) {
+	/* Tell double arguments were passed in registers. */
+	if (varargs)
+	    CREQV(6, 6, 6);
+	w = _jit->pc.w;
 	BL(d);
+    }
     else
 #  endif
     {
+	w = _jit->pc.w;
 	movi(_R12_REGNO, i0);
 	callr(_R12_REGNO
 #  if _CALL_SYSV
@@ -3222,6 +3444,7 @@ _calli(jit_state_t *_jit, jit_word_t i0
 #  endif
 	      );
     }
+    return (w);
 }
 
 /* absolute jump */
@@ -3545,7 +3768,7 @@ _patch_at(jit_state_t *_jit, jit_word_t instr, jit_word_t label)
 	    if (!can_sign_extend_short_p(d)) {
 		/* use absolute address */
 		assert(can_sign_extend_short_p(label));
-		d |= 2;
+		d = label | 2;
 	    }
 	    u.i[0] = (u.i[0] & ~0xfffd) | (d & 0xfffe);
 	    break;
@@ -3573,9 +3796,9 @@ _patch_at(jit_state_t *_jit, jit_word_t instr, jit_word_t label)
 	    if (!can_sign_extend_jump_p(d)) {
 		/* use absolute address */
 		assert(can_sign_extend_jump_p(label));
-		d |= 2;
+		d = label | 2;
 	    }
-	    u.i[0] = (u.i[0] & ~0x3fffffd) | (d & 0x3fffffe);
+	    u.i[0] = (u.i[0] & ~0x3fffffc) | (d & 0x3fffffd);
 	    break;
 	case 15:					/* LI */
 #if __WORDSIZE == 32

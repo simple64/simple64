@@ -1,0 +1,106 @@
+This README-hacking file describes the development environment.
+
+Everything related to the development of GNU lightning is on Savannah:
+https://savannah.gnu.org/projects/lightning/.
+
+
+* Working from the Repository
+
+** Autotools
+
+This distribution uses the latest stable versions of Automake, Autoconf.  If
+you are getting the sources from git (or change configure.ac), you'll need
+to have these tools installed to (re)build.  All
+of these programs are available from ftp://ftp.gnu.org/gnu.
+
+If you're using a GNU/Linux distribution, the easiest way to install these
+packages depends on your system.  The following shell command should work
+for Debian-based systems such as Ubuntu:
+
+    $ sudo apt-get install autoconf automake
+
+
+** Building
+
+If you intend to do development work with lightning, it's useful to build
+lightning with its disassembler feature enabled.  This optional feature
+requires additional dependencies.  On Ubuntu, this command should work:
+
+    $ sudo apt-get install binutils-dev libiberty-dev zlib1g-dev
+
+After getting the git sources, and installing the tools above, you can run
+
+    $ ./bootstrap
+    $ ./configure
+    $ make
+    $ make check
+
+to do a fresh build.  At this point, there should be no difference between
+your local copy, and the master copy:
+
+    $ git diff
+
+should output no difference.
+
+After that first time, running make should suffice.
+
+To install lightning:
+
+    $ sudo make install
+
+** Gnulib
+
+This distribution also uses Gnulib (https://www.gnu.org/software/gnulib) to
+share common files, stored as a submodule in git.
+
+** Updating
+
+    $ git pull
+    $ git submodule update
+
+** Updating a submodule
+
+To update a submodule, say gnulib, do as follows:
+
+Get the most recent version of the master branch from git.
+
+    $ cd gnulib
+    $ git pull
+
+Make sure GNU lightning can live with that version of gnulib.
+
+    $ cd ..
+    $ ./bootstrap
+    $ make distcheck
+
+Register your changes.
+
+    $ git commit ...
+
+
+----
+
+
+Copyright 2021 Free Software Foundation, Inc.
+
+This file is part of GNU lightning.
+
+GNU lightning is free software; you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as
+published by the Free Software Foundation; either version 3, or (at
+your option) any later version.
+
+GNU lightning is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this program.  If not, see
+<http://www.gnu.org/licenses/>.
+
+
+Local Variables:
+mode: outline
+fill-column: 76
+End:

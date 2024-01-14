@@ -55,7 +55,7 @@ fill##T##done:							\
 #define fill_us		fill_s
 #define fill_ui		fill_i
 
-#define ARG(  T, N)			arg    $arg##T##N
+#define ARG(  T, N)			arg##T $arg##T##N
 #define ARGF( T, N)			arg##T $arg##T##N
 #define ARG1( K, T)			ARG##K(T, 0)
 #define ARG2( K, T)	ARG1( K, T)	ARG##K(T, 1)
@@ -74,56 +74,56 @@ fill##T##done:							\
 #define ARG15(K, T)	ARG14(K, T)	ARG##K(T, 14)
 #define ARG16(K, T)	ARG15(K, T)	ARG##K(T, 15)
 #define ARG_c(N)			ARG##N( , _c)
-#define ARG_uc(N)			ARG##N( , _uc)
+#define ARG_uc(N)			ARG##N( , _c)
 #define ARG_s(N)			ARG##N( , _s)
-#define ARG_us(N)			ARG##N( , _us)
+#define ARG_us(N)			ARG##N( , _s)
 #define ARG_i(N)			ARG##N( , _i)
-#define ARG_ui(N)			ARG##N( , _ui)
+#define ARG_ui(N)			ARG##N( , _i)
 #define ARG_l(N)			ARG##N( , _l)
 #define ARG_f(N)			ARG##N(F, _f)
 #define ARG_d(N)			ARG##N(F, _d)
 
-#define CHK(N, T, V)						\
-	getarg %r0 $arg##T##V					\
+#define CHK(N, T, TT, V)					\
+	getarg##T %r0 $arg##TT##V				\
 	ldxi##T %r1 %v0 $(V * szof##T)				\
 	beqr N##T##V %r0 %r1					\
 	calli @abort						\
 N##T##V:
-#define CHKF(N, T, V)						\
-	getarg##T %f0 $arg##T##V				\
+#define CHKF(N, T, TT, V)					\
+	getarg##T %f0 $arg##TT##V				\
 	ldxi##T %f1 %v0 $(V * szof##T)				\
 	beqr##T N##T##V %f0 %f1					\
 	calli @abort						\
 N##T##V:
 
-#define GET1( K, N, T, V)				CHK##K(N, T, 0)
-#define GET2( K, N, T, V)	GET1( K, N, T, V)	CHK##K(N, T, 1)
-#define GET3( K, N, T, V)	GET2( K, N, T, V)	CHK##K(N, T, 2)
-#define GET4( K, N, T, V)	GET3( K, N, T, V)	CHK##K(N, T, 3)
-#define GET5( K, N, T, V)	GET4( K, N, T, V)	CHK##K(N, T, 4)
-#define GET6( K, N, T, V)	GET5( K, N, T, V)	CHK##K(N, T, 5)
-#define GET7( K, N, T, V)	GET6( K, N, T, V)	CHK##K(N, T, 6)
-#define GET8( K, N, T, V)	GET7( K, N, T, V)	CHK##K(N, T, 7)
-#define GET9( K, N, T, V)	GET8( K, N, T, V)	CHK##K(N, T, 8)
-#define GET10(K, N, T, V)	GET9( K, N, T, V)	CHK##K(N, T, 9)
-#define GET11(K, N, T, V)	GET10(K, N, T, V)	CHK##K(N, T, 10)
-#define GET12(K, N, T, V)	GET11(K, N, T, V)	CHK##K(N, T, 11)
-#define GET13(K, N, T, V)	GET12(K, N, T, V)	CHK##K(N, T, 12)
-#define GET14(K, N, T, V)	GET13(K, N, T, V)	CHK##K(N, T, 13)
-#define GET15(K, N, T, V)	GET14(K, N, T, V)	CHK##K(N, T, 14)
-#define GET16(K, N, T, V)	GET15(K, N, T, V)	CHK##K(N, T, 15)
+#define GET1( K, N, T, TT, V)				CHK##K(N, T, TT, 0)
+#define GET2( K, N, T, TT, V)	GET1( K, N, T, TT, V)	CHK##K(N, T, TT, 1)
+#define GET3( K, N, T, TT, V)	GET2( K, N, T, TT, V)	CHK##K(N, T, TT, 2)
+#define GET4( K, N, T, TT, V)	GET3( K, N, T, TT, V)	CHK##K(N, T, TT, 3)
+#define GET5( K, N, T, TT, V)	GET4( K, N, T, TT, V)	CHK##K(N, T, TT, 4)
+#define GET6( K, N, T, TT, V)	GET5( K, N, T, TT, V)	CHK##K(N, T, TT, 5)
+#define GET7( K, N, T, TT, V)	GET6( K, N, T, TT, V)	CHK##K(N, T, TT, 6)
+#define GET8( K, N, T, TT, V)	GET7( K, N, T, TT, V)	CHK##K(N, T, TT, 7)
+#define GET9( K, N, T, TT, V)	GET8( K, N, T, TT, V)	CHK##K(N, T, TT, 8)
+#define GET10(K, N, T, TT, V)	GET9( K, N, T, TT, V)	CHK##K(N, T, TT, 9)
+#define GET11(K, N, T, TT, V)	GET10(K, N, T, TT, V)	CHK##K(N, T, TT, 10)
+#define GET12(K, N, T, TT, V)	GET11(K, N, T, TT, V)	CHK##K(N, T, TT, 11)
+#define GET13(K, N, T, TT, V)	GET12(K, N, T, TT, V)	CHK##K(N, T, TT, 12)
+#define GET14(K, N, T, TT, V)	GET13(K, N, T, TT, V)	CHK##K(N, T, TT, 13)
+#define GET15(K, N, T, TT, V)	GET14(K, N, T, TT, V)	CHK##K(N, T, TT, 14)
+#define GET16(K, N, T, TT, V)	GET15(K, N, T, TT, V)	CHK##K(N, T, TT, 15)
 
-#define GET_c(N, M)		GET##N( , c##N,  _c,  M)
-#define GET_uc(N, M)		GET##N( , uc##N, _uc, M)
-#define GET_s(N, M)		GET##N( , s##N,  _s,  M)
-#define GET_us(N, M)		GET##N( , us##N, _us, M)
-#define GET_i(N, M)		GET##N( , i##N,  _i,  M)
-#define GET_ui(N, M)		GET##N( , ui##N, _ui, M)
-#define GET_l(N, M)		GET##N( , l##N,  _l,  M)
-#define GET_f(N, M)		GET##N(F, f##N,  _f,  M)
-#define GET_d(N, M)		GET##N(F, d##N,  _d,  M)
+#define GET_c(N, M)		GET##N( , c##N,  _c,  _c, M)
+#define GET_uc(N, M)		GET##N( , uc##N, _uc, _c, M)
+#define GET_s(N, M)		GET##N( , s##N,  _s,  _s, M)
+#define GET_us(N, M)		GET##N( , us##N, _us, _s, M)
+#define GET_i(N, M)		GET##N( , i##N,  _i,  _i, M)
+#define GET_ui(N, M)		GET##N( , ui##N, _ui, _i, M)
+#define GET_l(N, M)		GET##N( , l##N,  _l,  _l, M)
+#define GET_f(N, M)		GET##N(F, f##N,  _f,  _f, M)
+#define GET_d(N, M)		GET##N(F, d##N,  _d,  _d, M)
 
-#define PUSH(  T, V)		pushargi    V
+#define PUSH(  T, V)		pushargi##T V
 #define PUSHF( T, V)		pushargi##T V
 #define PUSH0( K, T)		/**/
 #define PUSH1( K, T)					PUSH##K(T, 0)
@@ -161,14 +161,14 @@ test##T##_0:							\
 	ret							\
 	epilog
 
-#define DEFN(N, M, T)						\
+#define DEFN(N, M, T, TT)					\
 	name test##T##_##N					\
 test##T##_##N:							\
 	prolog							\
 	arg $argp						\
 	/* stack buffer in %v0 */				\
 	getarg %v0 $argp					\
-	ARG##T(N)						\
+	ARG##TT(N)						\
 	/* validate arguments */				\
 	GET##T(N, M)						\
 	/* heap buffer in %v1 */				\
@@ -260,24 +260,24 @@ test##T##_17_done:						\
 	ret							\
 	epilog
 
-#define DEF(  T)						\
+#define DEF(  T, TT)						\
 	DEF0( T)						\
-	DEFN( 1,  0, T)						\
-	DEFN( 2,  1, T)						\
-	DEFN( 3,  2, T)						\
-	DEFN( 4,  3, T)						\
-	DEFN( 5,  4, T)						\
-	DEFN( 6,  5, T)						\
-	DEFN( 7,  6, T)						\
-	DEFN( 8,  7, T)						\
-	DEFN( 9,  8, T)						\
-	DEFN(10,  9, T)						\
-	DEFN(11, 10, T)						\
-	DEFN(12, 11, T)						\
-	DEFN(13, 12, T)						\
-	DEFN(14, 13, T)						\
-	DEFN(15, 14, T)						\
-	DEFN(16, 15, T)						\
+	DEFN( 1,  0, T, TT)					\
+	DEFN( 2,  1, T, TT)					\
+	DEFN( 3,  2, T, TT)					\
+	DEFN( 4,  3, T, TT)					\
+	DEFN( 5,  4, T, TT)					\
+	DEFN( 6,  5, T, TT)					\
+	DEFN( 7,  6, T, TT)					\
+	DEFN( 8,  7, T, TT)					\
+	DEFN( 9,  8, T, TT)					\
+	DEFN(10,  9, T, TT)					\
+	DEFN(11, 10, T, TT)					\
+	DEFN(12, 11, T, TT)					\
+	DEFN(13, 12, T, TT)					\
+	DEFN(14, 13, T, TT)					\
+	DEFN(15, 14, T, TT)					\
+	DEFN(16, 15, T, TT)					\
 	DEFX(T)
 
 #define CALL(T)			calli test##T##_17
@@ -323,17 +323,17 @@ memcpy_done:
 	FILLF(_f)
 	FILLF(_d)
 
-	DEF(_c)
-	DEF(_uc)
-	DEF(_s)
-	DEF(_us)
-	DEF(_i)
+	DEF(_c, _c)
+	DEF(_uc, _c)
+	DEF(_s, _s)
+	DEF(_us, _s)
+	DEF(_i, _i)
 #if __WORDSIZE == 64
-	DEF(_ui)
-	DEF(_l)
+	DEF(_ui, _i)
+	DEF(_l, _l)
 #endif
-	DEF(_f)
-	DEF(_d)
+	DEF(_f, _f)
+	DEF(_d, _d)
 
 	name main
 main:

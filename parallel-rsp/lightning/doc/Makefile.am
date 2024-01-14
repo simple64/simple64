@@ -1,5 +1,5 @@
 #
-# Copyright 2012-2019 Free Software Foundation, Inc.
+# Copyright 2012-2023 Free Software Foundation, Inc.
 #
 # This file is part of GNU lightning.
 #
@@ -14,7 +14,8 @@
 # License for more details.
 #
 
-AM_CFLAGS = -I$(top_srcdir)/include -D_GNU_SOURCE
+AM_CFLAGS = -I $(top_builddir)/include -I$(top_srcdir)/include \
+	-D_GNU_SOURCE $(LIGHTNING_CFLAGS)
 
 info_TEXINFOS = lightning.texi
 MOSTLYCLEANFILES = lightning.tmp

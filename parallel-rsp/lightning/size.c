@@ -68,14 +68,6 @@ main(int argc, char *argv[])
 #  else
     fprintf(fp, "#if !defined(__ARM_PCS_VFP)\n");
 #  endif
-#elif defined(__mips__)
-#  if __WORDSIZE == 32
-#    if NEW_ABI
-    fprintf(fp, "#if NEW_ABI\n");
-#    else
-    fprintf(fp, "#if !NEW_ABI\n");
-#    endif
-#  endif
 #elif defined(__powerpc__)
     fprintf(fp, "#if defined(__powerpc__)\n");
     fprintf(fp, "#if __BYTE_ORDER == %s\n",
@@ -94,17 +86,15 @@ main(int argc, char *argv[])
 	fprintf(fp, "    %d,	/* %s */\n", _szs[offset], code_name[offset]);
 #if defined(__arm__)
     fprintf(fp, "#endif /* __ARM_PCS_VFP */\n");
-#elif defined(__mips__)
-#  if __WORDSIZE == 32
-    fprintf(fp, "#endif /* NEW_ABI */\n");
-#  endif
 #elif defined(__powerpc__)
+#  if __WORDSIZE == 32
     fprintf(fp, "#endif /* "
-#  if !_CALL_SYSV
+#    if !_CALL_SYSV
 	    "!"
-#  endif
+#    endif
 	    "_CALL_SYSV"
 	    " */\n");
+#  endif
     fprintf(fp, "#endif /* __BYTE_ORDER */\n");
     fprintf(fp, "#endif /* __powerpc__ */\n");
 #endif

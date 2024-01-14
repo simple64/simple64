@@ -24,7 +24,7 @@ jit_node_t *compile_rpn(char *expr)
 
   fn = jit_note(NULL, 0);
   jit_prolog();
-  in = jit_arg();
+  in = jit_arg_i();
   stack_ptr = stack_base = jit_allocai (32 * sizeof (int));
 
   jit_getarg_i(JIT_R2, in);

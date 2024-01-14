@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019  Free Software Foundation, Inc.
+ * Copyright (C) 2012-2023  Free Software Foundation, Inc.
  *
  * This file is part of GNU lightning.
  *
@@ -143,8 +143,17 @@ static void _truncr_d_l(jit_state_t*,jit_int32_t,jit_int32_t);
 #  define absr_d(r0,r1)			FABS(r0,r1)
 #  define negr_f(r0,r1)			negr_d(r0,r1)
 #  define negr_d(r0,r1)			FNEG(r0,r1)
-#  define sqrtr_f(r0,r1)		FSQRTS(r0,r1)
-#  define sqrtr_d(r0,r1)		FSQRT(r0,r1)
+#  ifdef _ARCH_PPCSQ
+#    define sqrtr_f(r0,r1)		FSQRTS(r0,r1)
+#    define sqrtr_d(r0,r1)		FSQRT(r0,r1)
+#  else
+extern float sqrtf(float);
+#    define sqrtr_f(r0,r1)		_sqrtr_f(_jit,r0,r1)
+static void _sqrtr_f(jit_state_t*,jit_int32_t,jit_int32_t);
+extern double sqrt(double);
+#    define sqrtr_d(r0,r1)		_sqrtr_d(_jit,r0,r1)
+static void _sqrtr_d(jit_state_t*,jit_int32_t,jit_int32_t);
+#  endif
 #  define addr_f(r0,r1,r2)		FADDS(r0,r1,r2)
 #  define addr_d(r0,r1,r2)		FADD(r0,r1,r2)
 #  define addi_f(r0,r1,i0)		_addi_f(_jit,r0,r1,i0)
@@ -484,23 +493,40 @@ _movi_d(jit_state_t *_jit, jit_int32_t r0, jit_float64_t *i0)
 	ldi_d(r0, (jit_word_t)i0);
 }
 
-/* should only work on newer ppc (fcfid is a ppc64 instruction) */
 static void
 _extr_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
 {
 #  if __WORDSIZE == 32
-    jit_int32_t		reg;
+    jit_int32_t		reg, freg, off1, off2;
+
+#  if __BYTE_ORDER == __BIG_ENDIAN
+    off1 = alloca_offset - 8;
+    off2 = alloca_offset - 4;
+#  else
+    off1 = alloca_offset - 4;
+    off2 = alloca_offset - 8;
+#  endif
+
     reg = jit_get_reg(jit_class_gpr);
-    rshi(rn(reg), r1, 31);
-    /* use reserved 8 bytes area */
-    stxi(alloca_offset - 4, _FP_REGNO, r1);
-    stxi(alloca_offset - 8, _FP_REGNO, rn(reg));
+    freg = jit_get_reg(jit_class_fpr);
+
+    movi(rn(reg), 0x43300000);
+    stxi_i(off1, _FP_REGNO, rn(reg));
+    movi(rn(reg), 0x80000000);
+    stxi_i(off2, _FP_REGNO, rn(reg));
+    ldxi_d(rn(freg), _FP_REGNO, alloca_offset - 8);
+    xorr(rn(reg), r1, rn(reg));
+    stxi_i(off2, _FP_REGNO, rn(reg));
+    ldxi_d(r0, _FP_REGNO, alloca_offset - 8);
+    subr_d(r0, r0, rn(freg));
+
     jit_unget_reg(reg);
+    jit_unget_reg(freg);
 #  else
     stxi(alloca_offset - 8, _FP_REGNO, r1);
-#  endif
     ldxi_d(r0, _FP_REGNO, alloca_offset - 8);
     FCFID(r0, r0);
+#  endif
 }
 
 static void
@@ -511,7 +537,11 @@ _truncr_d_i(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     FCTIWZ(rn(reg), r1);
     /* use reserved 8 bytes area */
     stxi_d(alloca_offset - 8, _FP_REGNO, rn(reg));
+#  if __BYTE_ORDER == __BIG_ENDIAN
     ldxi_i(r0, _FP_REGNO, alloca_offset - 4);
+#  else
+    ldxi_i(r0, _FP_REGNO, alloca_offset - 8);
+#  endif
     jit_unget_reg(reg);
 }
 
@@ -526,6 +556,32 @@ _truncr_d_l(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
     stxi_d(alloca_offset - 8, _FP_REGNO, rn(reg));
     ldxi(r0, _FP_REGNO, alloca_offset - 8);
     jit_unget_reg(reg);
+}
+#  endif
+
+#  ifndef _ARCH_PPCSQ
+static void
+_sqrtr_f(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    movr_f(rn(JIT_FA0), r1);
+    calli((jit_word_t)sqrtf
+#  if _CALL_SYSV
+	  , 0
+#  endif
+	  );
+    movr_f(r0, rn(JIT_FRET));
+}
+
+static void
+_sqrtr_d(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    movr_d(rn(JIT_FA0), r1);
+    calli((jit_word_t)sqrt
+#  if _CALL_SYSV
+	  , 0
+#  endif
+	  );
+    movr_d(r0, rn(JIT_FRET));
 }
 #  endif
 

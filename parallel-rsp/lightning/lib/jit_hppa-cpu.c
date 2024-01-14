@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2019  Free Software Foundation, Inc.
+ * Copyright (C) 2013-2023  Free Software Foundation, Inc.
  *
  * This file is part of GNU lightning.
  *
@@ -648,18 +648,25 @@ static void _movr(jit_state_t*,jit_int32_t,jit_int32_t);
 static void _movi(jit_state_t*,jit_int32_t,jit_word_t);
 #define movi_p(r0,i0)		_movi_p(_jit,r0,i0)
 static jit_word_t _movi_p(jit_state_t*,jit_int32_t,jit_word_t);
+#  define bswapr_us(r0, r1)		_bswapr_us(_jit, r0, r1)
+static void _bswapr_us(jit_state_t*,jit_int32_t,jit_int32_t);
+#  define bswapr_ui(r0, r1)		_bswapr_ui(_jit, r0, r1)
+static void _bswapr_ui(jit_state_t*,jit_int32_t,jit_int32_t);
+#  define movnr(r0,r1,r2)		_movnr(_jit,r0,r1,r2)
+static void _movnr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define movzr(r0,r1,r2)		_movzr(_jit,r0,r1,r2)
+static void _movzr(jit_state_t*,jit_int32_t,jit_int32_t,jit_int32_t);
+#  define casx(r0, r1, r2, r3, i0)	_casx(_jit, r0, r1, r2, r3, i0)
+static void _casx(jit_state_t *_jit,jit_int32_t,jit_int32_t,
+		  jit_int32_t,jit_int32_t,jit_word_t);
+#define casr(r0, r1, r2, r3)		casx(r0, r1, r2, r3, 0)
+#define casi(r0, i0, r1, r2)		casx(r0, _NOREG, r1, r2, i0)
 #define comr(r0,r1)		UADDCM(_R0_REGNO,r1,r0)
 #define negr(r0,r1)		SUB(_R0_REGNO,r1,r0)
 #define extr_c(r0,r1)		EXTRWR(r1,31,8,r0)
 #define extr_uc(r0,r1)		EXTRWR_U(r1,31,8,r0)
 #define extr_s(r0,r1)		EXTRWR(r1,31,16,r0)
 #define extr_us(r0,r1)		EXTRWR_U(r1,31,16,r0)
-#if __BYTE_ORDER == __BIG_ENDIAN
-#  define htonr_us(r0,r1)	extr_us(r0,r1)
-#  define htonr_ui(r0,r1)	movr(r0,r1)
-#else
-#  error need htonr implementation
-#endif
 #define addr(r0,r1,r2)		ADD(r1,r2,r0)
 #define addi(r0,r1,i0)		_addi(_jit,r0,r1,i0)
 static void _addi(jit_state_t*,jit_int32_t,jit_int32_t,jit_word_t);
@@ -907,7 +914,7 @@ static jit_word_t _bxsubi_u(jit_state_t*,jit_word_t,jit_int32_t,jit_word_t);
 #define jmpr(r0)		_jmpr(_jit,r0)
 static void _jmpr(jit_state_t*,jit_int32_t);
 #define jmpi(i0)		_jmpi(_jit,i0)
-static void _jmpi(jit_state_t*,jit_word_t);
+static jit_word_t _jmpi(jit_state_t*,jit_word_t);
 #define jmpi_p(i0)		_jmpi_p(_jit,i0)
 static jit_word_t _jmpi_p(jit_state_t*,jit_word_t);
 #define callr(r0)		_callr(_jit,r0)
@@ -1631,6 +1638,108 @@ _movi_p(jit_state_t *_jit, jit_int32_t r0, jit_word_t i0)
     LDIL(i0 & ~0x7ff, r0);
     LDO(i0 & 0x7ff, r0, r0);
     return (w);
+}
+
+static void
+_bswapr_us(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    jit_int32_t		reg;
+    if (r0 == r1) {
+	reg = jit_get_reg(jit_class_gpr);
+	movr(rn(reg), r1);
+	EXTRWR_U(rn(reg), 23, 8, r0);
+	DEPWR(rn(reg), 23, 8, r0);
+	jit_unget_reg(reg);
+    }
+    else {
+	EXTRWR_U(r1, 23, 8, r0);
+	DEPWR(r1, 23, 8, r0);
+    }
+}
+
+static void
+_bswapr_ui(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1)
+{
+    jit_int32_t		reg;
+    if (r0 == r1) {
+	reg = jit_get_reg(jit_class_gpr);
+	movr(rn(reg), r1);
+	SHRPWI(rn(reg), rn(reg), 16, r0);
+	DEPWR(r0, 15, 8, r0);
+	SHRPWI(rn(reg), r0, 8, r0);
+	jit_unget_reg(reg);
+    }
+    else {
+	SHRPWI(r1, r1, 16, r0);
+	DEPWR(r0, 15, 8, r0);
+	SHRPWI(r1, r0, 8, r0);
+    }
+}
+
+static void
+_movnr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
+{
+    jit_word_t	w;
+    w = beqi(_jit->pc.w, r2, 0);
+    COPY(r1, r0);
+    patch_at(w, _jit->pc.w);
+}
+
+static void
+_movzr(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1, jit_int32_t r2)
+{
+    jit_word_t	w;
+    w = bnei(_jit->pc.w, r2, 0);
+    COPY(r1, r0);
+    patch_at(w, _jit->pc.w);
+}
+
+static void
+_casx(jit_state_t *_jit, jit_int32_t r0, jit_int32_t r1,
+      jit_int32_t r2, jit_int32_t r3, jit_word_t i0)
+{
+#if defined(__linux__) && defined(SYS_atomic_cmpxchg_32) &&  __WORDSIZE == 32
+    /* Not defined, and unlikely to ever be defined, but could be a way to do it */
+    movi(_R26_REGNO, SYS_atomic_cmpxchg_32);
+    if (r1 == _NOREG)
+	movi(_R25_REGNO, i0);
+    else
+	movr(_R25_REGNO, r1);
+    movr(_R24_REGNO, r2);
+    movr(_R23_REGNO, r3);
+    /* Should only fail for an invalid or unaligned address.
+     * Do not handle this condition. */
+    calli(syscall);
+    movr(r0, _R28_REGNO);
+#else
+    /*
+     * The only atomic operations are LDCW and LDCD, that load a value,
+     * and store zero at the address atomically. The (semaphore) address
+     * must be 16 byte aligned.
+     */
+    fallback_casx(r0, r1, r2, r3, i0);
+    /*
+     * It is important to be aware of the delayed nature of cache flush and
+     *  purge operations, and to use SYNC instructions to force completion
+     * where necessary. The following example illustrates this.
+     * Consider two processes sharing a memory location x which is protected
+     * by a semaphore s.
+     *
+     * process A on Processor 1 |  process B on Processor 2 |  note
+     * -------------------------+---------------------------+------------
+     * LDCW s                   |                           | A acquires semaphore
+     * PDC x                    |                           | A executes purge
+     * SYNC                     |                           | Force completion of purge
+     * STW s                    |                           | A releases semaphore
+     *                          | LDCW s                    | B acquires semaphore
+     *                          | STW x
+     *
+     * In the absence of the SYNC instruction, it would be possible for
+     *  process B's store to x to complete before the purge of x is completed
+     * (since the purge may have been delayed). The purge of x could then
+     * destroy the new value.
+     */
+#endif
 }
 
 static void
@@ -2561,17 +2670,19 @@ _jmpr(jit_state_t *_jit, jit_int32_t r0)
     BV_N(_R0_REGNO, r0);
 }
 
-static void
+static jit_word_t
 _jmpi(jit_state_t *_jit, jit_word_t i0)
 {
-    jit_word_t		w;
-    w = ((i0 - _jit->pc.w) >> 2) - 2;
-    if (w >= -32768 && w <= 32767)
-	B_N(w, _R0_REGNO);
+    jit_word_t		d, w;
+    w = _jit->pc.w;
+    d = ((i0 - w) >> 2) - 2;
+    if (d >= -32768 && d <= 32767)
+	B_N(d, _R0_REGNO);
     else {
-	movi(_R1_REGNO, w);
+	movi(_R1_REGNO, d);
 	BV_N(_R0_REGNO, _R1_REGNO);
     }
+    return (w);
 }
 
 static jit_word_t

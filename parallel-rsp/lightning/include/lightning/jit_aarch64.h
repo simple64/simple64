@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2019  Free Software Foundation, Inc.
+ * Copyright (C) 2013-2023  Free Software Foundation, Inc.
  *
  * This file is part of GNU lightning.
  *
@@ -22,6 +22,10 @@
 
 #define JIT_HASH_CONSTS		0
 #define JIT_NUM_OPERANDS	3
+
+#if __APPLE__
+#  define PACKED_STACK		1
+#endif
 
 /*
  * Types

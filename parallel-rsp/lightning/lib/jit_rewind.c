@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2019  Free Software Foundation, Inc.
+ * Copyright (C) 2015-2023  Free Software Foundation, Inc.
  *
  * This file is part of GNU lightning.
  *
@@ -54,13 +54,9 @@ _rewind_prolog(jit_state_t *_jit)
     _jitc->function->self.size = stack_framesize;
 #if __arm__
     assert(jit_cpu.abi);
-    _jitc->function->self.size += 64;
-#endif
-#if __mips__ && NEW_ABI
-    /* Only add extra stack space if there are varargs
-     * arguments in registers. */
-    assert(jit_arg_reg_p(_jitc->function->self.argi));
-    _jitc->function->self.size += 64;
+    _jitc->function->alist = NULL;
+#elif __mips__
+    _jitc->function->alist = NULL;
 #endif
     _jitc->function->self.argi =
 	_jitc->function->self.argf = _jitc->function->self.argn = 0;
@@ -71,9 +67,10 @@ _rewind_prolog(jit_state_t *_jit)
     for (; node; node = next) {
 	next = node->next;
 	switch (node->code) {
-	    case jit_code_arg:
+	    case jit_code_arg_c:	case jit_code_arg_s:
+	    case jit_code_arg_i:	case jit_code_arg_l:
 		node->next = (jit_node_t *)0;
-		jit_make_arg(node);
+		jit_make_arg(node, node->code);
 		break;
 	    case jit_code_arg_f:
 		node->next = (jit_node_t *)0;

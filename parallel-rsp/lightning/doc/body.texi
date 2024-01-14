@@ -30,6 +30,7 @@ dynamic code generation.
 * The instruction set::     The RISC instruction set used in GNU lightning
 * GNU lightning examples::  GNU lightning's examples
 * Reentrancy::              Re-entrant usage of GNU lightning
+* Registers::               Accessing the whole register file
 * Customizations::          Advanced code generation customizations
 * Acknowledgements::        Acknowledgements for GNU lightning
 @end menu
@@ -43,8 +44,8 @@ This document describes @value{TOPIC} the @lightning{} library for
 dynamic code generation.
 @end iftex
 
-Dynamic code generation is the generation of machine code 
-at runtime. It is typically used to strip a layer of interpretation 
+Dynamic code generation is the generation of machine code
+at runtime. It is typically used to strip a layer of interpretation
 by allowing compilation to occur at runtime.  One of the most
 well-known applications of dynamic code generation is perhaps that
 of interpreters that compile source code to an intermediate bytecode
@@ -53,7 +54,7 @@ approach effectively combines the portability of bytecode
 representations with the speed of machine code.  Another common
 application of dynamic code generation is in the field of hardware
 simulators and binary emulators, which can use the same techniques
-to translate simulated instructions to the instructions of the 
+to translate simulated instructions to the instructions of the
 underlying machine.
 
 Yet other applications come to mind: for example, windowing
@@ -68,7 +69,7 @@ retargeted for each machine; in addition, coding a run-time code
 generator is a tedious and error-prone task more than a difficult one.
 
 @lightning{} provides a portable, fast and easily retargetable dynamic
-code generation system. 
+code generation system.
 
 To be portable, @lightning{} abstracts over current architectures'
 quirks and unorthogonalities.  The interface that it exposes to is that
@@ -88,7 +89,11 @@ assembles machine instructions without further tests.
 @node Installation
 @chapter Configuring and installing @lightning{}
 
-The first thing to do to use @lightning{} is to configure the
+Here we will assume that your system already has the dependencies
+necessary to build @lightning{}. For more on dependencies, see
+@lightning{}'s @file{README-hacking} file.
+
+The first thing to do to build @lightning{} is to configure the
 program, picking the set of macros to be used on the host
 architecture; this configuration is automatically performed by
 the @file{configure} shell script; to run it, merely type:
@@ -96,16 +101,29 @@ the @file{configure} shell script; to run it, merely type:
      ./configure
 @end example
 
-@lightning{} supports the @code{--enable-disassembler} option, that
-enables linking to GNU binutils and optionally print human readable
+The @file{configure} accepts the @code{--enable-disassembler} option,
+hat enables linking to GNU binutils and optionally print human readable
 disassembly of the jit code. This option can be disabled by the
 @code{--disable-disassembler} option.
 
-Another option that @file{configure} accepts is
-@code{--enable-assertions}, which enables several consistency checks in
-the run-time assemblers.  These are not usually needed, so you can
-decide to simply forget about it; also remember that these consistency
+@file{configure} also accepts the  @code{--enable-devel-disassembler},
+option useful to check exactly hat machine instructions were generated
+for a @lightning{} instrction. Basically mixing @code{jit_print} and
+@code{jit_disassembly}.
+
+The @code{--enable-assertions} option, which enables several consistency
+hecks in the run-time assemblers.  These are not usually needed, so you
+can decide to simply forget about it; also remember that these consistency
 checks tend to slow down your code generator.
+
+The @code{--enable-devel-strong-type-checking} option that does extra type
+checking using @code{assert}. This option also enables the
+@code{--enable-assertions} unless it is explicitly disabled.
+
+The option @code{--enable-devel-get-jit-size} should only be used
+when doing updates or maintenance to lightning. It regenerates the
+@code{jit_$ARCH]-sz.c} creating a table or maximum bytes usage when
+translating a @lightning{} instruction to machine code.
 
 After you've configured @lightning{}, run @file{make} as usual.
 
@@ -243,6 +261,8 @@ lshr                 O1 = O2 << O3
 lshi                 O1 = O2 << O3
 rshr     _u          O1 = O2 >> O3@footnote{The sign bit is propagated unless using the @code{_u} modifier.}
 rshi     _u          O1 = O2 >> O3@footnote{The sign bit is propagated unless using the @code{_u} modifier.}
+movzr                O1 = O3 ? O1 : O2
+movnr                O1 = O3 ? O2 : O1
 @end example
 
 @item Four operand binary ALU operations
@@ -271,12 +291,27 @@ These accept two operands, both of which must be registers.
 @example
 negr         _f  _d  O1 = -O2
 comr                 O1 = ~O2
+clor		     O1 = number of leading one bits
+clzr		     O1 = number of leading zero bits
+ctor		     O1 = number of trailing one bits
+ctzr		     O1 = number of trailing zero bits
 @end example
+
+Note that @code{ctzr} is basically equivalent of a @code{C} call
+@code{ffs} but indexed at bit zero, not one.
+
+Contrary to @code{__builtin_ctz} and @code{__builtin_clz}, an input
+value of zero is not an error, it just returns the number of bits
+in a word, 64 if @lightning{} generates 64 bit instructions, otherwise
+it returns 32.
+
+The @code{clor} and @code{ctor} are just counterparts of the versions
+that search for zero bits.
 
 These unary ALU operations are only defined for float operands.
 @example
 absr         _f  _d  O1 = fabs(O2)
-sqrtr                O1 = sqrt(O2)
+sqrtr        _f  _d  O1 = sqrt(O2)
 @end example
 
 Besides requiring the @code{r} modifier, there are no unary operations
@@ -365,6 +400,14 @@ htonr    _us _ui _ul @r{Host-to-network (big endian) order}
 ntohr    _us _ui _ul @r{Network-to-host order }
 @end example
 
+@code{bswapr} can be used to unconditionally byte-swap an operand.
+On little-endian architectures, @code{htonr} and @code{ntohr} resolve
+to this.
+The @code{_ul} variant is only available in 64-bit architectures.
+@example
+bswapr    _us _ui _ul  01 = byte_swap(02)
+@end example
+
 @item Load operations
 @code{ld} accepts two operands while @code{ldx} accepts three;
 in both cases, the last can be either a register or an immediate
@@ -386,31 +429,33 @@ ldxi    _c  _uc  _s  _us  _i  _ui  _l  _f  _d  O1 = *(O2+O3)
 both cases, the first can be either a register or an immediate
 value. Values are sign-extended to fit a whole register.
 @example
-str     _c  _uc  _s  _us  _i  _ui  _l  _f  _d  *O1 = O2
-sti     _c  _uc  _s  _us  _i  _ui  _l  _f  _d  *O1 = O2
-stxr    _c  _uc  _s  _us  _i  _ui  _l  _f  _d  *(O1+O2) = O3
-stxi    _c  _uc  _s  _us  _i  _ui  _l  _f  _d  *(O1+O2) = O3
+str     _c       _s       _i       _l  _f  _d  *O1 = O2
+sti     _c       _s       _i       _l  _f  _d  *O1 = O2
+stxr    _c       _s       _i       _l  _f  _d  *(O1+O2) = O3
+stxi    _c       _s       _i       _l  _f  _d  *(O1+O2) = O3
 @end example
-As for the load operations, the @code{_ui} and @code{_l} types are
-only available in 64-bit architectures, and for convenience, there
-is a version without a type modifier for integer or pointer operands
-that uses the appropriate wordsize call.
+Note that the unsigned type modifier is not available, as the store
+only writes to the 1, 2, 4 or 8 sized memory address.
+The @code{_l} type is only available in 64-bit architectures, and for
+convenience, there is a version without a type modifier for integer or
+pointer operands that uses the appropriate wordsize call.
 
 @item Argument management
 These are:
 @example
 prepare     (not specified)
 va_start    (not specified)
-pushargr                                   _f  _d
-pushargi                                   _f  _d
+pushargr    _c  _uc  _s  _us  _i  _ui  _l  _f  _d
+pushargi    _c  _uc  _s  _us  _i  _ui  _l  _f  _d
 va_push     (not specified)
-arg                                        _f  _d
+arg         _c  _uc  _s  _us  _i  _ui  _l  _f  _d
 getarg      _c  _uc  _s  _us  _i  _ui  _l  _f  _d
 va_arg                                         _d
-putargr                                    _f  _d
-putargi                                    _f  _d
+putargr     _c  _uc  _s  _us  _i  _ui  _l  _f  _d
+putargi     _c  _uc  _s  _us  _i  _ui  _l  _f  _d
 ret         (not specified)
-retr                                       _f  _d
+retr        _c  _uc  _s  _us  _i  _ui  _l  _f  _d
+reti        _c  _uc  _s  _us  _i  _ui  _l  _f  _d
 reti                                       _f  _d
 va_end      (not specified)
 retval      _c  _uc  _s  _us  _i  _ui  _l  _f  _d
@@ -428,6 +473,15 @@ arguments must, in order: use the @code{prepare} instruction and use
 the @code{pushargr} or @code{pushargi} to push the arguments @strong{in
 left to right order}; and use @code{finish} or @code{call} (explained below)
 to perform the actual call.
+
+Note that @code{arg}, @code{pusharg}, @code{putarg} and @code{ret} when
+handling integer types can be used without a type modifier.
+It is suggested to use matching type modifiers to @code{arg}, @code{putarg}
+and @code{getarg} otherwise problems will happen if generating jit for
+environments that require arguments to be truncated and zero or sign
+extended by the caller and/or excess arguments might be passed packed
+in the stack. Currently only Apple systems with @code{aarch64} cpus are
+known to have this restriction.
 
 @code{va_start} returns a @code{C} compatible @code{va_list}. To fetch
 arguments, use @code{va_arg} for integers and @code{va_arg_d} for doubles.
@@ -550,6 +604,10 @@ bxsubr    _u          O2 -= O3@r{, goto }O1@r{ if no overflow}
 bxsubi    _u          O2 -= O3@r{, goto }O1@r{ if no overflow}
 @end example
 
+Note that the @code{C} code does not have an @code{O1} argument. It is
+required to always use the return value as an argument to @code{patch},
+@code{patch_at} or @code{patch_abs}.
+
 @item Jump and return operations
 These accept one argument except @code{ret} and @code{jmpi} which
 have none; the difference between @code{finishi} and @code{calli}
@@ -581,6 +639,20 @@ label     (not specified)                @r{simple label}
 forward   (not specified)                @r{forward label}
 indirect  (not specified)                @r{special simple label}
 @end example
+
+The following instruction is used to specify a minimal alignment for
+the next instruction, usually with a label:
+@example
+align     (not specified)                @r{align code}
+@end example
+
+Similar to @code{align} is the next instruction, also usually used with
+a label:
+@example
+skip      (not specified)                @r{skip code}
+@end example
+It is used to specify a minimal number of bytes of nops to be inserted
+before the next instruction.
 
 @code{label} is normally used as @code{patch_at} argument for backward
 jumps.
@@ -633,6 +705,42 @@ addr  = jit_movi(JIT_R0, 0);             @rem{/* immediate is ignored */}
 that automatically binds the implicit label added by @code{patch} with
 the @code{movi}, but on some special conditions it is required to create
 an "unbound" label.
+
+@code{align} is useful for creating multiple entry points to a
+(trampoline) function that are all accessible through a single
+function pointer.  @code{align} receives an integer argument that
+defines the minimal alignment of the address of a label directly
+following the @code{align} instruction.  The integer argument must be
+a power of two and the effective alignment will be a power of two no
+less than the argument to @code{align}.  If the argument to
+@code{align} is 16 or more, the effective alignment will match the
+specified minimal alignment exactly.
+
+@example
+          jit_node_t *forward, *label1, *label2, *jump;
+          unsigned char *addr1, *addr2;
+forward = jit_forward();
+          jit_align(16);
+label1  = jit_indirect();                @rem{/* first entry point */}
+jump    = jit_jmpi();                    @rem{/* jump to first handler */}
+          jit_patch_at(jump, forward);
+          jit_align(16);
+label2  = jit_indirect();                @rem{/* second entry point */}
+          ...                            @rem{/* second handler */}
+          jit_jmpr(...);
+          jit_link(forward);
+          ...                            @rem{/* first handler /*}
+          jit_jmpr(...);
+          ...
+          jit_emit();
+          addr1 = jit_address(label1);
+          addr2 = jit_address(label2);
+          assert(addr2 - addr1 == 16);   @rem{/* only one of the addresses needs to be remembered */}
+@end example
+
+@code{skip} is useful for reserving space in the code buffer that can
+later be filled (possibly with the help of the pair of functions
+@code{jit_unprotect} and @code{jit_protect}).
 
 @item Function prolog
 
@@ -694,6 +802,51 @@ in = arg                     @rem{! Same as above}
      finishi   printf        @rem{! Call printf}
      ret                     @rem{! Return to caller}
 @end example
+
+@item Register liveness
+
+During code generation, @lightning{} occasionally needs scratch registers
+or needs to use architecture-defined registers.  For that, @lightning{}
+internally maintains register liveness information.
+
+In the following example, @code{qdivr} will need special registers like
+@code{R0} on some architectures.  As @lightning{} understands that
+@code{R0} is used in the subsequent instruction, it will create
+save/restore code for @code{R0} in case.
+
+@example
+...
+qdivr V0, V1, V2, V3
+movr  V3, R0
+...
+@end example
+
+The same is not true in the example that follows.  Here, @code{R0} is
+not alive after the division operation because @code{R0} is neither an
+argument register nor a callee-save register.  Thus, no save/restore
+code for @code{R0} will be created in case.
+
+@example
+...
+qdivr V0, V1, V2, V3
+jmpr  R1
+...
+@end example
+
+The @code{live} instruction can be used to mark a register as live after
+it as in the following example.  Here, @code{R0} will be preserved
+across the division.
+
+@example
+...
+qdivr V0, V1, V2, V3
+live R0
+jmpr R1
+...
+@end example
+
+The @code{live} instruction is useful at code entry and exit points,
+like after and before a @code{callr} instruction.
 
 @item Trampolines, continuations and tail call optimization
 
@@ -821,7 +974,7 @@ will return non zero if the argument lives in a register. This call
 is useful to know the live range of register arguments, as those
 are very fast to read and write, but have volatile values.
 
-@code{callee_save_p} exects a valid @code{JIT_Rn}, @code{JIT_Vn}, or
+@code{callee_save_p} expects a valid @code{JIT_Rn}, @code{JIT_Vn}, or
 @code{JIT_Fn}, and will return non zero if the register is callee
 save. This call is useful because on several ports, the @code{JIT_Rn}
 and @code{JIT_Fn} registers are actually callee save; no need
@@ -830,6 +983,34 @@ to save and load the values when making function calls.
 @code{pointer_p} expects a pointer argument, and will return non
 zero if the pointer is inside the generated jit code. Must be
 called after @code{jit_emit} and before @code{jit_destroy_state}.
+
+@item Atomic operations
+Only compare-and-swap is implemented. It accepts four operands;
+the second can be an immediate.
+
+The first argument is set with a boolean value telling if the operation
+did succeed.
+
+Arguments must be different, cannot use the result register to also pass
+an argument.
+
+The second argument is the address of a machine word.
+
+The third argument is the old value.
+
+The fourth argument is the new value.
+
+@example
+casr                                  01 = (*O2 == O3) ? (*O2 = O4, 1) : 0
+casi                                  01 = (*O2 == O3) ? (*O2 = O4, 1) : 0
+@end example
+
+If value at the address in the second argument is equal to the third
+argument, the address value is atomically modified to the value of the
+fourth argument and the first argument is set to a non zero value.
+
+If the value at the address in the second argument is not equal to the
+third argument nothing is done and the first argument is set to zero.
 @end table
 
 @node GNU lightning examples
@@ -1005,9 +1186,9 @@ programmer would write):
       mov  %i0, %g2                 retl
       inc  %g2                      inc %o0
       mov  %g2, %i0
-      restore 
-      retl 
-      nop 
+      restore
+      retl
+      nop
 @end example
 In this case, @lightning{} introduces overhead to create a register
 window (not knowing that the procedure is a leaf procedure) and to
@@ -1018,26 +1199,13 @@ maps to @code{%g2} on the SPARC).
 @table @b
 @item x86_64
 @example
-    sub   $0x30,%rsp
-    mov   %rbp,(%rsp)
-    mov   %rsp,%rbp
-    sub   $0x18,%rsp
-    mov   %rdi,%rax            mov %rdi, %rax
-    add   $0x1,%rax            inc %rax
-    mov   %rbp,%rsp
-    mov   (%rsp),%rbp
-    add   $0x30,%rsp
-    retq                       retq
+    mov   %rdi,%rax
+    add   $0x1,%rax
+    ret
 @end example
-In this case, the main overhead is due to the function's prolog and
-epilog, and stack alignment after reserving stack space for word
-to/from float conversions or moving data from/to x87 to/from SSE.
-Note that besides allocating space to save callee saved registers,
-no registers are saved/restored because @lightning{} notices those
-registers are not modified. There is currently no logic to detect
-if it needs to allocate stack space for type conversions neither
-proper leaf function detection, but these are subject to change
-(FIXME).
+In this case, for the x86 port, @lightning{} has simple optimizations
+to understand it is a leaf function, and that it is not required to
+create a stack frame nor update the stack pointer.
 @end table
 
 @node printf
@@ -1201,7 +1369,7 @@ jit_node_t *compile_rpn(char *expr)
   in = jit_arg();
   stack_ptr = stack_base = jit_allocai (32 * sizeof (int));
 
-  jit_getarg_i(JIT_R2, in);
+  jit_getarg(JIT_R2, in);
 
   while (*expr) @{
     char buf[32];
@@ -1480,7 +1648,7 @@ implementation and to avoid needing the user to keep adding an extra
 argument to every call, as multiple jit states generating code in
 paralell should be very uncommon.
 
-@section Registers
+@node Registers
 @chapter Accessing the whole register file
 
 As mentioned earlier in this chapter, all @lightning{} back-ends are
@@ -1495,6 +1663,33 @@ and @code{JIT_F_NUM} respectively; the number need not be
 constant.  Of course, expressions like @code{JIT_R0} and
 @code{JIT_R(0)} denote the same register, and likewise for
 integer callee-saved, or floating-point, registers.
+
+@section Scratch registers
+
+For operations, @lightning{} does not support directly, like storing
+a literal in memory, @code{jit_get_reg} and @code{jit_unget_reg} can be used to
+acquire and release a scratch register as in the following pattern:
+
+@example
+    jit_int32_t reg = jit_get_reg (jit_class_gpr);
+    jit_movi (reg, immediate);
+    jit_stxi (offsetof (some_struct, some_field), JIT_V0, reg);
+    jit_unget_reg (reg);
+@end example
+
+As @code{jit_get_reg} and @code{jit_unget_reg} may generate spills and
+reloads but don't follow branches, the code between both must be in
+the same basic block and must not contain any branches as in the
+following (bad) example.
+
+@example
+    jit_int32_t reg = jit_get_reg (jit_class_gpr);
+    jit_ldxi (reg, JIT_V0, offset);
+    jump = jit_bnei (reg, V0);
+    jit_movr (JIT_V1, reg);
+    jit_patch (jump);
+    jit_unget_reg (reg);
+@end example
 
 @node Customizations
 @chapter Customizations
@@ -1525,6 +1720,28 @@ previous or default wrappers will be passed.
 @deftypefun void jit_get_memory_functions (@* void *(**@var{alloc_func_ptr}) (size_t), @* void *(**@var{realloc_func_ptr}) (void *, size_t), @* void (**@var{free_func_ptr}) (void *))
 Get the current memory allocation function. Also, unlike the GNU GMP
 counterpart, it is an error to pass @code{NULL} pointers as arguments.
+@end deftypefun
+
+@section Protection
+Unless an alternate code buffer is used (see below), @code{jit_emit}
+set the access protections that the code buffer's memory can be read and
+executed, but not modified.  One can use the following functions after
+@code{jit_emit} but before @code{jit_clear} to temporarily lift the
+protection:
+
+@deftypefun void jit_unprotect ()
+Changes the access protection that the code buffer's memory can be read and
+modified.  Before the emitted code can be invoked, @code{jit_protect}
+has to be called to reset the change.
+
+This procedure has no effect when an alternate code buffer (see below) is used.
+@end deftypefun
+
+@deftypefun void jit_protect ()
+Changes the access protection that the code buffer's memory can be read and
+executed.
+
+This procedure has no effect when an alternate code buffer (see below) is used.
 @end deftypefun
 
 @section Alternate code buffer

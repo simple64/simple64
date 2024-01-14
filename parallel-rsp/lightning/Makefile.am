@@ -1,5 +1,5 @@
 #
-# Copyright 2000, 2001, 2002, 2012-2019 Free Software Foundation, Inc.
+# Copyright 2000, 2001, 2002, 2012-2023 Free Software Foundation, Inc.
 #
 # This file is part of GNU lightning.
 #
@@ -17,10 +17,13 @@
 ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS =		\
+	gnulib-lib	\
 	check		\
 	doc		\
 	include		\
 	lib
+
+EXTRA_DIST = m4/gnulib-cache.m4
 
 pkgconfiglibdir = $(libdir)/pkgconfig
 pkgconfiglib_DATA = lightning.pc
@@ -28,7 +31,8 @@ pkgconfiglib_DATA = lightning.pc
 if get_jit_size
 JIT_SIZE_PATH = "$(top_builddir)/jit_$(cpu)-sz.c"
 AM_CPPFLAGS=-DGET_JIT_SIZE=1 -DJIT_SIZE_PATH='$(JIT_SIZE_PATH)'
-AM_CFLAGS = -I$(top_srcdir)/include -D_GNU_SOURCE $(LIGHTNING_CFLAGS)
+AM_CFLAGS = -I$(top_builddir)/include -I$(top_srcdir)/include 	\
+	-D_GNU_SOURCE $(LIGHTNING_CFLAGS)
 
 noinst_PROGRAMS = size
 size_LDADD = $(top_builddir)/lib/liblightning.la -lm $(SHLIB)

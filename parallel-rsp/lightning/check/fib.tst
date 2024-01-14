@@ -32,7 +32,7 @@ main:
 	arg $argc
 	arg $argv
 
-	getarg_i %r0 $argc
+	getarg %r0 $argc
 	blei default %r0 1
 	getarg %r0 $argv
 	addi %r0 %r0 $(__WORDSIZE >> 3)

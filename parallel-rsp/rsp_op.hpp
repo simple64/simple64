@@ -30,6 +30,7 @@ extern "C"
 	DECL_LS(LUV);
 	DECL_LS(LHV);
 	DECL_LS(LFV);
+	DECL_LS(LWV);
 	DECL_LS(LTV);
 
 	DECL_LS(SBV);
@@ -42,6 +43,7 @@ extern "C"
 	DECL_LS(SUV);
 	DECL_LS(SHV);
 	DECL_LS(SFV);
+	DECL_LS(SWV);
 	DECL_LS(STV);
 
 #define DECL_COP2(op) void RSP_##op(RSP::CPUState *rsp, unsigned vd, unsigned vs, unsigned vt, unsigned e)

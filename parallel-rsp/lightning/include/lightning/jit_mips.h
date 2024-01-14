@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019  Free Software Foundation, Inc.
+ * Copyright (C) 2012-2023  Free Software Foundation, Inc.
  *
  * This file is part of GNU lightning.
  *
@@ -34,9 +34,9 @@
 typedef enum {
 #define jit_r(i)		(_V0 + (i))
 #if NEW_ABI
-#  define jit_r_num()		7
+#  define jit_r_num()		8
 #else
-#  define jit_r_num()		11
+#  define jit_r_num()		12
 #endif
 #define jit_v(i)		(_S0 + (i))
 #define jit_v_num()		8
@@ -55,6 +55,7 @@ typedef enum {
 #  define JIT_R4		_T6
 #  define JIT_R5		_T7
 #  define JIT_R6		_T8
+#  define JIT_R7		_T9
 #else
 #  define JIT_R2		_T0
 #  define JIT_R3		_T1
@@ -65,6 +66,7 @@ typedef enum {
 #  define JIT_R8		_T6
 #  define JIT_R9		_T7
 #  define JIT_R10		_T8
+#  define JIT_R11		_T9
 #endif
     _V0, _V1,
 #if !NEW_ABI
@@ -111,5 +113,14 @@ typedef enum {
 #define JIT_NOREG		_NOREG
     _NOREG,
 } jit_reg_t;
+
+typedef struct {
+    jit_uint32_t release	: 4;
+} jit_cpu_t;
+
+/*
+ * Initialization
+ */
+extern jit_cpu_t		jit_cpu;
 
 #endif /* _jit_mips_h */

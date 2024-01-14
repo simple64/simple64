@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2019  Free Software Foundation, Inc.
+ * Copyright (C) 2012-2023  Free Software Foundation, Inc.
  *
  * This file is part of GNU lightning.
  *
@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <pthread.h>
 
 #if defined(__hpux) && defined(__hppa__)
 #  include <machine/param.h>
@@ -123,6 +124,11 @@ typedef jit_int32_t		jit_bool_t;
 typedef jit_int32_t		jit_gpr_t;
 typedef jit_int32_t		jit_fpr_t;
 
+#if !defined(__powerpc__) && \
+	(defined(__POWERPC__) || defined(__ppc__) || defined(__PPC__))
+#define __powerpc__ 1
+#endif
+
 #if defined(__i386__) || defined(__x86_64__)
 #  include <lightning/jit_x86.h>
 #elif defined(__mips__)
@@ -145,6 +151,8 @@ typedef jit_int32_t		jit_fpr_t;
 #  include <lightning/jit_alpha.h>
 #elif defined(__riscv)
 #  include <lightning/jit_riscv.h>
+#elif defined(__loongarch__)
+#  include <lightning/jit_loongarch.h>
 #endif
 
 #define jit_flag_node		0x0001	/* patch node not absolute */
@@ -182,6 +190,8 @@ typedef enum {
 #define jit_align(u)		jit_new_node_w(jit_code_align, u)
     jit_code_live,		jit_code_align,
     jit_code_save,		jit_code_load,
+#define jit_skip(u)             jit_new_node_w(jit_code_skip, u)
+    jit_code_skip,
 #define jit_name(u)		_jit_name(_jit,u)
     jit_code_name,
 #define jit_note(u, v)		_jit_note(_jit, u, v)
@@ -202,27 +212,80 @@ typedef enum {
 #define jit_allocar(u, v)	_jit_allocar(_jit,u,v)
     jit_code_allocai,		jit_code_allocar,
 
-#define jit_arg()		_jit_arg(_jit)
-    jit_code_arg,
+#define jit_arg_c()		_jit_arg(_jit, jit_code_arg_c)
+#define jit_arg_s()		_jit_arg(_jit, jit_code_arg_s)
+#define jit_arg_i()		_jit_arg(_jit, jit_code_arg_i)
+# if __WORDSIZE == 32
+#  define jit_arg()		jit_arg_i()
+#else
+#  define jit_arg_l()		_jit_arg(_jit, jit_code_arg_l)
+#  define jit_arg()		jit_arg_l()
+#endif
+    jit_code_arg_c,		jit_code_arg_s,
+    jit_code_arg_i,		jit_code_arg_l,
+#if __WORDSIZE == 32
+#  define jit_code_arg		jit_code_arg_i
+#else
+#  define jit_code_arg		jit_code_arg_l
+#endif
+
 #define jit_getarg_c(u,v)	_jit_getarg_c(_jit,u,v)
 #define jit_getarg_uc(u,v)	_jit_getarg_uc(_jit,u,v)
-    jit_code_getarg_c,		jit_code_getarg_uc,
 #define jit_getarg_s(u,v)	_jit_getarg_s(_jit,u,v)
 #define jit_getarg_us(u,v)	_jit_getarg_us(_jit,u,v)
-    jit_code_getarg_s,		jit_code_getarg_us,
 #define jit_getarg_i(u,v)	_jit_getarg_i(_jit,u,v)
 #if __WORDSIZE == 32
 #  define jit_getarg(u,v)	jit_getarg_i(u,v)
 #else
-#  define jit_getarg(u,v)	jit_getarg_l(u,v)
 #  define jit_getarg_ui(u,v)	_jit_getarg_ui(_jit,u,v)
 #  define jit_getarg_l(u,v)	_jit_getarg_l(_jit,u,v)
+#  define jit_getarg(u,v)	jit_getarg_l(u,v)
 #endif
+    jit_code_getarg_c,		jit_code_getarg_uc,
+    jit_code_getarg_s,		jit_code_getarg_us,
     jit_code_getarg_i,		jit_code_getarg_ui,
     jit_code_getarg_l,
-#  define jit_putargr(u,v)	_jit_putargr(_jit,u,v)
-#  define jit_putargi(u,v)	_jit_putargi(_jit,u,v)
-    jit_code_putargr,		jit_code_putargi,
+#if __WORDSIZE == 32
+#  define jit_code_getarg	jit_code_getarg_i
+#else
+#  define jit_code_getarg	jit_code_getarg_l
+#endif
+
+#define jit_putargr_c(u,v)	_jit_putargr(_jit,u,v,jit_code_putargr_c)
+#define jit_putargi_c(u,v)	_jit_putargi(_jit,u,v,jit_code_putargi_c)
+#define jit_putargr_uc(u,v)	_jit_putargr(_jit,u,v,jit_code_putargr_uc)
+#define jit_putargi_uc(u,v)	_jit_putargi(_jit,u,v,jit_code_putargi_uc)
+#define jit_putargr_s(u,v)	_jit_putargr(_jit,u,v,jit_code_putargr_s)
+#define jit_putargi_s(u,v)	_jit_putargi(_jit,u,v,jit_code_putargi_s)
+#define jit_putargr_us(u,v)	_jit_putargr(_jit,u,v,jit_code_putargr_us)
+#define jit_putargi_us(u,v)	_jit_putargi(_jit,u,v,jit_code_putargi_us)
+#define jit_putargr_i(u,v)	_jit_putargr(_jit,u,v,jit_code_putargr_i)
+#define jit_putargi_i(u,v)	_jit_putargi(_jit,u,v,jit_code_putargi_i)
+#if __WORDSIZE == 32
+#  define jit_putargr(u,v)	jit_putargr_i(u,v)
+#  define jit_putargi(u,v)	jit_putargi_i(u,v)
+#else
+#  define jit_putargr_ui(u,v)	_jit_putargr(_jit,u,v,jit_code_putargr_ui)
+#  define jit_putargi_ui(u,v)	_jit_putargi(_jit,u,v,jit_code_putargi_ui)
+#  define jit_putargr_l(u,v)	_jit_putargr(_jit,u,v,jit_code_putargr_l)
+#  define jit_putargi_l(u,v)	_jit_putargi(_jit,u,v,jit_code_putargi_l)
+#  define jit_putargr(u,v)	jit_putargr_l(u,v)
+#  define jit_putargi(u,v)	jit_putargi_l(u,v)
+#endif
+    jit_code_putargr_c,		jit_code_putargi_c,
+    jit_code_putargr_uc,	jit_code_putargi_uc,
+    jit_code_putargr_s,		jit_code_putargi_s,
+    jit_code_putargr_us,	jit_code_putargi_us,
+    jit_code_putargr_i,		jit_code_putargi_i,
+    jit_code_putargr_ui,	jit_code_putargi_ui,
+    jit_code_putargr_l,		jit_code_putargi_l,
+#if __WORDSIZE == 32
+#  define jit_code_putargr	jit_code_putargr_i
+#  define jit_code_putargi	jit_code_putargi_i
+#else
+#  define jit_code_putargr	jit_code_putargr_l
+#  define jit_code_putargi	jit_code_putargi_l
+#endif
 
 #define jit_va_start(u)		jit_new_node_w(jit_code_va_start, u)
     jit_code_va_start,
@@ -339,6 +402,15 @@ typedef enum {
 #define jit_movr(u,v)		jit_new_node_ww(jit_code_movr,u,v)
 #define jit_movi(u,v)		jit_new_node_ww(jit_code_movi,u,v)
     jit_code_movr,		jit_code_movi,
+
+#define jit_movnr(u,v,w)	jit_new_node_www(jit_code_movnr,u,v,w)
+#define jit_movzr(u,v,w)	jit_new_node_www(jit_code_movzr,u,v,w)
+    jit_code_movnr,		jit_code_movzr,
+
+    jit_code_casr,		jit_code_casi,
+#define jit_casr(u, v, w, x)	jit_new_node_wwq(jit_code_casr, u, v, w, x)
+#define jit_casi(u, v, w, x)	jit_new_node_wwq(jit_code_casi, u, v, w, x)
+
 #define jit_extr_c(u,v)		jit_new_node_ww(jit_code_extr_c,u,v)
 #define jit_extr_uc(u,v)	jit_new_node_ww(jit_code_extr_uc,u,v)
     jit_code_extr_c,		jit_code_extr_uc,
@@ -350,6 +422,18 @@ typedef enum {
 #  define jit_extr_ui(u,v)	jit_new_node_ww(jit_code_extr_ui,u,v)
 #endif
     jit_code_extr_i,		jit_code_extr_ui,
+
+#define jit_bswapr_us(u,v)	jit_new_node_ww(jit_code_bswapr_us,u,v)
+    jit_code_bswapr_us,
+#define jit_bswapr_ui(u,v)	jit_new_node_ww(jit_code_bswapr_ui,u,v)
+    jit_code_bswapr_ui,
+#define jit_bswapr_ul(u,v)	jit_new_node_ww(jit_code_bswapr_ul,u,v)
+    jit_code_bswapr_ul,
+#if __WORDSIZE == 32
+#define jit_bswapr(u,v)		jit_new_node_ww(jit_code_bswapr_ui,u,v)
+#else
+#define jit_bswapr(u,v)		jit_new_node_ww(jit_code_bswapr_ul,u,v)
+#endif
 
 #define jit_htonr_us(u,v)	jit_new_node_ww(jit_code_htonr_us,u,v)
 #define jit_ntohr_us(u,v)	jit_new_node_ww(jit_code_htonr_us,u,v)
@@ -537,33 +621,106 @@ typedef enum {
 
 #define jit_prepare()		_jit_prepare(_jit)
     jit_code_prepare,
-#define jit_pushargr(u)		_jit_pushargr(_jit,u)
-#define jit_pushargi(u)		_jit_pushargi(_jit,u)
-    jit_code_pushargr,		jit_code_pushargi,
+
+#define jit_pushargr_c(u)	_jit_pushargr(_jit,u,jit_code_pushargr_c)
+#define jit_pushargi_c(u)	_jit_pushargi(_jit,u,jit_code_pushargi_c)
+#define jit_pushargr_uc(u)	_jit_pushargr(_jit,u,jit_code_pushargr_uc)
+#define jit_pushargi_uc(u)	_jit_pushargi(_jit,u,jit_code_pushargi_uc)
+#define jit_pushargr_s(u)	_jit_pushargr(_jit,u,jit_code_pushargr_s)
+#define jit_pushargi_s(u)	_jit_pushargi(_jit,u,jit_code_pushargi_s)
+#define jit_pushargr_us(u)	_jit_pushargr(_jit,u,jit_code_pushargr_us)
+#define jit_pushargi_us(u)	_jit_pushargi(_jit,u,jit_code_pushargi_us)
+#define jit_pushargr_i(u)	_jit_pushargr(_jit,u,jit_code_pushargr_i)
+#define jit_pushargi_i(u)	_jit_pushargi(_jit,u,jit_code_pushargi_i)
+#if __WORDSIZE == 32
+#  define jit_pushargr(u)	jit_pushargr_i(u)
+#  define jit_pushargi(u)	jit_pushargi_i(u)
+#else
+#  define jit_pushargr_ui(u)	_jit_pushargr(_jit,u,jit_code_pushargr_ui)
+#  define jit_pushargi_ui(u)	_jit_pushargi(_jit,u,jit_code_pushargi_ui)
+#  define jit_pushargr_l(u)	_jit_pushargr(_jit,u,jit_code_pushargr_l)
+#  define jit_pushargi_l(u)	_jit_pushargi(_jit,u,jit_code_pushargi_l)
+#  define jit_pushargr(u)	jit_pushargr_l(u)
+#  define jit_pushargi(u)	jit_pushargi_l(u)
+#endif
+    jit_code_pushargr_c,	jit_code_pushargi_c,
+    jit_code_pushargr_uc,	jit_code_pushargi_uc,
+    jit_code_pushargr_s,	jit_code_pushargi_s,
+    jit_code_pushargr_us,	jit_code_pushargi_us,
+    jit_code_pushargr_i,	jit_code_pushargi_i,
+    jit_code_pushargr_ui,	jit_code_pushargi_ui,
+    jit_code_pushargr_l,	jit_code_pushargi_l,
+#if __WORDSIZE == 32
+#  define jit_code_pushargr	jit_code_pushargr_i
+#  define jit_code_pushargi	jit_code_pushargi_i
+#else
+#  define jit_code_pushargr	jit_code_pushargr_l
+#  define jit_code_pushargi	jit_code_pushargi_l
+#endif
+
 #define jit_finishr(u)		_jit_finishr(_jit,u)
 #define jit_finishi(u)		_jit_finishi(_jit,u)
     jit_code_finishr,		jit_code_finishi,
 #define jit_ret()		_jit_ret(_jit)
     jit_code_ret,
-#define jit_retr(u)		_jit_retr(_jit,u)
-#define jit_reti(u)		_jit_reti(_jit,u)
-    jit_code_retr,		jit_code_reti,
+
+#define jit_retr_c(u)		_jit_retr(_jit,u,jit_code_retr_c)
+#define jit_reti_c(u)		_jit_reti(_jit,u,jit_code_reti_c)
+#define jit_retr_uc(u)		_jit_retr(_jit,u,jit_code_retr_uc)
+#define jit_reti_uc(u)		_jit_reti(_jit,u,jit_code_reti_uc)
+#define jit_retr_s(u)		_jit_retr(_jit,u,jit_code_retr_s)
+#define jit_reti_s(u)		_jit_reti(_jit,u,jit_code_reti_s)
+#define jit_retr_us(u)		_jit_retr(_jit,u,jit_code_retr_us)
+#define jit_reti_us(u)		_jit_reti(_jit,u,jit_code_reti_us)
+#define jit_retr_i(u)		_jit_retr(_jit,u,jit_code_retr_i)
+#define jit_reti_i(u)		_jit_reti(_jit,u,jit_code_reti_i)
+#if __WORDSIZE == 32
+#  define jit_retr(u)		jit_retr_i(u)
+#  define jit_reti(u)		jit_reti_i(u)
+#else
+#  define jit_retr_ui(u)	_jit_retr(_jit,u,jit_code_retr_ui)
+#  define jit_reti_ui(u)	_jit_reti(_jit,u,jit_code_reti_ui)
+#  define jit_retr_l(u)		_jit_retr(_jit,u,jit_code_retr_l)
+#  define jit_reti_l(u)		_jit_reti(_jit,u,jit_code_reti_l)
+#  define jit_retr(u)		jit_retr_l(u)
+#  define jit_reti(u)		jit_reti_l(u)
+#endif
+    jit_code_retr_c,		jit_code_reti_c,
+    jit_code_retr_uc,		jit_code_reti_uc,
+    jit_code_retr_s,		jit_code_reti_s,
+    jit_code_retr_us,		jit_code_reti_us,
+    jit_code_retr_i,		jit_code_reti_i,
+    jit_code_retr_ui,		jit_code_reti_ui,
+    jit_code_retr_l,		jit_code_reti_l,
+#if __WORDSIZE == 32
+#  define jit_code_retr		jit_code_retr_i
+#  define jit_code_reti		jit_code_reti_i
+#else
+#  define jit_code_retr		jit_code_retr_l
+#  define jit_code_reti		jit_code_reti_l
+#endif
+
 #define jit_retval_c(u)		_jit_retval_c(_jit,u)
 #define jit_retval_uc(u)	_jit_retval_uc(_jit,u)
-    jit_code_retval_c,		jit_code_retval_uc,
 #define jit_retval_s(u)		_jit_retval_s(_jit,u)
 #define jit_retval_us(u)	_jit_retval_us(_jit,u)
-    jit_code_retval_s,		jit_code_retval_us,
 #define jit_retval_i(u)		_jit_retval_i(_jit,u)
 #if __WORDSIZE == 32
 #  define jit_retval(u)		jit_retval_i(u)
 #else
-#  define jit_retval(u)		jit_retval_l(u)
 #  define jit_retval_ui(u)	_jit_retval_ui(_jit,u)
 #  define jit_retval_l(u)	_jit_retval_l(_jit,u)
+#  define jit_retval(u)		jit_retval_l(u)
 #endif
+    jit_code_retval_c,		jit_code_retval_uc,
+    jit_code_retval_s,		jit_code_retval_us,
     jit_code_retval_i,		jit_code_retval_ui,
     jit_code_retval_l,
+#if __WORDSIZE == 32
+#  define jit_code_retval	jit_code_retval_i
+#else
+#  define jit_code_retval	jit_code_retval_l
+#endif
 
 #define jit_epilog()		_jit_epilog(_jit)
     jit_code_epilog,
@@ -891,6 +1048,14 @@ typedef enum {
 #define jit_movr_d_w(u, v)	jit_new_node_ww(jit_code_movr_d_w, u, v)
 #define jit_movi_d_w(u, v)	jit_new_node_wd(jit_code_movi_d_w, u, v)
 
+#define jit_clor(u,v)		jit_new_node_ww(jit_code_clor,u,v)
+#define jit_clzr(u,v)		jit_new_node_ww(jit_code_clzr,u,v)
+    jit_code_clor,		jit_code_clzr,
+
+#define jit_ctor(u,v)		jit_new_node_ww(jit_code_ctor,u,v)
+#define jit_ctzr(u,v)		jit_new_node_ww(jit_code_ctzr,u,v)
+    jit_code_ctor,		jit_code_ctzr,
+
     jit_code_last_code
 } jit_code_t;
 
@@ -931,7 +1096,8 @@ extern jit_int32_t _jit_allocai(jit_state_t*, jit_int32_t);
 extern void _jit_allocar(jit_state_t*, jit_int32_t, jit_int32_t);
 extern void _jit_ellipsis(jit_state_t*);
 
-extern jit_node_t *_jit_arg(jit_state_t*);
+extern jit_node_t *_jit_arg(jit_state_t*, jit_code_t);
+
 extern void _jit_getarg_c(jit_state_t*, jit_gpr_t, jit_node_t*);
 extern void _jit_getarg_uc(jit_state_t*, jit_gpr_t, jit_node_t*);
 extern void _jit_getarg_s(jit_state_t*, jit_gpr_t, jit_node_t*);
@@ -941,19 +1107,24 @@ extern void _jit_getarg_i(jit_state_t*, jit_gpr_t, jit_node_t*);
 extern void _jit_getarg_ui(jit_state_t*, jit_gpr_t, jit_node_t*);
 extern void _jit_getarg_l(jit_state_t*, jit_gpr_t, jit_node_t*);
 #endif
-extern void _jit_putargr(jit_state_t*, jit_gpr_t, jit_node_t*);
-extern void _jit_putargi(jit_state_t*, jit_word_t, jit_node_t*);
+
+extern void _jit_putargr(jit_state_t*, jit_gpr_t, jit_node_t*, jit_code_t);
+extern void _jit_putargi(jit_state_t*, jit_word_t, jit_node_t*, jit_code_t);
 
 extern void _jit_prepare(jit_state_t*);
 extern void _jit_ellipsis(jit_state_t*);
 extern void _jit_va_push(jit_state_t*, jit_gpr_t);
-extern void _jit_pushargr(jit_state_t*, jit_gpr_t);
-extern void _jit_pushargi(jit_state_t*, jit_word_t);
+
+extern void _jit_pushargr(jit_state_t*, jit_gpr_t, jit_code_t);
+extern void _jit_pushargi(jit_state_t*, jit_word_t, jit_code_t);
+
 extern void _jit_finishr(jit_state_t*, jit_gpr_t);
 extern jit_node_t *_jit_finishi(jit_state_t*, jit_pointer_t);
 extern void _jit_ret(jit_state_t*);
-extern void _jit_retr(jit_state_t*, jit_gpr_t);
-extern void _jit_reti(jit_state_t*, jit_word_t);
+
+extern void _jit_retr(jit_state_t*, jit_gpr_t, jit_code_t);
+extern void _jit_reti(jit_state_t*, jit_word_t, jit_code_t);
+
 extern void _jit_retval_c(jit_state_t*, jit_gpr_t);
 extern void _jit_retval_uc(jit_state_t*, jit_gpr_t);
 extern void _jit_retval_s(jit_state_t*, jit_gpr_t);
@@ -963,6 +1134,7 @@ extern void _jit_retval_i(jit_state_t*, jit_gpr_t);
 extern void _jit_retval_ui(jit_state_t*, jit_gpr_t);
 extern void _jit_retval_l(jit_state_t*, jit_gpr_t);
 #endif
+
 extern void _jit_epilog(jit_state_t*);
 
 #define jit_patch(u)		_jit_patch(_jit,u)
@@ -987,6 +1159,10 @@ extern void _jit_frame(jit_state_t*, jit_int32_t);
 extern void _jit_tramp(jit_state_t*, jit_int32_t);
 #define jit_emit()		_jit_emit(_jit)
 extern jit_pointer_t _jit_emit(jit_state_t*);
+#define jit_unprotect()         _jit_unprotect(_jit)
+extern void _jit_unprotect(jit_state_t*);
+#define jit_protect()           _jit_protect(_jit)
+extern void _jit_protect(jit_state_t*);
 
 #define jit_print()		_jit_print(_jit)
 extern void _jit_print(jit_state_t*);
@@ -1010,6 +1186,12 @@ extern void _jit_pushargi_d(jit_state_t*, jit_float64_t);
 extern void _jit_retr_d(jit_state_t*, jit_fpr_t);
 extern void _jit_reti_d(jit_state_t*, jit_float64_t);
 extern void _jit_retval_d(jit_state_t*, jit_fpr_t);
+
+#define jit_get_reg(s)		_jit_get_reg(_jit,s)
+extern jit_int32_t _jit_get_reg(jit_state_t*, jit_int32_t);
+
+#define jit_unget_reg(r)	_jit_unget_reg(_jit,r)
+extern void _jit_unget_reg(jit_state_t*, jit_int32_t);
 
 #define jit_new_node(c)		_jit_new_node(_jit,c)
 extern jit_node_t *_jit_new_node(jit_state_t*, jit_code_t);
@@ -1053,6 +1235,10 @@ extern jit_node_t *_jit_new_node_www(jit_state_t*, jit_code_t,
 extern jit_node_t *_jit_new_node_qww(jit_state_t*, jit_code_t,
 				     jit_int32_t, jit_int32_t,
 				     jit_word_t, jit_word_t);
+#define jit_new_node_wwq(c,u,v,l,h) _jit_new_node_wwq(_jit,c,u,v,l,h)
+extern jit_node_t *_jit_new_node_wwq(jit_state_t*, jit_code_t,
+				     jit_word_t, jit_word_t,
+				     jit_int32_t, jit_int32_t);
 #define jit_new_node_wwf(c,u,v,w) _jit_new_node_wwf(_jit,c,u,v,w)
 extern jit_node_t *_jit_new_node_wwf(jit_state_t*, jit_code_t,
 				     jit_word_t, jit_word_t, jit_float32_t);
