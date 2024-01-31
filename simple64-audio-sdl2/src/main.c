@@ -17,7 +17,6 @@ static AUDIO_INFO AudioInfo;
 static unsigned char primaryBuffer[0x40000];
 static uint8_t mix_buffer[0x40000];
 static int VolIsMuted = 0;
-static unsigned int paused = 0;
 static int ff = 0;
 static int VolSDL = SDL_MIX_MAXVOLUME;
 
@@ -30,7 +29,8 @@ void CloseAudio()
         dev = 0;
     }
 
-    if(hardware_spec != NULL) free(hardware_spec);
+    if (hardware_spec != NULL)
+        free(hardware_spec);
     hardware_spec = NULL;
 }
 
@@ -103,30 +103,29 @@ void InitAudio()
     free(desired);
     hardware_spec = obtained;
     SDL_PauseAudioDevice(dev, 0);
-    paused = 0;
 }
 
-EXPORT void CALL AiDacrateChanged( int SystemType )
+EXPORT void CALL AiDacrateChanged(int SystemType)
 {
     if (!l_PluginInit)
         return;
 
     switch (SystemType)
     {
-        case SYSTEM_NTSC:
-            GameFreq = 48681812 / (*AudioInfo.AI_DACRATE_REG + 1);
-            break;
-        case SYSTEM_PAL:
-            GameFreq = 49656530 / (*AudioInfo.AI_DACRATE_REG + 1);
-            break;
-        case SYSTEM_MPAL:
-            GameFreq = 48628316 / (*AudioInfo.AI_DACRATE_REG + 1);
-            break;
+    case SYSTEM_NTSC:
+        GameFreq = 48681812 / (*AudioInfo.AI_DACRATE_REG + 1);
+        break;
+    case SYSTEM_PAL:
+        GameFreq = 49656530 / (*AudioInfo.AI_DACRATE_REG + 1);
+        break;
+    case SYSTEM_MPAL:
+        GameFreq = 48628316 / (*AudioInfo.AI_DACRATE_REG + 1);
+        break;
     }
     InitAudio();
 }
 
-EXPORT void CALL AiLenChanged( void )
+EXPORT void CALL AiLenChanged(void)
 {
     if (!l_PluginInit)
         return;
@@ -136,15 +135,15 @@ EXPORT void CALL AiLenChanged( void )
 
     unsigned int i;
 
-    for ( i = 0 ; i < LenReg ; i += 4 )
+    for (i = 0; i < LenReg; i += 4)
     {
         // Left channel
-        primaryBuffer[ i ] = p[ i + 2 ];
-        primaryBuffer[ i + 1 ] = p[ i + 3 ];
+        primaryBuffer[i] = p[i + 2];
+        primaryBuffer[i + 1] = p[i + 3];
 
         // Right channel
-        primaryBuffer[ i + 2 ] = p[ i ];
-        primaryBuffer[ i + 3 ] = p[ i + 1 ];
+        primaryBuffer[i + 2] = p[i];
+        primaryBuffer[i + 3] = p[i + 1];
     }
 
     if (!VolIsMuted && !ff)
@@ -153,15 +152,11 @@ EXPORT void CALL AiLenChanged( void )
         unsigned int acceptable_latency = (hardware_spec->freq * 0.2) * 4;
         unsigned int min_latency = (hardware_spec->freq * 0.02) * 4;
 
-        if (!paused && audio_queued < min_latency)
+        if (audio_queued < min_latency)
         {
-            SDL_PauseAudioDevice(dev, 1);
-            paused = 1;
-        }
-        else if (paused && audio_queued >= (min_latency * 2))
-        {
-            SDL_PauseAudioDevice(dev, 0);
-            paused = 0;
+            unsigned int pause_buffer_length = ((min_latency - audio_queued) * 2) & ~3;
+            SDL_memset(mix_buffer, 0, pause_buffer_length);
+            SDL_QueueAudio(dev, mix_buffer, pause_buffer_length);
         }
 
         if (audio_queued < acceptable_latency)
@@ -173,7 +168,7 @@ EXPORT void CALL AiLenChanged( void )
     }
 }
 
-EXPORT int CALL InitiateAudio( AUDIO_INFO Audio_Info )
+EXPORT int CALL InitiateAudio(AUDIO_INFO Audio_Info)
 {
     if (!l_PluginInit)
         return 0;
@@ -194,7 +189,7 @@ EXPORT int CALL RomOpen(void)
     return 1;
 }
 
-EXPORT void CALL RomClosed( void )
+EXPORT void CALL RomClosed(void)
 {
     if (!l_PluginInit)
         return;
@@ -245,7 +240,7 @@ EXPORT void CALL VolumeSetLevel(int level)
     VolSDL = SDL_MIX_MAXVOLUME * level / 100;
 }
 
-EXPORT const char * CALL VolumeGetString(void)
+EXPORT const char *CALL VolumeGetString(void)
 {
     static char VolumeString[32];
 
