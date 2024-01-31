@@ -2461,7 +2461,11 @@ _jit_protect(jit_state_t *_jit)
 #else
   int result;
   if (_jit->user_code) return;
+#ifdef _WIN32
+  result = _mprotect (_jit->code.ptr, _jit->code.protected, PROT_READ | PROT_EXEC);
+#else
   result = mprotect (_jit->code.ptr, _jit->code.protected, PROT_READ | PROT_EXEC);
+#endif
   assert (result == 0);
 #endif
 }
@@ -2474,7 +2478,11 @@ _jit_unprotect(jit_state_t *_jit)
 #else
   int result;
   if (_jit->user_code) return;
+#ifdef _WIN32
+  result = _mprotect (_jit->code.ptr, _jit->code.protected, PROT_READ | PROT_WRITE);
+#else
   result = mprotect (_jit->code.ptr, _jit->code.protected, PROT_READ | PROT_WRITE);
+#endif
   assert (result == 0);
 #endif
 }
