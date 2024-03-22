@@ -26,9 +26,9 @@ extern "C"
 			rsp->sr[rt] = res;
 
 #ifdef PARALLEL_INTEGRATION
-		if (rd == CP0_REGISTER_SP_RESERVED)
+		if (rd == CP0_REGISTER_SP_SEMAPHORE)
 		{
-			*rsp->cp0.cr[CP0_REGISTER_SP_RESERVED] = 1;
+			*rsp->cp0.cr[CP0_REGISTER_SP_SEMAPHORE] = 1;
 			return MODE_EXIT;
 		}
 		// We don't return control to the CPU if the RDP FREEZE bit is set, doing so seems to cause flickering
@@ -207,6 +207,7 @@ extern "C"
 
 		*rsp->cp0.cr[CP0_REGISTER_DMA_DRAM] = source;
 		*rsp->cp0.cr[CP0_REGISTER_DMA_CACHE] = dest;
+		*rsp->cp0.cr[CP0_REGISTER_DMA_READ_LENGTH] = 0xff8;
 
 #ifdef INTENSE_DEBUG
 		log_rsp_mem_parallel();
@@ -255,6 +256,7 @@ extern "C"
 
 		*rsp->cp0.cr[CP0_REGISTER_DMA_CACHE] = source;
 		*rsp->cp0.cr[CP0_REGISTER_DMA_DRAM] = dest;
+		*rsp->cp0.cr[CP0_REGISTER_DMA_WRITE_LENGTH] = 0xff8;
 #ifdef INTENSE_DEBUG
 		log_rsp_mem_parallel();
 #endif
@@ -293,8 +295,8 @@ extern "C"
 		case CP0_REGISTER_SP_STATUS:
 			return rsp_status_write(rsp, val);
 
-		case CP0_REGISTER_SP_RESERVED:
-			*rsp->cp0.cr[CP0_REGISTER_SP_RESERVED] = 0;
+		case CP0_REGISTER_SP_SEMAPHORE:
+			*rsp->cp0.cr[CP0_REGISTER_SP_SEMAPHORE] = 0;
 			break;
 
 		case CP0_REGISTER_CMD_START:

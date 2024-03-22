@@ -41,7 +41,6 @@ add_library(${NAME_PLUGIN_SIMPLE64} SHARED
 		arch/simd/rsp/vcmp.h
 		arch/simd/rsp/vdivh.h
 		arch/simd/rsp/vmac.h
-		arch/simd/rsp/vmov.h
 		arch/simd/rsp/vmrg.h
 		arch/simd/rsp/vmudh.h
 		arch/simd/rsp/vmul.h

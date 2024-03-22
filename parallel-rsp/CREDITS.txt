@@ -1,11 +1,11 @@
 Written by Themaister.
 
-The code is heavily reliant on MarathonMan's CEN64 RSP implementation, as well as CXD4's RSP implementation.
+The code is heavily reliant on MarathonMan's CEN64 RSP implementation, as well as Ares and CXD4's RSP implementations.
 
 MIPS core: Rewritten from scratch
-CP0: Near copy-pasta from CEN64
+CP0: Near copy-pasta from CEN64, with some fixes from Ares brought in
 CP2: Near copy-pasta from CEN64
-LS pipe: Near copy-pasta from CXD4
+LS pipe: Ported from Ares
 Mupen64plus glue code: Reused most of CXD4.
 Lightning jitter interface: Written from scratch
 

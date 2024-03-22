@@ -269,19 +269,6 @@ extern "C"
 		                          (dram[off1] << 0)));
 	}
 
-	static jit_word_t rsp_unaligned_lwu(const uint8_t *dram, jit_word_t addr)
-	{
-		auto off0 = BYTE_ENDIAN_FIXUP(addr, 0);
-		auto off1 = BYTE_ENDIAN_FIXUP(addr, 1);
-		auto off2 = BYTE_ENDIAN_FIXUP(addr, 2);
-		auto off3 = BYTE_ENDIAN_FIXUP(addr, 3);
-
-		return jit_word_t((uint32_t(dram[off0]) << 24) |
-		                  (uint32_t(dram[off1]) << 16) |
-		                  (uint32_t(dram[off2]) << 8) |
-		                  (uint32_t(dram[off3]) << 0));
-	}
-
 	static void rsp_unaligned_sh(uint8_t *dram, jit_word_t addr, jit_word_t data)
 	{
 		auto off0 = BYTE_ENDIAN_FIXUP(addr, 0);
@@ -911,12 +898,12 @@ void CPU::jit_instruction(jit_state_t *_jit, uint32_t pc, uint32_t instr,
 		using VUOp = void (*)(RSP::CPUState *, unsigned vd, unsigned vs, unsigned vt, unsigned e);
 
 		static const VUOp ops[64] = {
-			RSP_VMULF, RSP_VMULU, nullptr, nullptr, RSP_VMUDL, RSP_VMUDM, RSP_VMUDN, RSP_VMUDH, RSP_VMACF, RSP_VMACU, nullptr,
-			nullptr, RSP_VMADL, RSP_VMADM, RSP_VMADN, RSP_VMADH, RSP_VADD, RSP_VSUB, nullptr, RSP_VABS, RSP_VADDC, RSP_VSUBC,
+			RSP_VMULF, RSP_VMULU, RSP_VRNDP, RSP_VMULQ, RSP_VMUDL, RSP_VMUDM, RSP_VMUDN, RSP_VMUDH, RSP_VMACF, RSP_VMACU, RSP_VRNDN,
+			RSP_VMACQ, RSP_VMADL, RSP_VMADM, RSP_VMADN, RSP_VMADH, RSP_VADD, RSP_VSUB, nullptr, RSP_VABS, RSP_VADDC, RSP_VSUBC,
 			nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, RSP_VSAR, nullptr, nullptr, RSP_VLT,
 			RSP_VEQ, RSP_VNE, RSP_VGE, RSP_VCL, RSP_VCH, RSP_VCR, RSP_VMRG, RSP_VAND, RSP_VNAND, RSP_VOR, RSP_VNOR,
 			RSP_VXOR, RSP_VNXOR, nullptr, nullptr, RSP_VRCP, RSP_VRCPL, RSP_VRCPH, RSP_VMOV, RSP_VRSQ, RSP_VRSQL, RSP_VRSQH,
-			RSP_VNOP,
+			RSP_VNOP, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, RSP_VNOP
 		};
 
 		auto *vuop = ops[op];
@@ -1034,6 +1021,7 @@ void CPU::jit_instruction(jit_state_t *_jit, uint32_t pc, uint32_t instr,
 
 		case 007: // SRAV
 		{
+			NOP_IF_RD_ZERO();
 			unsigned rt_reg = regs.load_mips_register_sext(_jit, rt);
 			unsigned rs_reg = regs.load_mips_register_noext(_jit, rs);
 			unsigned rs_tmp_reg = regs.modify_mips_register(_jit, RegisterCache::SCRATCH_REGISTER0);
@@ -1434,7 +1422,8 @@ void CPU::jit_instruction(jit_state_t *_jit, uint32_t pc, uint32_t instr,
 
 	case 013: // SLTIU
 	{
-		TWO_REG_IMM_OP(lti_u, uint16_t, zext);
+		// SLTIU sign extends the immediate to 32 bit but then does an unsigned comparison
+		TWO_REG_IMM_OP(lti_u, int16_t, sext);
 		break;
 	}
 
@@ -1613,6 +1602,7 @@ void CPU::jit_instruction(jit_state_t *_jit, uint32_t pc, uint32_t instr,
 	}
 
 	case 043: // LW
+	case 047: // LWU
 	{
 		jit_emit_load_operation(_jit, pc, instr,
 		                        [](jit_state_t *_jit, unsigned a, unsigned b, unsigned c) { jit_ldxr_i(a, b, c); },
@@ -1639,16 +1629,6 @@ void CPU::jit_instruction(jit_state_t *_jit, uint32_t pc, uint32_t instr,
 		                        "lhu",
 		                        reinterpret_cast<jit_pointer_t>(rsp_unaligned_lhu),
 		                        2, last_info);
-		break;
-	}
-
-	case 047: // LWU
-	{
-		jit_emit_load_operation(_jit, pc, instr,
-		                        [](jit_state_t *_jit, unsigned a, unsigned b, unsigned c) { jit_ldxr_ui(a, b, c); },
-		                        "lwu",
-		                        reinterpret_cast<jit_pointer_t>(rsp_unaligned_lwu),
-		                        0, last_info);
 		break;
 	}
 

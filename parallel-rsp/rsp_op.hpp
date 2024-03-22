@@ -49,12 +49,15 @@ extern "C"
 #define DECL_COP2(op) void RSP_##op(RSP::CPUState *rsp, unsigned vd, unsigned vs, unsigned vt, unsigned e)
 	DECL_COP2(VMULF);
 	DECL_COP2(VMULU);
+	DECL_COP2(VRNDP);
+	DECL_COP2(VMULQ);
 	DECL_COP2(VMUDL);
 	DECL_COP2(VMUDM);
 	DECL_COP2(VMUDN);
 	DECL_COP2(VMUDH);
 	DECL_COP2(VMACF);
 	DECL_COP2(VMACU);
+	DECL_COP2(VRNDN);
 	DECL_COP2(VMACQ);
 	DECL_COP2(VMADL);
 	DECL_COP2(VMADM);

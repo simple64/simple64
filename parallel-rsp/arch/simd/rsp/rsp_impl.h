@@ -12,7 +12,6 @@
 #include "vcr.h"
 #include "vdivh.h"
 #include "vmac.h"
-#include "vmov.h"
 #include "vmrg.h"
 #include "vmul.h"
 #include "vmulh.h"
