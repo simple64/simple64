@@ -64,6 +64,10 @@ static void do_sp_dma(struct rsp_core* sp, const struct sp_dma* dma)
             post_framebuffer_write(&sp->dp->fb, dramaddr - length, length);
             dramaddr+=skip;
         }
+
+        sp->regs[SP_MEM_ADDR_REG] = memaddr & 0xfff;
+        sp->regs[SP_DRAM_ADDR_REG] = dramaddr & 0xffffff;
+        sp->regs[SP_RD_LEN_REG] = 0xff8;
     }
     else
     {
@@ -77,6 +81,10 @@ static void do_sp_dma(struct rsp_core* sp, const struct sp_dma* dma)
             }
             dramaddr+=skip;
         }
+
+        sp->regs[SP_MEM_ADDR_REG] = memaddr & 0xfff;
+        sp->regs[SP_DRAM_ADDR_REG] = dramaddr & 0xffffff;
+        sp->regs[SP_RD_LEN_REG] = 0xff8;
     }
     sp->regs[SP_MEM_ADDR_REG] = (memaddr & 0xfff) + (dma->memaddr & 0x1000);
     sp->regs[SP_DRAM_ADDR_REG] = dramaddr;
@@ -244,6 +252,8 @@ void poweron_rsp(struct rsp_core* sp)
     sp->rsp_wait = 0;
     sp->mi->r4300->cp0.interrupt_unsafe_state &= ~INTR_UNSAFE_RSP;
     sp->regs[SP_STATUS_REG] = 1;
+    sp->regs[SP_RD_LEN_REG] = 0xff8;
+    sp->regs[SP_WR_LEN_REG] = 0xff8;
 }
 
 
@@ -319,6 +329,10 @@ void read_rsp_regs2(void* opaque, uint32_t address, uint32_t* value)
     uint32_t reg = rsp_reg2(address);
 
     *value = sp->regs2[reg];
+
+    if (reg == SP_PC_REG)
+        *value &= 0xffc;
+
 }
 
 void write_rsp_regs2(void* opaque, uint32_t address, uint32_t value, uint32_t mask)
