@@ -56,7 +56,8 @@ static void do_sp_dma(struct rsp_core* sp, const struct sp_dma* dma)
     {
         for(j=0; j<count; j++) {
             for(i=0; i<length; i++) {
-                dram[dramaddr^S8] = spmem[(memaddr & 0xfff)^S8];
+                if (dramaddr < sp->ri->rdram->dram_size)
+                    dram[dramaddr^S8] = spmem[(memaddr & 0xfff)^S8];
                 memaddr++;
                 dramaddr++;
             }
