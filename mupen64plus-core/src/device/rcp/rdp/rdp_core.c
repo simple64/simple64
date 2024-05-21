@@ -88,8 +88,6 @@ void init_rdp(struct rdp_core* dp,
 {
     dp->sp = sp;
     dp->mi = mi;
-
-    init_fb(&dp->fb, mem, rdram, r4300);
 }
 
 void poweron_rdp(struct rdp_core* dp)
@@ -100,8 +98,6 @@ void poweron_rdp(struct rdp_core* dp)
 
     dp->do_on_unfreeze = 0;
     dp->mi->r4300->cp0.interrupt_unsafe_state &= ~INTR_UNSAFE_RDP;
-
-    poweron_fb(&dp->fb);
 }
 
 
@@ -146,9 +142,7 @@ void write_dpc_regs(void* opaque, uint32_t address, uint32_t value, uint32_t mas
             dp->dpc_regs[DPC_CURRENT_REG] = dp->dpc_regs[DPC_START_REG];
             dp->dpc_regs[DPC_STATUS_REG] &= ~DPC_STATUS_START_VALID;
         }
-        unprotect_framebuffers(&dp->fb);
         gfx.processRDPList();
-        protect_framebuffers(&dp->fb);
         if (dp->mi->regs[MI_INTR_REG] & MI_INTR_DP)
         {
             dp->mi->regs[MI_INTR_REG] &= ~MI_INTR_DP;

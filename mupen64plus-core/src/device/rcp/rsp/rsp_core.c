@@ -61,8 +61,6 @@ static void do_sp_dma(struct rsp_core* sp, const struct sp_dma* dma)
                 memaddr++;
                 dramaddr++;
             }
-            if (dramaddr <= 0x800000)
-                post_framebuffer_write(&sp->dp->fb, dramaddr - length, length);
             dramaddr+=skip;
         }
 
@@ -73,9 +71,6 @@ static void do_sp_dma(struct rsp_core* sp, const struct sp_dma* dma)
     else
     {
         for(j=0; j<count; j++) {
-            if (dramaddr < 0x800000)
-                pre_framebuffer_read(&sp->dp->fb, dramaddr);
-
             for(i=0; i<length; i++) {
                 spmem[(memaddr & 0xfff)^S8] = dram[dramaddr^S8];
                 memaddr++;
@@ -361,9 +356,7 @@ void do_SP_Task(struct rsp_core* sp)
     uint32_t sp_bit_set = sp->mi->regs[MI_INTR_REG] & MI_INTR_SP;
     uint32_t dp_bit_set = sp->mi->regs[MI_INTR_REG] & MI_INTR_DP;
 
-    unprotect_framebuffers(&sp->dp->fb);
     uint32_t rsp_cycles = rsp.doRspCycles(sp->first_run) / 2;
-    protect_framebuffers(&sp->dp->fb);
 
     if (sp->mi->regs[MI_INTR_REG] & MI_INTR_DP && !dp_bit_set)
     {

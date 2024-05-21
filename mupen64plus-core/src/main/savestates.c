@@ -986,9 +986,6 @@ static int savestates_load_m64p(struct device* dev, char *filepath)
         input.controllerCommand(-1, NULL);
     }
 
-    /* reset fb state */
-    poweron_fb(&dev->dp.fb);
-
     dev->r4300.cp0.interrupt_unsafe_state = 0;
 
     *r4300_cp0_last_addr(&dev->r4300.cp0) = *r4300_pc(&dev->r4300);

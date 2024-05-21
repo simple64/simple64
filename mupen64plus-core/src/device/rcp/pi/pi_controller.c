@@ -105,8 +105,6 @@ static void dma_pi_read(struct pi_controller* pi)
         return;
     }
 
-    pre_framebuffer_read(&pi->dp->fb, dram_addr);
-
     /* PI seems to treat the first 128 bytes differently, see https://n64brew.dev/wiki/Peripheral_Interface#Unaligned_DMA_transfer */
     if (length >= 0x7f && (length & 1))
         length += 1;
@@ -148,8 +146,6 @@ static void dma_pi_write(struct pi_controller* pi)
     if (length <= 0x80)
         length -= dram_addr & 0x7;
     uint32_t cycles = handler->dma_write(opaque, dram, dram_addr, cart_addr, length);
-
-    post_framebuffer_write(&pi->dp->fb, dram_addr, length);
 
     /* Mark DMA as busy */
     pi->regs[PI_STATUS_REG] |= PI_STATUS_DMA_BUSY;

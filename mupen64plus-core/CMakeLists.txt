@@ -76,7 +76,6 @@ add_library(mupen64plus SHARED
     src/device/rcp/ai/ai_controller.c
     src/device/rcp/mi/mi_controller.c
     src/device/rcp/pi/pi_controller.c
-    src/device/rcp/rdp/fb.c
     src/device/rcp/rdp/rdp_core.c
     src/device/rcp/ri/ri_controller.c
     src/device/rcp/rsp/rsp_core.c

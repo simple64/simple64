@@ -24,11 +24,13 @@
 
 #include <stdint.h>
 
-#include "fb.h"
 #include "osal/preproc.h"
 
 struct mi_controller;
 struct rsp_core;
+struct memory;
+struct rdram;
+struct r4300_core;
 
 enum
 {
@@ -90,8 +92,6 @@ struct rdp_core
     uint32_t dpc_regs[DPC_REGS_COUNT];
     uint32_t dps_regs[DPS_REGS_COUNT];
     unsigned char do_on_unfreeze;
-
-    struct fb fb;
 
     struct rsp_core* sp;
     struct mi_controller* mi;
