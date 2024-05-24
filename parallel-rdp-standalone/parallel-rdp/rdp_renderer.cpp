@@ -1148,7 +1148,7 @@ void Renderer::deduce_noise_state()
 		if (state.combiner[0].rgb.muladd == RGBMulAdd::Noise)
 			state.flags |= RASTERIZATION_NEED_NOISE_BIT;
 	}
-	else if (state.combiner[1].rgb.muladd == RGBMulAdd::Noise)
+	if (state.combiner[1].rgb.muladd == RGBMulAdd::Noise)
 		state.flags |= RASTERIZATION_NEED_NOISE_BIT;
 
 	if ((state.flags & (RASTERIZATION_ALPHA_TEST_BIT | RASTERIZATION_ALPHA_TEST_DITHER_BIT)) ==
