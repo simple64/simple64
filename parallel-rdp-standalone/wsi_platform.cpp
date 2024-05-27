@@ -45,6 +45,12 @@ void QT_WSIPlatform::poll_input()
     
 }
 
+void QT_WSIPlatform::poll_input_async(Granite::InputTrackerHandler *handler)
+{
+
+}
+
+
 void QT_WSIPlatform::do_resize()
 {
     resize = true;
