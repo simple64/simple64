@@ -49,6 +49,7 @@ add_library(${NAME_PLUGIN_SIMPLE64} SHARED
     util/aligned_alloc.cpp
     util/timer.cpp
     util/timeline_trace_file.cpp
+    util/environment.cpp
     util/thread_name.cpp
     volk/volk.c
     gfx_simple64.c
