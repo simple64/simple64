@@ -26,7 +26,7 @@ jobs:
         env:
           NETPLAY_AUTH_CODE: ${{ secrets.NETPLAY_AUTH_CODE }}
   build-windows:
-    runs-on: windows-2022
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
       - uses: msys2/setup-msys2@v2
@@ -59,7 +59,7 @@ jobs:
           path: simple64-*.zip
   build-mac:
     if: ${{ false }}
-    runs-on: macos-11
+    runs-on: macos-13
     steps:
       - uses: actions/checkout@v4
       - name: brew update
