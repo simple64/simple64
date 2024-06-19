@@ -13,6 +13,7 @@ public:
     void clearLog();
 public slots:
     void addLog(QString text);
+
 private:
     QPlainTextEdit *textArea = nullptr;
 };

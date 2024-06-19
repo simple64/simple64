@@ -8,10 +8,10 @@
 
 static int init;
 
-static QThread* rendering_thread;
+static QThread *rendering_thread;
 static QVulkanInstance vulkan_inst;
 static QVulkanInfoVector<QVulkanExtension> extensions;
-static QVector<const char*> extension_list;
+static QVector<const char *> extension_list;
 
 m64p_error qtVidExtFuncInit(void)
 {
@@ -45,7 +45,7 @@ m64p_error qtVidExtFuncListModes(m64p_2d_size *SizeArray, int *NumSizes)
     return M64ERR_SUCCESS;
 }
 
-m64p_error qtVidExtFuncListRates(m64p_2d_size, int*, int*)
+m64p_error qtVidExtFuncListRates(m64p_2d_size, int *, int *)
 {
     return M64ERR_UNSUPPORTED;
 }
@@ -64,7 +64,7 @@ m64p_error qtVidExtFuncSetModeWithRate(int, int, int, int, int, int)
     return M64ERR_UNSUPPORTED;
 }
 
-m64p_function qtVidExtFuncGLGetProc(const char*)
+m64p_function qtVidExtFuncGLGetProc(const char *)
 {
     return NULL;
 }
@@ -74,9 +74,10 @@ m64p_error qtVidExtFuncGLSetAttr(m64p_GLattr, int)
     return M64ERR_UNSUPPORTED;
 }
 
-m64p_error qtVidExtFuncGLGetAttr(m64p_GLattr, int*)
+m64p_error qtVidExtFuncGLGetAttr(m64p_GLattr, int *)
 {
-    if (!init) return M64ERR_NOT_INIT;
+    if (!init)
+        return M64ERR_NOT_INIT;
     return M64ERR_UNSUPPORTED;
 }
 
@@ -121,7 +122,7 @@ uint32_t qtVidExtFuncGLGetDefaultFramebuffer(void)
     return 0;
 }
 
-m64p_error qtVidExtFuncGetVkSurface(void** surface, void* instance)
+m64p_error qtVidExtFuncGetVkSurface(void **surface, void *instance)
 {
     if (!vulkan_inst.vkInstance())
     {
@@ -135,11 +136,11 @@ m64p_error qtVidExtFuncGetVkSurface(void** surface, void* instance)
     return M64ERR_SUCCESS;
 }
 
-m64p_error qtVidExtFuncGetVkInstExtensions(const char** ext[], uint32_t* ext_num)
+m64p_error qtVidExtFuncGetVkInstExtensions(const char **ext[], uint32_t *ext_num)
 {
     extensions = vulkan_inst.supportedExtensions();
     extension_list.clear();
-    for (int i=0; i<extensions.size(); ++i)
+    for (int i = 0; i < extensions.size(); ++i)
     {
         QString ext_name = QString(extensions[i].name);
         if (ext_name.startsWith("VK_KHR_") && ext_name.endsWith("surface"))

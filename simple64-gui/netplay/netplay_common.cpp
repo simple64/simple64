@@ -1,6 +1,6 @@
 #include "netplay_common.h"
 
-void addAuthData(QWebSocket* webSocket, QJsonObject* json)
+void addAuthData(QWebSocket *webSocket, QJsonObject *json)
 {
     QCryptographicHash hash = QCryptographicHash(QCryptographicHash::Sha256);
     QByteArray currentTime = QByteArray::number(QDateTime::currentMSecsSinceEpoch());

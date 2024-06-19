@@ -47,7 +47,7 @@ m64p_error osal_dynlib_open(m64p_dynlib_handle *pLibHandle, const char *pccLibra
     return M64ERR_SUCCESS;
 }
 
-void * osal_dynlib_getproc(m64p_dynlib_handle LibHandle, const char *pccProcedureName)
+void *osal_dynlib_getproc(m64p_dynlib_handle LibHandle, const char *pccProcedureName)
 {
     if (pccProcedureName == NULL)
         return NULL;
@@ -67,5 +67,3 @@ m64p_error osal_dynlib_close(m64p_dynlib_handle LibHandle)
 
     return M64ERR_SUCCESS;
 }
-
-

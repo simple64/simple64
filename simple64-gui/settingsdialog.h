@@ -13,6 +13,7 @@ class SettingsDialog : public QDialog
 
 public:
     SettingsDialog(QWidget *parent = nullptr);
+
 protected:
     void closeEvent(QCloseEvent *event);
 private slots:
@@ -20,6 +21,7 @@ private slots:
     void handleAppPathButton();
     void handleClearConfigButton();
     void handleConfigEdit();
+
 private:
     void initStuff();
     QLineEdit *configPath;

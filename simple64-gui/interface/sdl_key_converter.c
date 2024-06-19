@@ -23,7 +23,7 @@
 
 #include <stdint.h>
 
-#define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
+#define ARRAY_SIZE(x) (sizeof(x) / sizeof(x[0]))
 
 uint16_t sdl_keysym2native(uint16_t keysym)
 {

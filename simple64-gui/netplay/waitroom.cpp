@@ -8,7 +8,7 @@
 WaitRoom::WaitRoom(QString filename, QJsonObject room, QWebSocket *socket, QWidget *parent)
     : QDialog(parent)
 {
-    this->resize(640,480);
+    this->resize(640, 480);
 
     QString cheats_string = room.value("features").toObject().value("cheats").toString();
     QJsonDocument cheats_doc = QJsonDocument::fromJson(cheats_string.toUtf8());
@@ -59,7 +59,7 @@ WaitRoom::WaitRoom(QString filename, QJsonObject room, QWebSocket *socket, QWidg
     for (int i = 0; i < 4; ++i)
     {
         pName[i] = new QLabel(this);
-        layout->addWidget(pName[i], i+3, 1);
+        layout->addWidget(pName[i], i + 3, 1);
     }
 
     chatWindow = new QPlainTextEdit(this);
@@ -123,7 +123,7 @@ void WaitRoom::sendPing()
     webSocket->ping();
 }
 
-void WaitRoom::updatePing(quint64 elapsedTime, const QByteArray&)
+void WaitRoom::updatePing(quint64 elapsedTime, const QByteArray &)
 {
     pingValue->setText(QString::number(elapsedTime) + " ms");
 }

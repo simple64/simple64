@@ -29,7 +29,8 @@ CheatsDialog::CheatsDialog(QString gameName, QWidget *parent)
         QJsonObject cheats = gameData.value(keys.at(i)).toObject();
         QLabel *name = new QLabel(keys.at(i), this);
         QString helper = cheats.value("note").toString();
-        if (!helper.isEmpty()) {
+        if (!helper.isEmpty())
+        {
             helper.prepend("<span style=\"color:black;\">");
             helper.append("</span>");
             name->setToolTip(helper);
@@ -47,7 +48,7 @@ CheatsDialog::CheatsDialog(QString gameName, QWidget *parent)
         {
             row++;
             QJsonObject options = cheats.value("options").toObject();
-            QButtonGroup* optionButtons = new QButtonGroup(this);
+            QButtonGroup *optionButtons = new QButtonGroup(this);
             optionButtons->setExclusive(true);
             QStringList optionsKeys = options.keys();
             for (int j = 0; j < optionsKeys.size(); ++j)
@@ -91,9 +92,8 @@ CheatsTextEdit::CheatsTextEdit(QString _game, QWidget *parent)
 
     setPlainText(w->getSettings()->value(prefix + "cheat").toString());
 
-    connect(this, &QPlainTextEdit::textChanged, [=]{
-        w->getSettings()->setValue(prefix + "cheat", toPlainText());
-    });
+    connect(this, &QPlainTextEdit::textChanged, [=]
+            { w->getSettings()->setValue(prefix + "cheat", toPlainText()); });
 }
 
 CheatsCheckBox::CheatsCheckBox(QString _game, QString _cheat, QWidget *parent)
@@ -102,28 +102,28 @@ CheatsCheckBox::CheatsCheckBox(QString _game, QString _cheat, QWidget *parent)
     m_game = _game;
     m_cheatName = _cheat;
 
-    connect(this, &QAbstractButton::pressed, [=]{
+    connect(this, &QAbstractButton::pressed, [=]
+            {
         if (m_group != nullptr && checkState() == Qt::Checked)
         {
             m_group->setExclusive(false);
-        }
-    });
+        } });
 
-    connect(this, &QAbstractButton::released, [=]{
+    connect(this, &QAbstractButton::released, [=]
+            {
         if (m_group != nullptr)
         {
             m_group->setExclusive(true);
-        }
-    });
+        } });
 
-    connect(this, &QCheckBox::stateChanged, [=](int state){
+    connect(this, &QCheckBox::stateChanged, [=](int state)
+            {
         QString prefix = "Cheats/" + m_game + "/" + m_cheatName + "/";
         if (m_optionName != "")
         {
             w->getSettings()->setValue(prefix + "option", m_optionName);
         }
-        w->getSettings()->setValue(prefix + "enabled", state == Qt::Checked ? true : false);
-    });
+        w->getSettings()->setValue(prefix + "enabled", state == Qt::Checked ? true : false); });
 }
 
 void CheatsCheckBox::loadState()
@@ -167,7 +167,7 @@ QJsonObject getCheatsFromSettings(QString gameName, QJsonObject gameData)
         else if (w->getSettings()->value("enabled").toBool())
         {
             QJsonArray cheat_codes = gameData.value(childGroups.at(i)).toObject().value("data").toArray();
-            if(w->getSettings()->contains("option"))
+            if (w->getSettings()->contains("option"))
             {
                 for (int j = 0; j < cheat_codes.size(); ++j)
                 {
@@ -195,7 +195,7 @@ bool loadCheats(QJsonObject cheatsData)
     for (int i = 0; i < cheatsData.size(); ++i)
     {
         QJsonArray cheat_codes = cheatsData.value(cheatsData.keys().at(i)).toArray();
-        QList <m64p_cheat_code> codes;
+        QList<m64p_cheat_code> codes;
         for (int j = 0; j < cheat_codes.size(); ++j)
         {
             QStringList data = cheat_codes.at(j).toString().split(" ");

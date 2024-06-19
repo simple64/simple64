@@ -13,12 +13,13 @@ public:
     QString getSection();
     m64p_handle getCoreHandle();
     m64p_handle getVideoHandle();
-    QGridLayout * getCoreLayout();
-    QGridLayout * getVideoLayout();
-    int * getCoreLayoutRow();
-    int * getVideoLayoutRow();
+    QGridLayout *getCoreLayout();
+    QGridLayout *getVideoLayout();
+    int *getCoreLayoutRow();
+    int *getVideoLayoutRow();
 private slots:
     void handleResetButton();
+
 private:
     m64p_handle m_coreConfigHandle;
     m64p_handle m_videoConfigHandle;

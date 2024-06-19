@@ -10,17 +10,18 @@
 #include "discord/discord_game_sdk.h"
 
 class WorkerThread
- : public QThread
+    : public QThread
 {
     Q_OBJECT
     void run() Q_DECL_OVERRIDE;
+
 public:
     explicit WorkerThread(QString _netplay_ip, int _netplay_port, int _netplay_player, QJsonObject _cheats, QObject *parent = 0);
     void setFileName(QString filename);
 signals:
     void resizeMainWindow(int Width, int Height);
     void toggleFS(int force);
-    void createVkWindow(QVulkanInstance* instance);
+    void createVkWindow(QVulkanInstance *instance);
     void deleteVkWindow();
     void showMessage(QString message);
     void updateDiscordActivity(struct DiscordActivity activity);

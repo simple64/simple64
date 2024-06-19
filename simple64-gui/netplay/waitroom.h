@@ -24,6 +24,7 @@ private slots:
     void startGame();
     void updatePing(quint64 elapsedTime, const QByteArray &payload);
     void sendPing();
+
 private:
     QJsonObject cheats;
     QWebSocket *webSocket = nullptr;

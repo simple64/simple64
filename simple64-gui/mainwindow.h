@@ -6,7 +6,8 @@
 #include "workerthread.h"
 #include "logviewer.h"
 #include "keypressfilter.h"
-extern "C" {
+extern "C"
+{
 #include "osal/osal_dynamiclib.h"
 }
 #include <QMainWindow>
@@ -19,13 +20,15 @@ extern "C" {
 #include <QNetworkReply>
 #include <QJsonObject>
 
-namespace Ui {
-class MainWindow;
+namespace Ui
+{
+    class MainWindow;
 }
 
-struct Discord_Application {
-    struct IDiscordCore* core;
-    struct IDiscordActivityManager* activities;
+struct Discord_Application
+{
+    struct IDiscordCore *core;
+    struct IDiscordActivityManager *activities;
 };
 
 class MainWindow : public QMainWindow
@@ -33,10 +36,10 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    WorkerThread* getWorkerThread();
-    VkWindow* getVkWindow();
-    QSettings* getSettings();
-    LogViewer* getLogViewer();
+    WorkerThread *getWorkerThread();
+    VkWindow *getVkWindow();
+    QSettings *getSettings();
+    LogViewer *getLogViewer();
 
     m64p_dynlib_handle getAudioPlugin();
     m64p_dynlib_handle getRspPlugin();
@@ -53,7 +56,7 @@ public:
     void updatePlugins();
     void resetCore();
     m64p_dynlib_handle getCoreLib();
-    struct Discord_Application* getDiscordApp();
+    struct Discord_Application *getDiscordApp();
     explicit MainWindow(QWidget *parent = 0);
     void updateApp();
     ~MainWindow();
@@ -64,7 +67,7 @@ protected:
 public slots:
     void resizeMainWindow(int Width, int Height);
     void toggleFS(int force);
-    void createVkWindow(QVulkanInstance* instance);
+    void createVkWindow(QVulkanInstance *instance);
     void deleteVkWindow();
     void showMessage(QString message);
     void updateDiscordActivity(struct DiscordActivity activity);
@@ -146,7 +149,7 @@ private:
     void closePlugins();
     void simulateInput();
     Ui::MainWindow *ui;
-    QMenu * OpenRecent;
+    QMenu *OpenRecent;
     int verbose;
     int nogui;
     int run_test;
@@ -175,33 +178,35 @@ private:
 
 extern MainWindow *w;
 
-class VolumeAction : public QWidgetAction {
+class VolumeAction : public QWidgetAction
+{
 public:
-    VolumeAction (const QString& title, QObject* parent) :
-      QWidgetAction (parent) {
-        QWidget* pWidget = new QWidget;
-        QHBoxLayout* pLayout = new QHBoxLayout(pWidget);
-        QLabel* pLabel = new QLabel (title, pWidget);
-        pLayout->addWidget (pLabel);
+    VolumeAction(const QString &title, QObject *parent) : QWidgetAction(parent)
+    {
+        QWidget *pWidget = new QWidget;
+        QHBoxLayout *pLayout = new QHBoxLayout(pWidget);
+        QLabel *pLabel = new QLabel(title, pWidget);
+        pLayout->addWidget(pLabel);
         pSlider = new QSlider(Qt::Horizontal, pWidget);
         pSlider->setMinimum(0);
         pSlider->setMaximum(100);
-        pLayout->addWidget (pSlider);
-        pWidget->setLayout (pLayout);
+        pLayout->addWidget(pSlider);
+        pWidget->setLayout(pLayout);
 
         setDefaultWidget(pWidget);
     }
-    void releaseWidget(QWidget* widget)
+    void releaseWidget(QWidget *widget)
     {
         widget->deleteLater();
     }
 
-    QSlider * slider () {
+    QSlider *slider()
+    {
         return pSlider;
     }
 
 private:
-    QSlider * pSlider;
+    QSlider *pSlider;
 };
 
 #endif // MAINWINDOW_H

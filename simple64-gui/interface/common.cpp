@@ -40,15 +40,15 @@
 
 void DebugMessage(int level, const char *message, ...)
 {
-  char msgbuf[1024];
-  va_list args;
+    char msgbuf[1024];
+    va_list args;
 
-  va_start(args, message);
-  vsnprintf(msgbuf, 1024, message, args);
+    va_start(args, message);
+    vsnprintf(msgbuf, 1024, message, args);
 
-  DebugCallback((char*)"GUI", level, msgbuf);
+    DebugCallback((char *)"GUI", level, msgbuf);
 
-  va_end(args);
+    va_end(args);
 }
 
 void DebugCallback(void *Context, int level, const char *message)
@@ -57,24 +57,24 @@ void DebugCallback(void *Context, int level, const char *message)
 
     if (level == M64MSG_ERROR)
     {
-        output = QString("%1 Error: %2").arg((const char *) Context, message);
+        output = QString("%1 Error: %2").arg((const char *)Context, message);
         QString netplay = QString::fromUtf8(message);
         if (netplay.contains("Netplay"))
             w->getWorkerThread()->showMessage(netplay);
     }
     else if (level == M64MSG_WARNING)
-        output = QString("%1 Warning: %2").arg((const char *) Context, message);
+        output = QString("%1 Warning: %2").arg((const char *)Context, message);
     else if (level == M64MSG_INFO)
-            output = QString("%1: %2").arg((const char *) Context, message);
+        output = QString("%1: %2").arg((const char *)Context, message);
     else if (level == M64MSG_STATUS)
-            output = QString("%1 Status: %2").arg((const char *) Context, message);
+        output = QString("%1 Status: %2").arg((const char *)Context, message);
     else if (level == M64MSG_VERBOSE)
     {
         if (w->getVerbose())
-            output = QString("%1: %2").arg((const char *) Context, message);
+            output = QString("%1: %2").arg((const char *)Context, message);
     }
     else
-        output = QString("%1 Unknown: %2").arg((const char *) Context, message);
+        output = QString("%1 Unknown: %2").arg((const char *)Context, message);
     if (w != nullptr && !output.isEmpty())
     {
         if (QThread::currentThread() == w->getWorkerThread())
@@ -84,7 +84,7 @@ void DebugCallback(void *Context, int level, const char *message)
     }
 }
 
-static char* media_loader_get_gb_cart_rom(void*, int control_id)
+static char *media_loader_get_gb_cart_rom(void *, int control_id)
 {
     QString pathname;
     if (control_id == 0)
@@ -98,13 +98,14 @@ static char* media_loader_get_gb_cart_rom(void*, int control_id)
 
     if (pathname.isEmpty())
         return NULL;
-    else {
+    else
+    {
         char *path = strdup(pathname.toUtf8().constData());
         return path;
     }
 }
 
-static char* media_loader_get_gb_cart_ram(void*, int control_id)
+static char *media_loader_get_gb_cart_ram(void *, int control_id)
 {
     QString pathname;
     if (control_id == 0)
@@ -118,7 +119,8 @@ static char* media_loader_get_gb_cart_ram(void*, int control_id)
 
     if (pathname.isEmpty())
         return NULL;
-    else {
+    else
+    {
         char *path = strdup(pathname.toUtf8().constData());
         return path;
     }
@@ -152,14 +154,13 @@ static char* media_loader_get_dd_disk(void*)
 */
 
 static m64p_media_loader media_loader =
-{
-    NULL,
-    media_loader_get_gb_cart_rom,
-    media_loader_get_gb_cart_ram,
-    NULL,
-    NULL,
-    NULL
-};
+    {
+        NULL,
+        media_loader_get_gb_cart_rom,
+        media_loader_get_gb_cart_ram,
+        NULL,
+        NULL,
+        NULL};
 
 m64p_error loadROM(QString filename)
 {
@@ -170,7 +171,7 @@ m64p_error loadROM(QString filename)
     {
         QProcess process;
         process.setProgram("7za");
-        QStringList arguments = { "e", "-so", filename, "*64"  };
+        QStringList arguments = {"e", "-so", filename, "*64"};
         process.setArguments(arguments);
         process.start();
         process.waitForFinished(-1);
@@ -181,7 +182,7 @@ m64p_error loadROM(QString filename)
             DebugMessage(M64MSG_ERROR, "couldn't open file '%s' for reading.", filename.toUtf8().constData());
             return M64ERR_INVALID_STATE;
         }
-        ROM_buffer = (char *) malloc(romlength);
+        ROM_buffer = (char *)malloc(romlength);
         memcpy(ROM_buffer, data.constData(), romlength);
     }
     else
@@ -196,7 +197,7 @@ m64p_error loadROM(QString filename)
 
         romlength = file.size();
         QDataStream in(&file);
-        ROM_buffer = (char *) malloc(romlength);
+        ROM_buffer = (char *)malloc(romlength);
         if (in.readRawData(ROM_buffer, romlength) == -1)
         {
             DebugMessage(M64MSG_ERROR, "couldn't read %li bytes from ROM image file '%s'.", romlength, filename.toUtf8().constData());
@@ -208,7 +209,7 @@ m64p_error loadROM(QString filename)
     }
 
     /* Try to load the ROM image into the core */
-    if ((*CoreDoCommand)(M64CMD_ROM_OPEN, (int) romlength, ROM_buffer) != M64ERR_SUCCESS)
+    if ((*CoreDoCommand)(M64CMD_ROM_OPEN, (int)romlength, ROM_buffer) != M64ERR_SUCCESS)
     {
         DebugMessage(M64MSG_ERROR, "core failed to open ROM image file '%s'.", filename.toUtf8().constData());
         free(ROM_buffer);
@@ -227,7 +228,7 @@ m64p_error launchGame(QString netplay_ip, int netplay_port, int netplay_player)
     (*CoreAttachPlugin)(M64PLUGIN_INPUT, w->getInputPlugin());
     (*CoreAttachPlugin)(M64PLUGIN_RSP, w->getRspPlugin());
 
-    m64p_rom_header    l_RomHeader;
+    m64p_rom_header l_RomHeader;
     /* get the ROM header for the currently loaded ROM image from the core */
     if ((*CoreDoCommand)(M64CMD_ROM_GET_HEADER, sizeof(l_RomHeader), &l_RomHeader) != M64ERR_SUCCESS)
     {
@@ -307,7 +308,8 @@ int QT2SDL2MOD(Qt::KeyboardModifiers modifiers)
 int QT2SDL2(int qtKey)
 {
     SDL_Scancode returnValue;
-    switch (qtKey) {
+    switch (qtKey)
+    {
     case Qt::Key_Escape:
         returnValue = SDL_SCANCODE_ESCAPE;
         break;
@@ -616,7 +618,8 @@ int QT2SDL2(int qtKey)
 int SDL22QT(int scanCode)
 {
     int returnValue;
-    switch (scanCode) {
+    switch (scanCode)
+    {
     case SDL_SCANCODE_ESCAPE:
         returnValue = Qt::Key_Escape;
         break;

@@ -21,9 +21,11 @@ VkWindow::~VkWindow()
     }
 }
 
-void VkWindow::resizeEvent(QResizeEvent *event) {
+void VkWindow::resizeEvent(QResizeEvent *event)
+{
     QWindow::resizeEvent(event);
-    if (timerId) {
+    if (timerId)
+    {
         killTimer(timerId);
         timerId = 0;
     }
@@ -34,7 +36,8 @@ void VkWindow::resizeEvent(QResizeEvent *event) {
     m_height = orig_height * devicePixelRatio();
 }
 
-void VkWindow::timerEvent(QTimerEvent *te) {
+void VkWindow::timerEvent(QTimerEvent *te)
+{
     int size = (m_width << 16) + m_height;
     int current_size = 0;
 

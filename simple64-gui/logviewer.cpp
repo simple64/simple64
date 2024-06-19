@@ -3,7 +3,7 @@
 LogViewer::LogViewer(QWidget *parent)
     : QDialog(parent)
 {
-    this->resize(640,480);
+    this->resize(640, 480);
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     textArea = new QPlainTextEdit(this);
     textArea->setReadOnly(1);

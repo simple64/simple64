@@ -26,7 +26,8 @@ private slots:
     void handleServerChanged(int index);
     void connectionFailed();
     void sendPing();
-    void updatePing(quint64 elapsedTime, const QByteArray&);
+    void updatePing(quint64 elapsedTime, const QByteArray &);
+
 private:
     QPushButton *romButton;
     QPushButton *createButton;

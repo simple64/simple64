@@ -13,13 +13,16 @@ class CustomLineEdit : public QLineEdit
 {
 public:
     explicit CustomLineEdit(QWidget *parent = 0);
-    void setParamName(const char* ParamName) {
+    void setParamName(const char *ParamName)
+    {
         m_ParamName = ParamName;
     }
-    void setParamType(m64p_type ParamType) {
+    void setParamType(m64p_type ParamType)
+    {
         m_ParamType = ParamType;
     }
-    void setConfigHandle(m64p_handle CurrentHandle) {
+    void setConfigHandle(m64p_handle CurrentHandle)
+    {
         m_CurrentHandle = CurrentHandle;
     }
 
@@ -33,13 +36,16 @@ class CustomCheckBox : public QCheckBox
 {
 public:
     explicit CustomCheckBox(QWidget *parent = 0);
-    void setParamName(const char* ParamName) {
+    void setParamName(const char *ParamName)
+    {
         m_ParamName = ParamName;
     }
-    void setParamType(m64p_type ParamType) {
+    void setParamType(m64p_type ParamType)
+    {
         m_ParamType = ParamType;
     }
-    void setConfigHandle(m64p_handle CurrentHandle) {
+    void setConfigHandle(m64p_handle CurrentHandle)
+    {
         m_CurrentHandle = CurrentHandle;
     }
 

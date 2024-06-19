@@ -64,7 +64,7 @@ CreateRoom::CreateRoom(QWidget *parent)
     pingValue->setText("(Calculating)");
     layout->addWidget(pingValue, 7, 1);
 
-    QFrame* lineH1 = new QFrame(this);
+    QFrame *lineH1 = new QFrame(this);
     lineH1->setFrameShape(QFrame::HLine);
     lineH1->setFrameShadow(QFrame::Sunken);
     layout->addWidget(lineH1, 8, 0, 1, 2);
@@ -76,7 +76,7 @@ CreateRoom::CreateRoom(QWidget *parent)
     setLayout(layout);
 
     connect(&manager, &QNetworkAccessManager::finished, this,
-           &CreateRoom::downloadFinished);
+            &CreateRoom::downloadFinished);
 
     connect(this, &CreateRoom::finished, this, &CreateRoom::onFinished);
 
@@ -120,7 +120,7 @@ void CreateRoom::onFinished(int)
 void CreateRoom::handleRomButton()
 {
     filename = QFileDialog::getOpenFileName(this,
-        tr("Open ROM"), w->getSettings()->value("ROMdir").toString(), tr("ROM Files (*.n64 *.N64 *.z64 *.Z64 *.v64 *.V64 *.rom *.ROM *.zip *.ZIP *.7z)"));
+                                            tr("Open ROM"), w->getSettings()->value("ROMdir").toString(), tr("ROM Files (*.n64 *.N64 *.z64 *.Z64 *.v64 *.V64 *.rom *.ROM *.zip *.ZIP *.7z)"));
     if (!filename.isNull())
     {
         romButton->setText(filename);
@@ -136,7 +136,7 @@ void CreateRoom::handleCreateButton()
         msgBox.exec();
         return;
     }
-    if (loadROM(romButton->text()) == M64ERR_SUCCESS)
+    if (loadROM(filename) == M64ERR_SUCCESS)
     {
         createButton->setEnabled(false);
         (*CoreDoCommand)(M64CMD_ROM_GET_SETTINGS, sizeof(rom_settings), &rom_settings);
@@ -238,11 +238,13 @@ void CreateRoom::downloadFinished(QNetworkReply *reply)
 
 void CreateRoom::handleServerChanged(int index)
 {
-    if (serverChooser->itemData(index) == "Custom") {
+    if (serverChooser->itemData(index) == "Custom")
+    {
         bool ok;
         QString host = QInputDialog::getText(this, "Custom Netplay Server", "IP Address / Host:", QLineEdit::Normal, "", &ok);
 
-        if (ok && !host.isEmpty()) {
+        if (ok && !host.isEmpty())
+        {
             customServerHost = host;
         }
     }
@@ -286,7 +288,7 @@ void CreateRoom::connectionFailed()
     handleServerChanged(serverChooser->currentIndex());
 }
 
-void CreateRoom::updatePing(quint64 elapsedTime, const QByteArray&)
+void CreateRoom::updatePing(quint64 elapsedTime, const QByteArray &)
 {
     pingValue->setText(QString::number(elapsedTime) + " ms");
 }

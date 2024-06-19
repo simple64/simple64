@@ -28,49 +28,48 @@
 
 #if defined(WIN32)
 
-  #include <windows.h>
+#include <windows.h>
 
-  #ifndef PATH_MAX
-    #define PATH_MAX 2048
-  #endif
-  #define OSAL_DEFAULT_DYNLIB_FILENAME "libmupen64plus.dll"
-  #define OSAL_DIR_SEPARATOR           '\\'
-  #define OSAL_CURRENT_DIR             ".\\"
-  #define OSAL_DLL_EXTENSION           ".dll"
-  #define osal_insensitive_strcmp(x, y) _stricmp(x, y)
+#ifndef PATH_MAX
+#define PATH_MAX 2048
+#endif
+#define OSAL_DEFAULT_DYNLIB_FILENAME "libmupen64plus.dll"
+#define OSAL_DIR_SEPARATOR '\\'
+#define OSAL_CURRENT_DIR ".\\"
+#define OSAL_DLL_EXTENSION ".dll"
+#define osal_insensitive_strcmp(x, y) _stricmp(x, y)
 
 #elif defined(__APPLE__)
 
-  #include <limits.h>  // for PATH_MAX
+#include <limits.h> // for PATH_MAX
 
-  #define OSAL_DEFAULT_DYNLIB_FILENAME "libmupen64plus.dylib"
-  #define OSAL_DIR_SEPARATOR           '/'
-  #define OSAL_CURRENT_DIR             "./"
-  #define OSAL_DLL_EXTENSION           ".dylib"
-  #define osal_insensitive_strcmp(x, y) strcasecmp(x, y)
+#define OSAL_DEFAULT_DYNLIB_FILENAME "libmupen64plus.dylib"
+#define OSAL_DIR_SEPARATOR '/'
+#define OSAL_CURRENT_DIR "./"
+#define OSAL_DLL_EXTENSION ".dylib"
+#define osal_insensitive_strcmp(x, y) strcasecmp(x, y)
 
-#else  /* Linux-like UNIX */
+#else /* Linux-like UNIX */
 
-  #if defined(ANDROID)
-    #include <android/log.h>
+#if defined(ANDROID)
+#include <android/log.h>
 
-    #define printf(...) __android_log_print(ANDROID_LOG_VERBOSE, "UI-Console", __VA_ARGS__)
-  #endif
+#define printf(...) __android_log_print(ANDROID_LOG_VERBOSE, "UI-Console", __VA_ARGS__)
+#endif
 
-  #include <limits.h>  // for PATH_MAX
+#include <limits.h> // for PATH_MAX
 
-  #define OSAL_DEFAULT_DYNLIB_FILENAME "libmupen64plus.so"
-  #define OSAL_DIR_SEPARATOR           '/'
-  #define OSAL_CURRENT_DIR             "./"
-  #define OSAL_DLL_EXTENSION           ".so"
-  #define osal_insensitive_strcmp(x, y) strcasecmp(x, y)
+#define OSAL_DEFAULT_DYNLIB_FILENAME "libmupen64plus.so"
+#define OSAL_DIR_SEPARATOR '/'
+#define OSAL_CURRENT_DIR "./"
+#define OSAL_DLL_EXTENSION ".so"
+#define osal_insensitive_strcmp(x, y) strcasecmp(x, y)
 
-  /* PATH_MAX only may be defined by limits.h */
-  #ifndef PATH_MAX
-    #define PATH_MAX 4096
-  #endif
+/* PATH_MAX only may be defined by limits.h */
+#ifndef PATH_MAX
+#define PATH_MAX 4096
+#endif
 
 #endif
 
 #endif /* #define OSAL_PREPROC_H */
-

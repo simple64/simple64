@@ -25,7 +25,8 @@ private slots:
     void onFinished(int result);
     void processBroadcast();
     void sendPing();
-    void updatePing(quint64 elapsedTime, const QByteArray&);
+    void updatePing(quint64 elapsedTime, const QByteArray &);
+
 private:
     void resetList();
     QComboBox *serverChooser;

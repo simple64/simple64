@@ -38,7 +38,8 @@ void WorkerThread::run()
 #else
     uint32_t cookieID = 0;
     QDBusInterface screenSaverInterface("org.freedesktop.ScreenSaver", "/org/freedesktop/ScreenSaver", "org.freedesktop.ScreenSaver");
-    if (screenSaverInterface.isValid()) {
+    if (screenSaverInterface.isValid())
+    {
         QDBusReply<uint32_t> reply = screenSaverInterface.call("Inhibit", "simple64-gui", "game");
         if (reply.isValid())
             cookieID = reply.value();

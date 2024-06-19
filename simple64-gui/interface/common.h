@@ -30,17 +30,17 @@
 m64p_error loadROM(QString filename);
 m64p_error launchGame(QString netplay_ip, int netplay_port, int netplay_player);
 int QT2SDL2MOD(Qt::KeyboardModifiers modifiers);
-extern "C" {
+extern "C"
+{
 #endif
-void DebugMessage(int level, const char *message, ...);
-void DebugCallback(void *Context, int level, const char *message);
-int QT2SDL2(int qtKey);
-int SDL22QT(int scanCode);
+    void DebugMessage(int level, const char *message, ...);
+    void DebugCallback(void *Context, int level, const char *message);
+    int QT2SDL2(int qtKey);
+    int SDL22QT(int scanCode);
 #ifdef __cplusplus
 }
 #endif
 
-extern int  g_Verbose;
+extern int g_Verbose;
 
 #endif /* __COMMON_H__ */
-

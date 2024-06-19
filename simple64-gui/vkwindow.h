@@ -11,10 +11,12 @@ class VkWindow : public QWindow
 public:
     explicit VkWindow(QWindow *parent = nullptr);
     ~VkWindow();
+
 protected:
     void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE;
 
     void timerEvent(QTimerEvent *te) Q_DECL_OVERRIDE;
+
 private:
     int m_width;
     int m_height;

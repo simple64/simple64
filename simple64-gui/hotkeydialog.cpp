@@ -10,10 +10,12 @@
 
 static void paramListCallback(void *context, const char *ParamName, m64p_type ParamType)
 {
-    HotkeyDialog* dialog = (HotkeyDialog*)context;
+    HotkeyDialog *dialog = (HotkeyDialog *)context;
 
-    if (strcmp((char*)ParamName, "Version") == 0) return;
-    else if (strncmp((char*)ParamName, "Joy Mapping", 11) == 0) return;
+    if (strcmp((char *)ParamName, "Version") == 0)
+        return;
+    else if (strncmp((char *)ParamName, "Joy Mapping", 11) == 0)
+        return;
 
     int l_ParamInt;
     bool l_ParamBool;
@@ -21,10 +23,11 @@ static void paramListCallback(void *context, const char *ParamName, m64p_type Pa
     QString l_ParamString;
     QString helper = (*ConfigGetParameterHelp)(dialog->getHandle(), ParamName);
     QLabel *desc = new QLabel(ParamName, dialog->getLayout()->parentWidget());
-    if (!helper.isEmpty()) {
-       helper.prepend("<span style=\"color:black;\">");
-       helper.append("</span>");
-       desc->setToolTip(helper);
+    if (!helper.isEmpty())
+    {
+        helper.prepend("<span style=\"color:black;\">");
+        helper.append("</span>");
+        desc->setToolTip(helper);
     }
     desc->setStyleSheet("padding: 10px");
     dialog->getLayout()->addWidget(desc, *dialog->getLayoutRow(), 0);
@@ -37,9 +40,9 @@ static void paramListCallback(void *context, const char *ParamName, m64p_type Pa
     l_ParamInt = (*ConfigGetParamInt)(dialog->getHandle(), ParamName);
     my_Widget->setText(QKeySequence(SDL22QT(sdl_keysym2scancode(l_ParamInt))).toString());
 
-    dialog->getLayout()->addWidget((QWidget*)my_Widget, *dialog->getLayoutRow(), 1);
+    dialog->getLayout()->addWidget((QWidget *)my_Widget, *dialog->getLayoutRow(), 1);
 
-    ClearButton* clear_Widget = new ClearButton(dialog->getLayout()->parentWidget());
+    ClearButton *clear_Widget = new ClearButton(dialog->getLayout()->parentWidget());
     clear_Widget->setConfigHandle(dialog->getHandle());
     clear_Widget->setParamType(ParamType);
     clear_Widget->setParamName(ParamName);
@@ -48,7 +51,7 @@ static void paramListCallback(void *context, const char *ParamName, m64p_type Pa
     l_ParamInt = (*ConfigGetParamInt)(dialog->getHandle(), ParamName);
     clear_Widget->setText("Clear");
 
-    dialog->getLayout()->addWidget((QWidget*)clear_Widget, *dialog->getLayoutRow(), 2);
+    dialog->getLayout()->addWidget((QWidget *)clear_Widget, *dialog->getLayoutRow(), 2);
     ++*dialog->getLayoutRow();
 }
 
@@ -56,13 +59,15 @@ void HotkeyDialog::handleResetButton()
 {
     int value;
     (*CoreDoCommand)(M64CMD_CORE_STATE_QUERY, M64CORE_EMU_STATE, &value);
-    if (value == M64EMU_STOPPED) {
+    if (value == M64EMU_STOPPED)
+    {
         (*ConfigDeleteSection)("CoreEvents");
         (*ConfigSaveFile)();
         w->resetCore();
         this->close();
     }
-    else {
+    else
+    {
         QMessageBox msgBox;
         msgBox.setText("Emulator must be stopped.");
         msgBox.exec();
@@ -96,7 +101,7 @@ HotkeyDialog::HotkeyDialog(QWidget *parent)
     mainLayout->addWidget(coreEventsScroll);
     QPushButton *resetButton = new QPushButton("Reset All Settings", this);
     resetButton->setAutoDefault(false);
-    connect(resetButton, &QPushButton::released,this, &HotkeyDialog::handleResetButton);
+    connect(resetButton, &QPushButton::released, this, &HotkeyDialog::handleResetButton);
     mainLayout->addWidget(resetButton);
     setLayout(mainLayout);
 }
@@ -104,7 +109,8 @@ HotkeyDialog::HotkeyDialog(QWidget *parent)
 void HotkeyDialog::keyReleaseEvent(QKeyEvent *event)
 {
     int keyValue = sdl_scancode2keysym(QT2SDL2(event->key()));
-    if (m_activeButton != nullptr) {
+    if (m_activeButton != nullptr)
+    {
         killTimer(m_timer);
         (*ConfigSetParameter)(m_configHandle, m_activeButton->getParamName(), m_activeButton->getParamType(), &keyValue);
         (*ConfigSaveFile)();
@@ -117,23 +123,26 @@ void HotkeyDialog::keyReleaseEvent(QKeyEvent *event)
 
 void HotkeyDialog::timerEvent(QTimerEvent *)
 {
-    if (m_buttonTimer == 0) {
+    if (m_buttonTimer == 0)
+    {
         killTimer(m_timer);
         m_activeButton->setText(m_activeButton->getOrigText());
         m_activeButton = nullptr;
-        for (int i = 0; i < m_coreEventsButtonList.size(); ++i) {
+        for (int i = 0; i < m_coreEventsButtonList.size(); ++i)
+        {
             m_coreEventsButtonList.at(i)->setDisabled(0);
         }
         return;
     }
     --m_buttonTimer;
-    m_activeButton->setText(QString::number(ceil(m_buttonTimer/10.0)));
+    m_activeButton->setText(QString::number(ceil(m_buttonTimer / 10.0)));
 }
 
 CustomButton::CustomButton(QWidget *parent)
     : QPushButton(parent)
 {
-    connect(this, &QPushButton::released, [=]{
+    connect(this, &QPushButton::released, [=]
+            {
         int buttonTimer = 50;
         for (int i = 0; i < ((HotkeyDialog*)m_dialog)->getButtonList()->size(); ++i)
             ((HotkeyDialog*)m_dialog)->getButtonList()->at(i)->setDisabled(1);
@@ -141,19 +150,18 @@ CustomButton::CustomButton(QWidget *parent)
         ((HotkeyDialog*)m_dialog)->setButtonTimer(buttonTimer);
         origText = text();
         setText(QString::number(buttonTimer/10));
-        ((HotkeyDialog*)m_dialog)->setTimer(100);
-    });
+        ((HotkeyDialog*)m_dialog)->setTimer(100); });
 }
 
 ClearButton::ClearButton(QWidget *parent)
     : QPushButton(parent)
 {
-    connect(this, &QPushButton::released, [=]{
+    connect(this, &QPushButton::released, [=]
+            {
         if (((HotkeyDialog*)m_dialog)->getActiveButton() == m_MainButton)
             return;
         int value = 0;
         (*ConfigSetParameter)(m_CurrentHandle, m_ParamName.toUtf8().constData(), m_ParamType, &value);
         (*ConfigSaveFile)();
-        m_MainButton->setText("");
-    });
+        m_MainButton->setText(""); });
 }
