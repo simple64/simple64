@@ -1100,6 +1100,7 @@ static void savestates_save_m64p_work(struct work_struct *work)
     {
         main_message(M64MSG_STATUS, OSD_BOTTOM_LEFT, "Could not open state file: %s", save->filepath);
         free(save->data);
+        StateChanged(M64CORE_STATE_SAVECOMPLETE, 0);
         return;
     }
 
@@ -1109,6 +1110,7 @@ static void savestates_save_m64p_work(struct work_struct *work)
         main_message(M64MSG_STATUS, OSD_BOTTOM_LEFT, "Could not write data to state file: %s", save->filepath);
         gzclose(f);
         free(save->data);
+        StateChanged(M64CORE_STATE_SAVECOMPLETE, 0);
         return;
     }
 
@@ -1119,6 +1121,7 @@ static void savestates_save_m64p_work(struct work_struct *work)
     free(save);
 
     SDL_UnlockMutex(savestates_lock);
+    StateChanged(M64CORE_STATE_SAVECOMPLETE, 1);
 }
 
 static int savestates_save_m64p(const struct device* dev, char *filepath)
@@ -1137,6 +1140,7 @@ static int savestates_save_m64p(const struct device* dev, char *filepath)
     save = malloc(sizeof(*save));
     if (!save) {
         main_message(M64MSG_STATUS, OSD_BOTTOM_LEFT, "Insufficient memory to save state.");
+        StateChanged(M64CORE_STATE_SAVECOMPLETE, 0);
         return 0;
     }
 
@@ -1155,6 +1159,7 @@ static int savestates_save_m64p(const struct device* dev, char *filepath)
         free(save->filepath);
         free(save);
         main_message(M64MSG_STATUS, OSD_BOTTOM_LEFT, "Insufficient memory to save state.");
+        StateChanged(M64CORE_STATE_SAVECOMPLETE, 0);
         return 0;
     }
 
@@ -1569,13 +1574,14 @@ int savestates_save(void)
         switch (type)
         {
             case savestates_type_m64p: ret = savestates_save_m64p(dev, filepath); break;
-            default: ret = 0; break;
+            default: ret = 0; StateChanged(M64CORE_STATE_SAVECOMPLETE, ret); break;
         }
         free(filepath);
     }
-
-    // deliver callback to indicate completion of state saving operation
-    StateChanged(M64CORE_STATE_SAVECOMPLETE, ret);
+    else
+    {
+        StateChanged(M64CORE_STATE_SAVECOMPLETE, ret);
+    }
 
     savestates_clear_job();
     return ret;
