@@ -1421,11 +1421,13 @@ bool Context::create_device(VkPhysicalDevice gpu_, VkSurfaceKHR surface,
 		ADD_CHAIN(ext.video_maintenance1_features, VIDEO_MAINTENANCE_1_FEATURES_KHR);
 	}
 
+#if 0
 	if (has_extension(VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME))
 	{
 		enabled_extensions.push_back(VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME);
 		ext.supports_push_descriptor = true;
 	}
+#endif
 
 	if (has_extension(VK_EXT_IMAGE_COMPRESSION_CONTROL_EXTENSION_NAME))
 	{
