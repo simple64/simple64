@@ -14,7 +14,7 @@ namespace RSP
 {
 namespace JIT
 {
-#if TARGET_OS_TV // tvOS is 64bit but does not allow an infinite amount of VA space
+#ifdef IOS // iOS/tvOS is 64bit but does not allow an infinite amount of VA space
 static constexpr bool huge_va = false;
 #else
 static constexpr bool huge_va = std::numeric_limits<size_t>::max() > 0x100000000ull;
