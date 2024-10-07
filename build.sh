@@ -115,9 +115,9 @@ if [[ ${UNAME} == *"MINGW64"* ]]; then
     echo "Downloading 7-zip"
     mkdir -p "${base_dir}/7z"
     cd "${base_dir}/7z"
-    wget -q https://www.7-zip.org/a/7z2301-extra.7z
-    7z x 7z2301-extra.7z
-    rm 7z2301-extra.7z
+    wget -q https://www.7-zip.org/a/7z2408-extra.7z
+    7z x 7z2408-extra.7z
+    rm 7z2408-extra.7z
   fi
 
   cd "${install_dir}"
