@@ -668,7 +668,7 @@ void setKey(int Control, uint32_t key, BUTTONS *Keys, QString button)
             break;
         case 5 /*Joystick Axis*/:
             axis_value = SDL_JoystickGetAxis(controller[Control].joystick, value.at(0).toInt());
-            if (key == 0x0020/*Z*/ || key == 0x1000/*R_TRIG*/ || key == 0x2000/*L_TRIG*/ || 0x0400/*D_CBUTTON*/)
+            if (key == 0x0020/*Z*/ || key == 0x1000/*R_TRIG*/ || key == 0x2000/*L_TRIG*/ || key == 0x0400/*D_CBUTTON*/)
             {
                 if (axis_value > 0)
                     Keys->Value |= key;
