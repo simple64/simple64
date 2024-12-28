@@ -116,7 +116,7 @@ CheatsCheckBox::CheatsCheckBox(QString _game, QString _cheat, QWidget *parent)
             m_group->setExclusive(true);
         } });
 
-    connect(this, &QCheckBox::stateChanged, [=](int state)
+    connect(this, &QCheckBox::checkStateChanged, [=](Qt::CheckState state)
             {
         QString prefix = "Cheats/" + m_game + "/" + m_cheatName + "/";
         if (m_optionName != "")

@@ -31,7 +31,7 @@ CustomLineEdit::CustomLineEdit(QWidget *parent)
 CustomCheckBox::CustomCheckBox(QWidget *parent)
     : QCheckBox(parent)
 {
-    connect(this, &QCheckBox::stateChanged, [=](int state)
+    connect(this, &QCheckBox::checkStateChanged, [=](Qt::CheckState state)
             {
         int value = state == Qt::Checked ? 1 : 0;
         (*ConfigSetParameter)(m_CurrentHandle, m_ParamName.toUtf8().constData(), m_ParamType, &value);

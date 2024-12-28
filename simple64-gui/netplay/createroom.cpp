@@ -168,12 +168,13 @@ void CreateRoom::createRoom()
 {
     connectionTimer->stop();
     QJsonObject json;
+    QJsonObject room;
+    room.insert("room_name", nameEdit->text());
+    room.insert("password", passwordEdit->text());
+    room.insert("MD5", QString(rom_settings.MD5));
+    room.insert("game_name", QString(rom_settings.goodname));
     json.insert("type", "request_create_room");
-    json.insert("room_name", nameEdit->text());
     json.insert("player_name", playerNameEdit->text());
-    json.insert("password", passwordEdit->text());
-    json.insert("MD5", QString(rom_settings.MD5));
-    json.insert("game_name", QString(rom_settings.goodname));
     json.insert("client_sha", QStringLiteral(GUI_VERSION));
     json.insert("netplay_version", NETPLAY_VER);
 
@@ -185,9 +186,10 @@ void CreateRoom::createRoom()
         QJsonDocument cheatsDoc(cheats);
         QJsonObject features;
         features.insert("cheats", QString(cheatsDoc.toJson(QJsonDocument::Compact)));
-        json.insert("features", features);
+        room.insert("features", features);
     }
 
+    json.insert("room", room);
     addAuthData(webSocket, &json);
 
     QJsonDocument json_doc(json);

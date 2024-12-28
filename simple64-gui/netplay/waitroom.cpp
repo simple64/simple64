@@ -5,18 +5,18 @@
 #include <QMessageBox>
 #include <QJsonArray>
 
-WaitRoom::WaitRoom(QString filename, QJsonObject room, QWebSocket *socket, QWidget *parent)
+WaitRoom::WaitRoom(QString filename, QJsonObject response, QWebSocket *socket, QWidget *parent)
     : QDialog(parent)
 {
     this->resize(640, 480);
 
-    QString cheats_string = room.value("features").toObject().value("cheats").toString();
+    QString cheats_string = response.value("room").toObject().value("features").toObject().value("cheats").toString();
     QJsonDocument cheats_doc = QJsonDocument::fromJson(cheats_string.toUtf8());
     cheats = cheats_doc.object();
 
-    player_name = room.value("player_name").toString();
-    room_port = room.value("port").toInt();
-    room_name = room.value("room_name").toString();
+    player_name = response.value("player_name").toString();
+    room_port = response.value("room").toObject().value("port").toInt();
+    room_name = response.value("room").toObject().value("room_name").toString();
     file_name = filename;
     started = 0;
 
@@ -36,7 +36,7 @@ WaitRoom::WaitRoom(QString filename, QJsonObject room, QWebSocket *socket, QWidg
 
     QLabel *gameLabel = new QLabel("Game Name:", this);
     layout->addWidget(gameLabel, 1, 0);
-    QLabel *gameName = new QLabel(room.value("game_name").toString(), this);
+    QLabel *gameName = new QLabel(response.value("room").toObject().value("game_name").toString(), this);
     layout->addWidget(gameName, 1, 1);
 
     QLabel *pingLabel = new QLabel("Your ping:", this);
@@ -89,8 +89,10 @@ WaitRoom::WaitRoom(QString filename, QJsonObject room, QWebSocket *socket, QWidg
     connect(this, &WaitRoom::finished, this, &WaitRoom::onFinished);
 
     QJsonObject json;
+    QJsonObject room;
     json.insert("type", "request_players");
-    json.insert("port", room_port);
+    room.insert("port", room_port);
+    json.insert("room", room);
     QJsonDocument json_doc(json);
     webSocket->sendTextMessage(json_doc.toJson());
 
@@ -105,7 +107,7 @@ WaitRoom::WaitRoom(QString filename, QJsonObject room, QWebSocket *socket, QWidg
     strcpy(assets.large_image, "6205049");
     strcpy(assets.large_text, "https://simple64.github.io");
     activity.assets = assets;
-    strncpy(activity.details, room.value("game_name").toString().toUtf8().constData(), 128);
+    strncpy(activity.details, response.value("room").toObject().value("game_name").toString().toUtf8().constData(), 128);
     strcpy(activity.state, "Netplay waiting room");
     w->updateDiscordActivity(activity);
 }
@@ -116,7 +118,6 @@ void WaitRoom::sendPing()
     {
         QJsonObject json;
         json.insert("type", "request_motd");
-        json.insert("room_name", room_name);
         QJsonDocument json_doc(json);
         webSocket->sendTextMessage(json_doc.toJson());
     }
@@ -134,8 +135,10 @@ void WaitRoom::startGame()
     {
         startGameButton->setEnabled(false);
         QJsonObject json;
+        QJsonObject room;
         json.insert("type", "request_begin_game");
-        json.insert("port", room_port);
+        room.insert("port", room_port);
+        json.insert("room", room);
         QJsonDocument json_doc(json);
         webSocket->sendTextMessage(json_doc.toJson());
     }
@@ -152,9 +155,11 @@ void WaitRoom::sendChat()
     if (!chatEdit->text().isEmpty())
     {
         QJsonObject json;
+        QJsonObject room;
         json.insert("type", "request_chat_message");
-        json.insert("port", room_port);
         json.insert("player_name", player_name);
+        room.insert("port", room_port);
+        json.insert("room", room);
         json.insert("message", chatEdit->text());
         QJsonDocument json_doc(json);
         webSocket->sendTextMessage(json_doc.toJson());

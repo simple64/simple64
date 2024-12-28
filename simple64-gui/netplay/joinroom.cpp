@@ -171,12 +171,14 @@ void JoinRoom::joinGame()
 
             joinButton->setEnabled(false);
             QJsonObject json;
+            QJsonObject room;
             json.insert("type", "request_join_room");
             json.insert("player_name", playerNameEdit->text());
-            json.insert("password", passwordEdit->text());
             json.insert("client_sha", QStringLiteral(GUI_VERSION));
-            json.insert("MD5", QString(rom_settings.MD5));
-            json.insert("port", room_port);
+            room.insert("password", passwordEdit->text());
+            room.insert("MD5", QString(rom_settings.MD5));
+            room.insert("port", room_port);
+            json.insert("room", room);
 
             QJsonDocument json_doc(json);
             webSocket->sendTextMessage(json_doc.toJson());
@@ -276,34 +278,38 @@ void JoinRoom::processTextMessage(QString message)
         if (json.value("accept").toInt() == 0)
         {
             json.remove("type");
-            rooms << json;
+            QJsonArray room_list = json.value("rooms").toArray();
+            for (int i = 0; i < room_list.size(); ++i)
+            {
+                rooms << room_list.at(i).toObject();
 
-            listWidget->insertRow(row);
-            QTableWidgetItem *newItem = new QTableWidgetItem(json.value("room_name").toString());
-            newItem->setFlags(newItem->flags() & ~Qt::ItemIsEditable);
-            listWidget->setItem(row, 0, newItem);
-            newItem = new QTableWidgetItem(json.value("game_name").toString());
-            newItem->setFlags(newItem->flags() & ~Qt::ItemIsEditable);
-            listWidget->setItem(row, 1, newItem);
-            newItem = new QTableWidgetItem(json.value("MD5").toString());
-            newItem->setFlags(newItem->flags() & ~Qt::ItemIsEditable);
-            listWidget->setItem(row, 2, newItem);
+                listWidget->insertRow(row);
+                QTableWidgetItem *newItem = new QTableWidgetItem(room_list.at(i).toObject().value("room_name").toString());
+                newItem->setFlags(newItem->flags() & ~Qt::ItemIsEditable);
+                listWidget->setItem(row, 0, newItem);
+                newItem = new QTableWidgetItem(room_list.at(i).toObject().value("game_name").toString());
+                newItem->setFlags(newItem->flags() & ~Qt::ItemIsEditable);
+                listWidget->setItem(row, 1, newItem);
+                newItem = new QTableWidgetItem(room_list.at(i).toObject().value("MD5").toString());
+                newItem->setFlags(newItem->flags() & ~Qt::ItemIsEditable);
+                listWidget->setItem(row, 2, newItem);
 
-            QString protectedValue = "No";
-            if (json.value("protected").toBool())
-                protectedValue = "Yes";
-            newItem = new QTableWidgetItem(protectedValue);
-            newItem->setFlags(newItem->flags() & ~Qt::ItemIsEditable);
-            listWidget->setItem(row, 3, newItem);
+                QString protectedValue = "No";
+                if (room_list.at(i).toObject().value("protected").toBool())
+                    protectedValue = "Yes";
+                newItem = new QTableWidgetItem(protectedValue);
+                newItem->setFlags(newItem->flags() & ~Qt::ItemIsEditable);
+                listWidget->setItem(row, 3, newItem);
 
-            QString cheatsValue = "No";
-            if (!json.value("features").toObject().value("cheats").toString().isEmpty())
-                cheatsValue = "Yes";
-            newItem = new QTableWidgetItem(cheatsValue);
-            newItem->setFlags(newItem->flags() & ~Qt::ItemIsEditable);
-            listWidget->setItem(row, 4, newItem);
+                QString cheatsValue = "No";
+                if (!room_list.at(i).toObject().value("features").toObject().value("cheats").toString().isEmpty())
+                    cheatsValue = "Yes";
+                newItem = new QTableWidgetItem(cheatsValue);
+                newItem->setFlags(newItem->flags() & ~Qt::ItemIsEditable);
+                listWidget->setItem(row, 4, newItem);
 
-            ++row;
+                ++row;
+            }
         }
         else
         {
