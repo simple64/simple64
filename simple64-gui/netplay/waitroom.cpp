@@ -198,9 +198,18 @@ void WaitRoom::processTextMessage(QString message)
     }
     else if (json.value("type").toString() == "reply_begin_game")
     {
-        started = 1;
-        w->openROM(file_name, webSocket->peerAddress().toString(), room_port, player_number, cheats);
-        accept();
+        if (json.value("accept").toInt() == 0)
+        {
+            started = 1;
+            w->openROM(file_name, webSocket->peerAddress().toString(), room_port, player_number, cheats);
+            accept();
+        }
+        else
+        {
+            QMessageBox msgBox;
+            msgBox.setText(json.value("message").toString());
+            msgBox.exec();
+        }
     }
     else if (json.value("type").toString() == "reply_motd")
     {
