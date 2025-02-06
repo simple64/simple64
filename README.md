@@ -1,3 +1,6 @@
+# Project future
+I (loganmc10) have decided to focus my future efforts on a new N64 emulator (https://github.com/gopher64/gopher64). Please try it out! However, I don't want to see this project abandoned. If you are interested in maintaining this project, please let me know on Discord.
+
 # Discord
 https://discord.gg/tsR3RtYynZ
 
